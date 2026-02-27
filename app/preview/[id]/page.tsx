@@ -3,34 +3,23 @@ export const dynamic = "force-dynamic";
 import { supabasePublic } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 
-function pickItems(preview: any): any[] {
-  if (!preview || typeof preview !== "object") return [];
-
-  const candidates = [
-    preview.items,
-    preview.checks,
-    preview.drivers,
-    preview.top_items,
-    preview.topItems,
-    preview.risks,
-    preview.findings,
-    preview.recommendations,
-  ];
-
-  for (const c of candidates) {
-    if (Array.isArray(c) && c.length) return c;
+function money(n: number) {
+  try {
+    return new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: "GBP",
+      maximumFractionDigits: 0,
+    }).format(n);
+  } catch {
+    return `£${Math.round(n)}`;
   }
+}
 
-  // Some payloads nest under sections
-  if (Array.isArray(preview.sections)) {
-    for (const s of preview.sections) {
-      const nested =
-        s?.items || s?.checks || s?.drivers || s?.risks || s?.findings;
-      if (Array.isArray(nested) && nested.length) return nested;
-    }
-  }
-
-  return [];
+function titleCase(s: string) {
+  return s
+    .split(" ")
+    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
+    .join(" ");
 }
 
 export default async function PreviewPage({
@@ -52,7 +41,6 @@ export default async function PreviewPage({
   const year =
     (data.car_year as number | null) ??
     (data.year as number | null) ??
-    (data.year_of_manufacture as number | null) ??
     null;
 
   const mileage = (data.mileage as number | null) ?? null;
@@ -60,7 +48,22 @@ export default async function PreviewPage({
   const transmission = (data.transmission as string | null) ?? null;
 
   const preview: any = data.preview_payload ?? {};
-  const items = pickItems(preview);
+  const summary: any = preview.summary ?? {};
+
+  const riskLevel: string | null = summary.risk_level ?? null;
+  const exposureLow: number | null =
+    typeof summary.exposure_low === "number" ? summary.exposure_low : null;
+  const exposureHigh: number | null =
+    typeof summary.exposure_high === "number" ? summary.exposure_high : null;
+
+  const primaryDrivers: any[] = Array.isArray(summary.primary_drivers)
+    ? summary.primary_drivers
+    : [];
+
+  const negotiationSuggested: number | null =
+    typeof summary.negotiation_suggested === "number"
+      ? summary.negotiation_suggested
+      : null;
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
@@ -85,84 +88,76 @@ export default async function PreviewPage({
         </div>
       </div>
 
-      {/* Headline numbers (if present) */}
-      {(typeof preview.exposure_low === "number" ||
-        typeof preview.exposure_high === "number" ||
-        preview.risk_band) && (
-        <div className="mb-6 rounded-xl border bg-white p-5">
-          <div className="text-sm text-slate-600">Snapshot</div>
+      {/* Snapshot Summary Card */}
+      <div className="rounded-2xl border bg-white p-6">
+        <div className="text-sm text-slate-600">Estimated immediate exposure</div>
 
-          {typeof preview.exposure_low === "number" &&
-          typeof preview.exposure_high === "number" ? (
-            <div className="mt-1 text-3xl font-extrabold">
-              £{Math.round(preview.exposure_low).toLocaleString()} – £
-              {Math.round(preview.exposure_high).toLocaleString()}
-            </div>
-          ) : null}
-
-          {preview.risk_band ? (
-            <div className="mt-2 text-sm text-slate-700">
-              Risk band: <b>{String(preview.risk_band)}</b>
-            </div>
-          ) : null}
-        </div>
-      )}
-
-      <h2 className="text-xl font-semibold mb-4">Top checks</h2>
-
-      <div className="space-y-4">
-        {items.length ? (
-          items.map((item: any, idx: number) => (
-            <div key={idx} className="border rounded-lg p-4 bg-white">
-              <div className="font-semibold">
-                {item.title ?? item.name ?? item.label ?? "Item"}
-              </div>
-              <div className="text-sm text-slate-700 mt-1">
-                {item.summary ??
-                  item.reason ??
-                  item.description ??
-                  item.detail ??
-                  ""}
-              </div>
-
-              {(typeof item.cost_low === "number" &&
-                typeof item.cost_high === "number") ||
-              typeof item.cost === "number" ? (
-                <div className="mt-2 text-sm text-slate-900">
-                  Estimated cost:{" "}
-                  <b>
-                    {typeof item.cost === "number"
-                      ? `£${Math.round(item.cost).toLocaleString()}`
-                      : `£${Math.round(item.cost_low).toLocaleString()} – £${Math.round(
-                          item.cost_high
-                        ).toLocaleString()}`}
-                  </b>
-                </div>
-              ) : null}
-            </div>
-          ))
+        {exposureLow !== null && exposureHigh !== null ? (
+          <div className="mt-1 text-4xl font-extrabold text-slate-900">
+            {money(exposureLow)} – {money(exposureHigh)}
+          </div>
         ) : (
-          <div className="rounded-lg border bg-slate-50 p-4 text-sm text-slate-700">
-            Snapshot generated, but I couldn’t find an items list in the engine
-            payload.
-            <div className="mt-2 text-xs text-slate-600">
-              Payload keys:{" "}
-              {preview && typeof preview === "object"
-                ? Object.keys(preview).join(", ")
-                : "(not an object)"}
-            </div>
+          <div className="mt-2 text-sm text-slate-700">
+            Exposure estimate unavailable.
           </div>
         )}
+
+        {riskLevel ? (
+          <div className="mt-3 inline-flex items-center rounded-full border px-3 py-1 text-sm">
+            <span className="font-semibold">Risk:</span>
+            <span className="ml-2">{titleCase(String(riskLevel))}</span>
+          </div>
+        ) : null}
+
+        {negotiationSuggested !== null ? (
+          <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+            <div className="font-semibold text-emerald-900">
+              Suggested negotiation: ~{money(negotiationSuggested)}
+            </div>
+            <div className="mt-1 text-xs text-emerald-900/80">
+              This is based on likely near-term maintenance exposure and uncertainty.
+            </div>
+          </div>
+        ) : null}
       </div>
 
+      {/* Primary Drivers */}
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold">Top cost drivers</h2>
+        <p className="mt-1 text-sm text-slate-600">
+          These are the biggest likely costs/risks based on mileage, age and typical service intervals.
+          Always verify with invoices.
+        </p>
+
+        <div className="mt-4 space-y-4">
+          {primaryDrivers.length ? (
+            primaryDrivers.map((d: any, idx: number) => (
+              <div key={idx} className="rounded-xl border bg-white p-5">
+                <div className="font-semibold text-slate-900">
+                  {d.label ?? "Service item"}
+                </div>
+                {d.reason_short ? (
+                  <div className="mt-1 text-sm text-slate-700">{d.reason_short}</div>
+                ) : null}
+              </div>
+            ))
+          ) : (
+            <div className="rounded-xl border bg-slate-50 p-6 text-sm text-slate-700">
+              No primary drivers found in this snapshot payload.
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Paywall */}
       {!data.is_paid ? (
-        <div className="mt-8 p-6 border rounded-lg bg-slate-50">
-          <div className="font-semibold mb-2">
-            Unlock full report for detailed cost breakdown
+        <div className="mt-10 rounded-2xl border bg-slate-50 p-6">
+          <div className="font-semibold">
+            Unlock the full report for itemised costs + negotiation script
           </div>
           <a
             href={`/api/create-checkout-session?report_id=${data.id}`}
-            className="inline-block mt-2 rounded-md bg-emerald-600 px-4 py-2 text-white font-semibold hover:bg-emerald-700"
+            className="inline-block mt-3 rounded-md bg-emerald-600 px-4 py-2 text-white font-semibold hover:bg-emerald-700"
           >
             Unlock Full Report
           </a>
