@@ -1,7 +1,6 @@
 export const dynamic = "force-dynamic";
 
 import { supabasePublic } from "@/lib/supabase";
-import { notFound } from "next/navigation";
 import Link from "next/link";
 
 function money(n: number) {
@@ -32,9 +31,42 @@ export default async function ReportPage({
     .from("reports")
     .select("*")
     .eq("id", params.id)
-    .single();
+    .maybeSingle();
 
-  if (error || !data) return notFound();
+  // ✅ DEBUG VIEW INSTEAD OF 404
+  if (error || !data) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-10">
+        <h1 className="text-2xl font-bold">Report load error</h1>
+        <p className="mt-2 text-sm text-slate-700">
+          This page would normally show 404, but we’re showing the real error to fix it.
+        </p>
+
+        <div className="mt-6 rounded-xl border bg-slate-50 p-4 text-sm">
+          <div><b>Report ID:</b> {params.id}</div>
+          <div className="mt-2">
+            <b>Supabase error:</b>{" "}
+            {error ? (
+              <pre className="mt-2 whitespace-pre-wrap text-red-700">
+                {JSON.stringify(error, null, 2)}
+              </pre>
+            ) : (
+              <span className="text-amber-700">No data returned (row not found)</span>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center rounded-md border px-4 py-2 font-semibold text-slate-900 hover:bg-white"
+          >
+            Back home
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const reg = (data.registration as string | null) ?? null;
   const make = (data.make as string | null) ?? null;
@@ -105,7 +137,6 @@ export default async function ReportPage({
   const disclaimerText: string | null = full?.disclaimer?.text ?? null;
 
   const riskLevel: string | null = summary.risk_level ?? null;
-
   const exposureLow: number | null =
     typeof summary.exposure_low === "number" ? summary.exposure_low : null;
   const exposureHigh: number | null =
@@ -124,7 +155,6 @@ export default async function ReportPage({
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
-      {/* Vehicle Header */}
       <div className="mb-6 border-b pb-4">
         {reg ? (
           <h1 className="text-2xl font-bold">
@@ -145,7 +175,6 @@ export default async function ReportPage({
         </div>
       </div>
 
-      {/* Executive Summary */}
       <div className="rounded-2xl border bg-white p-6">
         <div className="text-sm text-slate-600">Estimated immediate exposure</div>
 
@@ -166,17 +195,6 @@ export default async function ReportPage({
           </div>
         ) : null}
 
-        {negotiationSuggested !== null ? (
-          <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-            <div className="font-semibold text-emerald-900">
-              Suggested negotiation: ~{money(negotiationSuggested)}
-            </div>
-            <div className="mt-1 text-xs text-emerald-900/80">
-              This is based on likely near-term maintenance exposure and uncertainty.
-            </div>
-          </div>
-        ) : null}
-
         {primaryDrivers.length ? (
           <div className="mt-5">
             <div className="text-sm font-semibold">Primary drivers</div>
@@ -189,40 +207,18 @@ export default async function ReportPage({
             </ul>
           </div>
         ) : null}
+
+        {negotiationSuggested !== null ? (
+          <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+            <div className="font-semibold text-emerald-900">
+              Suggested negotiation: ~{money(negotiationSuggested)}
+            </div>
+          </div>
+        ) : null}
       </div>
 
-      {/* Negotiation Script */}
-      {(negotiation?.script || negotiationSuggested !== null) && (
-        <div className="mt-8 rounded-2xl border bg-white p-6">
-          <div className="text-lg font-semibold">Negotiation pack</div>
-
-          {negotiationSuggested !== null ? (
-            <div className="mt-2 text-sm text-slate-700">
-              Target reduction: <b>{money(negotiationSuggested)}</b>
-            </div>
-          ) : null}
-
-          {negotiation?.tip ? (
-            <div className="mt-2 text-sm text-slate-700">
-              <b>Tip:</b> {negotiation.tip}
-            </div>
-          ) : null}
-
-          {negotiation?.script ? (
-            <div className="mt-4 rounded-lg bg-slate-50 p-4 text-sm text-slate-800">
-              <div className="font-semibold text-slate-900">Suggested script</div>
-              <p className="mt-2 whitespace-pre-line">{negotiation.script}</p>
-            </div>
-          ) : null}
-        </div>
-      )}
-
-      {/* Itemised checks */}
       <div className="mt-10">
         <h2 className="text-xl font-semibold">Itemised checks</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Verify with invoices. If proof is missing, assume the cost for negotiation.
-        </p>
 
         <div className="mt-4 space-y-4">
           {items.length ? (
@@ -270,17 +266,6 @@ export default async function ReportPage({
                   </div>
                 ) : null}
 
-                {Array.isArray(item.red_flags) && item.red_flags.length ? (
-                  <div className="mt-4">
-                    <div className="text-sm font-semibold">Red flags</div>
-                    <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
-                      {item.red_flags.map((rf: string, i: number) => (
-                        <li key={i}>{rf}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
-
                 {Array.isArray(item.questions_to_ask) && item.questions_to_ask.length ? (
                   <div className="mt-4">
                     <div className="text-sm font-semibold">Questions to ask</div>
@@ -301,7 +286,6 @@ export default async function ReportPage({
         </div>
       </div>
 
-      {/* Disclaimer */}
       {disclaimerText ? (
         <div className="mt-10 text-xs text-slate-500">{disclaimerText}</div>
       ) : (
