@@ -1,16 +1,36 @@
-import Link from "next/link";
+"use client";
+
+import { useEffect, useState } from "react";
 
 export default function SuccessPage() {
+  const [msg, setMsg] = useState("Payment confirmed ✅ Loading your report…");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("session_id");
+    if (!sessionId) {
+      setMsg("Payment confirmed ✅ (missing session id). Please return to your preview page.");
+      return;
+    }
+
+    fetch(`/api/session-report?session_id=${encodeURIComponent(sessionId)}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.report_id) {
+          window.location.href = `/report/${d.report_id}`;
+        } else {
+          setMsg("Payment confirmed ✅ but we couldn't find your report. Please refresh or return to the preview page.");
+        }
+      })
+      .catch(() => {
+        setMsg("Payment confirmed ✅ but we couldn't load your report. Please refresh.");
+      });
+  }, []);
+
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-3xl font-extrabold">Payment confirmed ✅</h1>
-      <p className="mt-2 text-slate-700">Your AutoAudit report is unlocked.</p>
-      <p className="mt-2 text-slate-700">
-        If it doesn&apos;t unlock instantly, refresh the page.
-      </p>
-      <Link href="/check" className="mt-6 inline-block text-emerald-700 hover:underline">
-        Start another check →
-      </Link>
+    <div style={{ maxWidth: 720, margin: "40px auto", padding: 16, fontFamily: "system-ui" }}>
+      <h1>{msg}</h1>
+      <p>If you are not redirected within a few seconds, refresh the page.</p>
     </div>
   );
 }
