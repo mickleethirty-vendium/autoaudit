@@ -1,78 +1,86 @@
-import { supabasePublic } from "@/lib/supabase";
-import UnlockButton from "./ui/UnlockButton";
-import Link from "next/link";
+export const dynamic = "force-dynamic";
 
-export default async function PreviewPage({ params }: { params: { id: string } }) {
-  const { data: report } = await supabasePublic
+import { supabasePublic } from "@/lib/supabase";
+import { notFound } from "next/navigation";
+
+export default async function PreviewPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const { data, error } = await supabasePublic
     .from("reports")
-    .select("id,is_paid,preview_payload")
+    .select(
+      `
+      id,
+      registration,
+      make,
+      car_year,
+      mileage,
+      fuel,
+      transmission,
+      preview_payload,
+      is_paid
+      `
+    )
     .eq("id", params.id)
     .single();
 
-  if (!report) {
-    return (
-      <div className="mx-auto max-w-3xl px-4 py-10">
-        <h1 className="text-2xl font-bold">Report not found</h1>
-        <Link className="mt-4 inline-block text-emerald-700 hover:underline" href="/check">
-          Start a new check →
-        </Link>
-      </div>
-    );
-  }
+  if (error || !data) return notFound();
 
-  const s = (report.preview_payload as any)?.summary;
+  const preview = data.preview_payload;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-3xl font-extrabold">AutoAudit Snapshot</h1>
-      <p className="mt-2 text-slate-700">
-        Based on typical UK independent garage pricing and age/mileage risk patterns.
-      </p>
+    <div className="max-w-3xl mx-auto px-4 py-10">
+      {/* Vehicle Header */}
+      <div className="mb-6 border-b pb-4">
+        {data.registration ? (
+          <h1 className="text-2xl font-bold">
+            {data.registration}
+            {data.make ? (
+              <span className="text-slate-600 font-normal ml-2">
+                · {data.make}
+              </span>
+            ) : null}
+          </h1>
+        ) : (
+          <h1 className="text-2xl font-bold">
+            Vehicle Snapshot
+          </h1>
+        )}
 
-      <div className="mt-6 rounded-xl border bg-white p-6">
-        <div className="text-sm font-semibold text-amber-700">
-          Estimated Immediate Maintenance Exposure
-        </div>
-        <div className="mt-1 text-4xl font-extrabold">
-          £{s.exposure_low} – £{s.exposure_high}
-        </div>
-
-        <div className="mt-3 flex flex-wrap gap-3 text-sm">
-          <span className="rounded-full bg-slate-100 px-3 py-1">
-            <b>Risk:</b> {s.risk_level}
-          </span>
-          <span className="rounded-full bg-slate-100 px-3 py-1">
-            <b>Suggested negotiation:</b> ~£{s.negotiation_suggested}
-          </span>
-        </div>
-
-        <h2 className="mt-6 text-lg font-bold">Top cost drivers</h2>
-        <ul className="mt-2 list-disc space-y-2 pl-5 text-slate-700">
-          {s.primary_drivers?.map((d: any, idx: number) => (
-            <li key={idx}>
-              <b>{d.label}</b> — {d.reason_short}
-            </li>
-          ))}
-        </ul>
-
-        <div className="mt-6 border-t pt-5">
-          {report.is_paid ? (
-            <Link
-              href={`/report/${report.id}`}
-              className="inline-flex items-center justify-center rounded-md bg-emerald-600 px-5 py-3 font-semibold text-white hover:bg-emerald-700"
-            >
-              View unlocked report →
-            </Link>
-          ) : (
-            <div className="grid gap-2">
-              <UnlockButton reportId={report.id} />
-              <div className="text-sm text-slate-600">
-                Includes itemised breakdown, seller questions, negotiation script, and PDF (later).
-              </div>
-            </div>
-          )}
+        <div className="text-sm text-slate-600 mt-2">
+          {data.car_year} · {data.fuel} · {data.transmission} · {data.mileage.toLocaleString()} miles
         </div>
       </div>
+
+      {/* Snapshot content */}
+      <h2 className="text-xl font-semibold mb-4">Risk Snapshot</h2>
+
+      <div className="space-y-4">
+        {preview?.items?.map((item: any, idx: number) => (
+          <div key={idx} className="border rounded-lg p-4 bg-white">
+            <div className="font-semibold">{item.title}</div>
+            <div className="text-sm text-slate-700 mt-1">
+              {item.summary}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {!data.is_paid ? (
+        <div className="mt-8 p-6 border rounded-lg bg-slate-50">
+          <div className="font-semibold mb-2">
+            Unlock full report for detailed cost breakdown
+          </div>
+          <a
+            href={`/api/create-checkout-session?report_id=${data.id}`}
+            className="inline-block mt-2 rounded-md bg-emerald-600 px-4 py-2 text-white font-semibold hover:bg-emerald-700"
+          >
+            Unlock Full Report
+          </a>
+        </div>
+      ) : null}
     </div>
   );
 }
