@@ -1,132 +1,261 @@
-import Link from "next/link";
-import { supabasePublic } from "@/lib/supabase";
+export const dynamic = "force-dynamic";
 
-export default async function ReportPage({ params }: { params: { id: string } }) {
-  const { data: report } = await supabasePublic
+import { supabasePublic } from "@/lib/supabase";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+
+function money(n: number) {
+  try {
+    return new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: "GBP",
+      maximumFractionDigits: 0,
+    }).format(n);
+  } catch {
+    return `£${Math.round(n)}`;
+  }
+}
+
+export default async function ReportPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const { data, error } = await supabasePublic
     .from("reports")
-    .select("id,is_paid,full_payload,preview_payload")
+    .select(
+      `
+      id,
+      registration,
+      make,
+      car_year,
+      mileage,
+      fuel,
+      transmission,
+      full_payload,
+      is_paid
+      `
+    )
     .eq("id", params.id)
     .single();
 
-  if (!report) {
+  if (error || !data) return notFound();
+
+  // If not paid, show locked view
+  if (!data.is_paid) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-10">
-        <h1 className="text-2xl font-bold">Report not found</h1>
-        <Link className="mt-4 inline-block text-emerald-700 hover:underline" href="/check">
-          Start a new check →
-        </Link>
+      <div className="max-w-3xl mx-auto px-4 py-10">
+        {/* Vehicle Header */}
+        <div className="mb-6 border-b pb-4">
+          {data.registration ? (
+            <h1 className="text-2xl font-bold">
+              {data.registration}
+              {data.make ? (
+                <span className="text-slate-600 font-normal ml-2">
+                  · {data.make}
+                </span>
+              ) : null}
+            </h1>
+          ) : (
+            <h1 className="text-2xl font-bold">Full Report</h1>
+          )}
+
+          <div className="text-sm text-slate-600 mt-2">
+            {data.car_year} · {data.fuel} · {data.transmission} ·{" "}
+            {Number(data.mileage).toLocaleString()} miles
+          </div>
+        </div>
+
+        <div className="rounded-xl border bg-slate-50 p-6">
+          <div className="text-lg font-semibold">Report locked</div>
+          <p className="mt-2 text-sm text-slate-700">
+            This detailed report is available after payment.
+          </p>
+
+          <div className="mt-4 flex flex-wrap gap-3">
+            <a
+              href={`/api/create-checkout-session?report_id=${data.id}`}
+              className="inline-flex items-center justify-center rounded-md bg-emerald-600 px-4 py-2 font-semibold text-white hover:bg-emerald-700"
+            >
+              Unlock Full Report
+            </a>
+
+            <Link
+              href={`/preview/${data.id}`}
+              className="inline-flex items-center justify-center rounded-md border px-4 py-2 font-semibold text-slate-900 hover:bg-white"
+            >
+              Back to Snapshot
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (!report.is_paid) {
-    return (
-      <div className="mx-auto max-w-3xl px-4 py-10">
-        <h1 className="text-3xl font-extrabold">This report is locked</h1>
-        <p className="mt-2 text-slate-700">
-          You&apos;re viewing the preview. Unlock to see itemised costs, questions, and negotiation script.
-        </p>
-        <Link
-          href={`/preview/${report.id}`}
-          className="mt-6 inline-flex items-center justify-center rounded-md bg-emerald-600 px-5 py-3 font-semibold text-white hover:bg-emerald-700"
-        >
-          Go to preview →
-        </Link>
-      </div>
-    );
-  }
+  const full: any = data.full_payload ?? {};
+  const items: any[] = Array.isArray(full.items) ? full.items : [];
+  const sections: any[] = Array.isArray(full.sections) ? full.sections : [];
 
-  const payload = (report.full_payload ?? report.preview_payload) as any;
-  const s = payload.summary;
-  const items = payload.items ?? [];
+  // These are optional — depends on your engine payload
+  const exposureLow = full.exposure_low;
+  const exposureHigh = full.exposure_high;
+  const negotiation = full.negotiation;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
-      <h1 className="text-3xl font-extrabold">AutoAudit Full Report</h1>
+    <div className="max-w-3xl mx-auto px-4 py-10">
+      {/* Vehicle Header */}
+      <div className="mb-6 border-b pb-4">
+        {data.registration ? (
+          <h1 className="text-2xl font-bold">
+            {data.registration}
+            {data.make ? (
+              <span className="text-slate-600 font-normal ml-2">
+                · {data.make}
+              </span>
+            ) : null}
+          </h1>
+        ) : (
+          <h1 className="text-2xl font-bold">Full Report</h1>
+        )}
 
-      <div className="mt-6 rounded-xl border bg-white p-6">
-        <div className="text-sm font-semibold text-amber-700">
-          Estimated Immediate Maintenance Exposure
-        </div>
-        <div className="mt-1 text-4xl font-extrabold">
-          £{s.exposure_low} – £{s.exposure_high}
-        </div>
-
-        <div className="mt-3 flex flex-wrap gap-3 text-sm">
-          <span className="rounded-full bg-slate-100 px-3 py-1">
-            <b>Risk:</b> {s.risk_level}
-          </span>
-          <span className="rounded-full bg-slate-100 px-3 py-1">
-            <b>Suggested negotiation:</b> ~£{s.negotiation_suggested}
-          </span>
+        <div className="text-sm text-slate-600 mt-2">
+          {data.car_year} · {data.fuel} · {data.transmission} ·{" "}
+          {Number(data.mileage).toLocaleString()} miles
         </div>
       </div>
 
-      <h2 className="mt-8 text-xl font-bold">Itemised cost exposure</h2>
-      <div className="mt-3 overflow-x-auto rounded-xl border bg-white">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left">
-            <tr>
-              <th className="px-4 py-3">Item</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Cost range</th>
-              <th className="px-4 py-3">Why flagged</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((it: any) => (
-              <tr key={it.item_id} className="border-t">
-                <td className="px-4 py-3 font-semibold">{it.label}</td>
-                <td className="px-4 py-3">{it.status}</td>
-                <td className="px-4 py-3">£{it.cost_low}–£{it.cost_high}</td>
-                <td className="px-4 py-3 text-slate-700">{it.why_flagged}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {/* Executive Summary */}
+      <div className="rounded-xl border bg-white p-6">
+        <div className="text-lg font-semibold">Executive Summary</div>
 
-      <h2 className="mt-8 text-xl font-bold">Details</h2>
-      <div className="mt-4 grid gap-4">
-        {items.map((it: any) => (
-          <section key={it.item_id} className="rounded-xl border bg-white p-6">
-            <div className="text-lg font-extrabold">{it.label}</div>
-            <div className="mt-2 text-sm text-slate-700">
-              <b>Estimated cost:</b> £{it.cost_low}–£{it.cost_high} · <b>Status:</b> {it.status}
+        {typeof exposureLow === "number" && typeof exposureHigh === "number" ? (
+          <div className="mt-3">
+            <div className="text-3xl font-extrabold text-slate-900">
+              {money(exposureLow)} – {money(exposureHigh)}
             </div>
+            <div className="text-sm text-slate-600">
+              Estimated immediate maintenance exposure
+            </div>
+          </div>
+        ) : null}
 
-            <div className="mt-4 font-semibold">Why this matters</div>
-            <p className="mt-1 text-slate-700">{it.why_it_matters}</p>
+        {negotiation ? (
+          <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+            <div className="font-semibold text-emerald-900">
+              Suggested negotiation
+              {typeof negotiation.amount === "number"
+                ? `: ~${money(negotiation.amount)}`
+                : ""}
+            </div>
+            {negotiation.script ? (
+              <p className="mt-2 text-sm text-emerald-900/90">
+                {negotiation.script}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
 
-            <div className="mt-4 font-semibold">What to ask</div>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-slate-700">
-              {it.questions_to_ask?.map((q: string, idx: number) => (
-                <li key={idx}>{q}</li>
-              ))}
-            </ul>
+        {full.summary ? (
+          <p className="mt-4 text-sm text-slate-700">{full.summary}</p>
+        ) : null}
+      </div>
 
-            {it.red_flags?.length ? (
-              <>
-                <div className="mt-4 font-semibold">Red flags</div>
-                <ul className="mt-2 list-disc space-y-1 pl-5 text-slate-700">
-                  {it.red_flags.map((r: string, idx: number) => (
-                    <li key={idx}>{r}</li>
+      {/* Items */}
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold">Itemised checks</h2>
+        <p className="mt-1 text-sm text-slate-600">
+          These are the most likely cost drivers based on age/mileage and typical
+          service schedules. Always verify with invoices.
+        </p>
+
+        <div className="mt-4 space-y-4">
+          {items.length === 0 ? (
+            <div className="rounded-xl border bg-slate-50 p-6 text-sm text-slate-700">
+              No items found in report payload. (This usually means the engine
+              payload shape differs — we can adjust the renderer.)
+            </div>
+          ) : (
+            items.map((item: any, idx: number) => (
+              <div key={idx} className="rounded-xl border bg-white p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="font-semibold text-slate-900">
+                      {item.title ?? item.name ?? "Service item"}
+                    </div>
+                    {item.summary ? (
+                      <div className="mt-1 text-sm text-slate-700">
+                        {item.summary}
+                      </div>
+                    ) : null}
+                  </div>
+
+                  {typeof item.cost_low === "number" &&
+                  typeof item.cost_high === "number" ? (
+                    <div className="text-right">
+                      <div className="font-semibold text-slate-900">
+                        {money(item.cost_low)} – {money(item.cost_high)}
+                      </div>
+                      <div className="text-xs text-slate-600">estimated</div>
+                    </div>
+                  ) : typeof item.cost === "number" ? (
+                    <div className="text-right">
+                      <div className="font-semibold text-slate-900">
+                        {money(item.cost)}
+                      </div>
+                      <div className="text-xs text-slate-600">estimated</div>
+                    </div>
+                  ) : null}
+                </div>
+
+                {item.why_it_matters ? (
+                  <div className="mt-3 rounded-lg bg-slate-50 p-4 text-sm text-slate-700">
+                    <div className="font-semibold text-slate-900">
+                      Why it matters
+                    </div>
+                    <div className="mt-1">{item.why_it_matters}</div>
+                  </div>
+                ) : null}
+
+                {item.questions && Array.isArray(item.questions) ? (
+                  <div className="mt-4">
+                    <div className="text-sm font-semibold">Questions to ask</div>
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
+                      {item.questions.map((q: string, i: number) => (
+                        <li key={i}>{q}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Extra sections if your engine provides them */}
+      {sections.length ? (
+        <div className="mt-10 space-y-6">
+          {sections.map((s: any, i: number) => (
+            <div key={i} className="rounded-xl border bg-white p-6">
+              <div className="text-lg font-semibold">{s.title ?? "Section"}</div>
+              {s.body ? (
+                <p className="mt-2 text-sm text-slate-700">{s.body}</p>
+              ) : null}
+              {Array.isArray(s.bullets) ? (
+                <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-700">
+                  {s.bullets.map((b: string, j: number) => (
+                    <li key={j}>{b}</li>
                   ))}
                 </ul>
-              </>
-            ) : null}
-          </section>
-        ))}
-      </div>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      ) : null}
 
-      <h2 className="mt-8 text-xl font-bold">Negotiation script</h2>
-      <div className="mt-3 rounded-xl border bg-white p-6">
-        <p className="text-slate-800">{payload.negotiation?.script}</p>
-        <p className="mt-2 text-sm text-slate-600">{payload.negotiation?.tip}</p>
-      </div>
-
-      <div className="mt-8 text-xs text-slate-600">
-        {payload.disclaimer?.text}
+      <div className="mt-10 text-xs text-slate-500">
+        AutoAudit provides guidance only and is not a substitute for a mechanical
+        inspection.
       </div>
     </div>
   );
