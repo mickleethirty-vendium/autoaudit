@@ -3,6 +3,36 @@ export const dynamic = "force-dynamic";
 import { supabasePublic } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 
+function pickItems(preview: any): any[] {
+  if (!preview || typeof preview !== "object") return [];
+
+  const candidates = [
+    preview.items,
+    preview.checks,
+    preview.drivers,
+    preview.top_items,
+    preview.topItems,
+    preview.risks,
+    preview.findings,
+    preview.recommendations,
+  ];
+
+  for (const c of candidates) {
+    if (Array.isArray(c) && c.length) return c;
+  }
+
+  // Some payloads nest under sections
+  if (Array.isArray(preview.sections)) {
+    for (const s of preview.sections) {
+      const nested =
+        s?.items || s?.checks || s?.drivers || s?.risks || s?.findings;
+      if (Array.isArray(nested) && nested.length) return nested;
+    }
+  }
+
+  return [];
+}
+
 export default async function PreviewPage({
   params,
 }: {
@@ -16,8 +46,8 @@ export default async function PreviewPage({
 
   if (error || !data) return notFound();
 
-  const reg = data.registration as string | null;
-  const make = data.make as string | null;
+  const reg = (data.registration as string | null) ?? null;
+  const make = (data.make as string | null) ?? null;
 
   const year =
     (data.car_year as number | null) ??
@@ -30,7 +60,7 @@ export default async function PreviewPage({
   const transmission = (data.transmission as string | null) ?? null;
 
   const preview: any = data.preview_payload ?? {};
-  const items: any[] = Array.isArray(preview.items) ? preview.items : [];
+  const items = pickItems(preview);
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
@@ -55,21 +85,72 @@ export default async function PreviewPage({
         </div>
       </div>
 
-      <h2 className="text-xl font-semibold mb-4">Risk Snapshot</h2>
+      {/* Headline numbers (if present) */}
+      {(typeof preview.exposure_low === "number" ||
+        typeof preview.exposure_high === "number" ||
+        preview.risk_band) && (
+        <div className="mb-6 rounded-xl border bg-white p-5">
+          <div className="text-sm text-slate-600">Snapshot</div>
+
+          {typeof preview.exposure_low === "number" &&
+          typeof preview.exposure_high === "number" ? (
+            <div className="mt-1 text-3xl font-extrabold">
+              £{Math.round(preview.exposure_low).toLocaleString()} – £
+              {Math.round(preview.exposure_high).toLocaleString()}
+            </div>
+          ) : null}
+
+          {preview.risk_band ? (
+            <div className="mt-2 text-sm text-slate-700">
+              Risk band: <b>{String(preview.risk_band)}</b>
+            </div>
+          ) : null}
+        </div>
+      )}
+
+      <h2 className="text-xl font-semibold mb-4">Top checks</h2>
 
       <div className="space-y-4">
         {items.length ? (
           items.map((item: any, idx: number) => (
             <div key={idx} className="border rounded-lg p-4 bg-white">
-              <div className="font-semibold">{item.title ?? "Item"}</div>
-              <div className="text-sm text-slate-700 mt-1">
-                {item.summary ?? ""}
+              <div className="font-semibold">
+                {item.title ?? item.name ?? item.label ?? "Item"}
               </div>
+              <div className="text-sm text-slate-700 mt-1">
+                {item.summary ??
+                  item.reason ??
+                  item.description ??
+                  item.detail ??
+                  ""}
+              </div>
+
+              {(typeof item.cost_low === "number" &&
+                typeof item.cost_high === "number") ||
+              typeof item.cost === "number" ? (
+                <div className="mt-2 text-sm text-slate-900">
+                  Estimated cost:{" "}
+                  <b>
+                    {typeof item.cost === "number"
+                      ? `£${Math.round(item.cost).toLocaleString()}`
+                      : `£${Math.round(item.cost_low).toLocaleString()} – £${Math.round(
+                          item.cost_high
+                        ).toLocaleString()}`}
+                  </b>
+                </div>
+              ) : null}
             </div>
           ))
         ) : (
           <div className="rounded-lg border bg-slate-50 p-4 text-sm text-slate-700">
-            Snapshot generated, but no items were returned by the engine payload.
+            Snapshot generated, but I couldn’t find an items list in the engine
+            payload.
+            <div className="mt-2 text-xs text-slate-600">
+              Payload keys:{" "}
+              {preview && typeof preview === "object"
+                ? Object.keys(preview).join(", ")
+                : "(not an object)"}
+            </div>
           </div>
         )}
       </div>
