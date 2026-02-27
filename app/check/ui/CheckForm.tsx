@@ -3,33 +3,40 @@
 import { useState } from "react";
 
 type Fuel = "petrol" | "diesel" | "hybrid" | "ev";
-type Transmission = "manual" | "automatic" | "cvt" | "dct";
+type Transmission = "" | "manual" | "automatic" | "cvt" | "dct";
 type TimingType = "belt" | "chain" | "unknown";
 
 function mapDvlaFuelToFuel(dvlaFuel: string | null): Fuel {
   const f = (dvlaFuel ?? "").toLowerCase();
 
-  // DVLA values vary; we keep mapping broad and safe.
+  // DVLA values vary; keep mapping broad and safe.
   if (f.includes("diesel")) return "diesel";
   if (f.includes("electric")) return "ev";
   if (f.includes("hybrid")) return "hybrid";
-  // default
   return "petrol";
 }
 
+function cleanRegistration(reg: string): string {
+  return reg.replace(/\s/g, "").toUpperCase();
+}
+
 export default function CheckForm() {
-  // Reg lookup fields
   const [mode, setMode] = useState<"reg" | "manual">("reg");
+
+  // Registration lookup
   const [registration, setRegistration] = useState<string>("");
   const [lookupBusy, setLookupBusy] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [lookupResult, setLookupResult] = useState<any | null>(null);
 
-  // Report inputs (same as before)
+  // Inputs used to generate report
   const [year, setYear] = useState<number>(2016);
-  const [mileage, setMileage] = useState<number>(78000);
+  const [mileage, setMileage] = useState<number | "">(""); // blank by default
   const [fuel, setFuel] = useState<Fuel>("petrol");
-  const [transmission, setTransmission] = useState<Transmission>("automatic");
+
+  // IMPORTANT: force user to choose transmission
+  const [transmission, setTransmission] = useState<Transmission>("");
+
   const [timingType, setTimingType] = useState<TimingType>("unknown");
   const [askingPrice, setAskingPrice] = useState<number | "">("");
 
@@ -53,13 +60,15 @@ export default function CheckForm() {
 
       setLookupResult(data);
 
-      // Autofill year + fuel if present
-      if (data?.yearOfManufacture) {
-        setYear(Number(data.yearOfManufacture));
-      }
-      if (data?.fuelType) {
-        setFuel(mapDvlaFuelToFuel(data.fuelType));
-      }
+      // Auto-fill year + fuel if present
+      if (data?.yearOfManufacture) setYear(Number(data.yearOfManufacture));
+      if (data?.fuelType) setFuel(mapDvlaFuelToFuel(data.fuelType));
+
+      // Clear mileage (user must enter current mileage)
+      setMileage("");
+
+      // Force transmission selection every time they do a lookup
+      setTransmission("");
     } catch (e: any) {
       setLookupError(e?.message ?? "Lookup failed");
     } finally {
@@ -73,20 +82,35 @@ export default function CheckForm() {
     setError(null);
 
     try {
+      if (mileage === "" || !Number.isFinite(Number(mileage))) {
+        throw new Error("Please enter the current mileage.");
+      }
+
+      if (transmission === "") {
+        throw new Error("Please select the transmission type.");
+      }
+
+      const regToStore =
+        mode === "reg" && registration.trim()
+          ? cleanRegistration(registration.trim())
+          : null;
+
+      const makeToStore = mode === "reg" ? (lookupResult?.make ?? null) : null;
+
       const res = await fetch("/api/create-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          // We still store year/fuel/etc for the engine
+          // Store reg + make (optional)
+          registration: regToStore,
+          make: makeToStore,
+
           year,
-          mileage,
+          mileage: Number(mileage),
           fuel,
           transmission,
           timing_type: timingType,
           asking_price: askingPrice === "" ? null : askingPrice,
-
-          // Optional: store reg + make in listing_url field later if you add columns
-          // For now we won’t send it to DB to avoid schema changes.
         }),
       });
 
@@ -101,6 +125,9 @@ export default function CheckForm() {
     }
   }
 
+  const canSubmit =
+    !busy && mileage !== "" && transmission !== "";
+
   return (
     <form onSubmit={onSubmit} className="grid gap-4">
       {/* Mode switch */}
@@ -109,7 +136,9 @@ export default function CheckForm() {
           type="button"
           onClick={() => setMode("reg")}
           className={`rounded-md px-3 py-2 text-sm font-semibold border ${
-            mode === "reg" ? "bg-slate-900 text-white border-slate-900" : "bg-white"
+            mode === "reg"
+              ? "bg-slate-900 text-white border-slate-900"
+              : "bg-white"
           }`}
         >
           Use registration (recommended)
@@ -118,7 +147,9 @@ export default function CheckForm() {
           type="button"
           onClick={() => setMode("manual")}
           className={`rounded-md px-3 py-2 text-sm font-semibold border ${
-            mode === "manual" ? "bg-slate-900 text-white border-slate-900" : "bg-white"
+            mode === "manual"
+              ? "bg-slate-900 text-white border-slate-900"
+              : "bg-white"
           }`}
         >
           Manual entry
@@ -129,7 +160,10 @@ export default function CheckForm() {
       {mode === "reg" ? (
         <div className="rounded-lg border bg-slate-50 p-4 grid gap-3">
           <div className="grid gap-2">
-            <label className="text-sm font-semibold">Registration (number plate)</label>
+            <label className="text-sm font-semibold">
+              Registration (number plate)
+            </label>
+
             <div className="flex gap-2">
               <input
                 className="flex-1 rounded-md border px-3 py-2"
@@ -146,8 +180,9 @@ export default function CheckForm() {
                 {lookupBusy ? "Looking up…" : "Lookup"}
               </button>
             </div>
+
             <div className="text-xs text-slate-600">
-              We use DVLA Vehicle Enquiry to auto-fill basics like year and fuel type.
+              DVLA lookup auto-fills year + fuel. DVLA does not provide transmission, so you must select it below.
             </div>
           </div>
 
@@ -168,17 +203,18 @@ export default function CheckForm() {
                 <b>{lookupResult.colour ?? "Unknown"}</b>
               </div>
               <div className="mt-1 text-xs text-slate-600">
-                MOT: {lookupResult.motStatus ?? "Unknown"} · Tax: {lookupResult.taxStatus ?? "Unknown"}
+                MOT: {lookupResult.motStatus ?? "Unknown"} · Tax:{" "}
+                {lookupResult.taxStatus ?? "Unknown"}
               </div>
               <div className="mt-2 text-xs text-slate-600">
-                We’ve auto-filled Year and Fuel below — please confirm everything.
+                Mileage has been cleared — please enter the current mileage from the advert/dashboard.
               </div>
             </div>
           ) : null}
         </div>
       ) : null}
 
-      {/* Core inputs */}
+      {/* Year */}
       <div className="grid gap-2">
         <label className="text-sm font-semibold">Year</label>
         <input
@@ -192,18 +228,25 @@ export default function CheckForm() {
         />
       </div>
 
+      {/* Mileage */}
       <div className="grid gap-2">
         <label className="text-sm font-semibold">Mileage</label>
         <input
-          className="rounded-md border px-3 py-2"
+          className={`rounded-md border px-3 py-2 ${
+            mileage === "" ? "border-amber-300" : ""
+          }`}
           type="number"
           value={mileage}
           min={0}
-          onChange={(e) => setMileage(parseInt(e.target.value || "0", 10))}
+          onChange={(e) =>
+            setMileage(e.target.value === "" ? "" : parseInt(e.target.value, 10))
+          }
+          placeholder="Enter current mileage here"
           required
         />
       </div>
 
+      {/* Fuel + Transmission */}
       <div className="grid gap-2 md:grid-cols-2">
         <div className="grid gap-2">
           <label className="text-sm font-semibold">Fuel</label>
@@ -222,18 +265,29 @@ export default function CheckForm() {
         <div className="grid gap-2">
           <label className="text-sm font-semibold">Transmission</label>
           <select
-            className="rounded-md border px-3 py-2"
+            className={`rounded-md border px-3 py-2 ${
+              transmission === "" ? "text-red-600 border-red-400" : ""
+            }`}
             value={transmission}
             onChange={(e) => setTransmission(e.target.value as Transmission)}
+            required
           >
+            <option value="">Please select transmission</option>
             <option value="manual">Manual</option>
             <option value="automatic">Automatic</option>
             <option value="cvt">CVT</option>
             <option value="dct">DCT</option>
           </select>
+
+          {transmission === "" ? (
+            <div className="text-xs text-red-600">
+              You must select the transmission type from the advert.
+            </div>
+          ) : null}
         </div>
       </div>
 
+      {/* Timing type + Asking price */}
       <div className="grid gap-2 md:grid-cols-2">
         <div className="grid gap-2">
           <label className="text-sm font-semibold">Timing type (if known)</label>
@@ -263,15 +317,17 @@ export default function CheckForm() {
         </div>
       </div>
 
+      {/* Errors */}
       {error ? (
         <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
           {error}
         </div>
       ) : null}
 
+      {/* Submit */}
       <button
-        disabled={busy}
-        className="rounded-md bg-emerald-600 px-4 py-3 font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+        disabled={!canSubmit}
+        className="rounded-md bg-emerald-600 px-4 py-3 font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
       >
         {busy ? "Creating…" : "Generate snapshot"}
       </button>
