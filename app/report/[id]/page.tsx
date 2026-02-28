@@ -112,7 +112,7 @@ export default async function ReportPage({
 
           <div className="mt-4 flex flex-wrap gap-3">
             <a
-              href={`/api/create-checkout-session?report_id=${data.id}`}
+              href={`/api/checkout?report_id=${data.id}`}
               className="inline-flex items-center justify-center rounded-md bg-emerald-600 px-4 py-2 font-semibold text-white hover:bg-emerald-700"
             >
               Unlock Full Report

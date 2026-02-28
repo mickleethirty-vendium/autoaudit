@@ -156,7 +156,7 @@ export default async function PreviewPage({
             Unlock the full report for itemised costs + negotiation script
           </div>
           <a
-            href={`/api/create-checkout-session?report_id=${data.id}`}
+            href={`/api/checkout?report_id=${data.id}`}
             className="inline-block mt-3 rounded-md bg-emerald-600 px-4 py-2 text-white font-semibold hover:bg-emerald-700"
           >
             Unlock Full Report
