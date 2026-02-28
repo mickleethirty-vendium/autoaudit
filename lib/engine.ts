@@ -1,86 +1,151 @@
+import { getBrandTier, BRAND_TIER_MULTIPLIER } from "@/lib/brandTier";
+
 export type Fuel = "petrol" | "diesel" | "hybrid" | "ev";
 export type Transmission = "manual" | "automatic" | "cvt" | "dct";
 export type TimingType = "belt" | "chain" | "unknown";
 
-export type PreviewPayload = {
-  summary: {
-    risk_level: "low" | "moderate" | "high" | "very_high";
-    exposure_low: number;
-    exposure_high: number;
-    negotiation_suggested: number;
-    primary_drivers: Array<{ label: string; reason_short: string }>;
-  };
-};
-
-export type FullPayload = PreviewPayload & {
-  items: Array<{
-    item_id: string;
-    label: string;
-    category: string;
-    status: string;
-    cost_low: number;
-    cost_high: number;
-    why_flagged: string;
-    why_it_matters: string;
-    questions_to_ask: string[];
-    red_flags?: string[];
-  }>;
-  negotiation: {
-    suggested_reduction: number;
-    script: string;
-    tip: string;
-  };
-  disclaimer: { text: string };
-};
-
-function clamp(n: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, n));
-}
-
-function roundTo(n: number, step: number) {
-  return Math.round(n / step) * step;
-}
-
-type Inputs = {
+export type EngineInput = {
   year: number;
   mileage: number;
   fuel: Fuel;
   transmission: Transmission;
   timing_type: TimingType;
   asking_price?: number | null;
+  make?: string | null; // ✅ Step 4: allows brand multiplier
 };
 
-// Very simple v1 heuristics. These are intentionally conservative & transparent.
-// You can refine later.
-export function generateReport(inputs: Inputs): { preview: PreviewPayload; full: FullPayload } {
-  const nowYear = new Date().getFullYear();
-  const age = clamp(nowYear - inputs.year, 0, 50);
-  const miles = inputs.mileage;
-
-  const items: FullPayload["items"] = [];
-
-  // Helper to add items with multiplier depending on due-ness.
-  const addItem = (it: Omit<FullPayload["items"][number], "cost_low" | "cost_high"> & {
-    base_low: number; base_high: number; multiplier: number;
-  }) => {
-    items.push({
-      ...it,
-      cost_low: Math.round(it.base_low * it.multiplier),
-      cost_high: Math.round(it.base_high * it.multiplier),
-    });
+export type PreviewPayload = {
+  summary: {
+    risk_level: "low" | "medium" | "high";
+    exposure_low: number;
+    exposure_high: number;
+    primary_drivers: Array<{
+      label: string;
+      reason_short: string;
+    }>;
+    negotiation_suggested: number;
   };
+};
 
-  // TIMING BELT (critical)
-  const timingUnknownOrBelt = inputs.timing_type === "unknown" || inputs.timing_type === "belt";
-  if (timingUnknownOrBelt) {
-    if (age >= 5 || miles >= 60000) {
-      addItem({
+export type FullItem = {
+  label: string;
+  status:
+    | "ok"
+    | "likely_overdue"
+    | "likely_due_or_unverified"
+    | "due_soon_or_verify"
+    | "risk_due_to_age_mileage"
+    | "risk_due_soon";
+  item_id: string;
+  category: "engine" | "brakes" | "service" | "cooling" | "suspension" | "electrical";
+  base_low: number;
+  base_high: number;
+  multiplier: number; // item-level multiplier (uncertainty/partial)
+  cost_low: number;
+  cost_high: number;
+  why_flagged: string;
+  why_it_matters: string;
+  questions_to_ask: string[];
+  red_flags: string[];
+};
+
+export type FullPayload = {
+  items: FullItem[];
+  summary: PreviewPayload["summary"];
+  disclaimer: { text: string };
+  negotiation: {
+    tip: string;
+    script: string;
+    suggested_reduction: number;
+  };
+};
+
+// ---- helpers ----
+
+function clamp(n: number, lo: number, hi: number) {
+  return Math.max(lo, Math.min(hi, n));
+}
+
+function nowYear() {
+  return new Date().getFullYear();
+}
+
+function round10(n: number) {
+  return Math.round(n / 10) * 10;
+}
+
+function cleanMake(m?: string | null) {
+  if (!m) return null;
+  return String(m).trim();
+}
+
+function computeRiskLevel(exposureHigh: number): "low" | "medium" | "high" {
+  if (exposureHigh >= 1800) return "high";
+  if (exposureHigh >= 900) return "medium";
+  return "low";
+}
+
+/**
+ * Brand multiplier applies to *all costs*.
+ * Tier system is in lib/brandTier.ts
+ */
+function getBrandMultiplier(make?: string | null) {
+  const tier = getBrandTier(make);
+  return {
+    tier,
+    multiplier: BRAND_TIER_MULTIPLIER[tier],
+  };
+}
+
+type CandidateItem = {
+  item_id: string;
+  label: string;
+  category: FullItem["category"];
+  base_low: number;
+  base_high: number;
+  // item-level multiplier (e.g. a "risk" item may be weighted at 0.5)
+  multiplier: number;
+  status: FullItem["status"];
+  why_flagged: string;
+  why_it_matters: string;
+  questions_to_ask: string[];
+  red_flags: string[];
+  // a number used to select top 3 drivers
+  driverWeight: number;
+};
+
+function costWithMultipliers(baseLow: number, baseHigh: number, itemMult: number, brandMult: number) {
+  const low = Math.round(baseLow * itemMult * brandMult);
+  const high = Math.round(baseHigh * itemMult * brandMult);
+  return { low, high };
+}
+
+// ---- main engine ----
+
+export function generateReport(input: EngineInput): { preview: PreviewPayload; full: FullPayload } {
+  const age = clamp(nowYear() - input.year, 0, 50);
+  const miles = clamp(input.mileage, 0, 500_000);
+
+  const make = cleanMake(input.make);
+  const { tier: brandTier, multiplier: brandMultiplier } = getBrandMultiplier(make);
+
+  // Candidate items based on broad heuristics (safe MVP assumptions)
+  const items: CandidateItem[] = [];
+
+  // 1) Timing belt risk (only if belt OR unknown)
+  if (input.timing_type !== "chain") {
+    const dueByAge = age >= 5;
+    const dueByMiles = miles >= 60_000;
+
+    if (dueByAge || dueByMiles) {
+      items.push({
         item_id: "timing_belt",
         label: "Timing belt / cam belt replacement",
         category: "engine",
-        status: "likely_due_or_unverified",
-        base_low: 450, base_high: 900,
+        base_low: 450,
+        base_high: 900,
         multiplier: 1.0,
+        status: "likely_due_or_unverified",
         why_flagged: "Timing type is belt/unknown AND vehicle is 5+ years old or 60k+ miles.",
         why_it_matters:
           "Many belt-driven engines require replacement on time/mileage intervals. Belt failure can cause severe internal engine damage and significantly higher costs than preventive replacement.",
@@ -93,77 +158,21 @@ export function generateReport(inputs: Inputs): { preview: PreviewPayload; full:
           "Seller unsure or no documentation",
           "Claims it's fine without proof",
         ],
-      });
-    } else if (age >= 4 || miles >= 50000) {
-      addItem({
-        item_id: "timing_belt",
-        label: "Timing belt / cam belt (verification recommended)",
-        category: "engine",
-        status: "due_soon_or_verify",
-        base_low: 450, base_high: 900,
-        multiplier: 0.5,
-        why_flagged: "Timing type is belt/unknown AND vehicle is nearing common interval thresholds.",
-        why_it_matters:
-          "If there is no documented replacement, budgeting for preventive replacement can reduce risk of costly failure.",
-        questions_to_ask: [
-          "Is this engine belt or chain?",
-          "If belt: when was it last replaced (invoice)?",
-        ],
+        driverWeight: 10,
       });
     }
   }
 
-  // AUTO/CVT/DCT GEARBOX SERVICE (critical-ish)
-  const isAuto = inputs.transmission !== "manual";
-  if (isAuto) {
-    if (miles >= 60000) {
-      addItem({
-        item_id: "gearbox_service",
-        label: "Automatic gearbox service (fluid)",
-        category: "transmission",
-        status: "likely_due",
-        base_low: 250, base_high: 450,
-        multiplier: 1.0,
-        why_flagged: "Automatic/CVT/DCT + 60k+ miles.",
-        why_it_matters:
-          "Many automatics benefit from fluid servicing to reduce wear. Servicing is far cheaper than gearbox repairs.",
-        questions_to_ask: [
-          "Has gearbox fluid ever been changed? If yes, when and where?",
-          "Any invoices for gearbox servicing?",
-          "Any judder, delayed engagement, harsh shifting?",
-        ],
-        red_flags: [
-          "'Sealed for life' used as justification for no history",
-          "Harsh shifts or hesitation on test drive",
-        ],
-      });
-    } else if (miles >= 50000) {
-      addItem({
-        item_id: "gearbox_service",
-        label: "Automatic gearbox service (due soon)",
-        category: "transmission",
-        status: "due_soon",
-        base_low: 250, base_high: 450,
-        multiplier: 0.5,
-        why_flagged: "Automatic/CVT/DCT + approaching 60k miles.",
-        why_it_matters:
-          "Regular servicing can reduce wear and improve shift quality.",
-        questions_to_ask: [
-          "Any record of gearbox servicing?",
-        ],
-      });
-    }
-  }
-
-  // BRAKE FLUID (minor but common)
+  // 2) Brake fluid (age-driven, cheap but common)
   if (age >= 5) {
-    addItem({
+    items.push({
       item_id: "brake_fluid",
       label: "Brake fluid change",
       category: "brakes",
-      status: "likely_overdue",
-      base_low: 60, base_high: 120,
+      base_low: 60,
+      base_high: 120,
       multiplier: 1.0,
+      status: "likely_overdue",
       why_flagged: "Vehicle is 5+ years old (often due every ~2 years).",
       why_it_matters:
         "Brake fluid absorbs moisture over time which can reduce performance and increase corrosion risk. Often neglected but inexpensive to fix.",
@@ -171,200 +180,216 @@ export function generateReport(inputs: Inputs): { preview: PreviewPayload; full:
         "When was brake fluid last changed (date)?",
         "Any invoice or service record entry?",
       ],
+      red_flags: ["No record of brake fluid service"],
+      driverWeight: 4,
     });
-  } else if (age >= 3) {
-    addItem({
-      item_id: "brake_fluid",
-      label: "Brake fluid change (due soon)",
-      category: "brakes",
-      status: "due_soon",
-      base_low: 60, base_high: 120,
-      multiplier: 0.5,
-      why_flagged: "Vehicle is 3+ years old.",
+  }
+
+  // 3) Spark plugs (petrol/hybrid) - mileage-driven
+  if ((input.fuel === "petrol" || input.fuel === "hybrid") && miles >= 60_000) {
+    items.push({
+      item_id: "spark_plugs",
+      label: "Spark plug replacement (verification)",
+      category: "service",
+      base_low: 120,
+      base_high: 280,
+      multiplier: 0.7,
+      status: "due_soon_or_verify",
+      why_flagged: "Petrol/Hybrid + 60k+ miles (spark plugs often due by this point).",
       why_it_matters:
-        "Brake fluid is a time-based service item. Proof reduces uncertainty.",
+        "Worn plugs can cause misfires, poor fuel economy and stress ignition components. It’s usually inexpensive compared to downstream issues.",
       questions_to_ask: [
-        "When was brake fluid last changed (date)?",
+        "When were spark plugs last replaced?",
+        "Any invoice or service record entry?",
       ],
+      red_flags: ["Misfire/rough idle reported", "No service evidence"],
+      driverWeight: 3,
     });
   }
 
-  // SPARK PLUGS / DPF (major-ish)
-  if (inputs.fuel === "petrol" || inputs.fuel === "hybrid") {
-    if (miles >= 60000) {
-      addItem({
-        item_id: "spark_plugs",
-        label: "Spark plugs",
-        category: "engine",
-        status: "likely_due",
-        base_low: 120, base_high: 300,
-        multiplier: 1.0,
-        why_flagged: "Petrol/Hybrid + 60k+ miles.",
-        why_it_matters:
-          "Worn plugs can cause misfires and poor fuel economy. Replacement is routine and negotiable if due.",
-        questions_to_ask: [
-          "When were spark plugs last replaced (date + mileage)?",
-          "Invoice or service record entry?",
-        ],
-      });
-    } else if (miles >= 40000) {
-      addItem({
-        item_id: "spark_plugs",
-        label: "Spark plugs (due soon)",
-        category: "engine",
-        status: "due_soon",
-        base_low: 120, base_high: 300,
-        multiplier: 0.5,
-        why_flagged: "Petrol/Hybrid + 40k+ miles.",
-        why_it_matters:
-          "Approaching common replacement intervals; proof helps.",
-        questions_to_ask: [
-          "Any record of spark plug replacement?",
-        ],
-      });
-    }
+  // 4) Oil service gap risk (generic)
+  if (miles >= 50_000) {
+    items.push({
+      item_id: "oil_service",
+      label: "Oil & filter service (verification)",
+      category: "service",
+      base_low: 120,
+      base_high: 220,
+      multiplier: 0.7,
+      status: "due_soon_or_verify",
+      why_flagged: "50k+ miles — service history should show regular oil changes.",
+      why_it_matters:
+        "Poor oil change history increases wear risk and can shorten engine/turbo life. Verify service intervals and evidence.",
+      questions_to_ask: [
+        "When was the last oil change (date + mileage)?",
+        "Do you have invoices/service book stamps?",
+      ],
+      red_flags: ["Long gaps in service history", "No proof of oil changes"],
+      driverWeight: 3,
+    });
   }
 
-  if (inputs.fuel === "diesel") {
-    if (miles >= 70000) {
-      addItem({
-        item_id: "dpf",
-        label: "DPF cleaning (risk)",
-        category: "engine",
-        status: "risk_due_to_age_mileage",
-        base_low: 150, base_high: 400,
-        multiplier: 0.5,
-        why_flagged: "Diesel + 70k+ miles (DPF/EGR risk increases).",
-        why_it_matters:
-          "Short-trip diesel use can increase DPF clogging risk. A preventive clean can be cheaper than major DPF issues.",
-        questions_to_ask: [
-          "Mostly short trips or motorway driving?",
-          "Any DPF warning lights or forced regenerations?",
-        ],
-      });
-    }
-  }
-
-  // BRAKES (major wear)
-  if (miles >= 70000) {
-    addItem({
+  // 5) Brakes wear verification (mileage)
+  if (miles >= 70_000) {
+    items.push({
       item_id: "brakes",
       label: "Brake discs & pads (verification)",
       category: "brakes",
+      base_low: 300,
+      base_high: 600,
+      multiplier: 0.5, // risk/verification weighting
       status: "due_soon_or_verify",
-      base_low: 300, base_high: 600,
-      multiplier: 0.5,
       why_flagged: "Mileage 70k+ (wear items likely changed or nearing replacement).",
-      why_it_matters:
-        "Brakes are wear items; if replacement is imminent it is negotiable.",
+      why_it_matters: "Brakes are wear items; if replacement is imminent it is negotiable.",
       questions_to_ask: [
         "When were pads/discs last replaced (front/rear)?",
         "Any pulsing under braking or pulling to one side?",
       ],
-    });
-  } else if (miles >= 50000) {
-    addItem({
-      item_id: "brakes",
-      label: "Brake discs & pads (verification)",
-      category: "brakes",
-      status: "verify",
-      base_low: 300, base_high: 600,
-      multiplier: 0.25,
-      why_flagged: "Mileage 50k+ (check history/condition).",
-      why_it_matters:
-        "If brakes are worn, replacement cost can be used in negotiation.",
-      questions_to_ask: [
-        "Any invoice for brakes?",
-      ],
+      red_flags: ["Squealing/pulsing", "No evidence of brake work at higher mileage"],
+      driverWeight: 6,
     });
   }
 
-  // Suspension (wear)
-  if (miles >= 100000) {
-    addItem({
-      item_id: "suspension",
-      label: "Suspension wear (arms/bushes/shocks)",
-      category: "suspension",
-      status: "likely_due_or_verify",
-      base_low: 300, base_high: 900,
-      multiplier: 1.0,
-      why_flagged: "Mileage 100k+ (wear risk increases).",
-      why_it_matters:
-        "Worn suspension can cause uneven tyre wear and poor handling. Costs vary; check MOT advisories and test drive knocks.",
-      questions_to_ask: [
-        "Any knocks over bumps?",
-        "Any recent suspension work or MOT advisories?",
-      ],
-    });
-  } else if (miles >= 80000) {
-    addItem({
+  // 6) Suspension wear (higher mileage)
+  if (miles >= 80_000) {
+    items.push({
       item_id: "suspension",
       label: "Suspension wear (risk)",
       category: "suspension",
-      status: "risk_due_soon",
-      base_low: 300, base_high: 900,
+      base_low: 300,
+      base_high: 900,
       multiplier: 0.5,
+      status: "risk_due_soon",
       why_flagged: "Mileage 80k+ (wear risk increases).",
-      why_it_matters:
-        "Suspension wear is common at higher mileage; verify with inspection/advisories.",
-      questions_to_ask: [
-        "Any MOT advisories for suspension?",
-      ],
+      why_it_matters: "Suspension wear is common at higher mileage; verify with inspection/advisories.",
+      questions_to_ask: ["Any MOT advisories for suspension?"],
+      red_flags: ["Knocking noises", "Uneven tyre wear", "Recurring MOT advisories"],
+      driverWeight: 7,
     });
   }
 
-  // Compute exposure totals
-  const exposure_low = items.reduce((sum, it) => sum + it.cost_low, 0);
-  const exposure_high = items.reduce((sum, it) => sum + it.cost_high, 0);
-
-  // Risk score (simple)
-  let score = 0;
-  for (const it of items) {
-    if (it.item_id === "timing_belt" && it.status.includes("due")) score += 4;
-    else if (it.item_id === "gearbox_service" && it.status.includes("due")) score += 4;
-    else if (it.item_id === "suspension") score += 2;
-    else if (it.item_id === "brakes") score += 2;
-    else score += 1;
+  // 7) Diesel DPF risk
+  if (input.fuel === "diesel" && miles >= 70_000) {
+    items.push({
+      item_id: "dpf",
+      label: "DPF cleaning (risk)",
+      category: "engine",
+      base_low: 150,
+      base_high: 400,
+      multiplier: 0.5,
+      status: "risk_due_to_age_mileage",
+      why_flagged: "Diesel + 70k+ miles (DPF/EGR risk increases).",
+      why_it_matters:
+        "Short-trip diesel use can increase DPF clogging risk. A preventive clean can be cheaper than major DPF issues.",
+      questions_to_ask: [
+        "Mostly short trips or motorway driving?",
+        "Any DPF warning lights or forced regenerations?",
+      ],
+      red_flags: ["DPF warning lights", "Mostly short trips", "History of forced regenerations"],
+      driverWeight: 5,
+    });
   }
 
-  let risk_level: PreviewPayload["summary"]["risk_level"] = "low";
-  if (score >= 16) risk_level = "very_high";
-  else if (score >= 10) risk_level = "high";
-  else if (score >= 5) risk_level = "moderate";
+  // If nothing triggered, add a minimal “verification” item so snapshot isn’t empty
+  if (items.length === 0) {
+    items.push({
+      item_id: "service_history",
+      label: "Service history verification",
+      category: "service",
+      base_low: 0,
+      base_high: 0,
+      multiplier: 1.0,
+      status: "ok",
+      why_flagged: "No major interval items triggered based on age/mileage inputs.",
+      why_it_matters:
+        "Even when no items are flagged, verifying service history reduces risk and improves negotiation confidence.",
+      questions_to_ask: [
+        "Do you have a complete service history (invoices, stamps, receipts)?",
+        "Any major work in the last 12 months?",
+      ],
+      red_flags: ["No service history"],
+      driverWeight: 1,
+    });
+  }
 
-  const drivers = items
+  // Convert CandidateItem -> FullItem and compute exposure
+  const fullItems: FullItem[] = items.map((it) => {
+    const { low, high } = costWithMultipliers(it.base_low, it.base_high, it.multiplier, brandMultiplier);
+    return {
+      label: it.label,
+      status: it.status,
+      item_id: it.item_id,
+      category: it.category,
+      base_low: it.base_low,
+      base_high: it.base_high,
+      multiplier: it.multiplier,
+      cost_low: low,
+      cost_high: high,
+      why_flagged: it.why_flagged,
+      why_it_matters: it.why_it_matters,
+      questions_to_ask: it.questions_to_ask,
+      red_flags: it.red_flags,
+    };
+  });
+
+  const exposureLowRaw = fullItems.reduce((sum, it) => sum + (it.cost_low || 0), 0);
+  const exposureHighRaw = fullItems.reduce((sum, it) => sum + (it.cost_high || 0), 0);
+
+  const exposure_low = round10(exposureLowRaw);
+  const exposure_high = round10(exposureHighRaw);
+
+  const risk_level = computeRiskLevel(exposure_high);
+
+  // Primary drivers = top 3 by weight, but use your preview structure
+  const primary_drivers = items
     .slice()
-    .sort((a, b) => (b.cost_high - a.cost_low) - (a.cost_high - a.cost_low))
+    .sort((a, b) => b.driverWeight - a.driverWeight)
     .slice(0, 3)
-    .map((it) => ({ label: it.label, reason_short: it.why_flagged }));
+    .map((d) => ({
+      label: d.label,
+      reason_short: d.why_flagged,
+    }));
 
-  // Negotiation suggestion (conservative midpoint * 0.8, rounded)
-  const midpoint = (exposure_low + exposure_high) / 2;
-  const negotiation_suggested = roundTo(Math.round(midpoint * 0.8), 50);
+  // Suggested negotiation: use ~60% of high exposure, capped sensibly
+  // (You can tune this later)
+  const negotiation_suggested = round10(
+    clamp(Math.round(exposure_high * 0.6), 150, 10_000)
+  );
 
-  const preview: PreviewPayload = {
-    summary: {
-      risk_level,
-      exposure_low,
-      exposure_high,
-      negotiation_suggested,
-      primary_drivers: drivers,
-    },
+  const summary: PreviewPayload["summary"] = {
+    risk_level,
+    exposure_low,
+    exposure_high,
+    primary_drivers,
+    negotiation_suggested,
   };
 
+  const preview: PreviewPayload = { summary };
+
   const full: FullPayload = {
-    ...preview,
-    items,
-    negotiation: {
-      suggested_reduction: negotiation_suggested,
-      script:
-        `Based on the vehicle’s age and mileage, I’d need to budget roughly £${negotiation_suggested} for potential near-term maintenance unless there’s documented proof these items were recently done. I’m happy to proceed at £X.`,
-      tip: "Set £X as asking price minus the suggested reduction.",
-    },
+    items: fullItems,
+    summary,
     disclaimer: {
       text:
         "AutoAudit provides cost guidance based on typical UK maintenance intervals and independent garage pricing. It is not a mechanical inspection and does not diagnose faults or guarantee required repairs.",
     },
+    negotiation: {
+      tip: "Set £X as asking price minus the suggested reduction.",
+      script:
+        `Based on the vehicle’s age and mileage, I’d need to budget roughly ${money(
+          negotiation_suggested
+        )} for potential near-term maintenance unless there’s documented proof these items were recently done. I’m happy to proceed at £X.`,
+      suggested_reduction: negotiation_suggested,
+    },
+  };
+
+  // Optional: include calibration info for debugging/tuning (kept out of your UI unless you render it)
+  // If you want, we can store these too.
+  // (Not required for the app to work.)
+  (full as any).calibration = {
+    make: make ?? null,
+    brand_tier: brandTier,
+    brand_multiplier: brandMultiplier,
   };
 
   return { preview, full };

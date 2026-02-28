@@ -23,6 +23,13 @@ export async function POST(req: Request) {
     const timing_type = body.timing_type ?? "unknown";
     const asking_price = body.asking_price ?? null;
 
+    // ✅ NEW: store reg + make (optional)
+    const registration =
+      body.registration ? String(body.registration).replace(/\s/g, "").toUpperCase() : null;
+
+    const make = body.make ? String(body.make) : null;
+
+    // ✅ NEW: pass make into engine (brand multiplier)
     const { preview, full } = generateReport({
       year,
       mileage,
@@ -30,11 +37,14 @@ export async function POST(req: Request) {
       transmission,
       timing_type,
       asking_price,
+      make,
     });
 
     const { data, error } = await supabaseAdmin
       .from("reports")
       .insert({
+        registration,
+        make,
         car_year: year,
         mileage,
         fuel,
@@ -49,7 +59,10 @@ export async function POST(req: Request) {
       .single();
 
     if (error || !data) {
-      return NextResponse.json({ error: error?.message ?? "DB insert failed" }, { status: 500 });
+      return NextResponse.json(
+        { error: error?.message ?? "DB insert failed" },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({ report_id: data.id });
