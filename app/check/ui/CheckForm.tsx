@@ -6,6 +6,58 @@ type Fuel = "petrol" | "diesel" | "hybrid" | "ev";
 type Transmission = "" | "manual" | "automatic" | "cvt" | "dct";
 type TimingType = "belt" | "chain" | "unknown";
 
+// Keep this list reasonably broad for UK market.
+// You can add more later without breaking anything.
+const MAKE_OPTIONS = [
+  "Abarth",
+  "Alfa Romeo",
+  "Aston Martin",
+  "Audi",
+  "Bentley",
+  "BMW",
+  "Bugatti",
+  "Citroen",
+  "Cupra",
+  "Dacia",
+  "DS",
+  "Ferrari",
+  "Fiat",
+  "Ford",
+  "Honda",
+  "Hyundai",
+  "Jaguar",
+  "Jeep",
+  "Kia",
+  "Lamborghini",
+  "Land Rover",
+  "Lexus",
+  "Lotus",
+  "Maserati",
+  "Mazda",
+  "McLaren",
+  "Mercedes-Benz",
+  "MG",
+  "MINI",
+  "Mitsubishi",
+  "Nissan",
+  "Peugeot",
+  "Polestar",
+  "Porsche",
+  "Renault",
+  "Rolls-Royce",
+  "SEAT",
+  "Skoda",
+  "Smart",
+  "Subaru",
+  "Suzuki",
+  "Tesla",
+  "Toyota",
+  "Vauxhall",
+  "Volkswagen",
+  "Volvo",
+  "Other",
+];
+
 function mapDvlaFuelToFuel(dvlaFuel: string | null): Fuel {
   const f = (dvlaFuel ?? "").toLowerCase();
   if (f.includes("diesel")) return "diesel";
@@ -18,6 +70,26 @@ function cleanRegistration(reg: string): string {
   return reg.replace(/\s/g, "").toUpperCase();
 }
 
+function normalizeMake(input: string): string {
+  // Normalize simple aliases to help your tier mapping match.
+  // (Still allows any input; just cleans common cases.)
+  const v = input.trim();
+
+  if (!v) return "";
+
+  const lower = v.toLowerCase();
+
+  if (lower === "vw") return "Volkswagen";
+  if (lower === "merc" || lower === "mercedes") return "Mercedes-Benz";
+  if (lower === "landrover") return "Land Rover";
+  if (lower === "range rover") return "Land Rover";
+  if (lower === "mini") return "MINI";
+  if (lower === "rolls royce") return "Rolls-Royce";
+
+  // Title case as a fallback (keeps BMW/MINI if user selects from list)
+  return v;
+}
+
 export default function CheckForm() {
   const [mode, setMode] = useState<"reg" | "manual">("reg");
 
@@ -27,7 +99,7 @@ export default function CheckForm() {
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [lookupResult, setLookupResult] = useState<any | null>(null);
 
-  // ✅ Make (used by engine for brand multiplier)
+  // ✅ Make (autocomplete)
   const [make, setMake] = useState<string>("");
 
   // Inputs used to generate report
@@ -64,7 +136,7 @@ export default function CheckForm() {
       // Auto-fill year + fuel + make if present
       if (data?.yearOfManufacture) setYear(Number(data.yearOfManufacture));
       if (data?.fuelType) setFuel(mapDvlaFuelToFuel(data.fuelType));
-      if (data?.make) setMake(String(data.make));
+      if (data?.make) setMake(normalizeMake(String(data.make)));
 
       // Clear mileage and force transmission selection
       setMileage("");
@@ -82,8 +154,10 @@ export default function CheckForm() {
     setError(null);
 
     try {
-      if (mode === "manual" && make.trim() === "") {
-        throw new Error("Please enter the vehicle make (e.g. Ford, BMW, Toyota).");
+      const makeNormalized = normalizeMake(make);
+
+      if (mode === "manual" && makeNormalized.trim() === "") {
+        throw new Error("Please select the vehicle make (e.g. Ford, BMW, Toyota).");
       }
 
       if (mileage === "" || !Number.isFinite(Number(mileage))) {
@@ -99,8 +173,7 @@ export default function CheckForm() {
           ? cleanRegistration(registration.trim())
           : null;
 
-      // In reg mode, we take make from DVLA (editable). In manual mode, user enters it.
-      const makeToStore = make.trim() ? make.trim() : null;
+      const makeToStore = makeNormalized.trim() ? makeNormalized.trim() : null;
 
       const res = await fetch("/api/create-report", {
         method: "POST",
@@ -129,11 +202,10 @@ export default function CheckForm() {
     }
   }
 
+  const makeRequiredOk = mode === "manual" ? make.trim() !== "" : true;
+
   const canSubmit =
-    !busy &&
-    mileage !== "" &&
-    transmission !== "" &&
-    (mode === "reg" ? true : make.trim() !== "");
+    !busy && mileage !== "" && transmission !== "" && makeRequiredOk;
 
   return (
     <form onSubmit={onSubmit} className="grid gap-4">
@@ -217,22 +289,32 @@ export default function CheckForm() {
         </div>
       ) : null}
 
-      {/* ✅ Make field (always shown) */}
+      {/* ✅ Make Autocomplete */}
       <div className="grid gap-2">
         <label className="text-sm font-semibold">
           Make {mode === "manual" ? <span className="text-red-600">*</span> : null}
         </label>
+
         <input
+          list="make-list"
           className={`rounded-md border px-3 py-2 ${
             mode === "manual" && make.trim() === "" ? "border-red-400" : ""
           }`}
           value={make}
           onChange={(e) => setMake(e.target.value)}
-          placeholder="e.g. Ford, BMW, Toyota"
+          onBlur={() => setMake(normalizeMake(make))}
+          placeholder="Start typing… (e.g. Ford)"
           required={mode === "manual"}
         />
+
+        <datalist id="make-list">
+          {MAKE_OPTIONS.map((m) => (
+            <option key={m} value={m} />
+          ))}
+        </datalist>
+
         <div className="text-xs text-slate-600">
-          Used to calibrate cost estimates (brand tier).
+          Used to calibrate cost estimates (brand tier). If unsure, pick “Other”.
         </div>
       </div>
 
