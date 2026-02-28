@@ -8,8 +8,6 @@ type TimingType = "belt" | "chain" | "unknown";
 
 function mapDvlaFuelToFuel(dvlaFuel: string | null): Fuel {
   const f = (dvlaFuel ?? "").toLowerCase();
-
-  // DVLA values vary; keep mapping broad and safe.
   if (f.includes("diesel")) return "diesel";
   if (f.includes("electric")) return "ev";
   if (f.includes("hybrid")) return "hybrid";
@@ -23,18 +21,21 @@ function cleanRegistration(reg: string): string {
 export default function CheckForm() {
   const [mode, setMode] = useState<"reg" | "manual">("reg");
 
-  // Registration lookup
+  // Reg lookup
   const [registration, setRegistration] = useState<string>("");
   const [lookupBusy, setLookupBusy] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [lookupResult, setLookupResult] = useState<any | null>(null);
 
+  // ✅ Make (used by engine for brand multiplier)
+  const [make, setMake] = useState<string>("");
+
   // Inputs used to generate report
   const [year, setYear] = useState<number>(2016);
-  const [mileage, setMileage] = useState<number | "">(""); // blank by default
+  const [mileage, setMileage] = useState<number | "">("");
   const [fuel, setFuel] = useState<Fuel>("petrol");
 
-  // IMPORTANT: force user to choose transmission
+  // Force user to select transmission
   const [transmission, setTransmission] = useState<Transmission>("");
 
   const [timingType, setTimingType] = useState<TimingType>("unknown");
@@ -60,14 +61,13 @@ export default function CheckForm() {
 
       setLookupResult(data);
 
-      // Auto-fill year + fuel if present
+      // Auto-fill year + fuel + make if present
       if (data?.yearOfManufacture) setYear(Number(data.yearOfManufacture));
       if (data?.fuelType) setFuel(mapDvlaFuelToFuel(data.fuelType));
+      if (data?.make) setMake(String(data.make));
 
-      // Clear mileage (user must enter current mileage)
+      // Clear mileage and force transmission selection
       setMileage("");
-
-      // Force transmission selection every time they do a lookup
       setTransmission("");
     } catch (e: any) {
       setLookupError(e?.message ?? "Lookup failed");
@@ -82,6 +82,10 @@ export default function CheckForm() {
     setError(null);
 
     try {
+      if (mode === "manual" && make.trim() === "") {
+        throw new Error("Please enter the vehicle make (e.g. Ford, BMW, Toyota).");
+      }
+
       if (mileage === "" || !Number.isFinite(Number(mileage))) {
         throw new Error("Please enter the current mileage.");
       }
@@ -95,13 +99,13 @@ export default function CheckForm() {
           ? cleanRegistration(registration.trim())
           : null;
 
-      const makeToStore = mode === "reg" ? (lookupResult?.make ?? null) : null;
+      // In reg mode, we take make from DVLA (editable). In manual mode, user enters it.
+      const makeToStore = make.trim() ? make.trim() : null;
 
       const res = await fetch("/api/create-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          // Store reg + make (optional)
           registration: regToStore,
           make: makeToStore,
 
@@ -126,7 +130,10 @@ export default function CheckForm() {
   }
 
   const canSubmit =
-    !busy && mileage !== "" && transmission !== "";
+    !busy &&
+    mileage !== "" &&
+    transmission !== "" &&
+    (mode === "reg" ? true : make.trim() !== "");
 
   return (
     <form onSubmit={onSubmit} className="grid gap-4">
@@ -182,7 +189,7 @@ export default function CheckForm() {
             </div>
 
             <div className="text-xs text-slate-600">
-              DVLA lookup auto-fills year + fuel. DVLA does not provide transmission, so you must select it below.
+              DVLA lookup auto-fills year, fuel and make. DVLA does not provide transmission, so you must select it below.
             </div>
           </div>
 
@@ -202,17 +209,32 @@ export default function CheckForm() {
                 <b>{lookupResult.fuelType ?? "Unknown"}</b> · Colour:{" "}
                 <b>{lookupResult.colour ?? "Unknown"}</b>
               </div>
-              <div className="mt-1 text-xs text-slate-600">
-                MOT: {lookupResult.motStatus ?? "Unknown"} · Tax:{" "}
-                {lookupResult.taxStatus ?? "Unknown"}
-              </div>
               <div className="mt-2 text-xs text-slate-600">
-                Mileage has been cleared — please enter the current mileage from the advert/dashboard.
+                Mileage has been cleared — please enter current mileage from the advert/dashboard.
               </div>
             </div>
           ) : null}
         </div>
       ) : null}
+
+      {/* ✅ Make field (always shown) */}
+      <div className="grid gap-2">
+        <label className="text-sm font-semibold">
+          Make {mode === "manual" ? <span className="text-red-600">*</span> : null}
+        </label>
+        <input
+          className={`rounded-md border px-3 py-2 ${
+            mode === "manual" && make.trim() === "" ? "border-red-400" : ""
+          }`}
+          value={make}
+          onChange={(e) => setMake(e.target.value)}
+          placeholder="e.g. Ford, BMW, Toyota"
+          required={mode === "manual"}
+        />
+        <div className="text-xs text-slate-600">
+          Used to calibrate cost estimates (brand tier).
+        </div>
+      </div>
 
       {/* Year */}
       <div className="grid gap-2">
@@ -317,14 +339,12 @@ export default function CheckForm() {
         </div>
       </div>
 
-      {/* Errors */}
       {error ? (
         <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
           {error}
         </div>
       ) : null}
 
-      {/* Submit */}
       <button
         disabled={!canSubmit}
         className="rounded-md bg-emerald-600 px-4 py-3 font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
