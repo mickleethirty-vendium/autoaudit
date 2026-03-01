@@ -1,18 +1,23 @@
-/* page.tsx for Vehicle Risk Report */
-'use client';  // Mark this as a client component
+/* page.tsx for Vehicle Risk Report in app/report/[id] */
+
+'use client';  // Marking this as a client component
 
 import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';  // Using next/navigation for client-side params
 
-const VehicleRiskReport = ({ reportId }: { reportId: string }) => {
+const VehicleRiskReport = () => {
   const [reportData, setReportData] = useState<any>(null);
+  const { id } = useParams();  // Accessing dynamic route parameter using useParams()
 
   useEffect(() => {
-    // Fetch the full report data using the reportId
-    fetch(`/api/reports/full/${reportId}`)
-      .then((res) => res.json())
-      .then((data) => setReportData(data))
-      .catch((error) => console.error('Error fetching full report:', error));
-  }, [reportId]);
+    if (id) {
+      // Fetch the full report data using the reportId (id in the URL)
+      fetch(`/api/reports/full/${id}`)
+        .then((res) => res.json())
+        .then((data) => setReportData(data))
+        .catch((error) => console.error('Error fetching full report:', error));
+    }
+  }, [id]);
 
   if (!reportData) return <div>Loading...</div>;
 
