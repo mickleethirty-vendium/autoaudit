@@ -1,12 +1,15 @@
-/* page.tsx file for Snapshot page (in app/preview/[id]/page.tsx) */
+/* page.tsx for Snapshot page (in app/preview/[id]/page.tsx) */
+
+/* Mark this file as a Client Component */
+'use client';  // This line is needed for using useState, useEffect, and next/router
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';  // Using next/navigation instead of next/router
 
 const SnapshotPage = () => {
   const [reportData, setReportData] = useState<any>(null);
   const router = useRouter();
-  const { id } = router.query;
+  const { id } = router.query; // Use `useRouter` to access query params in Client Components
 
   useEffect(() => {
     if (id) {
