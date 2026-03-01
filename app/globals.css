@@ -1,11 +1,159 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root {
-  color-scheme: light;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
+html,
 body {
-  @apply bg-slate-50 text-slate-900;
+  height: 100%;
+  font-family: 'Arial', sans-serif;
+  background-color: #f9f9f9; /* Light background color */
+  color: #333; /* Default text color */
+  line-height: 1.6;
+}
+
+/* Global background color */
+body {
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+h1,
+h2,
+h3 {
+  color: #005f85; /* Primary blue for headings */
+  font-weight: 600;
+}
+
+/* Global form element styles */
+input,
+select,
+textarea {
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 1rem;
+  width: 100%;
+  border: 1px solid #e2e8f0; /* Light grey border */
+  background-color: #ffffff; /* White background */
+  transition: all 0.3s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #005f85; /* Blue border on focus */
+  background-color: #f0f4f8; /* Slight grey background when focused */
+  outline: none;
+}
+
+button {
+  background-color: #0074d4; /* Button background color */
+  color: white;
+  font-weight: bold;
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #005f85; /* Darker blue on hover */
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Headings for section titles */
+h1,
+h2,
+h3 {
+  font-weight: 600;
+  color: #005f85;
+}
+
+h1 {
+  font-size: 2.5rem;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+}
+
+/* Section styling */
+section {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.05); /* Soft shadow */
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+/* Grid for layout */
+.grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.grid > * {
+  margin-bottom: 1.5rem;
+}
+
+/* Logo Container */
+.logo-container {
+  background-color: rgba(255, 255, 255, 0.9); /* Light background for logo */
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.logo {
+  width: auto;
+  max-width: 128px;
+  margin-bottom: 16px; /* Space below logo */
+}
+
+/* Success/Error messages */
+.message {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-radius: 10px;
+  margin-top: 16px;
+}
+
+.message-success {
+  background-color: #d1fae5;  /* Light green for success */
+  border-left: 4px solid #16a34a;
+}
+
+.message-error {
+  background-color: #fcd5d5;  /* Light red for error */
+  border-left: 4px solid #dc2626;
+}
+
+.message-success .icon, .message-error .icon {
+  margin-right: 10px;
+}
+
+/* Responsive tweaks for mobile */
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr; /* Stacks columns vertically on mobile */
+  }
+
+  .md\\:grid-cols-2 {
+    grid-template-columns: 1fr; /* Stack inputs for mobile */
+  }
 }
