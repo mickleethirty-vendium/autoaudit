@@ -24,12 +24,10 @@ body {
 h1, h2, h3 {
   color: var(--primary-blue);
   font-weight: 600; /* Bold headings for prominence */
-  margin-bottom: 12px; /* Added space between the heading and the content below */
 }
 
 h1 {
-  font-size: 3rem;  /* Increased size for prominence */
-  line-height: 1.2; /* Line height for better spacing */
+  font-size: 2.5rem;
 }
 
 h2 {
@@ -46,15 +44,15 @@ button {
   color: white;
   font-weight: bold;
   padding: 12px 24px;
-  border-radius: 12px;  /* Rounded corners for modern look */
+  border-radius: 12px;  /* Rounded corners */
   border: none;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transition */
+  transition: all 0.3s ease;
 }
 
 button:hover {
   background-color: var(--button-hover-bg);
-  transform: translateY(-2px);  /* Slight lift effect on hover */
+  transform: translateY(-2px);  /* Slight lift on hover */
 }
 
 button:disabled {

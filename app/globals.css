@@ -1,80 +1,31 @@
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+/* Reverting app/globals.css to previous state */
+
+/* Global background & primary colors */
+:root {
+  --primary-blue: #005f85; /* Dark blue for primary elements */
+  --secondary-blue: #2f4f6b; /* Secondary blue for headings and labels */
+  --light-bg: #f9f9f9; /* Background for the page */
+  --button-bg: #0074d4; /* Button background color */
+  --button-hover-bg: #005f85; /* Hover button background color */
+  --input-border: #e2e8f0; /* Light grey border color for inputs */
+  --input-bg: #ffffff; /* White background for inputs */
+  --input-focus-bg: #f0f4f8; /* Light focus background for inputs */
+  --message-success-bg: #d1fae5; /* Light green for success messages */
+  --message-error-bg: #fcd5d5; /* Light red for error messages */
+  --message-border-success: #16a34a; /* Green border for success messages */
+  --message-border-error: #dc2626; /* Red border for error messages */
 }
 
-html,
 body {
-  height: 100%;
   font-family: 'Arial', sans-serif;
-  background-color: #f9f9f9; /* Light background color */
+  background-color: var(--light-bg);
   color: #333; /* Default text color */
-  line-height: 1.6;
 }
 
-/* Global background color */
-body {
-  background-color: #f9f9f9;
-  color: #333;
-}
-
-h1,
-h2,
-h3 {
-  color: #005f85; /* Primary blue for headings */
-  font-weight: 600;
-}
-
-/* Global form element styles */
-input,
-select,
-textarea {
-  border-radius: 12px;
-  padding: 12px;
-  font-size: 1rem;
-  width: 100%;
-  border: 1px solid #e2e8f0; /* Light grey border */
-  background-color: #ffffff; /* White background */
-  transition: all 0.3s ease;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-  border-color: #005f85; /* Blue border on focus */
-  background-color: #f0f4f8; /* Slight grey background when focused */
-  outline: none;
-}
-
-button {
-  background-color: #0074d4; /* Button background color */
-  color: white;
-  font-weight: bold;
-  padding: 12px 20px;
-  border-radius: 12px;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-button:hover {
-  background-color: #005f85; /* Darker blue on hover */
-}
-
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Headings for section titles */
-h1,
-h2,
-h3 {
-  font-weight: 600;
-  color: #005f85;
+/* Global typography for headings */
+h1, h2, h3 {
+  color: var(--primary-blue);
+  font-weight: 600; /* Bold headings for prominence */
 }
 
 h1 {
@@ -89,16 +40,93 @@ h3 {
   font-size: 1.5rem;
 }
 
-/* Section styling */
-section {
-  background-color: white;
+/* Button styling */
+button {
+  background-color: var(--button-bg);
+  color: white;
+  font-weight: bold;
+  padding: 12px 24px;
+  border-radius: 12px;  /* Rounded corners */
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background-color: var(--button-hover-bg);
+  transform: translateY(-2px);  /* Slight lift on hover */
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Input fields styling */
+input, select {
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
   border-radius: 12px;
+  padding: 12px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+input:focus, select:focus {
+  background-color: var(--input-focus-bg);
+  border-color: var(--primary-blue);
+  outline: none;
+  box-shadow: 0px 0px 8px rgba(0, 94, 133, 0.4);  /* Focus glow effect */
+}
+
+/* Label styling */
+label {
+  font-weight: 500;
+  color: var(--secondary-blue);
+  margin-bottom: 8px;
+}
+
+/* Error and Success messages */
+.message {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-radius: 10px;
+  margin-top: 16px;
+}
+
+.message-success {
+  background-color: var(--message-success-bg);
+  border-left: 4px solid var(--message-border-success);
+}
+
+.message-error {
+  background-color: var(--message-error-bg);
+  border-left: 4px solid var(--message-border-error);
+}
+
+.message-success .icon, .message-error .icon {
+  margin-right: 10px;
+}
+
+/* Layout - forms and sections */
+form {
+  background-color: white;
+  border-radius: 10px;
   box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.05); /* Soft shadow */
   padding: 24px;
   margin-bottom: 24px;
 }
 
-/* Grid for layout */
+/* Section background & shadow styling */
+section {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+  padding: 24px;
+}
+
+/* Grid and spacing between elements */
 .grid {
   display: grid;
   gap: 1.5rem;
@@ -108,7 +136,18 @@ section {
   margin-bottom: 1.5rem;
 }
 
-/* Logo Container */
+/* Responsive tweaks */
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr; /* Stacks columns vertically on mobile */
+  }
+
+  .md\\:grid-cols-2 {
+    grid-template-columns: 1fr; /* Stack inputs for mobile */
+  }
+}
+
+/* Logo Container - add background to logo */
 .logo-container {
   background-color: rgba(255, 255, 255, 0.9); /* Light background for logo */
   border-radius: 8px;
@@ -122,38 +161,4 @@ section {
   width: auto;
   max-width: 128px;
   margin-bottom: 16px; /* Space below logo */
-}
-
-/* Success/Error messages */
-.message {
-  display: flex;
-  align-items: center;
-  padding: 16px;
-  border-radius: 10px;
-  margin-top: 16px;
-}
-
-.message-success {
-  background-color: #d1fae5;  /* Light green for success */
-  border-left: 4px solid #16a34a;
-}
-
-.message-error {
-  background-color: #fcd5d5;  /* Light red for error */
-  border-left: 4px solid #dc2626;
-}
-
-.message-success .icon, .message-error .icon {
-  margin-right: 10px;
-}
-
-/* Responsive tweaks for mobile */
-@media (max-width: 640px) {
-  .grid {
-    grid-template-columns: 1fr; /* Stacks columns vertically on mobile */
-  }
-
-  .md\\:grid-cols-2 {
-    grid-template-columns: 1fr; /* Stack inputs for mobile */
-  }
 }
