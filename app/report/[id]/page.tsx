@@ -1,298 +1,52 @@
-export const dynamic = "force-dynamic";
+/* page.tsx for Vehicle Risk Report */
 
-import { supabasePublic } from "@/lib/supabase";
-import Link from "next/link";
+import { useEffect, useState } from 'react';
 
-function money(n: number) {
-  try {
-    return new Intl.NumberFormat("en-GB", {
-      style: "currency",
-      currency: "GBP",
-      maximumFractionDigits: 0,
-    }).format(n);
-  } catch {
-    return `£${Math.round(n)}`;
-  }
-}
+const VehicleRiskReport = ({ reportId }: { reportId: string }) => {
+  const [reportData, setReportData] = useState<any>(null);
 
-function titleCase(s: string) {
-  return s
-    .split(" ")
-    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
-    .join(" ");
-}
+  useEffect(() => {
+    // Fetch the full report data using the reportId
+    fetch(`/api/reports/full/${reportId}`)
+      .then((res) => res.json())
+      .then((data) => setReportData(data))
+      .catch((error) => console.error('Error fetching full report:', error));
+  }, [reportId]);
 
-export default async function ReportPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const { data, error } = await supabasePublic
-    .from("reports")
-    .select("*")
-    .eq("id", params.id)
-    .maybeSingle();
-
-  // ✅ DEBUG VIEW INSTEAD OF 404
-  if (error || !data) {
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-10">
-        <h1 className="text-2xl font-bold">Report load error</h1>
-        <p className="mt-2 text-sm text-slate-700">
-          This page would normally show 404, but we’re showing the real error to fix it.
-        </p>
-
-        <div className="mt-6 rounded-xl border bg-slate-50 p-4 text-sm">
-          <div><b>Report ID:</b> {params.id}</div>
-          <div className="mt-2">
-            <b>Supabase error:</b>{" "}
-            {error ? (
-              <pre className="mt-2 whitespace-pre-wrap text-red-700">
-                {JSON.stringify(error, null, 2)}
-              </pre>
-            ) : (
-              <span className="text-amber-700">No data returned (row not found)</span>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <Link
-            href="/"
-            className="inline-flex items-center justify-center rounded-md border px-4 py-2 font-semibold text-slate-900 hover:bg-white"
-          >
-            Back home
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  const reg = (data.registration as string | null) ?? null;
-  const make = (data.make as string | null) ?? null;
-
-  const year =
-    (data.car_year as number | null) ??
-    (data.year as number | null) ??
-    null;
-
-  const mileage = (data.mileage as number | null) ?? null;
-  const fuel = (data.fuel as string | null) ?? null;
-  const transmission = (data.transmission as string | null) ?? null;
-
-  // Locked view
-  if (!data.is_paid) {
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-10">
-        <div className="mb-6 border-b pb-4">
-          {reg ? (
-            <h1 className="text-2xl font-bold">
-              {reg}
-              {make ? (
-                <span className="text-slate-600 font-normal ml-2">· {make}</span>
-              ) : null}
-            </h1>
-          ) : (
-            <h1 className="text-2xl font-bold">Full Report</h1>
-          )}
-
-          <div className="text-sm text-slate-600 mt-2">
-            {year ? `${year} · ` : ""}
-            {fuel ? `${fuel} · ` : ""}
-            {transmission ? `${transmission} · ` : ""}
-            {typeof mileage === "number" ? `${mileage.toLocaleString()} miles` : ""}
-          </div>
-        </div>
-
-        <div className="rounded-xl border bg-slate-50 p-6">
-          <div className="text-lg font-semibold">Report locked</div>
-          <p className="mt-2 text-sm text-slate-700">
-            This detailed report is available after payment.
-          </p>
-
-          <div className="mt-4 flex flex-wrap gap-3">
-            <a
-              href={`/api/checkout?report_id=${data.id}`}
-              className="inline-flex items-center justify-center rounded-md bg-emerald-600 px-4 py-2 font-semibold text-white hover:bg-emerald-700"
-            >
-              Unlock Full Report
-            </a>
-
-            <Link
-              href={`/preview/${data.id}`}
-              className="inline-flex items-center justify-center rounded-md border px-4 py-2 font-semibold text-slate-900 hover:bg-white"
-            >
-              Back to Snapshot
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const full: any = data.full_payload ?? {};
-  const summary: any = full.summary ?? {};
-  const items: any[] = Array.isArray(full.items) ? full.items : [];
-  const negotiation: any = full.negotiation ?? {};
-  const disclaimerText: string | null = full?.disclaimer?.text ?? null;
-
-  const riskLevel: string | null = summary.risk_level ?? null;
-  const exposureLow: number | null =
-    typeof summary.exposure_low === "number" ? summary.exposure_low : null;
-  const exposureHigh: number | null =
-    typeof summary.exposure_high === "number" ? summary.exposure_high : null;
-
-  const primaryDrivers: any[] = Array.isArray(summary.primary_drivers)
-    ? summary.primary_drivers
-    : [];
-
-  const negotiationSuggested: number | null =
-    typeof summary.negotiation_suggested === "number"
-      ? summary.negotiation_suggested
-      : typeof negotiation.suggested_reduction === "number"
-      ? negotiation.suggested_reduction
-      : null;
+  if (!reportData) return <div>Loading...</div>;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10">
-      <div className="mb-6 border-b pb-4">
-        {reg ? (
-          <h1 className="text-2xl font-bold">
-            {reg}
-            {make ? (
-              <span className="text-slate-600 font-normal ml-2">· {make}</span>
-            ) : null}
-          </h1>
-        ) : (
-          <h1 className="text-2xl font-bold">Full Report</h1>
-        )}
-
-        <div className="text-sm text-slate-600 mt-2">
-          {year ? `${year} · ` : ""}
-          {fuel ? `${fuel} · ` : ""}
-          {transmission ? `${transmission} · ` : ""}
-          {typeof mileage === "number" ? `${mileage.toLocaleString()} miles` : ""}
-        </div>
+    <div className="vehicle-risk-report">
+      <h1 className="text-4xl font-bold text-center mb-8">Vehicle Risk Report</h1>
+      <div className="flex justify-center">
+        <h2 className="text-3xl mb-8">{reportData.vehicle.make} {reportData.vehicle.model}</h2>
+        <p className="text-lg mb-8">Mileage: {reportData.vehicle.mileage} miles</p>
+      </div>
+      <div className="report-summary">
+        <p className="text-xl mb-4">Estimated Immediate Maintenance Exposure: £{reportData.exposure}</p>
+        <p className="text-lg">Risk Level: {reportData.risk_level}</p>
       </div>
 
-      <div className="rounded-2xl border bg-white p-6">
-        <div className="text-sm text-slate-600">Estimated immediate exposure</div>
+      <h3 className="text-2xl mt-8 mb-4">Top Cost Drivers</h3>
+      <ul>
+        {reportData.top_drivers.map((driver: any) => (
+          <li key={driver.label} className="cost-driver">
+            <strong>{driver.label}</strong>: {driver.cost_estimate}
+          </li>
+        ))}
+      </ul>
 
-        {exposureLow !== null && exposureHigh !== null ? (
-          <div className="mt-1 text-4xl font-extrabold text-slate-900">
-            {money(exposureLow)} – {money(exposureHigh)}
-          </div>
-        ) : (
-          <div className="mt-2 text-sm text-slate-700">
-            Exposure estimate unavailable.
-          </div>
-        )}
+      <h3 className="text-2xl mt-8 mb-4">Seller Questions</h3>
+      <ul>
+        {reportData.seller_questions.map((question: string) => (
+          <li key={question}>{question}</li>
+        ))}
+      </ul>
 
-        {riskLevel ? (
-          <div className="mt-3 inline-flex items-center rounded-full border px-3 py-1 text-sm">
-            <span className="font-semibold">Risk:</span>
-            <span className="ml-2">{titleCase(String(riskLevel))}</span>
-          </div>
-        ) : null}
-
-        {primaryDrivers.length ? (
-          <div className="mt-5">
-            <div className="text-sm font-semibold">Primary drivers</div>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
-              {primaryDrivers.map((d: any, i: number) => (
-                <li key={i}>
-                  <b>{d.label ?? "Item"}:</b> {d.reason_short ?? ""}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
-
-        {negotiationSuggested !== null ? (
-          <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-            <div className="font-semibold text-emerald-900">
-              Suggested negotiation: ~{money(negotiationSuggested)}
-            </div>
-          </div>
-        ) : null}
-      </div>
-
-      <div className="mt-10">
-        <h2 className="text-xl font-semibold">Itemised checks</h2>
-
-        <div className="mt-4 space-y-4">
-          {items.length ? (
-            items.map((item: any, idx: number) => (
-              <div key={idx} className="rounded-2xl border bg-white p-6">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <div className="text-lg font-semibold text-slate-900">
-                      {item.label ?? "Service item"}
-                    </div>
-                    {item.status ? (
-                      <div className="mt-1 text-xs text-slate-600">
-                        Status: <b>{String(item.status)}</b>
-                        {item.category ? (
-                          <>
-                            {" "}
-                            · Category: <b>{String(item.category)}</b>
-                          </>
-                        ) : null}
-                      </div>
-                    ) : null}
-                  </div>
-
-                  {typeof item.cost_low === "number" &&
-                  typeof item.cost_high === "number" ? (
-                    <div className="text-right">
-                      <div className="text-lg font-semibold text-slate-900">
-                        {money(item.cost_low)} – {money(item.cost_high)}
-                      </div>
-                      <div className="text-xs text-slate-600">estimated</div>
-                    </div>
-                  ) : null}
-                </div>
-
-                {item.why_flagged ? (
-                  <div className="mt-4 text-sm text-slate-700">
-                    <b>Why flagged:</b> {item.why_flagged}
-                  </div>
-                ) : null}
-
-                {item.why_it_matters ? (
-                  <div className="mt-3 rounded-lg bg-slate-50 p-4 text-sm text-slate-700">
-                    <div className="font-semibold text-slate-900">Why it matters</div>
-                    <div className="mt-1">{item.why_it_matters}</div>
-                  </div>
-                ) : null}
-
-                {Array.isArray(item.questions_to_ask) && item.questions_to_ask.length ? (
-                  <div className="mt-4">
-                    <div className="text-sm font-semibold">Questions to ask</div>
-                    <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
-                      {item.questions_to_ask.map((q: string, i: number) => (
-                        <li key={i}>{q}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
-              </div>
-            ))
-          ) : (
-            <div className="rounded-xl border bg-slate-50 p-6 text-sm text-slate-700">
-              No items found in this report payload.
-            </div>
-          )}
-        </div>
-      </div>
-
-      {disclaimerText ? (
-        <div className="mt-10 text-xs text-slate-500">{disclaimerText}</div>
-      ) : (
-        <div className="mt-10 text-xs text-slate-500">
-          AutoAudit provides guidance only and is not a substitute for a mechanical inspection.
-        </div>
-      )}
+      <h3 className="text-2xl mt-8 mb-4">Negotiation Script</h3>
+      <p>{reportData.negotiation_script}</p>
     </div>
   );
-}
+};
+
+export default VehicleRiskReport;

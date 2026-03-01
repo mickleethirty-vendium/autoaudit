@@ -1,4 +1,4 @@
-/* globals.css file */
+/* globals.css */
 
 /* Global background & primary colors */
 :root {
@@ -19,9 +19,9 @@
 body {
   font-family: 'Arial', sans-serif;
   background-color: var(--light-bg);
-  color: #333; /* Default text color */
-  padding: 0;
+  color: #333;
   margin: 0;
+  padding: 0;
 }
 
 /* Global typography for headings */
@@ -32,29 +32,19 @@ h1, h2, h3 {
 }
 
 h1 {
-  font-size: 3.5rem;  /* Larger font size for the main heading */
-  line-height: 1.3; /* Improved line height */
+  font-size: 3.5rem;
   text-align: center; /* Center the main heading */
+  margin-bottom: 32px; /* Space below the main heading */
 }
 
 h2 {
   font-size: 2.5rem;
-  margin-bottom: 16px; /* Space below subheadings */
+  margin-bottom: 16px; /* Space between subheading and content */
   text-align: center; /* Center the subheading */
 }
 
 h3 {
   font-size: 1.8rem;
-  margin-bottom: 12px; /* Space below the subheading */
-}
-
-/* Subheading styling */
-h2.subheading {
-  font-size: 1.25rem;
-  color: var(--secondary-blue);
-  margin-top: 20px;
-  margin-bottom: 30px; /* Space between subheading and following text */
-  text-align: center; /* Center-align the subheading */
 }
 
 /* Button styling */
@@ -62,13 +52,13 @@ button {
   background-color: var(--button-bg);
   color: white;
   font-weight: bold;
-  padding: 16px 32px; /* Larger padding for better button size */
-  border-radius: 12px;  /* Rounded corners for a more modern look */
+  padding: 16px 32px;
+  border-radius: 12px;
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
   width: auto;
-  margin: 20px auto;
+  margin: 20px auto; /* Center the button with automatic margin */
   display: block;
 }
 
@@ -93,7 +83,7 @@ a.button-link {
   border: 2px solid var(--button-bg);
   display: inline-block;
   transition: background-color 0.3s ease, color 0.3s ease;
-  margin-top: 32px; /* More space between links */
+  margin-top: 32px;
   text-align: center;
 }
 
@@ -106,13 +96,13 @@ a.button-link:hover {
 section {
   background-color: white;
   border-radius: 12px;
-  box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.1); /* Softer shadow */
-  padding: 40px; /* Increased padding for better text spacing */
+  box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.1); /* Softer shadow for sections */
+  padding: 40px;
   margin-bottom: 40px; /* More space between sections */
   text-align: left;
 }
 
-/* Grid and spacing between elements */
+/* Grid layout for form and content */
 .grid {
   display: grid;
   gap: 2rem;
@@ -123,8 +113,9 @@ section {
   margin-bottom: 1.5rem;
 }
 
+/* Logo Container */
 .logo-container {
-  background-color: rgba(255, 255, 255, 0.9); /* Light background for logo */
+  background-color: rgba(255, 255, 255, 0.9);
   border-radius: 12px;
   padding: 32px;
   box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.1); /* Softer shadow for depth */
@@ -134,7 +125,7 @@ section {
 
 .logo {
   width: auto;
-  max-width: 150px; /* Adjust size for better balance */
+  max-width: 150px;
   margin-bottom: 20px;
 }
 
@@ -142,10 +133,6 @@ section {
 @media (max-width: 640px) {
   .grid {
     grid-template-columns: 1fr; /* Stacks columns vertically on mobile */
-  }
-
-  .md\\:grid-cols-2 {
-    grid-template-columns: 1fr; /* Stack inputs for mobile */
   }
 
   h1 {
