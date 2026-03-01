@@ -1,4 +1,4 @@
-/* Reverting layout.tsx to previous state */
+/* layout.tsx file */
 
 import '../styles/globals.css';
 
@@ -11,7 +11,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <title>AutoAudit</title>
       </head>
-      <body>
+      <body className="bg-light-bg">
         {/* Centered logo with subtle background */}
         <div className="logo-container mx-auto py-6 flex justify-center">
           <img
