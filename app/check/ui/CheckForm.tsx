@@ -1,4 +1,5 @@
 /* CheckForm.tsx */
+'use client';  // Mark this as a client component
 
 import { useState } from 'react';
 

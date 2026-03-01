@@ -1,4 +1,5 @@
 /* page.tsx for Vehicle Risk Report */
+'use client';  // Mark this as a client component
 
 import { useEffect, useState } from 'react';
 
