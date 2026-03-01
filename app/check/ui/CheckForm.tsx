@@ -7,55 +7,12 @@ type Transmission = "" | "manual" | "automatic" | "cvt" | "dct";
 type TimingType = "belt" | "chain" | "unknown";
 
 // Keep this list reasonably broad for UK market.
-// You can add more later without breaking anything.
 const MAKE_OPTIONS = [
-  "Abarth",
-  "Alfa Romeo",
-  "Aston Martin",
-  "Audi",
-  "Bentley",
-  "BMW",
-  "Bugatti",
-  "Citroen",
-  "Cupra",
-  "Dacia",
-  "DS",
-  "Ferrari",
-  "Fiat",
-  "Ford",
-  "Honda",
-  "Hyundai",
-  "Jaguar",
-  "Jeep",
-  "Kia",
-  "Lamborghini",
-  "Land Rover",
-  "Lexus",
-  "Lotus",
-  "Maserati",
-  "Mazda",
-  "McLaren",
-  "Mercedes-Benz",
-  "MG",
-  "MINI",
-  "Mitsubishi",
-  "Nissan",
-  "Peugeot",
-  "Polestar",
-  "Porsche",
-  "Renault",
-  "Rolls-Royce",
-  "SEAT",
-  "Skoda",
-  "Smart",
-  "Subaru",
-  "Suzuki",
-  "Tesla",
-  "Toyota",
-  "Vauxhall",
-  "Volkswagen",
-  "Volvo",
-  "Other",
+  "Abarth", "Alfa Romeo", "Aston Martin", "Audi", "Bentley", "BMW", "Bugatti",
+  "Citroen", "Cupra", "Dacia", "DS", "Ferrari", "Fiat", "Ford", "Honda", "Hyundai", "Jaguar", "Jeep",
+  "Kia", "Lamborghini", "Land Rover", "Lexus", "Lotus", "Maserati", "Mazda", "McLaren", "Mercedes-Benz",
+  "MG", "MINI", "Mitsubishi", "Nissan", "Peugeot", "Polestar", "Porsche", "Renault", "Rolls-Royce",
+  "SEAT", "Skoda", "Smart", "Subaru", "Suzuki", "Tesla", "Toyota", "Vauxhall", "Volkswagen", "Volvo", "Other",
 ];
 
 function mapDvlaFuelToFuel(dvlaFuel: string | null): Fuel {
@@ -71,48 +28,37 @@ function cleanRegistration(reg: string): string {
 }
 
 function normalizeMake(input: string): string {
-  // Normalize simple aliases to help your tier mapping match.
-  // (Still allows any input; just cleans common cases.)
   const v = input.trim();
-
   if (!v) return "";
-
   const lower = v.toLowerCase();
-
   if (lower === "vw") return "Volkswagen";
   if (lower === "merc" || lower === "mercedes") return "Mercedes-Benz";
   if (lower === "landrover") return "Land Rover";
   if (lower === "range rover") return "Land Rover";
   if (lower === "mini") return "MINI";
   if (lower === "rolls royce") return "Rolls-Royce";
-
-  // Title case as a fallback (keeps BMW/MINI if user selects from list)
   return v;
 }
 
 export default function CheckForm() {
   const [mode, setMode] = useState<"reg" | "manual">("reg");
 
-  // Reg lookup
+  // State variables
   const [registration, setRegistration] = useState<string>("");
   const [lookupBusy, setLookupBusy] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [lookupResult, setLookupResult] = useState<any | null>(null);
 
-  // ✅ Make (autocomplete)
+  // Inputs
   const [make, setMake] = useState<string>("");
-
-  // Inputs used to generate report
   const [year, setYear] = useState<number>(2016);
   const [mileage, setMileage] = useState<number | "">("");
   const [fuel, setFuel] = useState<Fuel>("petrol");
-
-  // Force user to select transmission
   const [transmission, setTransmission] = useState<Transmission>("");
-
   const [timingType, setTimingType] = useState<TimingType>("unknown");
   const [askingPrice, setAskingPrice] = useState<number | "">("");
 
+  // Loading state
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -132,13 +78,10 @@ export default function CheckForm() {
       if (!res.ok) throw new Error(data?.error ?? "Lookup failed");
 
       setLookupResult(data);
-
-      // Auto-fill year + fuel + make if present
       if (data?.yearOfManufacture) setYear(Number(data.yearOfManufacture));
       if (data?.fuelType) setFuel(mapDvlaFuelToFuel(data.fuelType));
       if (data?.make) setMake(normalizeMake(String(data.make)));
 
-      // Clear mileage and force transmission selection
       setMileage("");
       setTransmission("");
     } catch (e: any) {
@@ -168,11 +111,7 @@ export default function CheckForm() {
         throw new Error("Please select the transmission type.");
       }
 
-      const regToStore =
-        mode === "reg" && registration.trim()
-          ? cleanRegistration(registration.trim())
-          : null;
-
+      const regToStore = mode === "reg" && registration.trim() ? cleanRegistration(registration.trim()) : null;
       const makeToStore = makeNormalized.trim() ? makeNormalized.trim() : null;
 
       const res = await fetch("/api/create-report", {
@@ -181,7 +120,6 @@ export default function CheckForm() {
         body: JSON.stringify({
           registration: regToStore,
           make: makeToStore,
-
           year,
           mileage: Number(mileage),
           fuel,
@@ -203,21 +141,17 @@ export default function CheckForm() {
   }
 
   const makeRequiredOk = mode === "manual" ? make.trim() !== "" : true;
-
-  const canSubmit =
-    !busy && mileage !== "" && transmission !== "" && makeRequiredOk;
+  const canSubmit = !busy && mileage !== "" && transmission !== "" && makeRequiredOk;
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-4">
+    <form onSubmit={onSubmit} className="grid gap-6 max-w-lg mx-auto p-6 border bg-white rounded-lg shadow-md">
       {/* Mode switch */}
-      <div className="flex gap-2">
+      <div className="flex gap-4 mb-6">
         <button
           type="button"
           onClick={() => setMode("reg")}
-          className={`rounded-md px-3 py-2 text-sm font-semibold border ${
-            mode === "reg"
-              ? "bg-slate-900 text-white border-slate-900"
-              : "bg-white"
+          className={`px-4 py-2 rounded-md text-sm font-semibold border ${
+            mode === "reg" ? "bg-blue-600 text-white border-blue-600" : "bg-white"
           }`}
         >
           Use registration (recommended)
@@ -225,10 +159,8 @@ export default function CheckForm() {
         <button
           type="button"
           onClick={() => setMode("manual")}
-          className={`rounded-md px-3 py-2 text-sm font-semibold border ${
-            mode === "manual"
-              ? "bg-slate-900 text-white border-slate-900"
-              : "bg-white"
+          className={`px-4 py-2 rounded-md text-sm font-semibold border ${
+            mode === "manual" ? "bg-blue-600 text-white border-blue-600" : "bg-white"
           }`}
         >
           Manual entry
@@ -236,93 +168,56 @@ export default function CheckForm() {
       </div>
 
       {/* Registration lookup */}
-      {mode === "reg" ? (
-        <div className="rounded-lg border bg-slate-50 p-4 grid gap-3">
-          <div className="grid gap-2">
-            <label className="text-sm font-semibold">
-              Registration (number plate)
-            </label>
-
-            <div className="flex gap-2">
-              <input
-                className="flex-1 rounded-md border px-3 py-2"
-                value={registration}
-                onChange={(e) => setRegistration(e.target.value)}
-                placeholder="e.g. AB12CDE"
-              />
-              <button
-                type="button"
-                onClick={lookupReg}
-                disabled={lookupBusy || registration.trim().length < 5}
-                className="rounded-md bg-emerald-600 px-4 py-2 font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
-              >
-                {lookupBusy ? "Looking up…" : "Lookup"}
-              </button>
-            </div>
-
-            <div className="text-xs text-slate-600">
-              DVLA lookup auto-fills year, fuel and make. DVLA does not provide transmission, so you must select it below.
-            </div>
+      {mode === "reg" && (
+        <div className="mb-6">
+          <label className="block text-sm font-semibold mb-2">Registration (number plate)</label>
+          <div className="flex gap-3">
+            <input
+              className="flex-1 border px-4 py-2 rounded-md"
+              value={registration}
+              onChange={(e) => setRegistration(e.target.value)}
+              placeholder="e.g. AB12CDE"
+            />
+            <button
+              type="button"
+              onClick={lookupReg}
+              disabled={lookupBusy || registration.trim().length < 5}
+              className="bg-green-600 text-white font-semibold px-6 py-2 rounded-md disabled:opacity-50"
+            >
+              {lookupBusy ? "Looking up..." : "Lookup"}
+            </button>
           </div>
 
-          {lookupError ? (
-            <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
-              {lookupError}
-            </div>
-          ) : null}
-
-          {lookupResult ? (
-            <div className="rounded-md bg-white p-3 text-sm text-slate-800 border">
-              <div className="font-semibold">
-                Found: {lookupResult.make ?? "Vehicle"} ({lookupResult.registration})
-              </div>
-              <div className="mt-1 text-slate-700">
-                Year: <b>{lookupResult.yearOfManufacture ?? "Unknown"}</b> · Fuel:{" "}
-                <b>{lookupResult.fuelType ?? "Unknown"}</b> · Colour:{" "}
-                <b>{lookupResult.colour ?? "Unknown"}</b>
-              </div>
-              <div className="mt-2 text-xs text-slate-600">
-                Mileage has been cleared — please enter current mileage from the advert/dashboard.
-              </div>
-            </div>
-          ) : null}
+          {lookupError && <div className="mt-2 text-red-600">{lookupError}</div>}
         </div>
-      ) : null}
+      )}
 
-      {/* ✅ Make Autocomplete */}
-      <div className="grid gap-2">
-        <label className="text-sm font-semibold">
+      {/* Make input (auto-complete) */}
+      <div className="mb-6">
+        <label className="block text-sm font-semibold mb-2">
           Make {mode === "manual" ? <span className="text-red-600">*</span> : null}
         </label>
-
         <input
           list="make-list"
-          className={`rounded-md border px-3 py-2 ${
-            mode === "manual" && make.trim() === "" ? "border-red-400" : ""
-          }`}
+          className={`w-full border px-4 py-2 rounded-md ${mode === "manual" && make.trim() === "" ? "border-red-400" : ""}`}
           value={make}
           onChange={(e) => setMake(e.target.value)}
           onBlur={() => setMake(normalizeMake(make))}
           placeholder="Start typing… (e.g. Ford)"
           required={mode === "manual"}
         />
-
         <datalist id="make-list">
           {MAKE_OPTIONS.map((m) => (
             <option key={m} value={m} />
           ))}
         </datalist>
-
-        <div className="text-xs text-slate-600">
-          Used to calibrate cost estimates (brand tier). If unsure, pick “Other”.
-        </div>
       </div>
 
       {/* Year */}
-      <div className="grid gap-2">
-        <label className="text-sm font-semibold">Year</label>
+      <div className="mb-6">
+        <label className="block text-sm font-semibold mb-2">Year</label>
         <input
-          className="rounded-md border px-3 py-2"
+          className="w-full border px-4 py-2 rounded-md"
           type="number"
           value={year}
           min={1990}
@@ -333,12 +228,10 @@ export default function CheckForm() {
       </div>
 
       {/* Mileage */}
-      <div className="grid gap-2">
-        <label className="text-sm font-semibold">Mileage</label>
+      <div className="mb-6">
+        <label className="block text-sm font-semibold mb-2">Mileage</label>
         <input
-          className={`rounded-md border px-3 py-2 ${
-            mileage === "" ? "border-amber-300" : ""
-          }`}
+          className="w-full border px-4 py-2 rounded-md"
           type="number"
           value={mileage}
           min={0}
@@ -351,11 +244,11 @@ export default function CheckForm() {
       </div>
 
       {/* Fuel + Transmission */}
-      <div className="grid gap-2 md:grid-cols-2">
-        <div className="grid gap-2">
-          <label className="text-sm font-semibold">Fuel</label>
+      <div className="grid gap-6 md:grid-cols-2 mb-6">
+        <div>
+          <label className="block text-sm font-semibold mb-2">Fuel</label>
           <select
-            className="rounded-md border px-3 py-2"
+            className="w-full border px-4 py-2 rounded-md"
             value={fuel}
             onChange={(e) => setFuel(e.target.value as Fuel)}
           >
@@ -366,12 +259,10 @@ export default function CheckForm() {
           </select>
         </div>
 
-        <div className="grid gap-2">
-          <label className="text-sm font-semibold">Transmission</label>
+        <div>
+          <label className="block text-sm font-semibold mb-2">Transmission</label>
           <select
-            className={`rounded-md border px-3 py-2 ${
-              transmission === "" ? "text-red-600 border-red-400" : ""
-            }`}
+            className={`w-full border px-4 py-2 rounded-md ${transmission === "" ? "border-red-400" : ""}`}
             value={transmission}
             onChange={(e) => setTransmission(e.target.value as Transmission)}
             required
@@ -382,61 +273,46 @@ export default function CheckForm() {
             <option value="cvt">CVT</option>
             <option value="dct">DCT</option>
           </select>
-
-          {transmission === "" ? (
-            <div className="text-xs text-red-600">
-              You must select the transmission type from the advert.
-            </div>
-          ) : null}
         </div>
       </div>
 
-      {/* Timing type + Asking price */}
-      <div className="grid gap-2 md:grid-cols-2">
-        <div className="grid gap-2">
-          <label className="text-sm font-semibold">Timing type (if known)</label>
-          <select
-            className="rounded-md border px-3 py-2"
-            value={timingType}
-            onChange={(e) => setTimingType(e.target.value as TimingType)}
-          >
-            <option value="unknown">Unknown</option>
-            <option value="belt">Belt</option>
-            <option value="chain">Chain</option>
-          </select>
-        </div>
-
-        <div className="grid gap-2">
-          <label className="text-sm font-semibold">Asking price (optional)</label>
-          <input
-            className="rounded-md border px-3 py-2"
-            type="number"
-            value={askingPrice}
-            min={0}
-            onChange={(e) =>
-              setAskingPrice(e.target.value === "" ? "" : parseInt(e.target.value, 10))
-            }
-            placeholder="e.g. 8995"
-          />
-        </div>
+      {/* Timing type */}
+      <div className="mb-6">
+        <label className="block text-sm font-semibold mb-2">Timing type (if known)</label>
+        <select
+          className="w-full border px-4 py-2 rounded-md"
+          value={timingType}
+          onChange={(e) => setTimingType(e.target.value as TimingType)}
+        >
+          <option value="unknown">Unknown</option>
+          <option value="belt">Belt</option>
+          <option value="chain">Chain</option>
+        </select>
       </div>
 
-      {error ? (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
-          {error}
-        </div>
-      ) : null}
+      {/* Asking price */}
+      <div className="mb-6">
+        <label className="block text-sm font-semibold mb-2">Asking price (optional)</label>
+        <input
+          className="w-full border px-4 py-2 rounded-md"
+          type="number"
+          value={askingPrice}
+          min={0}
+          onChange={(e) =>
+            setAskingPrice(e.target.value === "" ? "" : parseInt(e.target.value, 10))
+          }
+          placeholder="e.g. 8995"
+        />
+      </div>
+
+      {error && <div className="text-red-600 text-sm mb-4">{error}</div>}
 
       <button
         disabled={!canSubmit}
-        className="rounded-md bg-emerald-600 px-4 py-3 font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+        className="w-full bg-green-600 text-white font-semibold py-3 rounded-md hover:bg-green-700 disabled:opacity-50"
       >
         {busy ? "Creating…" : "Generate snapshot"}
       </button>
-
-      <p className="text-xs text-slate-600">
-        By using AutoAudit you agree this is guidance only and not a mechanical inspection.
-      </p>
     </form>
   );
 }
