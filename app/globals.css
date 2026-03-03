@@ -3,12 +3,11 @@
 @tailwind utilities;
 
 /* ========== Base Reset ========== */
-
 html, body {
   padding: 0;
   margin: 0;
-  background: #f8fafc; /* very light grey */
-  color: #0f172a;      /* slate-900 */
+  background: #f8fafc; /* Light grey background */
+  color: #0f172a; /* Slate-900 for text */
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
 }
@@ -18,21 +17,37 @@ html, body {
   box-sizing: border-box;
 }
 
-/* Headings */
+/* Global typography */
 h1, h2, h3 {
   letter-spacing: -0.02em;
+  font-weight: 600;
+  color: #005f85; /* Dark blue from logo */
 }
 
-/* Professional Card Styling */
+/* ========== Layout - Logo container ========== */
+.logo-container {
+  width: 33%; /* Make logo take up 1/3rd of the page */
+  max-width: 360px;
+  margin-bottom: 32px;
+  text-align: left;
+}
+
+.logo {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ========== Professional Card Styling ========== */
 .card {
   background: white;
   border-radius: 1rem;
   border: 1px solid #e2e8f0;
   padding: 2rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  margin-bottom: 1.5rem;
 }
 
-/* Button Base */
+/* ========== Buttons ========== */
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -40,14 +55,14 @@ h1, h2, h3 {
   border-radius: 0.75rem;
   padding: 0.75rem 1.5rem;
   font-weight: 600;
-  background: #16a34a;
+  background: #16a34a; /* Teal for the primary button */
   color: white;
   transition: all 0.2s ease;
 }
 
 .btn-primary:hover {
   background: #15803d;
-  transform: translateY(-1px);
+  transform: translateY(-1px); /* Slight hover effect */
 }
 
 .btn-outline {
@@ -66,19 +81,61 @@ h1, h2, h3 {
   background: #f1f5f9;
 }
 
-/* Inputs */
+/* ========== Inputs ========== */
 input, select {
   width: 100%;
   border: 1px solid #e2e8f0;
   border-radius: 0.75rem;
   padding: 0.75rem 1rem;
-  font-size: 0.95rem;
+  font-size: 1rem; /* Standardized font size */
   background: white;
   transition: all 0.2s ease;
 }
 
 input:focus, select:focus {
   outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  border-color: #2563eb; /* Blue focus effect */
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); /* Blue glow on focus */
+}
+
+/* ========== Headings ========== */
+h1 {
+  font-size: 2.5rem; /* Larger font for main headers */
+  font-weight: 700;
+  color: #005f85; /* Dark blue */
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+}
+
+/* ========== Page Layout ========== */
+section {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.05); /* Soft shadow for sections */
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+/* ========== Spacing ========== */
+.mt-8 {
+  margin-top: 2rem;
+}
+
+.mb-8 {
+  margin-bottom: 2rem;
+}
+
+/* ========== Custom Utilities ========== */
+.text-slate-900 {
+  color: #0f172a; /* Dark slate color */
+}
+
+.text-teal-500 {
+  color: #16a34a; /* Teal color */
 }
