@@ -1,5 +1,3 @@
-/* globals.css file */
-
 /* Global background & primary colors */
 :root {
   --primary-blue: #005f85; /* Dark blue for primary elements */
@@ -14,47 +12,31 @@
   --message-error-bg: #fcd5d5; /* Light red for error messages */
   --message-border-success: #16a34a; /* Green border for success messages */
   --message-border-error: #dc2626; /* Red border for error messages */
+  --teal-accent: #20c997; /* Teal for accents and highlights */
 }
 
 body {
   font-family: 'Arial', sans-serif;
   background-color: var(--light-bg);
   color: #333; /* Default text color */
-  padding: 0;
-  margin: 0;
 }
 
-/* Global typography for headings */
-h1, h2, h3 {
-  color: var(--primary-blue);
-  font-weight: 700; /* Bold headings for prominence */
-  margin-bottom: 16px; /* Added space between headings and content */
+/* Logo Container - Update for new logo */
+.logo-container {
+  background-color: rgba(255, 255, 255, 0.9); /* Light background for logo */
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+  margin-bottom: 32px;
+  text-align: left; /* Align logo to the left */
+  width: 33%; /* Make logo take up a third of the width */
+  display: flex;
+  justify-content: flex-start;
 }
 
-h1 {
-  font-size: 3.5rem;  /* Larger font size for the main heading */
-  line-height: 1.3; /* Improved line height */
-  text-align: center; /* Center the main heading */
-}
-
-h2 {
-  font-size: 2.5rem;
-  margin-bottom: 16px; /* Space below subheadings */
-  text-align: center; /* Center the subheading */
-}
-
-h3 {
-  font-size: 1.8rem;
-  margin-bottom: 12px; /* Space below the subheading */
-}
-
-/* Subheading styling */
-h2.subheading {
-  font-size: 1.25rem;
-  color: var(--secondary-blue);
-  margin-top: 20px;
-  margin-bottom: 30px; /* Space between subheading and following text */
-  text-align: center; /* Center-align the subheading */
+.logo {
+  max-width: 100%;  /* Ensure the logo scales with container */
+  height: auto;
 }
 
 /* Button styling */
@@ -62,97 +44,63 @@ button {
   background-color: var(--button-bg);
   color: white;
   font-weight: bold;
-  padding: 16px 32px; /* Larger padding for better button size */
-  border-radius: 12px;  /* Rounded corners for a more modern look */
+  padding: 12px 24px;
+  border-radius: 12px;  /* Rounded corners */
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
-  width: auto;
-  margin: 20px auto;
-  display: block;
 }
 
 button:hover {
   background-color: var(--button-hover-bg);
-  transform: translateY(-3px);
+  transform: translateY(-2px);  /* Slight lift on hover */
 }
 
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Link-style buttons (for "Start a Check") */
-a.button-link {
-  background-color: transparent;
-  color: var(--button-bg);
-  font-weight: bold;
-  text-decoration: none;
-  padding: 16px 32px;
+/* Input fields styling */
+input, select {
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
   border-radius: 12px;
-  border: 2px solid var(--button-bg);
-  display: inline-block;
-  transition: background-color 0.3s ease, color 0.3s ease;
-  margin-top: 32px; /* More space between links */
-  text-align: center;
+  padding: 12px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
 }
 
-a.button-link:hover {
-  background-color: var(--button-bg);
-  color: white;
+input:focus, select:focus {
+  background-color: var(--input-focus-bg);
+  border-color: var(--primary-blue);
+  outline: none;
+  box-shadow: 0px 0px 8px rgba(0, 94, 133, 0.4);  /* Focus glow effect */
 }
 
 /* Section background & shadow styling */
 section {
   background-color: white;
   border-radius: 12px;
-  box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.1); /* Softer shadow */
-  padding: 40px; /* Increased padding for better text spacing */
-  margin-bottom: 40px; /* More space between sections */
-  text-align: left;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+  padding: 24px;
 }
 
-/* Grid and spacing between elements */
-.grid {
-  display: grid;
-  gap: 2rem;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Responsive grid layout */
+/* Adjusted headings */
+h1, h2, h3 {
+  color: var(--primary-blue);
+  font-weight: 600;
 }
 
-.grid > * {
-  margin-bottom: 1.5rem;
+h1 {
+  font-size: 2.5rem;
 }
 
-.logo-container {
-  background-color: rgba(255, 255, 255, 0.9); /* Light background for logo */
-  border-radius: 12px;
-  padding: 32px;
-  box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.1); /* Softer shadow for depth */
-  margin-bottom: 40px;
-  text-align: center;
+h2 {
+  font-size: 2rem;
 }
 
-.logo {
-  width: auto;
-  max-width: 150px; /* Adjust size for better balance */
-  margin-bottom: 20px;
+h3 {
+  font-size: 1.5rem;
 }
 
-/* Responsive tweaks for mobile */
-@media (max-width: 640px) {
-  .grid {
-    grid-template-columns: 1fr; /* Stacks columns vertically on mobile */
-  }
-
-  .md\\:grid-cols-2 {
-    grid-template-columns: 1fr; /* Stack inputs for mobile */
-  }
-
-  h1 {
-    font-size: 2.5rem; /* Adjust heading size for mobile */
-  }
-
-  button {
-    width: 100%; /* Make buttons full-width on mobile */
-  }
+/* Logo Size */
+.logo-container img {
+  max-width: 33%;  /* Make sure logo fits container width */
+  height: auto;
 }

@@ -1,6 +1,6 @@
-/* layout.tsx file */
+'use client'; // Ensure this is marked as a Client Component
 
-import '../styles/globals.css';
+import '../styles/globals.css'; // Make sure the global styles are linked
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -12,21 +12,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <title>AutoAudit</title>
       </head>
       <body className="bg-light-bg">
-        {/* Hero Section for 'Start a Check' button */}
-        <div className="hero-section py-16 text-center bg-light-bg">
-          <h1 className="text-4xl font-bold text-primary-blue mb-4">Welcome to AutoAudit</h1>
-          <p className="text-xl text-secondary-blue mb-6">Get a full report on your next used car. Make an informed decision.</p>
-          <a href="/start-check" className="button-link">
-            Start a Check
-          </a>
-        </div>
-
-        {/* Centered logo with subtle background */}
-        <div className="logo-container mx-auto py-6 flex justify-center">
+        {/* Logo container with left alignment and larger size */}
+        <div className="logo-container mx-auto py-6 flex justify-start">
           <img
-            src="/logo.png" // path to your logo
+            src="/logo.png"  // Path to your updated logo
             alt="AutoAudit Logo"
-            className="logo w-32"  // Adjust size as needed
+            className="logo"  // Apply the correct class for styling
           />
         </div>
 
