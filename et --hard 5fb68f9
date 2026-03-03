@@ -1,0 +1,36 @@
+[33md946cb4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Fix: Correct component export and routing for Vehicle Risk Report page
+[33m2905173[m Fix: Mark components as Client Components for correct React hook usage
+[33m5fb68f9[m Revert to working state before changes on [date/time]
+[33m8d730d3[m Fix: Use useParams to get dynamic URL params in Snapshot page
+[33madbcab4[m Convert Snapshot page to Client Component to resolve build issues
+[33mfe4afe8[m Implement Snapshot Page with maintenance exposure and unlock full report
+[33m4551c46[m Add 'Start a Check' button and improve layout for professional UI
+[33ma3d2069[m Apply ultra professional layout, spacing, typography, and buttons
+[33m130c8a3[m Revert to original styling and layout
+[33m580f909[m Updated global styles and logo styling
+[33m34c5849[m Trigger redeploy
+[33ma7e02cb[m Trigger redeploy after styling fixes
+[33m4779c49[m Trigger redeploy
+[33m8d39f29[m Add global styles for layout, typography, buttons, and form elements
+[33m456363f[m Set up layout with global styles and head section
+[33m600c23e[m Polish UI layout and spacing
+[33m740488a[m Scaffold MOT integration: mot route + store mot_payload
+[33m9b04a10[m Finalised engine with brand multiplier + money helper
+[33ma9bcdc1[m Make field: add autocomplete with datalist
+[33m18c5043[m Collect make for manual entry and use for pricing calibration
+[33m008eae2[m Add brand tier multipliers and store reg/make
+[33mcfa1689[m Fix unlock flow: GET /api/checkout redirect + correct links
+[33mc208d88[m Fix unlock link to use existings /api/checkout route
+[33m7b77972[m Debug report 404 by showing Supabase error
+[33m9d1f33a[m Render full report from full_payload (summary/items/negotiation)
+[33m3b536b9[m Render snapshot from summary.primary_drivers payload
+[33md3ccd08[m Make snapshot renderer resilient to payload shape
+[33m2dafca0[m Fix 404 by selecting all columns and rendering reg/make safely
+[33mcd354e8[m Show registration and make on full report
+[33mc132f64[m Display registration and make at top of snapshot
+[33md755462[m Force transmission selection before snapshot
+[33m81e2f61[m Add DVLA registration lookup to check form
+[33m902bdbd[m Redirect success page to unlocked report
+[33mf5fc9fc[m Fail loudly if Supabase unlock update fails
+[33m059d637[m MVP working locally (Supabase + Stripe)
+[33md6ce4b8[m AutoAudit MVP
