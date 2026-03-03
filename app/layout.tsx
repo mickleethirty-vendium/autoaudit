@@ -16,7 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <img
               src="/logo.png"
               alt="AutoAudit"
-              className="h-auto w-1/3 max-w-[360px]"
+              className="logo h-auto w-1/3 max-w-[360px]"  // Add the 'logo' class here
             />
           </Link>
         </header>
