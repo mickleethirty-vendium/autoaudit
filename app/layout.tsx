@@ -1,8 +1,6 @@
 import "./globals.css";
 import Link from "next/link";
 
-<!-- Update README.md to trigger deployment -->
-
 export const metadata = {
   title: "AutoAudit",
   description: "Don’t overpay for your next used car",
