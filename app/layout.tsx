@@ -1,30 +1,30 @@
-'use client'; // Ensure this is marked as a Client Component
+import "./globals.css";
+import Link from "next/link";
 
-import '../styles/globals.css'; // Make sure the global styles are linked
+export const metadata = {
+  title: "AutoAudit",
+  description: "Don’t overpay for your next used car",
+};
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <head>
-        <meta charSet="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-        <title>AutoAudit</title>
-      </head>
-      <body className="bg-light-bg">
-        {/* Logo container with left alignment and larger size */}
-        <div className="logo-container mx-auto py-6 flex justify-start">
-          <img
-            src="/logo.png"  // Path to your updated logo
-            alt="AutoAudit Logo"
-            className="logo"  // Apply the correct class for styling
-          />
-        </div>
+      <body className="min-h-screen bg-slate-50 text-slate-900">
+        {/* Top bar */}
+        <header className="mx-auto w-full max-w-6xl px-6 py-6">
+          <Link href="/" className="block w-full">
+            <img
+              src="/logo.png"
+              alt="AutoAudit"
+              className="h-auto w-1/3 max-w-[360px]"
+            />
+          </Link>
+        </header>
 
-        {/* Main content */}
-        <div className="container mx-auto px-4 py-6">
+        {/* Page content */}
+        <main className="mx-auto w-full max-w-6xl px-6 pb-16">
           {children}
-        </div>
+        </main>
       </body>
     </html>
   );
