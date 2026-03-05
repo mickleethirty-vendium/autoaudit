@@ -69,32 +69,27 @@ export default async function Page({
   const riskLevel: string | null = summary.risk_level ?? null;
 
   const exposureLow: number | null =
-    typeof summary.exposure_low === "number"
-      ? summary.exposure_low
-      : null;
+    typeof summary.exposure_low === "number" ? summary.exposure_low : null;
 
   const exposureHigh: number | null =
-    typeof summary.exposure_high === "number"
-      ? summary.exposure_high
-      : null;
+    typeof summary.exposure_high === "number" ? summary.exposure_high : null;
 
   const confidence: any = summary.confidence ?? null;
 
   const checkoutUrl = `/api/checkout?report_id=${data.id}`;
+  const priceLabel = "£4.99";
 
   return (
     <>
+      {/* Page content */}
       <div className="mx-auto w-full max-w-3xl px-4 pt-2 pb-28">
-
         {/* Header */}
         <div className="mb-4 border-b pb-2">
           {reg ? (
             <h1 className="text-2xl font-extrabold tracking-tight">
               {reg}
               {make ? (
-                <span className="ml-2 font-normal text-slate-600">
-                  · {make}
-                </span>
+                <span className="ml-2 font-normal text-slate-600">· {make}</span>
               ) : null}
             </h1>
           ) : (
@@ -107,25 +102,18 @@ export default async function Page({
             {year ? `${year} · ` : ""}
             {fuel ? `${fuel} · ` : ""}
             {transmission ? `${transmission} · ` : ""}
-            {typeof mileage === "number"
-              ? `${mileage.toLocaleString()} miles`
-              : ""}
+            {typeof mileage === "number" ? `${mileage.toLocaleString()} miles` : ""}
           </div>
         </div>
 
         {/* Exposure Card */}
         <div className="card">
-
           <div className="text-sm text-slate-600">
             Estimated near-term maintenance exposure
           </div>
 
           {exposureLow !== null && exposureHigh !== null ? (
-            <ExposureBar
-              low={exposureLow}
-              high={exposureHigh}
-              riskLevel={riskLevel}
-            />
+            <ExposureBar low={exposureLow} high={exposureHigh} riskLevel={riskLevel} />
           ) : (
             <div className="mt-2 text-sm text-slate-700">
               Exposure estimate unavailable.
@@ -133,13 +121,10 @@ export default async function Page({
           )}
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
-
             {riskLevel ? (
               <span className="inline-flex items-center rounded-full border px-3 py-1 text-sm">
                 <span className="font-semibold">Risk:</span>
-                <span className="ml-2">
-                  {titleCase(String(riskLevel))}
-                </span>
+                <span className="ml-2">{titleCase(String(riskLevel))}</span>
               </span>
             ) : null}
 
@@ -151,32 +136,20 @@ export default async function Page({
                 </span>
               </span>
             ) : null}
-
           </div>
         </div>
 
-        {/* Macro Buckets */}
+        {/* Buckets */}
         <div className="mt-5">
-
-          <h2 className="text-lg font-semibold">
-            Risk breakdown by system
-          </h2>
+          <h2 className="text-lg font-semibold">Risk breakdown by system</h2>
 
           <div className="mt-3 space-y-2">
-
             {buckets.length ? (
               buckets.map((b: any) => (
-                <div
-                  key={b.key}
-                  className="rounded-xl border bg-white p-3"
-                >
+                <div key={b.key} className="rounded-xl border bg-white p-3">
                   <div className="flex items-start justify-between gap-4">
-
                     <div>
-                      <div className="text-sm font-semibold">
-                        {b.label ?? "Category"}
-                      </div>
-
+                      <div className="text-sm font-semibold">{b.label ?? "Category"}</div>
                       <div className="mt-1 text-xs text-slate-600">
                         {typeof b.item_count === "number"
                           ? `${b.item_count} checks flagged`
@@ -185,16 +158,11 @@ export default async function Page({
                     </div>
 
                     <div className="text-right">
-
                       <div className="text-sm font-semibold">
                         £{Number(b.exposure_low || 0).toLocaleString()} – £
                         {Number(b.exposure_high || 0).toLocaleString()}
                       </div>
-
-                      <div className="text-xs text-slate-600">
-                        estimated
-                      </div>
-
+                      <div className="text-xs text-slate-600">estimated</div>
                     </div>
                   </div>
                 </div>
@@ -204,32 +172,20 @@ export default async function Page({
                 No category breakdown available.
               </div>
             )}
-
           </div>
         </div>
 
         {/* Locked Teaser */}
         <div className="mt-5 rounded-xl border bg-white p-4">
-
-          <div className="text-base font-semibold">
-            Detailed findings locked
-          </div>
-
+          <div className="text-base font-semibold">Detailed findings locked</div>
           <div className="mt-1 text-sm text-slate-600">
-            {hiddenCount
-              ? `${hiddenCount} detailed checks detected`
-              : "Detailed checks detected"}
+            {hiddenCount ? `${hiddenCount} detailed checks detected` : "Detailed checks detected"}
           </div>
 
           <div className="mt-4 space-y-2">
-
             {(blurredLabels.length
               ? blurredLabels
-              : [
-                  "Timing belt replacement",
-                  "Brake system wear",
-                  "Suspension component wear",
-                ])
+              : ["Timing belt replacement", "Brake system wear", "Suspension component wear"])
               .slice(0, 5)
               .map((t, i) => (
                 <div
@@ -239,7 +195,6 @@ export default async function Page({
                   <span className="select-none blur-sm">{t}</span>
                 </div>
               ))}
-
           </div>
 
           <div className="mt-4 grid gap-1 text-sm text-slate-700">
@@ -248,39 +203,29 @@ export default async function Page({
             <div>✔ Negotiation strategy</div>
             <div>✔ MoT advisory analysis</div>
           </div>
-
         </div>
 
         <div className="mt-6 text-xs text-slate-500">
           AutoAudit provides guidance only and is not a substitute for a mechanical inspection.
         </div>
-
       </div>
 
       {/* FIXED CTA BAR */}
       <div className="fixed bottom-0 left-0 right-0 z-[9999] border-t bg-white/95 backdrop-blur px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
-
           <div className="text-sm">
             <div className="font-semibold">
-              Unlock full report
+              Unlock full report · {priceLabel}
             </div>
-
             <div className="text-xs text-slate-600">
-              Reveal the {hiddenCount || 5} hidden checks + costs
+              Reveal all checks and potential costs
             </div>
           </div>
 
-          <a
-            href={checkoutUrl}
-            className="btn-primary"
-          >
+          <a href={checkoutUrl} className="btn-primary">
             Unlock
           </a>
-
         </div>
-
       </div>
     </>
   );
