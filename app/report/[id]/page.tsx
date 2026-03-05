@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase";
+import ReportClient from "./ReportClient";
 
 function money(n: number) {
   try {
@@ -38,9 +39,7 @@ export default async function ReportPage({
     return (
       <div className="max-w-3xl mx-auto px-4 py-10">
         <h1 className="text-2xl font-bold">Report load error</h1>
-        <p className="mt-2 text-sm text-slate-700">
-          We couldn’t load that report.
-        </p>
+        <p className="mt-2 text-sm text-slate-700">We couldn’t load that report.</p>
 
         <div className="mt-6 rounded-xl border bg-slate-50 p-4 text-sm">
           <div>
@@ -79,7 +78,7 @@ export default async function ReportPage({
   const fuel = (data.fuel as string | null) ?? null;
   const transmission = (data.transmission as string | null) ?? null;
 
-  // ✅ Make the check strict (only unlock when explicitly true)
+  // Locked view (only unlock when explicitly true)
   if (data.is_paid !== true) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-10">
@@ -125,7 +124,7 @@ export default async function ReportPage({
             </Link>
           </div>
 
-          {/* Tiny debug line to confirm what the server sees */}
+          {/* Debug line to prove what the server sees (safe to remove later) */}
           <div className="mt-4 text-xs text-slate-500">
             Debug: is_paid = {String(data.is_paid)}
           </div>
@@ -134,167 +133,54 @@ export default async function ReportPage({
     );
   }
 
+  // Paid view
   const full: any = data.full_payload ?? {};
-  const summary: any = full.summary ?? {};
-  const items: any[] = Array.isArray(full.items) ? full.items : [];
-  const negotiation: any = full.negotiation ?? {};
-  const disclaimerText: string | null = full?.disclaimer?.text ?? null;
+const summary: any = full.summary ?? {};
+const items: any[] = Array.isArray(full.items) ? full.items : [];
+const negotiation: any = full.negotiation ?? {};
+const disclaimerText: string | null = full?.disclaimer?.text ?? null;
 
-  const riskLevel: string | null = summary.risk_level ?? null;
-  const exposureLow: number | null =
-    typeof summary.exposure_low === "number" ? summary.exposure_low : null;
-  const exposureHigh: number | null =
-    typeof summary.exposure_high === "number" ? summary.exposure_high : null;
+const negotiationSuggested: number | null =
+  typeof summary.negotiation_suggested === "number"
+    ? summary.negotiation_suggested
+    : typeof negotiation.suggested_reduction === "number"
+    ? negotiation.suggested_reduction
+    : null;
 
-  const primaryDrivers: any[] = Array.isArray(summary.primary_drivers)
-    ? summary.primary_drivers
-    : [];
-
-  const negotiationSuggested: number | null =
-    typeof summary.negotiation_suggested === "number"
-      ? summary.negotiation_suggested
-      : typeof negotiation.suggested_reduction === "number"
-      ? negotiation.suggested_reduction
-      : null;
-
-  return (
-    <div className="max-w-3xl mx-auto px-4 py-10">
-      <div className="mb-6 border-b pb-4">
-        {reg ? (
-          <h1 className="text-2xl font-bold">
-            {reg}
-            {make ? (
-              <span className="text-slate-600 font-normal ml-2">· {make}</span>
-            ) : null}
-          </h1>
-        ) : (
-          <h1 className="text-2xl font-bold">Full Report</h1>
-        )}
-
-        <div className="text-sm text-slate-600 mt-2">
-          {year ? `${year} · ` : ""}
-          {fuel ? `${fuel} · ` : ""}
-          {transmission ? `${transmission} · ` : ""}
-          {typeof mileage === "number" ? `${mileage.toLocaleString()} miles` : ""}
-        </div>
-      </div>
-
-      <div className="rounded-2xl border bg-white p-6">
-        <div className="text-sm text-slate-600">Estimated immediate exposure</div>
-
-        {exposureLow !== null && exposureHigh !== null ? (
-          <div className="mt-1 text-4xl font-extrabold text-slate-900">
-            {money(exposureLow)} – {money(exposureHigh)}
-          </div>
-        ) : (
-          <div className="mt-2 text-sm text-slate-700">Exposure estimate unavailable.</div>
-        )}
-
-        {riskLevel ? (
-          <div className="mt-3 inline-flex items-center rounded-full border px-3 py-1 text-sm">
-            <span className="font-semibold">Risk:</span>
-            <span className="ml-2">{titleCase(String(riskLevel))}</span>
-          </div>
-        ) : null}
-
-        {primaryDrivers.length ? (
-          <div className="mt-5">
-            <div className="text-sm font-semibold">Primary drivers</div>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
-              {primaryDrivers.map((d: any, i: number) => (
-                <li key={i}>
-                  <b>{d.label ?? "Item"}:</b> {d.reason_short ?? ""}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
-
-        {negotiationSuggested !== null ? (
-          <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-            <div className="font-semibold text-emerald-900">
-              Suggested negotiation: ~{money(negotiationSuggested)}
-            </div>
-          </div>
-        ) : null}
-      </div>
-
-      <div className="mt-10">
-        <h2 className="text-xl font-semibold">Itemised checks</h2>
-
-        <div className="mt-4 space-y-4">
-          {items.length ? (
-            items.map((item: any, idx: number) => (
-              <div key={idx} className="rounded-2xl border bg-white p-6">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <div className="text-lg font-semibold text-slate-900">
-                      {item.label ?? "Service item"}
-                    </div>
-                    {item.status ? (
-                      <div className="mt-1 text-xs text-slate-600">
-                        Status: <b>{String(item.status)}</b>
-                        {item.category ? (
-                          <>
-                            {" "}
-                            · Category: <b>{String(item.category)}</b>
-                          </>
-                        ) : null}
-                      </div>
-                    ) : null}
-                  </div>
-
-                  {typeof item.cost_low === "number" &&
-                  typeof item.cost_high === "number" ? (
-                    <div className="text-right">
-                      <div className="text-lg font-semibold text-slate-900">
-                        {money(item.cost_low)} – {money(item.cost_high)}
-                      </div>
-                      <div className="text-xs text-slate-600">estimated</div>
-                    </div>
-                  ) : null}
-                </div>
-
-                {item.why_flagged ? (
-                  <div className="mt-4 text-sm text-slate-700">
-                    <b>Why flagged:</b> {item.why_flagged}
-                  </div>
-                ) : null}
-
-                {item.why_it_matters ? (
-                  <div className="mt-3 rounded-lg bg-slate-50 p-4 text-sm text-slate-700">
-                    <div className="font-semibold text-slate-900">Why it matters</div>
-                    <div className="mt-1">{item.why_it_matters}</div>
-                  </div>
-                ) : null}
-
-                {Array.isArray(item.questions_to_ask) && item.questions_to_ask.length ? (
-                  <div className="mt-4">
-                    <div className="text-sm font-semibold">Questions to ask</div>
-                    <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
-                      {item.questions_to_ask.map((q: string, i: number) => (
-                        <li key={i}>{q}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
-              </div>
-            ))
-          ) : (
-            <div className="rounded-xl border bg-slate-50 p-6 text-sm text-slate-700">
-              No items found in this report payload.
-            </div>
-          )}
-        </div>
-      </div>
-
-      {disclaimerText ? (
-        <div className="mt-10 text-xs text-slate-500">{disclaimerText}</div>
+return (
+  <div className="max-w-3xl mx-auto px-4 py-10">
+    <div className="mb-6 border-b pb-4">
+      {reg ? (
+        <h1 className="text-2xl font-bold">
+          {reg}
+          {make ? (
+            <span className="text-slate-600 font-normal ml-2">· {make}</span>
+          ) : null}
+        </h1>
       ) : (
-        <div className="mt-10 text-xs text-slate-500">
-          AutoAudit provides guidance only and is not a substitute for a mechanical inspection.
-        </div>
+        <h1 className="text-2xl font-bold">Full Report</h1>
       )}
+
+      <div className="text-sm text-slate-600 mt-2">
+        {year ? `${year} · ` : ""}
+        {fuel ? `${fuel} · ` : ""}
+        {transmission ? `${transmission} · ` : ""}
+        {typeof mileage === "number" ? `${mileage.toLocaleString()} miles` : ""}
+      </div>
     </div>
-  );
-}
+
+    <ReportClient
+      summary={summary}
+      items={items}
+      negotiationSuggested={negotiationSuggested}
+    />
+
+    {disclaimerText ? (
+      <div className="mt-10 text-xs text-slate-500">{disclaimerText}</div>
+    ) : (
+      <div className="mt-10 text-xs text-slate-500">
+        AutoAudit provides guidance only and is not a substitute for a mechanical inspection.
+      </div>
+    )}
+  </div>
+);
