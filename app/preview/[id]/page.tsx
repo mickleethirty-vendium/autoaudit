@@ -89,7 +89,9 @@ export default async function Page({
             <h1 className="text-2xl font-extrabold tracking-tight">
               {reg}
               {make ? (
-                <span className="ml-2 font-normal text-slate-600">· {make}</span>
+                <span className="ml-2 font-normal text-slate-600">
+                  · {make}
+                </span>
               ) : null}
             </h1>
           ) : (
@@ -102,40 +104,63 @@ export default async function Page({
             {year ? `${year} · ` : ""}
             {fuel ? `${fuel} · ` : ""}
             {transmission ? `${transmission} · ` : ""}
-            {typeof mileage === "number" ? `${mileage.toLocaleString()} miles` : ""}
+            {typeof mileage === "number"
+              ? `${mileage.toLocaleString()} miles`
+              : ""}
           </div>
         </div>
 
-        {/* Exposure Card */}
-        <div className="card">
-          <div className="text-sm text-slate-600">
-            Estimated near-term maintenance exposure
+        {/* Exposure HERO (new) */}
+        <div className="rounded-2xl border bg-white p-4 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Estimated near-term maintenance exposure
+              </div>
+              <div className="mt-1 text-sm text-slate-600">
+                Use this to budget and negotiate before you buy.
+              </div>
+            </div>
+
+            <div className="hidden sm:inline-flex items-center rounded-full border bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
+              Instant snapshot
+            </div>
           </div>
 
-          {exposureLow !== null && exposureHigh !== null ? (
-            <ExposureBar low={exposureLow} high={exposureHigh} riskLevel={riskLevel} />
-          ) : (
-            <div className="mt-2 text-sm text-slate-700">
-              Exposure estimate unavailable.
-            </div>
-          )}
+          <div className="mt-3">
+            {exposureLow !== null && exposureHigh !== null ? (
+              <ExposureBar
+                low={exposureLow}
+                high={exposureHigh}
+                riskLevel={riskLevel}
+              />
+            ) : (
+              <div className="mt-2 text-sm text-slate-700">
+                Exposure estimate unavailable.
+              </div>
+            )}
+          </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {riskLevel ? (
-              <span className="inline-flex items-center rounded-full border px-3 py-1 text-sm">
+              <span className="inline-flex items-center rounded-full border px-3 py-1 text-sm bg-white">
                 <span className="font-semibold">Risk:</span>
                 <span className="ml-2">{titleCase(String(riskLevel))}</span>
               </span>
             ) : null}
 
             {confidence ? (
-              <span className="inline-flex items-center rounded-full border px-3 py-1 text-sm">
+              <span className="inline-flex items-center rounded-full border px-3 py-1 text-sm bg-white">
                 <span className="font-semibold">Confidence:</span>
                 <span className="ml-2">
                   {confidence.label ?? "—"} ({confidence.score ?? "—"}/100)
                 </span>
               </span>
             ) : null}
+
+            <span className="inline-flex items-center rounded-full border px-3 py-1 text-sm bg-white text-slate-600">
+              Best with service history + latest MoT
+            </span>
           </div>
         </div>
 
@@ -149,7 +174,9 @@ export default async function Page({
                 <div key={b.key} className="rounded-xl border bg-white p-3">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <div className="text-sm font-semibold">{b.label ?? "Category"}</div>
+                      <div className="text-sm font-semibold">
+                        {b.label ?? "Category"}
+                      </div>
                       <div className="mt-1 text-xs text-slate-600">
                         {typeof b.item_count === "number"
                           ? `${b.item_count} checks flagged`
@@ -179,7 +206,9 @@ export default async function Page({
         <div className="mt-5 rounded-xl border bg-white p-4">
           <div className="text-base font-semibold">Detailed findings locked</div>
           <div className="mt-1 text-sm text-slate-600">
-            {hiddenCount ? `${hiddenCount} detailed checks detected` : "Detailed checks detected"}
+            {hiddenCount
+              ? `${hiddenCount} detailed checks detected`
+              : "Detailed checks detected"}
           </div>
 
           <div className="mt-4 space-y-2">
