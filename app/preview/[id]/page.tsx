@@ -77,8 +77,10 @@ export default async function Page({
   const checkoutUrl = `/api/checkout?report_id=${data.id}`;
 
   return (
-    <>
-      <div className="mx-auto w-full max-w-3xl px-4 py-4">
+    // Full-height flex wrapper so the footer can stick reliably
+    <div className="mx-auto w-full max-w-3xl px-4 pt-3 pb-3 min-h-[100svh] flex flex-col">
+      {/* Scrollable content area */}
+      <div className="flex-1">
         {/* Header */}
         <div className="mb-4 border-b pb-3">
           {reg ? (
@@ -222,23 +224,22 @@ export default async function Page({
         <div className="mt-6 text-xs text-slate-500">
           AutoAudit provides guidance only and is not a substitute for a mechanical inspection.
         </div>
-
-        {/* Spacer so sticky bar doesn't cover content */}
-        <div className="h-20 sm:hidden" />
       </div>
 
-      {/* Sticky mobile CTA */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-white/95 backdrop-blur px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-        <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
+      {/* Sticky footer CTA (reliable) */}
+      <div className="sm:hidden sticky bottom-0 z-50 -mx-4 mt-4 border-t bg-white/95 backdrop-blur px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+        <div className="flex items-center justify-between gap-3">
           <div className="text-sm">
             <div className="font-semibold">Unlock full report</div>
-            <div className="text-xs text-slate-600">See the hidden checks + costs</div>
+            <div className="text-xs text-slate-600">
+              Reveal the {hiddenCount || 5} hidden checks + costs
+            </div>
           </div>
           <a href={checkoutUrl} className="btn-primary">
             Unlock
           </a>
         </div>
       </div>
-    </>
+    </div>
   );
 }
