@@ -36,7 +36,7 @@ export default async function ReportPage({
   // ✅ DEBUG VIEW INSTEAD OF 404
   if (error || !data) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-10">
+      <div className="max-w-3xl mx-auto px-4 py-4">
         <h1 className="text-2xl font-bold">Report load error</h1>
         <p className="mt-2 text-sm text-slate-700">
           This page would normally show 404, but we’re showing the real error to fix it.
@@ -83,7 +83,7 @@ export default async function ReportPage({
   // Locked view
   if (!data.is_paid) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-10">
+      <div className="max-w-3xl mx-auto px-4 py-4">
         <div className="mb-6 border-b pb-4">
           {reg ? (
             <h1 className="text-2xl font-bold">
@@ -104,7 +104,7 @@ export default async function ReportPage({
           </div>
         </div>
 
-        <div className="rounded-xl border bg-slate-50 p-6">
+        <div className="rounded-xl border bg-slate-50 p-4">
           <div className="text-lg font-semibold">Report locked</div>
           <p className="mt-2 text-sm text-slate-700">
             This detailed report is available after payment.
@@ -154,7 +154,7 @@ export default async function ReportPage({
       : null;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10">
+    <div className="max-w-3xl mx-auto px-4 py-4">
       <div className="mb-6 border-b pb-4">
         {reg ? (
           <h1 className="text-2xl font-bold">
@@ -175,7 +175,7 @@ export default async function ReportPage({
         </div>
       </div>
 
-      <div className="rounded-2xl border bg-white p-6">
+      <div className="rounded-2xl border bg-white p-4">
         <div className="text-sm text-slate-600">Estimated immediate exposure</div>
 
         {exposureLow !== null && exposureHigh !== null ? (
@@ -217,13 +217,13 @@ export default async function ReportPage({
         ) : null}
       </div>
 
-      <div className="mt-10">
+      <div className="mt-6">
         <h2 className="text-xl font-semibold">Itemised checks</h2>
 
         <div className="mt-4 space-y-4">
           {items.length ? (
             items.map((item: any, idx: number) => (
-              <div key={idx} className="rounded-2xl border bg-white p-6">
+              <div key={idx} className="rounded-2xl border bg-white p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <div className="text-lg font-semibold text-slate-900">
@@ -279,7 +279,7 @@ export default async function ReportPage({
               </div>
             ))
           ) : (
-            <div className="rounded-xl border bg-slate-50 p-6 text-sm text-slate-700">
+            <div className="rounded-xl border bg-slate-50 p-4 text-sm text-slate-700">
               No items found in this report payload.
             </div>
           )}
@@ -287,9 +287,9 @@ export default async function ReportPage({
       </div>
 
       {disclaimerText ? (
-        <div className="mt-10 text-xs text-slate-500">{disclaimerText}</div>
+        <div className="mt-6 text-xs text-slate-500">{disclaimerText}</div>
       ) : (
-        <div className="mt-10 text-xs text-slate-500">
+        <div className="mt-6 text-xs text-slate-500">
           AutoAudit provides guidance only and is not a substitute for a mechanical inspection.
         </div>
       )}

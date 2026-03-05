@@ -40,10 +40,10 @@ h1, h2, h3 {
 /* ========== Professional Card Styling ========== */
 .card {
   background: white;
-  border-radius: 1rem;
+  border-radius: 0.75rem;
   border: 1px solid #e2e8f0;
-  padding: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  padding: 1rem;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.04);
   margin-bottom: 1.5rem;
 }
 

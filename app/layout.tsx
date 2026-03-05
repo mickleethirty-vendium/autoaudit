@@ -10,21 +10,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className="min-h-screen bg-slate-50 text-slate-900">
-        {/* Top bar */}
-        <header className="mx-auto w-full max-w-6xl px-6 py-6">
-          <Link href="/" className="block w-full">
+
+        {/* Header */}
+        <header className="mx-auto w-full max-w-6xl px-4 pt-2 pb-2">
+          <Link href="/" className="block">
             <img
               src="/logo.png"
               alt="AutoAudit"
-              className="logo h-auto w-1/3 max-w-[360px]"  // Add the 'logo' class here
+              className="h-auto w-[260px]"
             />
           </Link>
         </header>
 
-        {/* Page content */}
-        <main className="mx-auto w-full max-w-6xl px-6 pb-16">
+        {/* Main content */}
+        <main className="mx-auto w-full max-w-6xl px-4 pb-10">
           {children}
         </main>
+
       </body>
     </html>
   );
