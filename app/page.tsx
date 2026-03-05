@@ -9,8 +9,8 @@ export default function HomePage() {
             Don&apos;t overpay for your next used car.
           </h1>
           <p className="mt-3 text-slate-700">
-            Enter basic vehicle details to get an instant maintenance exposure
-            estimate. Pay to unlock the full report with seller questions and a
+            Enter basic vehicle details to get an instant maintenance and repair exposure
+            estimate. Click to unlock the full report with maintenance summary, questions for the seller and a
             negotiation script.
           </p>
 
