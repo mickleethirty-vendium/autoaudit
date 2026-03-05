@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
-import { supabasePublic } from "@/lib/supabase";
 import Link from "next/link";
+import { supabaseAdmin } from "@/lib/supabase";
 
 function money(n: number) {
   try {
@@ -27,32 +27,30 @@ export default async function ReportPage({
 }: {
   params: { id: string };
 }) {
-  const { data, error } = await supabasePublic
+  // IMPORTANT: use admin client so RLS cannot interfere with is_paid
+  const { data, error } = await supabaseAdmin
     .from("reports")
     .select("*")
     .eq("id", params.id)
     .maybeSingle();
 
-  // ✅ DEBUG VIEW INSTEAD OF 404
   if (error || !data) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-4">
+      <div className="max-w-3xl mx-auto px-4 py-10">
         <h1 className="text-2xl font-bold">Report load error</h1>
         <p className="mt-2 text-sm text-slate-700">
-          This page would normally show 404, but we’re showing the real error to fix it.
+          We couldn’t load that report.
         </p>
 
         <div className="mt-6 rounded-xl border bg-slate-50 p-4 text-sm">
-          <div><b>Report ID:</b> {params.id}</div>
+          <div>
+            <b>Report ID:</b> {params.id}
+          </div>
           <div className="mt-2">
-            <b>Supabase error:</b>{" "}
-            {error ? (
-              <pre className="mt-2 whitespace-pre-wrap text-red-700">
-                {JSON.stringify(error, null, 2)}
-              </pre>
-            ) : (
-              <span className="text-amber-700">No data returned (row not found)</span>
-            )}
+            <b>Error:</b>{" "}
+            <pre className="mt-2 whitespace-pre-wrap text-red-700">
+              {JSON.stringify(error ?? { message: "Row not found" }, null, 2)}
+            </pre>
           </div>
         </div>
 
@@ -68,6 +66,7 @@ export default async function ReportPage({
     );
   }
 
+  // Read fields safely
   const reg = (data.registration as string | null) ?? null;
   const make = (data.make as string | null) ?? null;
 
@@ -80,10 +79,10 @@ export default async function ReportPage({
   const fuel = (data.fuel as string | null) ?? null;
   const transmission = (data.transmission as string | null) ?? null;
 
-  // Locked view
-  if (!data.is_paid) {
+  // ✅ Make the check strict (only unlock when explicitly true)
+  if (data.is_paid !== true) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-4">
+      <div className="max-w-3xl mx-auto px-4 py-10">
         <div className="mb-6 border-b pb-4">
           {reg ? (
             <h1 className="text-2xl font-bold">
@@ -104,7 +103,7 @@ export default async function ReportPage({
           </div>
         </div>
 
-        <div className="rounded-xl border bg-slate-50 p-4">
+        <div className="rounded-xl border bg-slate-50 p-6">
           <div className="text-lg font-semibold">Report locked</div>
           <p className="mt-2 text-sm text-slate-700">
             This detailed report is available after payment.
@@ -124,6 +123,11 @@ export default async function ReportPage({
             >
               Back to Snapshot
             </Link>
+          </div>
+
+          {/* Tiny debug line to confirm what the server sees */}
+          <div className="mt-4 text-xs text-slate-500">
+            Debug: is_paid = {String(data.is_paid)}
           </div>
         </div>
       </div>
@@ -154,7 +158,7 @@ export default async function ReportPage({
       : null;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-4">
+    <div className="max-w-3xl mx-auto px-4 py-10">
       <div className="mb-6 border-b pb-4">
         {reg ? (
           <h1 className="text-2xl font-bold">
@@ -175,7 +179,7 @@ export default async function ReportPage({
         </div>
       </div>
 
-      <div className="rounded-2xl border bg-white p-4">
+      <div className="rounded-2xl border bg-white p-6">
         <div className="text-sm text-slate-600">Estimated immediate exposure</div>
 
         {exposureLow !== null && exposureHigh !== null ? (
@@ -183,9 +187,7 @@ export default async function ReportPage({
             {money(exposureLow)} – {money(exposureHigh)}
           </div>
         ) : (
-          <div className="mt-2 text-sm text-slate-700">
-            Exposure estimate unavailable.
-          </div>
+          <div className="mt-2 text-sm text-slate-700">Exposure estimate unavailable.</div>
         )}
 
         {riskLevel ? (
@@ -217,13 +219,13 @@ export default async function ReportPage({
         ) : null}
       </div>
 
-      <div className="mt-6">
+      <div className="mt-10">
         <h2 className="text-xl font-semibold">Itemised checks</h2>
 
         <div className="mt-4 space-y-4">
           {items.length ? (
             items.map((item: any, idx: number) => (
-              <div key={idx} className="rounded-2xl border bg-white p-4">
+              <div key={idx} className="rounded-2xl border bg-white p-6">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <div className="text-lg font-semibold text-slate-900">
@@ -279,7 +281,7 @@ export default async function ReportPage({
               </div>
             ))
           ) : (
-            <div className="rounded-xl border bg-slate-50 p-4 text-sm text-slate-700">
+            <div className="rounded-xl border bg-slate-50 p-6 text-sm text-slate-700">
               No items found in this report payload.
             </div>
           )}
@@ -287,9 +289,9 @@ export default async function ReportPage({
       </div>
 
       {disclaimerText ? (
-        <div className="mt-6 text-xs text-slate-500">{disclaimerText}</div>
+        <div className="mt-10 text-xs text-slate-500">{disclaimerText}</div>
       ) : (
-        <div className="mt-6 text-xs text-slate-500">
+        <div className="mt-10 text-xs text-slate-500">
           AutoAudit provides guidance only and is not a substitute for a mechanical inspection.
         </div>
       )}
