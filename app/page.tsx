@@ -41,7 +41,7 @@ export default function HomePage() {
         <div className="rounded-xl border bg-white p-6">
           <h2 className="text-xl font-bold">What you get</h2>
           <ul className="mt-3 list-disc space-y-2 pl-5 text-slate-700">
-            <li>Estimated immediate maintenance exposure (range)</li>
+            <li>Estimated immediate maintenance and repair exposure (range)</li>
             <li>Top cost drivers (timing belt, gearbox service, etc.)</li>
             <li>Risk level (low → very high)</li>
             <li>Suggested negotiation figure</li>
