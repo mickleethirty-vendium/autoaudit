@@ -224,11 +224,11 @@ export default async function Page({
         </div>
 
         {/* Spacer so sticky bar doesn't cover content */}
-        <div className="h-16 sm:hidden" />
+        <div className="h-20 sm:hidden" />
       </div>
 
       {/* Sticky mobile CTA */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 border-t bg-white/95 backdrop-blur px-4 py-3">
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-white/95 backdrop-blur px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
           <div className="text-sm">
             <div className="font-semibold">Unlock full report</div>
