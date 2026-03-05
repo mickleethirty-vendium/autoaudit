@@ -20,7 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   src="/logo-v2.png"
                   alt="AutoAudit"
                   className="block select-none"
-                  style={{ height: 56, width: "auto" }} // bigger + deterministic
+                  style={{ height: 64 }}
                 />
               </Link>
 
