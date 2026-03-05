@@ -11,25 +11,29 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className="min-h-screen bg-slate-50 text-slate-900">
         {/* Header */}
-        <header className="border-b bg-white">
-          <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3">
-            <Link href="/" className="flex items-center">
-              <img
-                src="/logo-v2.png"
-                alt="AutoAudit"
-                className="block select-none"
-                style={{ height: 64, width: "auto" }}
-              />
-            </Link>
+        <header className="bg-white border-b">
+          <div className="mx-auto w-full max-w-6xl px-4">
+            <div className="flex items-center justify-between py-2">
+              {/* Left: Logo */}
+              <Link href="/" className="flex items-center">
+                <img
+                  src="/logo-v2.png"
+                  alt="AutoAudit"
+                  className="block select-none"
+                  style={{ height: 56, width: "auto" }} // bigger + deterministic
+                />
+              </Link>
 
-            <div className="text-sm font-medium text-slate-600 hidden sm:block">
-              Used Car Risk Check
+              {/* Right: Tagline */}
+              <div className="hidden sm:block text-sm font-medium text-slate-700">
+                Used Car Risk Check
+              </div>
             </div>
           </div>
         </header>
 
         {/* Page content */}
-        <main className="mx-auto w-full max-w-6xl px-4 pt-4 pb-16">
+        <main className="mx-auto w-full max-w-6xl px-4 pt-2 pb-16">
           {children}
         </main>
       </body>
