@@ -1,14 +1,6 @@
-// app/components/ExposureBar.tsx
+"use client";
 
-type Props = {
-  low: number;
-  high: number;
-  riskLevel?: string | null; // "low" | "medium" | "high"
-};
-
-function clamp(n: number, lo: number, hi: number) {
-  return Math.max(lo, Math.min(hi, n));
-}
+import React from "react";
 
 function money(n: number) {
   try {
@@ -22,57 +14,86 @@ function money(n: number) {
   }
 }
 
-export default function ExposureBar({ low, high, riskLevel }: Props) {
-  const mid = (low + high) / 2;
+function titleCase(s: string) {
+  return s
+    .split(" ")
+    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
+    .join(" ");
+}
 
-  // Scale the bar to something sensible so it works across most cars.
-  // You can tune these later.
-  const min = 0;
-  const max = 2500;
+function riskColor(risk: "low" | "medium" | "high") {
+  if (risk === "low") return "bg-emerald-50 border-emerald-200 text-emerald-900";
+  if (risk === "medium") return "bg-amber-50 border-amber-200 text-amber-900";
+  return "bg-rose-50 border-rose-200 text-rose-900";
+}
 
-  const pct = clamp(((mid - min) / (max - min)) * 100, 2, 98);
+function clamp(n: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, n));
+}
 
-  const badge =
-    riskLevel === "high"
-      ? { text: "High risk", cls: "bg-rose-50 text-rose-700 border-rose-200" }
-      : riskLevel === "medium"
-      ? { text: "Medium risk", cls: "bg-amber-50 text-amber-800 border-amber-200" }
-      : { text: "Lower risk", cls: "bg-emerald-50 text-emerald-800 border-emerald-200" };
+/**
+ * Single source of truth:
+ * - Risk score drives the slider width
+ * - Risk level is derived from that same score (so pill + slider cannot disagree)
+ *
+ * Tune MAX_EXPOSURE if you want the slider to feel “full” at a different £ amount.
+ */
+const MAX_EXPOSURE_FOR_100 = 2000; // <-- adjust if you want (e.g. 2500)
+
+function computeRiskScoreFromExposureHigh(exposureHigh: number) {
+  // 0..100 score based on high-end exposure
+  return clamp(Math.round((exposureHigh / MAX_EXPOSURE_FOR_100) * 100), 0, 100);
+}
+
+function computeRiskLevelFromScore(score: number): "low" | "medium" | "high" {
+  if (score >= 70) return "high";
+  if (score >= 35) return "medium";
+  return "low";
+}
+
+export default function ExposureBar({
+  low,
+  high,
+}: {
+  low: number;
+  high: number;
+  // NOTE: we intentionally do NOT trust an external riskLevel prop here,
+  // because that’s how pill/slider drift happens.
+}) {
+  const riskScore = computeRiskScoreFromExposureHigh(high);
+  const riskLevel = computeRiskLevelFromScore(riskScore);
 
   return (
-    <div className="mt-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="text-sm text-slate-600">Exposure range</div>
-        <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${badge.cls}`}>
-          {badge.text}
+    <div>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="text-3xl font-extrabold text-slate-900">
+          {money(low)} – {money(high)}
+        </div>
+
+        <span
+          className={[
+            "inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold bg-white",
+            riskColor(riskLevel),
+          ].join(" ")}
+        >
+          Risk: {titleCase(riskLevel)}
         </span>
       </div>
 
-      <div className="mt-2 text-2xl font-extrabold tracking-tight">
-        {money(low)} – {money(high)}
-      </div>
-
-      {/* Bar */}
+      {/* Slider */}
       <div className="mt-3">
-        <div className="relative h-3 w-full rounded-full bg-slate-200 overflow-hidden">
-          {/* Fill uses your teal accent vibe */}
-          <div className="h-full w-full bg-gradient-to-r from-slate-200 via-sky-200 to-emerald-200" />
-          {/* Marker */}
+        <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden">
           <div
-            className="absolute top-1/2 h-6 w-1 -translate-y-1/2 rounded bg-slate-900 shadow"
-            style={{ left: `${pct}%` }}
-            aria-hidden="true"
+            className="h-full bg-slate-900 transition-all"
+            style={{ width: `${riskScore}%` }}
+            aria-label={`Risk score ${riskScore} out of 100`}
           />
         </div>
 
-        {/* Labels */}
-        <div className="mt-2 flex justify-between text-xs text-slate-600">
-          <span>Low</span>
-          <span>High</span>
-        </div>
-
-        <div className="mt-1 text-xs text-slate-500">
-          Marker shows your car’s estimated position on a typical £0–£2,500 near-term maintenance range.
+        <div className="mt-2 flex justify-between text-xs text-slate-500">
+          <span>Lower</span>
+          <span>{riskScore}/100</span>
+          <span>Higher</span>
         </div>
       </div>
     </div>
