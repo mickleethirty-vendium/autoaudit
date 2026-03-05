@@ -132,7 +132,6 @@ export default async function Page({
               <ExposureBar
                 low={exposureLow}
                 high={exposureHigh}
-                riskLevel={riskLevel}
               />
             ) : (
               <div className="mt-2 text-sm text-slate-700">
