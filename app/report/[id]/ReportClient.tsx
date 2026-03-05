@@ -75,6 +75,24 @@ export default function ReportClient({
     return { low, high, risk, remainingCount: remaining.length };
   }, [items, done]);
 
+  // Adjust negotiation suggestion based on remaining exposure
+  const negotiationAdjusted = useMemo(() => {
+    if (negotiationSuggested === null) return null;
+
+    // Total exposure baseline (all items, regardless of "done")
+    let totalHigh = 0;
+    for (const it of items) {
+      if (typeof it.cost_high === "number") totalHigh += it.cost_high;
+    }
+
+    // If we can't compute a sensible ratio, fall back to original suggestion
+    if (totalHigh <= 0) return negotiationSuggested;
+
+    // Scale suggestion by remaining exposure ratio
+    const ratio = adjusted.high / totalHigh;
+    return Math.max(0, Math.round(negotiationSuggested * ratio));
+  }, [items, adjusted.high, negotiationSuggested]);
+
   return (
     <>
       {/* Top summary card */}
@@ -98,10 +116,10 @@ export default function ReportClient({
           Tick items you can prove are already done to reduce the estimate.
         </div>
 
-        {negotiationSuggested !== null ? (
+        {negotiationAdjusted !== null ? (
           <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
             <div className="font-semibold text-emerald-900">
-              Suggested negotiation: ~{money(negotiationSuggested)}
+              Suggested negotiation: ~{money(negotiationAdjusted)}
             </div>
             <div className="mt-1 text-sm text-emerald-900/80">
               (Based on remaining items not ticked as done)
