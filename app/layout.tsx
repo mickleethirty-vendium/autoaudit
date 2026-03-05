@@ -15,7 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3">
             <Link href="/" className="flex items-center">
               <img
-                src="/logo.png"
+                src="/logo-v2.png"
                 alt="AutoAudit"
                 className="h-14 w-auto block select-none"
               />

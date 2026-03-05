@@ -252,7 +252,7 @@ export default async function Page({
           </div>
 
           <a href={checkoutUrl} className="btn-primary">
-            Unlock
+            View full report
           </a>
         </div>
       </div>
