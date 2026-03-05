@@ -23,20 +23,18 @@ export async function GET(req: Request) {
     const reportId = session?.metadata?.report_id;
     if (!reportId) {
       return NextResponse.json(
-        { error: "Missing report_id in session metadata" },
+        { error: "Missing report_id in Stripe session metadata" },
         { status: 400 }
       );
     }
 
-    // Confirm payment status
     if (session.payment_status !== "paid") {
       return NextResponse.json(
-        { error: `Session not paid (status: ${session.payment_status})`, report_id: reportId },
+        { error: `Session not paid: ${session.payment_status}`, report_id: reportId },
         { status: 400 }
       );
     }
 
-    // Mark paid in Supabase
     const { error } = await supabaseAdmin
       .from("reports")
       .update({ is_paid: true })
