@@ -45,14 +45,17 @@ export default function ReportClient({
   items,
   negotiationSuggested,
   justUnlocked = false,
+  reportUrl,
 }: {
   summary: any;
   items: Item[];
   negotiationSuggested: number | null;
   justUnlocked?: boolean;
+  reportUrl?: string;
 }) {
   const [done, setDone] = useState<Record<string, boolean>>({});
   const [copied, setCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const adjusted = useMemo(() => {
     let low = 0;
@@ -104,6 +107,23 @@ export default function ReportClient({
     }
   }
 
+  async function handleCopyLink() {
+    if (!reportUrl) return;
+
+    try {
+      const absoluteUrl =
+        typeof window !== "undefined"
+          ? `${window.location.origin}${reportUrl}`
+          : reportUrl;
+
+      await navigator.clipboard.writeText(absoluteUrl);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 1500);
+    } catch {
+      setLinkCopied(false);
+    }
+  }
+
   return (
     <>
       {justUnlocked ? (
@@ -113,6 +133,16 @@ export default function ReportClient({
             You now have access to all findings, costs, and negotiation guidance.
           </div>
         </div>
+      ) : null}
+
+      {reportUrl ? (
+        <button
+          type="button"
+          onClick={handleCopyLink}
+          className="mb-6 inline-flex items-center rounded-lg border bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+        >
+          {linkCopied ? "Link copied" : "Copy report link"}
+        </button>
       ) : null}
 
       {/* Top summary card */}
@@ -145,7 +175,7 @@ export default function ReportClient({
               (Based on remaining items not ticked as done)
             </div>
 
-            <div className="mt-3 rounded-md bg-white/60 p-3 border text-slate-800 text-sm">
+            <div className="mt-3 rounded-md border bg-white/60 p-3 text-sm text-slate-800">
               {negotiationMessage}
             </div>
 

@@ -158,6 +158,7 @@ export default async function Page({
           items={fullItems}
           negotiationSuggested={negotiationSuggested}
           justUnlocked={justUnlocked}
+          reportUrl={`/report/${data.id}`}
         />
       </div>
     );
