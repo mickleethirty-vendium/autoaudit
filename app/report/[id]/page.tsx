@@ -112,15 +112,17 @@ export default async function Page({
     : [];
 
   const negotiationSuggested: number | null =
-  typeof fullPayload.negotiation_suggested === "number"
-    ? fullPayload.negotiation_suggested
-    : typeof fullPayload.negotiationSuggested === "number"
-    ? fullPayload.negotiationSuggested
-    : typeof fullSummary.negotiation_suggested === "number"
-    ? fullSummary.negotiation_suggested
-    : typeof fullSummary.negotiationSuggested === "number"
-    ? fullSummary.negotiationSuggested
-    : null;
+    typeof fullPayload.negotiation_suggested === "number"
+      ? fullPayload.negotiation_suggested
+      : typeof fullPayload.negotiationSuggested === "number"
+      ? fullPayload.negotiationSuggested
+      : typeof fullSummary.negotiation_suggested === "number"
+      ? fullSummary.negotiation_suggested
+      : typeof fullSummary.negotiationSuggested === "number"
+      ? fullSummary.negotiationSuggested
+      : null;
+
+  const justUnlocked = Boolean(sessionId);
 
   if (isPaid) {
     return (
@@ -155,6 +157,7 @@ export default async function Page({
           summary={fullSummary}
           items={fullItems}
           negotiationSuggested={negotiationSuggested}
+          justUnlocked={justUnlocked}
         />
       </div>
     );

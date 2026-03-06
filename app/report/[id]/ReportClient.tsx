@@ -44,13 +44,15 @@ export default function ReportClient({
   summary,
   items,
   negotiationSuggested,
+  justUnlocked = false,
 }: {
   summary: any;
   items: Item[];
   negotiationSuggested: number | null;
+  justUnlocked?: boolean;
 }) {
-  // Track "user says it’s done" by item_id (fallback to label)
   const [done, setDone] = useState<Record<string, boolean>>({});
+  const [copied, setCopied] = useState(false);
 
   const adjusted = useMemo(() => {
     let low = 0;
@@ -66,8 +68,6 @@ export default function ReportClient({
       if (typeof it.cost_high === "number") high += it.cost_high;
     }
 
-    // Simple risk mapping based on remaining high exposure.
-    // (We can make this more sophisticated later.)
     let risk: "low" | "medium" | "high" = "low";
     if (high >= 1500) risk = "high";
     else if (high >= 700) risk = "medium";
@@ -75,26 +75,46 @@ export default function ReportClient({
     return { low, high, risk, remainingCount: remaining.length };
   }, [items, done]);
 
-  // Adjust negotiation suggestion based on remaining exposure
   const negotiationAdjusted = useMemo(() => {
     if (negotiationSuggested === null) return null;
 
-    // Total exposure baseline (all items, regardless of "done")
     let totalHigh = 0;
     for (const it of items) {
       if (typeof it.cost_high === "number") totalHigh += it.cost_high;
     }
 
-    // If we can't compute a sensible ratio, fall back to original suggestion
     if (totalHigh <= 0) return negotiationSuggested;
 
-    // Scale suggestion by remaining exposure ratio
     const ratio = adjusted.high / totalHigh;
     return Math.max(0, Math.round(negotiationSuggested * ratio));
   }, [items, adjusted.high, negotiationSuggested]);
 
+  const negotiationMessage = useMemo(() => {
+    if (negotiationAdjusted === null) return "";
+    return `Based on the vehicle report there appears to be around ${money(adjusted.low)}–${money(adjusted.high)} of potential maintenance items coming up. Taking that into account I'd be comfortable proceeding at around ${money(negotiationAdjusted)} less than the asking price.`;
+  }, [adjusted.low, adjusted.high, negotiationAdjusted]);
+
+  async function handleCopyNegotiation() {
+    try {
+      await navigator.clipboard.writeText(negotiationMessage);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      setCopied(false);
+    }
+  }
+
   return (
     <>
+      {justUnlocked ? (
+        <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+          <div className="font-semibold text-emerald-900">Full report unlocked</div>
+          <div className="mt-1 text-sm text-emerald-900/80">
+            You now have access to all findings, costs, and negotiation guidance.
+          </div>
+        </div>
+      ) : null}
+
       {/* Top summary card */}
       <div className="rounded-2xl border bg-white p-6">
         <div className="text-sm text-slate-600">Estimated immediate exposure (adjustable)</div>
@@ -124,6 +144,18 @@ export default function ReportClient({
             <div className="mt-1 text-sm text-emerald-900/80">
               (Based on remaining items not ticked as done)
             </div>
+
+            <div className="mt-3 rounded-md bg-white/60 p-3 border text-slate-800 text-sm">
+              {negotiationMessage}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleCopyNegotiation}
+              className="mt-3 inline-flex items-center rounded-lg border bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+            >
+              {copied ? "Copied" : "Copy message for seller"}
+            </button>
           </div>
         ) : null}
       </div>
