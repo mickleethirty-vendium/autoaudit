@@ -139,3 +139,63 @@ section {
 .text-teal-500 {
   color: #16a34a; /* Teal color */
 }
+
+/* ---------- PRINT / PDF STYLES ---------- */
+
+@media print {
+
+  /* Page setup */
+  @page {
+    size: A4;
+    margin: 18mm;
+  }
+
+  html, body {
+    background: white !important;
+  }
+
+  /* Hide interactive UI */
+  button,
+  a.btn-primary,
+  a.btn-outline {
+    display: none !important;
+  }
+
+  /* Prevent card elements splitting across pages */
+  .rounded-2xl,
+  .rounded-xl,
+  .break-inside-avoid {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Keep headings with next block */
+  h1, h2, h3 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  /* Slightly tighten layout for print */
+  body {
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+
+  h1 {
+    font-size: 22pt;
+  }
+
+  h2 {
+    font-size: 16pt;
+  }
+
+  h3 {
+    font-size: 14pt;
+  }
+
+  /* Remove shadows in print */
+  * {
+    box-shadow: none !important;
+  }
+
+}
