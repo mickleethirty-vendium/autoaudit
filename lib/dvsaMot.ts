@@ -35,16 +35,28 @@ async function getAccessToken(): Promise<string> {
   body.set("client_secret", clientSecret);
   body.set("scope", scope);
 
-  const res = await fetch(tokenUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: body.toString(),
-    cache: "no-store",
-  });
+  let res: Response;
+  try {
+    res = await fetch(tokenUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: body.toString(),
+      cache: "no-store",
+    });
+  } catch (error: any) {
+    throw new Error(`DVSA token fetch failed: ${error?.message ?? "unknown error"}`);
+  }
 
-  const json = await res.json();
+  const text = await res.text();
+
+  let json: any = null;
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch {
+    json = { raw: text };
+  }
 
   if (!res.ok || !json?.access_token) {
     throw new Error(
@@ -75,18 +87,29 @@ export async function fetchDvsaMotHistory(
     const baseUrl =
       "https://beta.check-mot.service.gov.uk/trade/vehicles/mot-tests";
 
-    const res = await fetch(
-      `${baseUrl}?registration=${encodeURIComponent(reg)}`,
-      {
-        method: "GET",
-        headers: {
-          "x-api-key": apiKey,
-          Authorization: `Bearer ${accessToken}`,
-          Accept: "application/json+v6",
+    let res: Response;
+    try {
+      res = await fetch(
+        `${baseUrl}?registration=${encodeURIComponent(reg)}`,
+        {
+          method: "GET",
+          headers: {
+            "x-api-key": apiKey,
+            Authorization: `Bearer ${accessToken}`,
+            Accept: "application/json+v6",
+          },
+          cache: "no-store",
+        }
+      );
+    } catch (error: any) {
+      return {
+        _error: true,
+        status: 500,
+        data: {
+          message: `DVSA MOT API fetch failed: ${error?.message ?? "unknown error"}`,
         },
-        cache: "no-store",
-      }
-    );
+      };
+    }
 
     const text = await res.text();
 
