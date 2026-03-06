@@ -1,5 +1,7 @@
 // lib/engine.ts
 
+import type { MotSignals } from "@/lib/motSignals";
+
 type Fuel = string;
 type Transmission = string;
 type TimingType = "belt" | "chain" | "unknown";
@@ -13,14 +15,15 @@ export type EngineInput = {
   asking_price?: number | null;
   make?: string | null;
   registration?: string | null;
-  mot_present?: boolean; // optional (if you later store mot_payload)
+  mot_present?: boolean;
+  motSignals?: MotSignals | null;
 };
 
 type ReportItem = {
   label: string;
   status: string;
   item_id: string;
-  category: string; // e.g. engine, brakes, suspension, etc.
+  category: string;
   base_low: number;
   base_high: number;
   multiplier: number;
@@ -51,17 +54,14 @@ function normMake(make?: string | null) {
 
 /**
  * Brand calibration (simple v1).
- * You can expand this later into tier tables.
  */
 function brandMultiplier(make?: string | null): number {
   const m = normMake(make);
   if (!m) return 1.0;
 
-  // budget-ish
   const budget = new Set(["dacia", "skoda", "seat", "kia", "hyundai", "suzuki"]);
   if (budget.has(m)) return 0.9;
 
-  // mainstream
   const mainstream = new Set([
     "ford",
     "vauxhall",
@@ -80,21 +80,32 @@ function brandMultiplier(make?: string | null): number {
   ]);
   if (mainstream.has(m)) return 1.0;
 
-  // premium
-  const premium = new Set(["bmw", "audi", "mercedes", "mercedes-benz", "lexus", "volvo", "jaguar"]);
+  const premium = new Set([
+    "bmw",
+    "audi",
+    "mercedes",
+    "mercedes-benz",
+    "lexus",
+    "volvo",
+    "jaguar",
+  ]);
   if (premium.has(m)) return 1.25;
 
-  // high-end / performance
-  const high = new Set(["porsche", "land rover", "range rover", "maserati", "ferrari", "lamborghini", "bentley", "aston martin"]);
+  const high = new Set([
+    "porsche",
+    "land rover",
+    "range rover",
+    "maserati",
+    "ferrari",
+    "lamborghini",
+    "bentley",
+    "aston martin",
+  ]);
   if (high.has(m)) return 1.6;
 
-  return 1.1; // unknown -> slight uplift
+  return 1.1;
 }
 
-/**
- * Macro bucket mapping:
- * we keep fine-grained categories in items, but preview aggregates into macro headings.
- */
 function macroBucketForCategory(category: string): { key: string; label: string } {
   const c = (category || "").toLowerCase();
 
@@ -117,16 +128,10 @@ function macroBucketForCategory(category: string): { key: string; label: string 
   return { key: "other", label: "Other Checks" };
 }
 
-/**
- * Confidence scoring:
- * - It’s about how “certain” we are the estimate is relevant.
- * - Influenced by data completeness and key unknowns.
- */
 function confidenceScore(input: EngineInput, items: ReportItem[]) {
-  let score = 75; // baseline
+  let score = 75;
   const reasons: string[] = [];
 
-  // Required fields already validated upstream (year/mileage), but still:
   if (!Number.isFinite(input.year)) {
     score -= 35;
     reasons.push("Missing/invalid year reduces confidence.");
@@ -136,13 +141,11 @@ function confidenceScore(input: EngineInput, items: ReportItem[]) {
     reasons.push("Missing/invalid mileage reduces confidence.");
   }
 
-  // Unknown timing type is a big one (belt vs chain)
   if ((input.timing_type ?? "unknown") === "unknown") {
     score -= 12;
     reasons.push("Timing type unknown (belt vs chain) affects major interval estimates.");
   }
 
-  // Make helps calibrate costs
   if (!input.make) {
     score -= 10;
     reasons.push("Make not provided — cost calibration may be less precise.");
@@ -150,7 +153,6 @@ function confidenceScore(input: EngineInput, items: ReportItem[]) {
     reasons.push("Make provided — cost calibration improved.");
   }
 
-  // Transmission clarity helps (auto/clutch risks)
   if (!input.transmission || String(input.transmission).toLowerCase().includes("select")) {
     score -= 8;
     reasons.push("Transmission not confirmed — drivetrain wear assumptions may be weaker.");
@@ -158,7 +160,6 @@ function confidenceScore(input: EngineInput, items: ReportItem[]) {
     reasons.push("Transmission confirmed.");
   }
 
-  // Fuel clarity helps (diesel DPF/EGR)
   if (!input.fuel) {
     score -= 6;
     reasons.push("Fuel type missing — emissions system risk assumptions may be weaker.");
@@ -166,15 +167,23 @@ function confidenceScore(input: EngineInput, items: ReportItem[]) {
     reasons.push("Fuel type confirmed.");
   }
 
-  // If MoT present (later), boost slightly
-  if (input.mot_present) {
+  if (input.motSignals || input.mot_present) {
     score += 6;
     reasons.push("MoT history present — advisory patterns improve confidence.");
   } else {
     reasons.push("MoT history not yet included — confidence could improve with advisories.");
   }
 
-  // If we found only 1 item, lower confidence a bit (less signal)
+  if (input.motSignals?.repeatAdvisories?.length) {
+    score += 4;
+    reasons.push("Repeated MoT advisory patterns strengthen the estimate.");
+  }
+
+  if (input.motSignals?.recentFailureCount) {
+    score += 4;
+    reasons.push("Recent MoT failures strengthen the estimate.");
+  }
+
   if (items.length <= 1) {
     score -= 6;
     reasons.push("Few detected items — estimate has less signal.");
@@ -187,10 +196,6 @@ function confidenceScore(input: EngineInput, items: ReportItem[]) {
   return { score, label, reasons };
 }
 
-/**
- * Core engine:
- * Build full item list, compute exposure, drivers, negotiation, preview buckets, confidence.
- */
 export function generateReport(input: EngineInput) {
   const nowYear = new Date().getFullYear();
   const age = nowYear - input.year;
@@ -198,12 +203,12 @@ export function generateReport(input: EngineInput) {
 
   const timingType: TimingType = input.timing_type ?? "unknown";
   const makeMult = brandMultiplier(input.make);
+  const mot = input.motSignals ?? null;
 
   const items: ReportItem[] = [];
 
-  // ---- Item rules (keep what you already had; this is a sane baseline) ----
+  // ---- Base rules ----
 
-  // Timing belt (or unknown) risk (belt intervals often 5-8 yrs / 60-100k)
   if (timingType !== "chain") {
     const due = age >= 5 || mileage >= 60000;
     if (due) {
@@ -232,7 +237,6 @@ export function generateReport(input: EngineInput) {
     }
   }
 
-  // Brake fluid (often every ~2 years)
   if (age >= 5) {
     const baseLow = 60;
     const baseHigh = 120;
@@ -249,11 +253,13 @@ export function generateReport(input: EngineInput) {
       why_flagged: "Vehicle is 5+ years old (often due every ~2 years).",
       why_it_matters:
         "Brake fluid absorbs moisture over time which can reduce performance and increase corrosion risk. Often neglected but inexpensive to fix.",
-      questions_to_ask: ["When was brake fluid last changed (date)?", "Any invoice or service record entry?"],
+      questions_to_ask: [
+        "When was brake fluid last changed (date)?",
+        "Any invoice or service record entry?",
+      ],
     });
   }
 
-  // Diesel DPF / EGR risk (simplified)
   const fuel = String(input.fuel || "").toLowerCase();
   if (fuel.includes("diesel") && mileage >= 70000) {
     const baseLow = 150;
@@ -271,11 +277,13 @@ export function generateReport(input: EngineInput) {
       why_flagged: "Diesel + 70k+ miles (DPF/EGR risk increases).",
       why_it_matters:
         "Short-trip diesel use can increase DPF clogging risk. A preventive clean can be cheaper than major DPF issues.",
-      questions_to_ask: ["Mostly short trips or motorway driving?", "Any DPF warning lights or forced regenerations?"],
+      questions_to_ask: [
+        "Mostly short trips or motorway driving?",
+        "Any DPF warning lights or forced regenerations?",
+      ],
     });
   }
 
-  // Brakes wear (verification)
   if (mileage >= 70000) {
     const baseLow = 300;
     const baseHigh = 600;
@@ -291,11 +299,13 @@ export function generateReport(input: EngineInput) {
       cost_high: Math.round(baseHigh * makeMult * 0.5),
       why_flagged: "Mileage 70k+ (wear items likely changed or nearing replacement).",
       why_it_matters: "Brakes are wear items; if replacement is imminent it is negotiable.",
-      questions_to_ask: ["When were pads/discs last replaced (front/rear)?", "Any pulsing under braking or pulling to one side?"],
+      questions_to_ask: [
+        "When were pads/discs last replaced (front/rear)?",
+        "Any pulsing under braking or pulling to one side?",
+      ],
     });
   }
 
-  // Suspension risk
   if (mileage >= 80000) {
     const baseLow = 300;
     const baseHigh = 900;
@@ -315,15 +325,199 @@ export function generateReport(input: EngineInput) {
     });
   }
 
+  // ---- MoT-derived rules ----
+
+  if (mot?.hasRecentFailures) {
+    const baseLow = 150;
+    const baseHigh = 450;
+    items.push({
+      label: "Recent MoT failure items need follow-up",
+      status: "recent_failure_history",
+      item_id: "mot_recent_failures",
+      category: "safety",
+      base_low: baseLow,
+      base_high: baseHigh,
+      multiplier: 1,
+      cost_low: Math.round(baseLow * makeMult),
+      cost_high: Math.round(baseHigh * makeMult),
+      why_flagged: `Recent MoT history shows ${mot.recentFailureCount} failure${mot.recentFailureCount === 1 ? "" : "s"}.`,
+      why_it_matters:
+        "Recent failures can indicate unresolved defects or maintenance that was only temporarily addressed before sale.",
+      questions_to_ask: [
+        "What were the most recent MoT failure items?",
+        "Do you have invoices showing the work completed after the failure?",
+      ],
+      red_flags: ["Seller cannot explain recent failure history", "No proof of remedial work"],
+    });
+  }
+
+  if (mot?.repeatAdvisories?.length) {
+    const baseLow = 80;
+    const baseHigh = 220;
+    items.push({
+      label: "Repeated MoT advisories detected",
+      status: "repeat_advisory_pattern",
+      item_id: "mot_repeat_advisories",
+      category: "service",
+      base_low: baseLow,
+      base_high: baseHigh,
+      multiplier: 1,
+      cost_low: Math.round(baseLow * makeMult),
+      cost_high: Math.round(baseHigh * makeMult),
+      why_flagged: `MoT history shows ${mot.repeatAdvisories.length} repeated advisory pattern${mot.repeatAdvisories.length === 1 ? "" : "s"}.`,
+      why_it_matters:
+        "Repeated advisories can suggest an issue has been allowed to persist across multiple test cycles.",
+      questions_to_ask: [
+        "Were repeated advisory items repaired properly after previous MoTs?",
+        "Do you have invoices for recurring advisory work?",
+      ],
+    });
+  }
+
+  if (mot?.corrosionFlag) {
+    const baseLow = 250;
+    const baseHigh = 1200;
+    items.push({
+      label: "Corrosion / underside condition follow-up",
+      status: "mot_corrosion_signal",
+      item_id: "mot_corrosion",
+      category: "chassis",
+      base_low: baseLow,
+      base_high: baseHigh,
+      multiplier: 1,
+      cost_low: Math.round(baseLow * makeMult),
+      cost_high: Math.round(baseHigh * makeMult),
+      why_flagged: "MoT history contains corrosion-related wording.",
+      why_it_matters:
+        "Corrosion can range from surface treatment to structural work. It is one of the most important MoT-derived warning signals.",
+      questions_to_ask: [
+        "What corrosion-related MoT advisories or failures has the car had?",
+        "Has any welding or structural repair been carried out?",
+        "Can the underside be inspected before purchase?",
+      ],
+      red_flags: ["Fresh underseal with no photos/invoices", "Seller dismisses corrosion history"],
+    });
+  }
+
+  if (mot?.brakeFlag) {
+    const baseLow = 180;
+    const baseHigh = 500;
+    items.push({
+      label: "Brake-related MoT advisories",
+      status: "mot_brake_signal",
+      item_id: "mot_brake_signal",
+      category: "brakes",
+      base_low: baseLow,
+      base_high: baseHigh,
+      multiplier: 0.8,
+      cost_low: Math.round(baseLow * makeMult * 0.8),
+      cost_high: Math.round(baseHigh * makeMult * 0.8),
+      why_flagged: "MoT history contains brake-related advisory or failure wording.",
+      why_it_matters:
+        "Brake-related MoT history can mean imminent consumable costs or unresolved braking performance issues.",
+      questions_to_ask: [
+        "What brake work has been done since the advisory/failure?",
+        "Are there invoices for pads, discs, lines, or caliper work?",
+      ],
+    });
+  }
+
+  if (mot?.tyreFlag) {
+    const baseLow = 120;
+    const baseHigh = 350;
+    items.push({
+      label: "Tyre condition / tread follow-up",
+      status: "mot_tyre_signal",
+      item_id: "mot_tyre_signal",
+      category: "safety",
+      base_low: baseLow,
+      base_high: baseHigh,
+      multiplier: 1,
+      cost_low: Math.round(baseLow * makeMult),
+      cost_high: Math.round(baseHigh * makeMult),
+      why_flagged: "MoT history contains tyre or tread-related advisory wording.",
+      why_it_matters:
+        "Tyres are safety-critical and often become an immediate post-purchase cost if left close to limits.",
+      questions_to_ask: [
+        "When were the tyres last replaced?",
+        "Are all four tyres matched and do they have good tread depth?",
+      ],
+    });
+  }
+
+  if (mot?.suspensionFlag) {
+    const baseLow = 200;
+    const baseHigh = 700;
+    items.push({
+      label: "Suspension / steering MoT advisories",
+      status: "mot_suspension_signal",
+      item_id: "mot_suspension_signal",
+      category: "suspension",
+      base_low: baseLow,
+      base_high: baseHigh,
+      multiplier: 0.9,
+      cost_low: Math.round(baseLow * makeMult * 0.9),
+      cost_high: Math.round(baseHigh * makeMult * 0.9),
+      why_flagged: "MoT history contains suspension or steering-related advisory wording.",
+      why_it_matters:
+        "Recurring suspension or steering advisories can point to worn components and further near-term spend.",
+      questions_to_ask: [
+        "Have any springs, shocks, arms, links, or bushes been replaced recently?",
+        "Are there invoices for the advisory items?",
+      ],
+    });
+  }
+
+  if (mot?.mileageConcern) {
+    const baseLow = 50;
+    const baseHigh = 150;
+    items.push({
+      label: "Mileage history consistency check",
+      status: "mot_mileage_signal",
+      item_id: "mot_mileage_signal",
+      category: "service",
+      base_low: baseLow,
+      base_high: baseHigh,
+      multiplier: 1,
+      cost_low: Math.round(baseLow * makeMult),
+      cost_high: Math.round(baseHigh * makeMult),
+      why_flagged: "MoT history suggests mileage progression needs checking.",
+      why_it_matters:
+        "Mileage inconsistencies can materially affect valuation and confidence in the vehicle history.",
+      questions_to_ask: [
+        "Can the seller explain the mileage history?",
+        "Do service records align with the MoT mileage progression?",
+      ],
+      red_flags: ["Mileage cannot be explained", "Service records do not align with MoT history"],
+    });
+  }
+
   // ---- Totals / summary ----
 
-  const exposure_low = Math.round(items.reduce((sum, it) => sum + (it.cost_low ?? 0), 0));
-  const exposure_high = Math.round(items.reduce((sum, it) => sum + (it.cost_high ?? 0), 0));
+  const exposure_low = Math.round(
+    items.reduce((sum, it) => sum + (it.cost_low ?? 0), 0)
+  );
+  const exposure_high = Math.round(
+    items.reduce((sum, it) => sum + (it.cost_high ?? 0), 0)
+  );
 
-  const risk_level =
+  let risk_level: "low" | "medium" | "high" =
     exposure_high >= 1500 ? "high" : exposure_high >= 700 ? "medium" : "low";
 
-  // primary drivers: top 3 by high cost
+  if (
+    risk_level === "low" &&
+    (mot?.hasRecentFailures || mot?.corrosionFlag || mot?.repeatAdvisories?.length)
+  ) {
+    risk_level = "medium";
+  }
+
+  if (
+    mot?.corrosionFlag &&
+    (mot.hasRecentFailures || exposure_high >= 900)
+  ) {
+    risk_level = "high";
+  }
+
   const primary_drivers = [...items]
     .sort((a, b) => (b.cost_high ?? 0) - (a.cost_high ?? 0))
     .slice(0, 3)
@@ -332,11 +526,23 @@ export function generateReport(input: EngineInput) {
       reason_short: it.why_flagged,
     }));
 
-  const negotiation_suggested = Math.round((exposure_low + exposure_high) / 2 * 0.7);
+  const negotiationBase = Math.round(((exposure_low + exposure_high) / 2) * 0.7);
+  const negotiation_suggested = clamp(
+    negotiationBase + (mot?.hasRecentFailures ? 100 : 0) + (mot?.corrosionFlag ? 150 : 0),
+    0,
+    25000
+  );
 
-  const confidence = confidenceScore(input, items);
+  const confidence = confidenceScore(
+    {
+      ...input,
+      mot_present: input.mot_present || !!mot,
+    },
+    items
+  );
 
   // ---- Preview bucket aggregation ----
+
   const bucketMap = new Map<string, Bucket>();
 
   for (const it of items) {
@@ -357,14 +563,14 @@ export function generateReport(input: EngineInput) {
     }
   }
 
-  const buckets = [...bucketMap.values()].sort((a, b) => b.exposure_high - a.exposure_high);
+  const buckets = [...bucketMap.values()].sort(
+    (a, b) => b.exposure_high - a.exposure_high
+  );
 
-  // teaser labels (we’ll blur these in the snapshot)
-  const teaser_labels = items
+  const teaser_labels = [...items]
+    .sort((a, b) => (b.cost_high ?? 0) - (a.cost_high ?? 0))
     .slice(0, 5)
     .map((it) => it.label);
-
-  // ---- Build payloads ----
 
   const full = {
     items,
@@ -375,19 +581,30 @@ export function generateReport(input: EngineInput) {
       primary_drivers,
       negotiation_suggested,
       confidence,
+      mot_summary: mot
+        ? {
+            recent_failure_count: mot.recentFailureCount,
+            recent_advisory_count: mot.recentAdvisoryCount,
+            repeat_advisory_count: mot.repeatAdvisories.length,
+            corrosion_flag: mot.corrosionFlag,
+            brake_flag: mot.brakeFlag,
+            tyre_flag: mot.tyreFlag,
+            suspension_flag: mot.suspensionFlag,
+            mileage_concern: mot.mileageConcern,
+          }
+        : null,
     },
     negotiation: {
       suggested_reduction: negotiation_suggested,
       tip: "Set £X as asking price minus the suggested reduction.",
-      script: `Based on the vehicle’s age and mileage, I’d need to budget roughly £${negotiation_suggested} for potential near-term maintenance unless there’s documented proof these items were recently done. I’m happy to proceed at £X.`,
+      script: `Based on the vehicle’s age, mileage, and available history, I’d need to budget roughly £${negotiation_suggested} for potential near-term maintenance unless there’s documented proof these items were recently done. I’m happy to proceed at £X.`,
     },
     disclaimer: {
       text:
-        "AutoAudit provides cost guidance based on typical UK maintenance intervals and independent garage pricing. It is not a mechanical inspection and does not diagnose faults or guarantee required repairs.",
+        "AutoAudit provides cost guidance based on typical UK maintenance intervals, available history signals, and independent garage pricing. It is not a mechanical inspection and does not diagnose faults or guarantee required repairs.",
     },
   };
 
-  // Preview intentionally excludes details (no why_it_matters / questions)
   const preview = {
     summary: {
       risk_level,

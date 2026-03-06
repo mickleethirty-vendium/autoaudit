@@ -1,49 +1,13 @@
 import { NextResponse } from "next/server";
 import { generateReport } from "@/lib/engine";
 import { supabaseAdmin } from "@/lib/supabase";
+import { fetchDvsaMotHistory } from "@/lib/dvsaMot";
+import { extractMotSignals } from "@/lib/motSignals";
 
 export const runtime = "nodejs";
 
 function cleanRegistration(reg: string): string {
   return reg.replace(/\s/g, "").toUpperCase();
-}
-
-async function fetchMotPayload(registration: string): Promise<any | null> {
-  const key = process.env.DVSA_MOT_API_KEY;
-  if (!key) return null; // ✅ no key yet, skip safely
-
-  const DVSA_BASE =
-    "https://beta.check-mot.service.gov.uk/trade/vehicles/mot-tests";
-
-  const reg = cleanRegistration(registration);
-
-  const res = await fetch(`${DVSA_BASE}?registration=${encodeURIComponent(reg)}`, {
-    method: "GET",
-    headers: {
-      "x-api-key": key,
-      Accept: "application/json+v6",
-    },
-    cache: "no-store",
-  });
-
-  const text = await res.text();
-  let data: any = null;
-  try {
-    data = text ? JSON.parse(text) : null;
-  } catch {
-    data = { raw: text };
-  }
-
-  if (!res.ok) {
-    // store DVSA error details for debugging but don't break report creation
-    return {
-      _error: true,
-      status: res.status,
-      data,
-    };
-  }
-
-  return data;
 }
 
 export async function POST(req: Request) {
@@ -70,8 +34,11 @@ export async function POST(req: Request) {
 
     const make = body.make ? String(body.make) : null;
 
-    // ✅ Fetch MOT (non-blocking if no key)
-    const mot_payload = registration ? await fetchMotPayload(registration) : null;
+    const mot_payload = registration
+      ? await fetchDvsaMotHistory(registration)
+      : null;
+
+    const motSignals = mot_payload ? extractMotSignals(mot_payload) : null;
 
     const { preview, full } = generateReport({
       year,
@@ -81,7 +48,7 @@ export async function POST(req: Request) {
       timing_type,
       asking_price,
       make,
-      // later we will feed MOT signals into the engine
+      motSignals,
     });
 
     const { data, error } = await supabaseAdmin
@@ -95,7 +62,7 @@ export async function POST(req: Request) {
         transmission,
         timing_type,
         asking_price,
-        mot_payload, // ✅ stored now
+        mot_payload,
         preview_payload: preview,
         full_payload: full,
         is_paid: false,
