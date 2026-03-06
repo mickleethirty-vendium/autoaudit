@@ -1,14 +1,22 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
+import Stripe from "stripe";
 import { supabasePublic } from "@/lib/supabase";
+import { mustGetEnv } from "@/lib/env";
 import ExposureBar from "@/app/components/ExposureBar";
 import ReportClient from "./ReportClient";
 
+const stripe = new Stripe(mustGetEnv("STRIPE_SECRET_KEY"), {
+  apiVersion: "2024-06-20",
+});
+
 export default async function Page({
   params,
+  searchParams,
 }: {
   params: { id: string };
+  searchParams?: { session_id?: string };
 }) {
   const { data, error } = await supabasePublic
     .from("reports")
@@ -45,7 +53,27 @@ export default async function Page({
   const fuel = (data.fuel as string | null) ?? null;
   const transmission = (data.transmission as string | null) ?? null;
 
-  const isPaid = data.is_paid === true;
+  let isPaid = data.is_paid === true;
+
+  // Fallback for webhook race condition:
+  // if Stripe has redirected back with a paid session, unlock the UI immediately
+  // even if the webhook has not updated Supabase yet.
+  const sessionId = searchParams?.session_id;
+  if (!isPaid && sessionId) {
+    try {
+      const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+      const sessionReportId = session.metadata?.report_id;
+      const isSessionPaid =
+        session.payment_status === "paid" || session.status === "complete";
+
+      if (isSessionPaid && sessionReportId === params.id) {
+        isPaid = true;
+      }
+    } catch (e) {
+      console.error("Failed to verify Stripe session on report page:", e);
+    }
+  }
 
   const preview: any = data.preview_payload ?? {};
   const previewSummary: any = preview.summary ?? {};
@@ -77,10 +105,12 @@ export default async function Page({
   const checkoutUrl = `/api/checkout?report_id=${data.id}`;
   const priceLabel = "£4.99";
 
-  // Full unlocked report payload
   const fullPayload: any = data.full_payload ?? {};
   const fullSummary: any = fullPayload.summary ?? {};
-  const fullItems: any[] = Array.isArray(fullPayload.items) ? fullPayload.items : [];
+  const fullItems: any[] = Array.isArray(fullPayload.items)
+    ? fullPayload.items
+    : [];
+
   const negotiationSuggested: number | null =
     typeof fullPayload.negotiation_suggested === "number"
       ? fullPayload.negotiation_suggested
@@ -129,7 +159,6 @@ export default async function Page({
   return (
     <>
       <div className="mx-auto w-full max-w-3xl px-4 pt-2 pb-28">
-        {/* Header */}
         <div className="mb-4 border-b pb-2">
           {reg ? (
             <h1 className="text-2xl font-extrabold tracking-tight">
@@ -156,7 +185,6 @@ export default async function Page({
           </div>
         </div>
 
-        {/* Exposure HERO */}
         <div className="rounded-2xl border bg-white p-4 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -199,7 +227,6 @@ export default async function Page({
           </div>
         </div>
 
-        {/* Buckets */}
         <div className="mt-5">
           <h2 className="text-lg font-semibold">Risk breakdown by system</h2>
 
@@ -237,7 +264,6 @@ export default async function Page({
           </div>
         </div>
 
-        {/* Locked Teaser */}
         <div className="mt-5 rounded-xl border bg-white p-4">
           <div className="text-base font-semibold">Detailed findings locked</div>
           <div className="mt-1 text-sm text-slate-600">
@@ -279,7 +305,6 @@ export default async function Page({
         </div>
       </div>
 
-      {/* FIXED CTA BAR */}
       <div className="fixed bottom-0 left-0 right-0 z-[9999] border-t bg-white/95 backdrop-blur px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
           <div className="text-sm">
