@@ -112,11 +112,15 @@ export default async function Page({
     : [];
 
   const negotiationSuggested: number | null =
-    typeof fullPayload.negotiation_suggested === "number"
-      ? fullPayload.negotiation_suggested
-      : typeof fullPayload.negotiationSuggested === "number"
-      ? fullPayload.negotiationSuggested
-      : null;
+  typeof fullPayload.negotiation_suggested === "number"
+    ? fullPayload.negotiation_suggested
+    : typeof fullPayload.negotiationSuggested === "number"
+    ? fullPayload.negotiationSuggested
+    : typeof fullSummary.negotiation_suggested === "number"
+    ? fullSummary.negotiation_suggested
+    : typeof fullSummary.negotiationSuggested === "number"
+    ? fullSummary.negotiationSuggested
+    : null;
 
   if (isPaid) {
     return (
