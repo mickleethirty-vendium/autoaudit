@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { supabasePublic } from "@/lib/supabase";
 import ExposureBar from "@/app/components/ExposureBar";
+import SnapshotShareCard from "./SnapshotShareCard";
 
 function titleCase(s: string) {
   return s
@@ -110,7 +111,7 @@ export default async function Page({
           </div>
         </div>
 
-        {/* Exposure HERO (new) */}
+        {/* Exposure HERO */}
         <div className="rounded-2xl border bg-white p-4 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -129,10 +130,7 @@ export default async function Page({
 
           <div className="mt-3">
             {exposureLow !== null && exposureHigh !== null ? (
-              <ExposureBar
-                low={exposureLow}
-                high={exposureHigh}
-              />
+              <ExposureBar low={exposureLow} high={exposureHigh} />
             ) : (
               <div className="mt-2 text-sm text-slate-700">
                 Exposure estimate unavailable.
@@ -162,6 +160,18 @@ export default async function Page({
             </span>
           </div>
         </div>
+
+        {/* Message user can send to seller */}
+        {exposureLow !== null && exposureHigh !== null ? (
+          <div className="mt-5">
+            <SnapshotShareCard
+              exposureLow={exposureLow}
+              exposureHigh={exposureHigh}
+              checkoutUrl={checkoutUrl}
+              priceLabel={priceLabel}
+            />
+          </div>
+        ) : null}
 
         {/* Buckets */}
         <div className="mt-5">
@@ -213,7 +223,11 @@ export default async function Page({
           <div className="mt-4 space-y-2">
             {(blurredLabels.length
               ? blurredLabels
-              : ["Timing belt replacement", "Brake system wear", "Suspension component wear"])
+              : [
+                  "Timing belt replacement",
+                  "Brake system wear",
+                  "Suspension component wear",
+                ])
               .slice(0, 5)
               .map((t, i) => (
                 <div
@@ -234,7 +248,8 @@ export default async function Page({
         </div>
 
         <div className="mt-6 text-xs text-slate-500">
-          AutoAudit provides guidance only and is not a substitute for a mechanical inspection.
+          AutoAudit provides guidance only and is not a substitute for a
+          mechanical inspection.
         </div>
       </div>
 
