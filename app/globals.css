@@ -154,6 +154,15 @@ section {
     background: white !important;
   }
 
+  /* Print utility support */
+  .print\:block {
+    display: block !important;
+  }
+
+  .print\:hidden {
+    display: none !important;
+  }
+
   /* Hide interactive UI */
   button,
   a.btn-primary,
@@ -197,5 +206,4 @@ section {
   * {
     box-shadow: none !important;
   }
-
 }

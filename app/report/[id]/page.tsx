@@ -127,6 +127,21 @@ export default async function Page({
   if (isPaid) {
     return (
       <div className="mx-auto w-full max-w-5xl px-4 py-6">
+        {/* PDF header (print only) */}
+        <div className="hidden print:block mb-6 border-b pb-3">
+          <div className="text-lg font-bold">AutoAudit Vehicle Report</div>
+          <div className="text-sm text-slate-600">
+            Generated: {new Date().toLocaleDateString("en-GB")}
+          </div>
+          {reg ? (
+            <div className="mt-1 text-sm text-slate-600">
+              Registration: <span className="font-semibold">{reg}</span>
+              {make ? <> · {make}</> : null}
+              {year ? <> · {year}</> : null}
+            </div>
+          ) : null}
+        </div>
+
         <div className="mb-6 border-b pb-3">
           {reg ? (
             <h1 className="text-2xl font-extrabold tracking-tight">
