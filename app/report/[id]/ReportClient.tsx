@@ -124,6 +124,10 @@ export default function ReportClient({
     }
   }
 
+  function handleDownloadPdf() {
+    window.print();
+  }
+
   return (
     <>
       {justUnlocked ? (
@@ -135,18 +139,28 @@ export default function ReportClient({
         </div>
       ) : null}
 
-      {reportUrl ? (
+      <div className="mb-6 flex flex-wrap gap-3 print:hidden">
+        {reportUrl ? (
+          <button
+            type="button"
+            onClick={handleCopyLink}
+            className="inline-flex items-center rounded-lg border bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+          >
+            {linkCopied ? "Link copied" : "Copy report link"}
+          </button>
+        ) : null}
+
         <button
           type="button"
-          onClick={handleCopyLink}
-          className="mb-6 inline-flex items-center rounded-lg border bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+          onClick={handleDownloadPdf}
+          className="inline-flex items-center rounded-lg border bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
         >
-          {linkCopied ? "Link copied" : "Copy report link"}
+          Download PDF
         </button>
-      ) : null}
+      </div>
 
       {/* Top summary card */}
-      <div className="rounded-2xl border bg-white p-6">
+      <div className="rounded-2xl border bg-white p-6 break-inside-avoid">
         <div className="text-sm text-slate-600">Estimated immediate exposure (adjustable)</div>
 
         <div className="mt-1 text-4xl font-extrabold text-slate-900">
@@ -167,7 +181,7 @@ export default function ReportClient({
         </div>
 
         {negotiationAdjusted !== null ? (
-          <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+          <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 break-inside-avoid">
             <div className="font-semibold text-emerald-900">
               Suggested negotiation: ~{money(negotiationAdjusted)}
             </div>
@@ -182,7 +196,7 @@ export default function ReportClient({
             <button
               type="button"
               onClick={handleCopyNegotiation}
-              className="mt-3 inline-flex items-center rounded-lg border bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+              className="mt-3 inline-flex items-center rounded-lg border bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50 print:hidden"
             >
               {copied ? "Copied" : "Copy message for seller"}
             </button>
@@ -200,7 +214,7 @@ export default function ReportClient({
             const isDone = !!done[key];
 
             return (
-              <div key={key} className="rounded-2xl border bg-white p-6">
+              <div key={key} className="rounded-2xl border bg-white p-6 break-inside-avoid">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="min-w-[220px]">
                     <div className="text-lg font-semibold text-slate-900">
@@ -230,7 +244,7 @@ export default function ReportClient({
                       </div>
                     ) : null}
 
-                    <label className="inline-flex items-center gap-2 rounded-lg border bg-slate-50 px-3 py-2 text-sm">
+                    <label className="inline-flex items-center gap-2 rounded-lg border bg-slate-50 px-3 py-2 text-sm print:hidden">
                       <input
                         type="checkbox"
                         checked={isDone}
