@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { supabasePublic } from "@/lib/supabase";
 import ExposureBar from "@/app/components/ExposureBar";
+import ReportClient from "./ReportClient";
 
 export default async function Page({
   params,
@@ -44,8 +45,10 @@ export default async function Page({
   const fuel = (data.fuel as string | null) ?? null;
   const transmission = (data.transmission as string | null) ?? null;
 
+  const isPaid = data.is_paid === true;
+
   const preview: any = data.preview_payload ?? {};
-  const summary: any = preview.summary ?? {};
+  const previewSummary: any = preview.summary ?? {};
 
   const buckets: any[] = Array.isArray(preview.buckets) ? preview.buckets : [];
 
@@ -60,15 +63,68 @@ export default async function Page({
       : blurredLabels.length;
 
   const exposureLow: number | null =
-    typeof summary.exposure_low === "number" ? summary.exposure_low : null;
+    typeof previewSummary.exposure_low === "number"
+      ? previewSummary.exposure_low
+      : null;
 
   const exposureHigh: number | null =
-    typeof summary.exposure_high === "number" ? summary.exposure_high : null;
+    typeof previewSummary.exposure_high === "number"
+      ? previewSummary.exposure_high
+      : null;
 
-  const confidence: any = summary.confidence ?? null;
+  const confidence: any = previewSummary.confidence ?? null;
 
   const checkoutUrl = `/api/checkout?report_id=${data.id}`;
   const priceLabel = "£4.99";
+
+  // Full unlocked report payload
+  const fullPayload: any = data.full_payload ?? {};
+  const fullSummary: any = fullPayload.summary ?? {};
+  const fullItems: any[] = Array.isArray(fullPayload.items) ? fullPayload.items : [];
+  const negotiationSuggested: number | null =
+    typeof fullPayload.negotiation_suggested === "number"
+      ? fullPayload.negotiation_suggested
+      : typeof fullPayload.negotiationSuggested === "number"
+      ? fullPayload.negotiationSuggested
+      : null;
+
+  if (isPaid) {
+    return (
+      <div className="mx-auto w-full max-w-5xl px-4 py-6">
+        <div className="mb-6 border-b pb-3">
+          {reg ? (
+            <h1 className="text-2xl font-extrabold tracking-tight">
+              {reg}
+              {make ? (
+                <span className="ml-2 font-normal text-slate-600">
+                  · {make}
+                </span>
+              ) : null}
+            </h1>
+          ) : (
+            <h1 className="text-2xl font-extrabold tracking-tight">
+              AutoAudit Report
+            </h1>
+          )}
+
+          <div className="mt-1 text-sm text-slate-600">
+            {year ? `${year} · ` : ""}
+            {fuel ? `${fuel} · ` : ""}
+            {transmission ? `${transmission} · ` : ""}
+            {typeof mileage === "number"
+              ? `${mileage.toLocaleString()} miles`
+              : ""}
+          </div>
+        </div>
+
+        <ReportClient
+          summary={fullSummary}
+          items={fullItems}
+          negotiationSuggested={negotiationSuggested}
+        />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -193,7 +249,11 @@ export default async function Page({
           <div className="mt-4 space-y-2">
             {(blurredLabels.length
               ? blurredLabels
-              : ["Timing belt replacement", "Brake system wear", "Suspension component wear"])
+              : [
+                  "Timing belt replacement",
+                  "Brake system wear",
+                  "Suspension component wear",
+                ])
               .slice(0, 5)
               .map((t, i) => (
                 <div
@@ -214,7 +274,8 @@ export default async function Page({
         </div>
 
         <div className="mt-6 text-xs text-slate-500">
-          AutoAudit provides guidance only and is not a substitute for a mechanical inspection.
+          AutoAudit provides guidance only and is not a substitute for a
+          mechanical inspection.
         </div>
       </div>
 
