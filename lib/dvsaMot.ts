@@ -85,7 +85,7 @@ export async function fetchDvsaMotHistory(
     const accessToken = await getAccessToken();
 
     const baseUrl =
-      "https://beta.check-mot.service.gov.uk/trade/vehicles/mot-tests";
+      "https://history.mot.api.gov.uk/v1/trade/vehicles/mot-tests";
 
     let res: Response;
     try {
@@ -94,9 +94,9 @@ export async function fetchDvsaMotHistory(
         {
           method: "GET",
           headers: {
-            "x-api-key": apiKey,
+            "X-API-Key": apiKey,
             Authorization: `Bearer ${accessToken}`,
-            Accept: "application/json+v6",
+            Accept: "application/json",
           },
           cache: "no-store",
         }
