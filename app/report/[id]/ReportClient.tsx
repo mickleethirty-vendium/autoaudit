@@ -46,15 +46,18 @@ export default function ReportClient({
   negotiationSuggested,
   justUnlocked = false,
   reportUrl,
+  previewUrl,
 }: {
   summary: any;
   items: Item[];
   negotiationSuggested: number | null;
   justUnlocked?: boolean;
   reportUrl?: string;
+  previewUrl?: string;
 }) {
   const [done, setDone] = useState<Record<string, boolean>>({});
   const [copied, setCopied] = useState(false);
+  const [sellerCopied, setSellerCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
 
   const adjusted = useMemo(() => {
@@ -97,6 +100,26 @@ export default function ReportClient({
     return `Based on the vehicle report there appears to be around ${money(adjusted.low)}–${money(adjusted.high)} of potential maintenance items coming up. Taking that into account I'd be comfortable proceeding at around ${money(negotiationAdjusted)} less than the asking price.`;
   }, [adjusted.low, adjusted.high, negotiationAdjusted]);
 
+  const sellerMessage = useMemo(() => {
+    if (!previewUrl || negotiationAdjusted === null) return "";
+
+    const absolutePreviewUrl =
+      typeof window !== "undefined"
+        ? `${window.location.origin}${previewUrl}`
+        : previewUrl;
+
+    return `Hi — I ran a detailed AutoAudit report for this vehicle.
+
+Based on the vehicle’s age, mileage and MOT history it suggests around ${money(adjusted.low)}–${money(adjusted.high)} of potential near-term maintenance exposure.
+
+I’d be comfortable proceeding at around ${money(negotiationAdjusted)} less than the asking price unless there’s proof some of these items have already been addressed.
+
+You can view the shared snapshot here:
+${absolutePreviewUrl}
+
+If you want, you can unlock the full report from that page, tick off anything already done, and come back with a counter-offer.`;
+  }, [adjusted.low, adjusted.high, negotiationAdjusted, previewUrl]);
+
   async function handleCopyNegotiation() {
     try {
       await navigator.clipboard.writeText(negotiationMessage);
@@ -104,6 +127,18 @@ export default function ReportClient({
       setTimeout(() => setCopied(false), 1500);
     } catch {
       setCopied(false);
+    }
+  }
+
+  async function handleCopySellerMessage() {
+    if (!sellerMessage) return;
+
+    try {
+      await navigator.clipboard.writeText(sellerMessage);
+      setSellerCopied(true);
+      setTimeout(() => setSellerCopied(false), 2000);
+    } catch {
+      setSellerCopied(false);
     }
   }
 
@@ -198,11 +233,37 @@ export default function ReportClient({
               onClick={handleCopyNegotiation}
               className="mt-3 inline-flex items-center rounded-lg border bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50 print:hidden"
             >
-              {copied ? "Copied" : "Copy message for seller"}
+              {copied ? "Copied" : "Copy negotiation message"}
             </button>
           </div>
         ) : null}
       </div>
+
+      {/* Seller message card */}
+      {sellerMessage ? (
+        <div className="mt-6 rounded-2xl border bg-white p-6 break-inside-avoid">
+          <div className="text-lg font-semibold text-slate-900">
+            Share with the seller
+          </div>
+          <div className="mt-1 text-sm text-slate-600">
+            Send this message so the seller lands on the snapshot page, can review the
+            risk summary, and unlock the report themselves if they want to respond with a
+            counter-offer.
+          </div>
+
+          <div className="mt-4 rounded-lg border bg-slate-50 p-4 text-sm whitespace-pre-line text-slate-800">
+            {sellerMessage}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleCopySellerMessage}
+            className="mt-4 inline-flex items-center rounded-lg border bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50 print:hidden"
+          >
+            {sellerCopied ? "Copied" : "Copy message for seller"}
+          </button>
+        </div>
+      ) : null}
 
       {/* Items */}
       <div className="mt-10">

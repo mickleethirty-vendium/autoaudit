@@ -3,7 +3,6 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { supabasePublic } from "@/lib/supabase";
 import ExposureBar from "@/app/components/ExposureBar";
-import SnapshotShareCard from "./SnapshotShareCard";
 
 function titleCase(s: string) {
   return s
@@ -398,19 +397,6 @@ export default async function Page({
             )}
           </div>
         </div>
-
-        {/* Message user can send to seller */}
-        {exposureLow !== null && exposureHigh !== null ? (
-          <div className="mt-5">
-            <SnapshotShareCard
-              exposureLow={exposureLow}
-              exposureHigh={exposureHigh}
-              checkoutUrl={checkoutUrl}
-              priceLabel={priceLabel}
-              previewUrl={`/preview/${data.id}`}
-            />
-          </div>
-        ) : null}
 
         {/* Buckets */}
         <div className="mt-5">
