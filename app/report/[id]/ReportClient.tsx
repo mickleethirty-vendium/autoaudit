@@ -207,6 +207,9 @@ If you want, you can unlock the full report from that page, tick off anything al
             <div className="mt-1 text-sm text-emerald-900/80">
               (Based on remaining items not ticked as done)
             </div>
+            <div className="mt-1 text-sm font-medium text-emerald-900">
+              Scroll down for details
+            </div>
           </div>
         ) : null}
       </div>
