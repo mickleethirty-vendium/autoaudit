@@ -56,7 +56,6 @@ export default function ReportClient({
   previewUrl?: string;
 }) {
   const [done, setDone] = useState<Record<string, boolean>>({});
-  const [copied, setCopied] = useState(false);
   const [sellerCopied, setSellerCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
 
@@ -95,11 +94,6 @@ export default function ReportClient({
     return Math.max(0, Math.round(negotiationSuggested * ratio));
   }, [items, adjusted.high, negotiationSuggested]);
 
-  const negotiationMessage = useMemo(() => {
-    if (negotiationAdjusted === null) return "";
-    return `Based on the vehicle report there appears to be around ${money(adjusted.low)}–${money(adjusted.high)} of potential maintenance items coming up. Taking that into account I'd be comfortable proceeding at around ${money(negotiationAdjusted)} less than the asking price.`;
-  }, [adjusted.low, adjusted.high, negotiationAdjusted]);
-
   const sellerMessage = useMemo(() => {
     if (!previewUrl || negotiationAdjusted === null) return "";
 
@@ -119,16 +113,6 @@ ${absolutePreviewUrl}
 
 If you want, you can unlock the full report from that page, tick off anything already done, and come back with a counter-offer.`;
   }, [adjusted.low, adjusted.high, negotiationAdjusted, previewUrl]);
-
-  async function handleCopyNegotiation() {
-    try {
-      await navigator.clipboard.writeText(negotiationMessage);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch {
-      setCopied(false);
-    }
-  }
 
   async function handleCopySellerMessage() {
     if (!sellerMessage) return;
@@ -223,18 +207,6 @@ If you want, you can unlock the full report from that page, tick off anything al
             <div className="mt-1 text-sm text-emerald-900/80">
               (Based on remaining items not ticked as done)
             </div>
-
-            <div className="mt-3 rounded-md border bg-white/60 p-3 text-sm text-slate-800">
-              {negotiationMessage}
-            </div>
-
-            <button
-              type="button"
-              onClick={handleCopyNegotiation}
-              className="mt-3 inline-flex items-center rounded-lg border bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50 print:hidden"
-            >
-              {copied ? "Copied" : "Copy negotiation message"}
-            </button>
           </div>
         ) : null}
       </div>

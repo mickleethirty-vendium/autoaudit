@@ -329,11 +329,11 @@ export default async function Page({
 
             {mot.available ? (
               <>
-                <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-                  <div className="font-semibold text-emerald-900">
+                <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-4">
+                  <div className="font-semibold text-rose-900">
                     {mot.credibilityTitle}
                   </div>
-                  <div className="mt-1 text-sm text-emerald-900/80">
+                  <div className="mt-1 text-sm text-rose-900/80">
                     {mot.credibilityText}
                   </div>
                 </div>
