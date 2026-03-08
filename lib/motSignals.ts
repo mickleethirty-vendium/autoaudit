@@ -18,15 +18,6 @@ function includesAny(text: string, phrases: string[]): boolean {
   return phrases.some((p) => text.includes(p));
 }
 
-function extractAdvisoryTexts(test: any): string[] {
-  if (!Array.isArray(test?.rfrAndComments)) return [];
-
-  return test.rfrAndComments
-    .filter((item: any) => item?.type === "ADVISORY" || item?.type === "FAIL")
-    .map((item: any) => String(item?.text ?? "").trim())
-    .filter(Boolean);
-}
-
 function extractMileageValues(tests: any[]): number[] {
   return tests
     .map((t) => Number(t?.odometerValue))
@@ -48,9 +39,7 @@ export function extractMotSignals(motPayload: any): MotSignals {
 
   if (!motPayload || motPayload?._error) return empty;
 
-  const vehicle = Array.isArray(motPayload) ? motPayload[0] : motPayload;
-  const tests: any[] = Array.isArray(vehicle?.motTests) ? vehicle.motTests : [];
-
+  const tests: any[] = Array.isArray(motPayload?.motTests) ? motPayload.motTests : [];
   if (!tests.length) return empty;
 
   const advisoryCounter = new Map<string, number>();
@@ -61,6 +50,7 @@ export function extractMotSignals(motPayload: any): MotSignals {
   let tyreFlag = false;
   let suspensionFlag = false;
 
+  // Most recent 3 tests only
   const recentTests = tests.slice(0, 3);
 
   for (const test of recentTests) {
@@ -69,16 +59,20 @@ export function extractMotSignals(motPayload: any): MotSignals {
       recentFailureCount += 1;
     }
 
-    const comments = Array.isArray(test?.rfrAndComments) ? test.rfrAndComments : [];
+    const defects = Array.isArray(test?.defects) ? test.defects : [];
 
-    for (const item of comments) {
-      const type = String(item?.type ?? "").toUpperCase();
-      const text = normaliseText(String(item?.text ?? ""));
+    for (const defect of defects) {
+      const type = String(defect?.type ?? "").toUpperCase();
+      const text = normaliseText(String(defect?.text ?? ""));
       if (!text) continue;
 
-      if (type === "ADVISORY") {
+      if (type === "ADVISORY" || type === "MINOR") {
         recentAdvisoryCount += 1;
         advisoryCounter.set(text, (advisoryCounter.get(text) ?? 0) + 1);
+      }
+
+      if (type === "FAIL" || type === "MAJOR" || type === "DANGEROUS") {
+        recentFailureCount += 1;
       }
 
       if (includesAny(text, ["corrosion", "corroded", "excessively corroded"])) {
@@ -93,7 +87,17 @@ export function extractMotSignals(motPayload: any): MotSignals {
         tyreFlag = true;
       }
 
-      if (includesAny(text, ["suspension", "shock", "spring", "strut", "arm", "bush"])) {
+      if (
+        includesAny(text, [
+          "suspension",
+          "shock",
+          "spring",
+          "strut",
+          "arm",
+          "bush",
+          "steering",
+        ])
+      ) {
         suspensionFlag = true;
       }
     }
@@ -103,11 +107,12 @@ export function extractMotSignals(motPayload: any): MotSignals {
     .filter(([, count]) => count > 1)
     .map(([text]) => text);
 
+  // Tests come newest first. Mileage should generally go down as you go through older tests.
   const mileages = extractMileageValues(tests);
   let mileageConcern = false;
 
   for (let i = 1; i < mileages.length; i += 1) {
-    if (mileages[i] > mileages[i - 1]) {
+    if (mileages[i] >= mileages[i - 1]) {
       mileageConcern = true;
       break;
     }
