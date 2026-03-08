@@ -38,6 +38,7 @@ type Item = {
   why_flagged?: string;
   why_it_matters?: string;
   questions_to_ask?: string[];
+  source?: string;
 };
 
 function formatDate(value?: string | null) {
@@ -57,6 +58,40 @@ function normaliseText(value: string) {
 
 function includesAny(text: string, phrases: string[]) {
   return phrases.some((p) => text.includes(p));
+}
+
+function itemSource(item: Item): "mot" | "service" | "mixed" {
+  const explicit = String(item.source ?? "").toLowerCase();
+  const id = String(item.item_id ?? "").toLowerCase();
+  const status = String(item.status ?? "").toLowerCase();
+  const why = String(item.why_flagged ?? "").toLowerCase();
+
+  if (explicit.includes("mot") && explicit.includes("service")) return "mixed";
+  if (explicit.includes("mot")) return "mot";
+  if (explicit.includes("service")) return "service";
+
+  const motSignals =
+    id.startsWith("mot_") ||
+    status.includes("mot") ||
+    why.includes("mot history");
+
+  return motSignals ? "mot" : "service";
+}
+
+function sourceBadgeClasses(source: "mot" | "service" | "mixed") {
+  if (source === "mot") {
+    return "border-rose-200 bg-rose-50 text-rose-900";
+  }
+  if (source === "mixed") {
+    return "border-amber-200 bg-amber-50 text-amber-900";
+  }
+  return "border-emerald-200 bg-emerald-50 text-emerald-900";
+}
+
+function sourceLabel(source: "mot" | "service" | "mixed") {
+  if (source === "mot") return "MoT history";
+  if (source === "mixed") return "MoT + service risk";
+  return "Service risk";
 }
 
 function getMotSummary(motPayload: any) {
@@ -505,6 +540,7 @@ If you want, you can unlock the full report from that page, tick off anything al
           {items.map((item, idx) => {
             const key = String(item.item_id ?? item.label ?? `item-${idx}`);
             const isDone = !!done[key];
+            const source = itemSource(item);
 
             return (
               <div key={key} className="rounded-2xl border bg-white p-6 break-inside-avoid">
@@ -514,17 +550,28 @@ If you want, you can unlock the full report from that page, tick off anything al
                       {item.label ?? "Service item"}
                     </div>
 
-                    {item.status ? (
-                      <div className="mt-1 text-xs text-slate-600">
-                        Status: <b>{String(item.status)}</b>
-                        {item.category ? (
-                          <>
-                            {" "}
-                            · Category: <b>{String(item.category)}</b>
-                          </>
-                        ) : null}
-                      </div>
-                    ) : null}
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                      <span
+                        className={[
+                          "inline-flex items-center rounded-full border px-2.5 py-1 font-semibold",
+                          sourceBadgeClasses(source),
+                        ].join(" ")}
+                      >
+                        Source: {sourceLabel(source)}
+                      </span>
+
+                      {item.status ? (
+                        <span className="text-slate-600">
+                          Status: <b>{String(item.status)}</b>
+                        </span>
+                      ) : null}
+
+                      {item.category ? (
+                        <span className="text-slate-600">
+                          Category: <b>{String(item.category)}</b>
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-3">
