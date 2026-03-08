@@ -63,6 +63,9 @@ export default function CheckForm() {
   const [error, setError] = useState<string | null>(null);
 
   async function lookupReg() {
+    const trimmed = registration.trim();
+    if (trimmed.length < 5) return;
+
     setLookupBusy(true);
     setLookupError(null);
     setLookupResult(null);
@@ -71,13 +74,14 @@ export default function CheckForm() {
       const res = await fetch("/api/lookup-reg", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ registration }),
+        body: JSON.stringify({ registration: trimmed }),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ?? "Lookup failed");
 
       setLookupResult(data);
+
       if (data?.yearOfManufacture) setYear(Number(data.yearOfManufacture));
       if (data?.fuelType) setFuel(mapDvlaFuelToFuel(data.fuelType));
       if (data?.make) setMake(normalizeMake(String(data.make)));
@@ -111,7 +115,11 @@ export default function CheckForm() {
         throw new Error("Please select the transmission type.");
       }
 
-      const regToStore = mode === "reg" && registration.trim() ? cleanRegistration(registration.trim()) : null;
+      const regToStore =
+        mode === "reg" && registration.trim()
+          ? cleanRegistration(registration.trim())
+          : null;
+
       const makeToStore = makeNormalized.trim() ? makeNormalized.trim() : null;
 
       const res = await fetch("/api/create-report", {
@@ -140,18 +148,32 @@ export default function CheckForm() {
     }
   }
 
+  function handleRegistrationKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (!lookupBusy && registration.trim().length >= 5) {
+        void lookupReg();
+      }
+    }
+  }
+
   const makeRequiredOk = mode === "manual" ? make.trim() !== "" : true;
-  const canSubmit = !busy && mileage !== "" && transmission !== "" && makeRequiredOk;
+  const mileageRequiredOk = mileage !== "";
+  const transmissionRequiredOk = transmission !== "";
+  const canSubmit = !busy && mileageRequiredOk && transmissionRequiredOk && makeRequiredOk;
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-6 max-w-lg mx-auto p-6 border bg-white rounded-lg shadow-md">
+    <form
+      onSubmit={onSubmit}
+      className="grid gap-6 max-w-lg mx-auto rounded-lg border bg-white p-6 shadow-md"
+    >
       {/* Mode switch */}
-      <div className="flex gap-4 mb-6">
+      <div className="mb-6 flex gap-4">
         <button
           type="button"
           onClick={() => setMode("reg")}
-          className={`px-4 py-2 rounded-md text-sm font-semibold border ${
-            mode === "reg" ? "bg-blue-600 text-white border-blue-600" : "bg-white"
+          className={`rounded-md border px-4 py-2 text-sm font-semibold ${
+            mode === "reg" ? "border-blue-600 bg-blue-600 text-white" : "bg-white"
           }`}
         >
           Use registration (recommended)
@@ -159,8 +181,8 @@ export default function CheckForm() {
         <button
           type="button"
           onClick={() => setMode("manual")}
-          className={`px-4 py-2 rounded-md text-sm font-semibold border ${
-            mode === "manual" ? "bg-blue-600 text-white border-blue-600" : "bg-white"
+          className={`rounded-md border px-4 py-2 text-sm font-semibold ${
+            mode === "manual" ? "border-blue-600 bg-blue-600 text-white" : "bg-white"
           }`}
         >
           Manual entry
@@ -170,19 +192,22 @@ export default function CheckForm() {
       {/* Registration lookup */}
       {mode === "reg" && (
         <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2">Registration (number plate)</label>
+          <label className="mb-2 block text-sm font-semibold">
+            Registration (number plate)
+          </label>
           <div className="flex gap-3">
             <input
-              className="flex-1 border px-4 py-2 rounded-md"
+              className="flex-1 rounded-md border px-4 py-2"
               value={registration}
               onChange={(e) => setRegistration(e.target.value)}
+              onKeyDown={handleRegistrationKeyDown}
               placeholder="e.g. AB12CDE"
             />
             <button
               type="button"
               onClick={lookupReg}
               disabled={lookupBusy || registration.trim().length < 5}
-              className="bg-green-600 text-white font-semibold px-6 py-2 rounded-md disabled:opacity-50"
+              className="rounded-md bg-green-600 px-6 py-2 font-semibold text-white disabled:opacity-50"
             >
               {lookupBusy ? "Looking up..." : "Lookup"}
             </button>
@@ -194,12 +219,14 @@ export default function CheckForm() {
 
       {/* Make input (auto-complete) */}
       <div className="mb-6">
-        <label className="block text-sm font-semibold mb-2">
+        <label className="mb-2 block text-sm font-semibold">
           Make {mode === "manual" ? <span className="text-red-600">*</span> : null}
         </label>
         <input
           list="make-list"
-          className={`w-full border px-4 py-2 rounded-md ${mode === "manual" && make.trim() === "" ? "border-red-400" : ""}`}
+          className={`w-full rounded-md border px-4 py-2 ${
+            mode === "manual" && make.trim() === "" ? "border-red-400" : ""
+          }`}
           value={make}
           onChange={(e) => setMake(e.target.value)}
           onBlur={() => setMake(normalizeMake(make))}
@@ -215,9 +242,9 @@ export default function CheckForm() {
 
       {/* Year */}
       <div className="mb-6">
-        <label className="block text-sm font-semibold mb-2">Year</label>
+        <label className="mb-2 block text-sm font-semibold">Year</label>
         <input
-          className="w-full border px-4 py-2 rounded-md"
+          className="w-full rounded-md border px-4 py-2"
           type="number"
           value={year}
           min={1990}
@@ -229,9 +256,13 @@ export default function CheckForm() {
 
       {/* Mileage */}
       <div className="mb-6">
-        <label className="block text-sm font-semibold mb-2">Mileage</label>
+        <label className="mb-2 block text-sm font-semibold">
+          Mileage <span className="text-red-600">*</span>
+        </label>
         <input
-          className="w-full border px-4 py-2 rounded-md"
+          className={`w-full rounded-md border px-4 py-2 ${
+            mileage === "" ? "border-red-400" : ""
+          }`}
           type="number"
           value={mileage}
           min={0}
@@ -244,11 +275,11 @@ export default function CheckForm() {
       </div>
 
       {/* Fuel + Transmission */}
-      <div className="grid gap-6 md:grid-cols-2 mb-6">
+      <div className="mb-6 grid gap-6 md:grid-cols-2">
         <div>
-          <label className="block text-sm font-semibold mb-2">Fuel</label>
+          <label className="mb-2 block text-sm font-semibold">Fuel</label>
           <select
-            className="w-full border px-4 py-2 rounded-md"
+            className="w-full rounded-md border px-4 py-2"
             value={fuel}
             onChange={(e) => setFuel(e.target.value as Fuel)}
           >
@@ -260,9 +291,13 @@ export default function CheckForm() {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold mb-2">Transmission</label>
+          <label className="mb-2 block text-sm font-semibold">
+            Transmission <span className="text-red-600">*</span>
+          </label>
           <select
-            className={`w-full border px-4 py-2 rounded-md ${transmission === "" ? "border-red-400" : ""}`}
+            className={`w-full rounded-md border px-4 py-2 ${
+              transmission === "" ? "border-red-400" : ""
+            }`}
             value={transmission}
             onChange={(e) => setTransmission(e.target.value as Transmission)}
             required
@@ -278,9 +313,9 @@ export default function CheckForm() {
 
       {/* Timing type */}
       <div className="mb-6">
-        <label className="block text-sm font-semibold mb-2">Timing type (if known)</label>
+        <label className="mb-2 block text-sm font-semibold">Timing type (if known)</label>
         <select
-          className="w-full border px-4 py-2 rounded-md"
+          className="w-full rounded-md border px-4 py-2"
           value={timingType}
           onChange={(e) => setTimingType(e.target.value as TimingType)}
         >
@@ -292,9 +327,11 @@ export default function CheckForm() {
 
       {/* Asking price */}
       <div className="mb-6">
-        <label className="block text-sm font-semibold mb-2">Asking price (optional)</label>
+        <label className="mb-2 block text-sm font-semibold">
+          Asking price (optional)
+        </label>
         <input
-          className="w-full border px-4 py-2 rounded-md"
+          className="w-full rounded-md border px-4 py-2"
           type="number"
           value={askingPrice}
           min={0}
@@ -305,11 +342,12 @@ export default function CheckForm() {
         />
       </div>
 
-      {error && <div className="text-red-600 text-sm mb-4">{error}</div>}
+      {error && <div className="mb-4 text-sm text-red-600">{error}</div>}
 
       <button
+        type="submit"
         disabled={!canSubmit}
-        className="w-full bg-green-600 text-white font-semibold py-3 rounded-md hover:bg-green-700 disabled:opacity-50"
+        className="w-full rounded-md bg-green-600 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
       >
         {busy ? "Creating…" : "Generate snapshot"}
       </button>
