@@ -19,27 +19,41 @@ export default function SnapshotShareCard({
   exposureHigh,
   checkoutUrl,
   priceLabel,
+  previewUrl,
 }: {
   exposureLow: number;
   exposureHigh: number;
   checkoutUrl: string;
   priceLabel: string;
+  previewUrl: string;
 }) {
   const [copied, setCopied] = useState(false);
 
-  const summaryText = useMemo(() => {
-    return `Based on this AutoAudit snapshot, this vehicle appears to carry around ${money(
+  const shareMessage = useMemo(() => {
+    const absolutePreviewUrl =
+      typeof window !== "undefined"
+        ? `${window.location.origin}${previewUrl}`
+        : previewUrl;
+
+    return `Hi — I ran a quick AutoAudit snapshot for this vehicle.
+
+It suggests around ${money(
       exposureLow
     )}–${money(
       exposureHigh
-    )} of near-term maintenance exposure. That may justify a price conversation before purchase.`;
-  }, [exposureLow, exposureHigh]);
+    )} of potential near-term maintenance risk based on age, mileage and MOT history.
 
-  async function handleCopySummary() {
+Here’s the snapshot:
+${absolutePreviewUrl}
+
+Would you consider adjusting the price to reflect that?`;
+  }, [exposureLow, exposureHigh, previewUrl]);
+
+  async function handleCopy() {
     try {
-      await navigator.clipboard.writeText(summaryText);
+      await navigator.clipboard.writeText(shareMessage);
       setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+      setTimeout(() => setCopied(false), 2000);
     } catch {
       setCopied(false);
     }
@@ -51,17 +65,17 @@ export default function SnapshotShareCard({
         Message you can send to the seller
       </div>
 
-      <div className="mt-2 text-sm text-emerald-900/90">
-        {summaryText}
+      <div className="mt-2 text-sm text-emerald-900/90 whitespace-pre-line">
+        {shareMessage}
       </div>
 
       <div className="mt-4 flex flex-wrap gap-3">
         <button
           type="button"
-          onClick={handleCopySummary}
+          onClick={handleCopy}
           className="inline-flex items-center rounded-lg border bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
         >
-          {copied ? "Copied" : "Copy summary"}
+          {copied ? "Copied" : "Send snapshot to seller"}
         </button>
 
         <a href={checkoutUrl} className="btn-primary">

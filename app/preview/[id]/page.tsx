@@ -407,6 +407,7 @@ export default async function Page({
               exposureHigh={exposureHigh}
               checkoutUrl={checkoutUrl}
               priceLabel={priceLabel}
+              previewUrl={`/preview/${data.id}`}
             />
           </div>
         ) : null}
