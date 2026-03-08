@@ -55,9 +55,6 @@ export default async function Page({
 
   let isPaid = data.is_paid === true;
 
-  // Fallback for webhook race condition:
-  // if Stripe has redirected back with a paid session, unlock the UI immediately
-  // even if the webhook has not updated Supabase yet.
   const sessionId = searchParams?.session_id;
   if (!isPaid && sessionId) {
     try {
@@ -123,11 +120,11 @@ export default async function Page({
       : null;
 
   const justUnlocked = Boolean(sessionId);
+  const motPayload: any = data.mot_payload ?? null;
 
   if (isPaid) {
     return (
       <div className="mx-auto w-full max-w-5xl px-4 py-6">
-        {/* PDF header (print only) */}
         <div className="hidden print:block mb-6 border-b pb-3">
           <div className="text-lg font-bold">AutoAudit Vehicle Report</div>
           <div className="text-sm text-slate-600">
@@ -175,6 +172,7 @@ export default async function Page({
           justUnlocked={justUnlocked}
           reportUrl={`/report/${data.id}`}
           previewUrl={`/preview/${data.id}`}
+          motPayload={motPayload}
         />
       </div>
     );
