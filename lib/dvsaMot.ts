@@ -80,7 +80,7 @@ export async function fetchDvsaMotHistory(
   if (!registration) return null;
 
   try {
-    const reg = cleanRegistration(registration);
+    const vrm = cleanRegistration(registration);
     const apiKey = mustGetEnv("DVSA_MOT_API_KEY");
     const accessToken = await getAccessToken();
 
@@ -90,7 +90,7 @@ export async function fetchDvsaMotHistory(
     let res: Response;
     try {
       res = await fetch(
-        `${baseUrl}?registration=${encodeURIComponent(reg)}`,
+        `${baseUrl}?vrm=${encodeURIComponent(vrm)}`,
         {
           method: "GET",
           headers: {
