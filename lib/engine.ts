@@ -121,8 +121,11 @@ function macroBucketForCategory(category: string): { key: string; label: string 
   if (["electrical", "electronics"].includes(c)) {
     return { key: "electronics", label: "Electrical & Electronics" };
   }
-  if (["service", "fluids", "filters"].includes(c)) {
+  if (["service", "general_maintenance_risk", "fluids", "filters"].includes(c)) {
     return { key: "routine_service", label: "Routine Service" };
+  }
+  if (["mot", "mot_history"].includes(c)) {
+    return { key: "mot_history", label: "MoT History Signals" };
   }
 
   return { key: "other", label: "Other Checks" };
@@ -334,7 +337,7 @@ export function generateReport(input: EngineInput) {
       label: "Recent MoT failure items need follow-up",
       status: "recent_failure_history",
       item_id: "mot_recent_failures",
-      category: "safety",
+      category: "mot_history",
       base_low: baseLow,
       base_high: baseHigh,
       multiplier: 1,
@@ -355,21 +358,22 @@ export function generateReport(input: EngineInput) {
     const baseLow = 80;
     const baseHigh = 220;
     items.push({
-      label: "Repeated MoT advisories detected",
+      label: "Recurring advisory pattern detected",
       status: "repeat_advisory_pattern",
       item_id: "mot_repeat_advisories",
-      category: "service",
+      category: "general_maintenance_risk",
       base_low: baseLow,
       base_high: baseHigh,
       multiplier: 1,
       cost_low: Math.round(baseLow * makeMult),
       cost_high: Math.round(baseHigh * makeMult),
-      why_flagged: `MoT history shows ${mot.repeatAdvisories.length} repeated advisory pattern${mot.repeatAdvisories.length === 1 ? "" : "s"}.`,
+      why_flagged: `MoT history shows ${mot.repeatAdvisories.length} recurring advisory pattern${mot.repeatAdvisories.length === 1 ? "" : "s"} across multiple test cycles.`,
       why_it_matters:
-        "Repeated advisories can suggest an issue has been allowed to persist across multiple test cycles.",
+        "Recurring advisories can suggest an issue has been allowed to persist over time rather than being fully resolved after a single MoT.",
       questions_to_ask: [
-        "Were repeated advisory items repaired properly after previous MoTs?",
-        "Do you have invoices for recurring advisory work?",
+        "Which advisory items have appeared more than once in the MoT history?",
+        "Were the recurring advisory items repaired properly after previous MoTs?",
+        "Do you have invoices for work relating to those repeated advisories?",
       ],
     });
   }
@@ -381,7 +385,7 @@ export function generateReport(input: EngineInput) {
       label: "Corrosion / underside condition follow-up",
       status: "mot_corrosion_signal",
       item_id: "mot_corrosion",
-      category: "chassis",
+      category: "mot_history",
       base_low: baseLow,
       base_high: baseHigh,
       multiplier: 1,
@@ -406,7 +410,7 @@ export function generateReport(input: EngineInput) {
       label: "Brake-related MoT advisories",
       status: "mot_brake_signal",
       item_id: "mot_brake_signal",
-      category: "brakes",
+      category: "mot_history",
       base_low: baseLow,
       base_high: baseHigh,
       multiplier: 0.8,
@@ -429,7 +433,7 @@ export function generateReport(input: EngineInput) {
       label: "Tyre condition / tread follow-up",
       status: "mot_tyre_signal",
       item_id: "mot_tyre_signal",
-      category: "safety",
+      category: "mot_history",
       base_low: baseLow,
       base_high: baseHigh,
       multiplier: 1,
@@ -452,7 +456,7 @@ export function generateReport(input: EngineInput) {
       label: "Suspension / steering MoT advisories",
       status: "mot_suspension_signal",
       item_id: "mot_suspension_signal",
-      category: "suspension",
+      category: "mot_history",
       base_low: baseLow,
       base_high: baseHigh,
       multiplier: 0.9,
@@ -475,7 +479,7 @@ export function generateReport(input: EngineInput) {
       label: "Mileage history consistency check",
       status: "mot_mileage_signal",
       item_id: "mot_mileage_signal",
-      category: "service",
+      category: "mot_history",
       base_low: baseLow,
       base_high: baseHigh,
       multiplier: 1,

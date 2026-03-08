@@ -94,6 +94,31 @@ function sourceLabel(source: "mot" | "service" | "mixed") {
   return "Service risk";
 }
 
+function categoryLabel(category?: string) {
+  const c = String(category ?? "").toLowerCase();
+
+  if (c === "service" || c === "general_maintenance_risk") {
+    return "General Maintenance Risk";
+  }
+  if (c === "mot" || c === "mot_history") {
+    return "MoT History";
+  }
+  if (c === "engine") return "Engine";
+  if (c === "drivetrain") return "Drivetrain";
+  if (c === "timing") return "Timing";
+  if (c === "brakes") return "Brakes";
+  if (c === "safety") return "Safety";
+  if (c === "suspension") return "Suspension";
+  if (c === "steering") return "Steering";
+  if (c === "chassis") return "Chassis";
+  if (c === "electrical") return "Electrical";
+  if (c === "electronics") return "Electronics";
+  if (c === "fluids") return "Fluids";
+  if (c === "filters") return "Filters";
+  if (!c) return "";
+  return titleCase(c.replace(/_/g, " "));
+}
+
 function getMotSummary(motPayload: any) {
   const empty = {
     available: false,
@@ -568,7 +593,7 @@ If you want, you can unlock the full report from that page, tick off anything al
 
                       {item.category ? (
                         <span className="text-slate-600">
-                          Category: <b>{String(item.category)}</b>
+                          Category: <b>{categoryLabel(item.category)}</b>
                         </span>
                       ) : null}
                     </div>
