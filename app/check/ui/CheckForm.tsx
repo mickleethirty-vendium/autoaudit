@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 type Fuel = "petrol" | "diesel" | "hybrid" | "ev";
 type Transmission = "" | "manual" | "automatic" | "cvt" | "dct";
@@ -42,6 +42,8 @@ function normalizeMake(input: string): string {
 
 export default function CheckForm() {
   const [mode, setMode] = useState<"reg" | "manual">("reg");
+
+  const mileageRef = useRef<HTMLInputElement | null>(null);
 
   // State variables
   const [registration, setRegistration] = useState<string>("");
@@ -88,6 +90,10 @@ export default function CheckForm() {
 
       setMileage("");
       setTransmission("");
+
+      setTimeout(() => {
+        mileageRef.current?.focus();
+      }, 0);
     } catch (e: any) {
       setLookupError(e?.message ?? "Lookup failed");
     } finally {
@@ -165,7 +171,7 @@ export default function CheckForm() {
   return (
     <form
       onSubmit={onSubmit}
-      className="grid gap-6 max-w-lg mx-auto rounded-lg border bg-white p-6 shadow-md"
+      className="mx-auto grid max-w-lg gap-6 rounded-lg border bg-white p-6 shadow-md"
     >
       {/* Mode switch */}
       <div className="mb-6 flex gap-4">
@@ -214,6 +220,12 @@ export default function CheckForm() {
           </div>
 
           {lookupError && <div className="mt-2 text-red-600">{lookupError}</div>}
+
+          {lookupResult ? (
+            <div className="mt-2 text-sm text-slate-600">
+              Vehicle details found. Enter mileage to continue.
+            </div>
+          ) : null}
         </div>
       )}
 
@@ -260,6 +272,7 @@ export default function CheckForm() {
           Mileage <span className="text-red-600">*</span>
         </label>
         <input
+          ref={mileageRef}
           className={`w-full rounded-md border px-4 py-2 ${
             mileage === "" ? "border-red-400" : ""
           }`}
