@@ -80,33 +80,32 @@ export async function fetchDvsaMotHistory(
   if (!registration) return null;
 
   try {
-    const vrm = cleanRegistration(registration);
+    const reg = cleanRegistration(registration);
     const apiKey = mustGetEnv("DVSA_MOT_API_KEY");
     const accessToken = await getAccessToken();
 
-    const baseUrl =
-      "https://history.mot.api.gov.uk/v1/trade/vehicles/mot-tests";
+    const url = `https://history.mot.api.gov.uk/v1/trade/vehicles/registration/${encodeURIComponent(
+      reg
+    )}`;
 
     let res: Response;
     try {
-      res = await fetch(
-        `${baseUrl}?vrm=${encodeURIComponent(vrm)}`,
-        {
-          method: "GET",
-          headers: {
-            "X-API-Key": apiKey,
-            Authorization: `Bearer ${accessToken}`,
-            Accept: "application/json",
-          },
-          cache: "no-store",
-        }
-      );
+      res = await fetch(url, {
+        method: "GET",
+        headers: {
+          "X-API-Key": apiKey,
+          Authorization: `Bearer ${accessToken}`,
+          Accept: "application/json+v6",
+        },
+        cache: "no-store",
+      });
     } catch (error: any) {
       return {
         _error: true,
         status: 500,
         data: {
           message: `DVSA MOT API fetch failed: ${error?.message ?? "unknown error"}`,
+          url,
         },
       };
     }
@@ -124,7 +123,10 @@ export async function fetchDvsaMotHistory(
       return {
         _error: true,
         status: res.status,
-        data,
+        data: {
+          ...data,
+          _request_url: url,
+        },
       };
     }
 
