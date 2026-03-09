@@ -440,59 +440,160 @@ If you want, you can unlock the full report from that page, tick off anything al
         </button>
       </div>
 
-      {/* Service risk + MOT side by side */}
       <div className="grid gap-5 md:grid-cols-2">
-        {/* Service risk */}
-        <div className="rounded-2xl border bg-white p-6 break-inside-avoid">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Service risk
+        {/* Left column: Service risk + itemised checks */}
+        <div className="space-y-5">
+          <div className="rounded-2xl border bg-white p-6 break-inside-avoid">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Service risk
+                </div>
+                <div className="mt-1 text-sm text-slate-600">
+                  Estimated immediate exposure, adjustable as you tick off items already done.
+                </div>
               </div>
-              <div className="mt-1 text-sm text-slate-600">
-                Estimated immediate exposure, adjustable as you tick off items already done.
-              </div>
-            </div>
 
-            <div className="hidden sm:inline-flex items-center rounded-full border bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
-              Predicted
-            </div>
-          </div>
-
-          <div className="mt-4 text-4xl font-extrabold text-slate-900">
-            {money(adjusted.low)} – {money(adjusted.high)}
-          </div>
-
-          <div
-            className={[
-              "mt-3 inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold border",
-              riskColor(adjusted.risk),
-            ].join(" ")}
-          >
-            Risk: {titleCase(adjusted.risk)}
-          </div>
-
-          <div className="mt-3 text-sm text-slate-600">
-            Tick items you can prove are already done to reduce the estimate.
-          </div>
-
-          {negotiationAdjusted !== null ? (
-            <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 break-inside-avoid">
-              <div className="font-semibold text-emerald-900">
-                Suggested negotiation: ~{money(negotiationAdjusted)}
-              </div>
-              <div className="mt-1 text-sm text-emerald-900/80">
-                (Based on remaining items not ticked as done)
-              </div>
-              <div className="mt-1 text-sm font-medium text-emerald-900">
-                Scroll down for details
+              <div className="hidden sm:inline-flex items-center rounded-full border bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
+                Predicted
               </div>
             </div>
-          ) : null}
+
+            <div className="mt-4 text-4xl font-extrabold text-slate-900">
+              {money(adjusted.low)} – {money(adjusted.high)}
+            </div>
+
+            <div
+              className={[
+                "mt-3 inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold border",
+                riskColor(adjusted.risk),
+              ].join(" ")}
+            >
+              Risk: {titleCase(adjusted.risk)}
+            </div>
+
+            <div className="mt-3 text-sm text-slate-600">
+              Tick items you can prove are already done to reduce the estimate.
+            </div>
+
+            {negotiationAdjusted !== null ? (
+              <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 break-inside-avoid">
+                <div className="font-semibold text-emerald-900">
+                  Suggested negotiation: ~{money(negotiationAdjusted)}
+                </div>
+                <div className="mt-1 text-sm text-emerald-900/80">
+                  (Based on remaining items not ticked as done)
+                </div>
+                <div className="mt-1 text-sm font-medium text-emerald-900">
+                  Scroll down for details
+                </div>
+              </div>
+            ) : null}
+          </div>
+
+          {/* Itemised checks moved up into left column */}
+          <div className="rounded-2xl border bg-white p-6 break-inside-avoid">
+            <h2 className="text-xl font-semibold">Itemised checks</h2>
+
+            <div className="mt-4 space-y-4">
+              {items.map((item, idx) => {
+                const key = String(item.item_id ?? item.label ?? `item-${idx}`);
+                const isDone = !!done[key];
+                const source = itemSource(item);
+
+                return (
+                  <div key={key} className="rounded-2xl border bg-white p-6 break-inside-avoid">
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div className="min-w-[220px]">
+                        <div className="text-lg font-semibold text-slate-900">
+                          {item.label ?? "Service item"}
+                        </div>
+
+                        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                          <span
+                            className={[
+                              "inline-flex items-center rounded-full border px-2.5 py-1 font-semibold",
+                              sourceBadgeClasses(source),
+                            ].join(" ")}
+                          >
+                            Source: {sourceLabel(source)}
+                          </span>
+
+                          {item.status ? (
+                            <span className="text-slate-600">
+                              Status: <b>{String(item.status)}</b>
+                            </span>
+                          ) : null}
+
+                          {item.category ? (
+                            <span className="text-slate-600">
+                              Category: <b>{categoryLabel(item.category)}</b>
+                            </span>
+                          ) : null}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        {typeof item.cost_low === "number" && typeof item.cost_high === "number" ? (
+                          <div className="text-right">
+                            <div className="text-lg font-semibold text-slate-900">
+                              {money(item.cost_low)} – {money(item.cost_high)}
+                            </div>
+                            <div className="text-xs text-slate-600">estimated</div>
+                          </div>
+                        ) : null}
+
+                        <label className="inline-flex items-center gap-2 rounded-lg border bg-slate-50 px-3 py-2 text-sm print:hidden">
+                          <input
+                            type="checkbox"
+                            checked={isDone}
+                            onChange={(e) =>
+                              setDone((prev) => ({ ...prev, [key]: e.target.checked }))
+                            }
+                          />
+                          <span className="font-semibold text-slate-800">Already done</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {isDone ? (
+                      <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+                        Marked as done — removed from exposure estimate.
+                      </div>
+                    ) : null}
+
+                    {item.why_flagged ? (
+                      <div className="mt-4 text-sm text-slate-700">
+                        <b>Why flagged:</b> {item.why_flagged}
+                      </div>
+                    ) : null}
+
+                    {item.why_it_matters ? (
+                      <div className="mt-3 rounded-lg bg-slate-50 p-4 text-sm text-slate-700">
+                        <div className="font-semibold text-slate-900">Why it matters</div>
+                        <div className="mt-1">{item.why_it_matters}</div>
+                      </div>
+                    ) : null}
+
+                    {Array.isArray(item.questions_to_ask) && item.questions_to_ask.length ? (
+                      <div className="mt-4">
+                        <div className="text-sm font-semibold">Questions to ask</div>
+                        <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
+                          {item.questions_to_ask.map((q: string, i: number) => (
+                            <li key={i}>{q}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
-        {/* MOT history */}
-        <div className="rounded-2xl border bg-white p-6 break-inside-avoid">
+        {/* Right column: MOT history */}
+        <div className="rounded-2xl border bg-white p-6 break-inside-avoid self-start">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -527,13 +628,19 @@ If you want, you can unlock the full report from that page, tick off anything al
                     </div>
 
                     <div className="overflow-x-auto pb-1">
-                      <div className="grid grid-flow-col auto-cols-[calc((100%-1rem)/3)] gap-2 min-w-full">
+                      <div className="grid min-w-full grid-flow-col auto-cols-[calc((100%-1rem)/3)] gap-2">
                         {motTests.map((test, idx) => {
                           const yearLabel = test.completedDate
                             ? new Date(test.completedDate).getFullYear()
                             : `Test ${idx + 1}`;
 
                           const active = idx === selectedMotIndex;
+                          const hasAdvisories =
+                            Array.isArray(test.defects) &&
+                            test.defects.some((defect) => {
+                              const type = String(defect?.type ?? "").toUpperCase();
+                              return type === "ADVISORY" || type === "MINOR";
+                            });
 
                           return (
                             <button
@@ -541,9 +648,11 @@ If you want, you can unlock the full report from that page, tick off anything al
                               type="button"
                               onClick={() => setSelectedMotIndex(idx)}
                               className={[
-                                "rounded-lg border px-3 py-2 text-sm font-semibold text-left transition",
+                                "rounded-lg border px-3 py-2 text-left text-sm font-semibold transition",
                                 active
                                   ? "border-slate-900 bg-slate-900 text-white"
+                                  : hasAdvisories
+                                  ? "border-rose-200 bg-white text-rose-700 hover:bg-rose-50"
                                   : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50",
                               ].join(" ")}
                             >
@@ -693,7 +802,7 @@ If you want, you can unlock the full report from that page, tick off anything al
         </div>
       </div>
 
-      {/* Seller message card */}
+      {/* Seller message moved to bottom full-width */}
       {sellerMessage ? (
         <div className="mt-6 rounded-2xl border bg-white p-6 break-inside-avoid">
           <div className="text-lg font-semibold text-slate-900">
@@ -718,106 +827,6 @@ If you want, you can unlock the full report from that page, tick off anything al
           </button>
         </div>
       ) : null}
-
-      {/* Items */}
-      <div className="mt-10">
-        <h2 className="text-xl font-semibold">Itemised checks</h2>
-
-        <div className="mt-4 space-y-4">
-          {items.map((item, idx) => {
-            const key = String(item.item_id ?? item.label ?? `item-${idx}`);
-            const isDone = !!done[key];
-            const source = itemSource(item);
-
-            return (
-              <div key={key} className="rounded-2xl border bg-white p-6 break-inside-avoid">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="min-w-[220px]">
-                    <div className="text-lg font-semibold text-slate-900">
-                      {item.label ?? "Service item"}
-                    </div>
-
-                    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-                      <span
-                        className={[
-                          "inline-flex items-center rounded-full border px-2.5 py-1 font-semibold",
-                          sourceBadgeClasses(source),
-                        ].join(" ")}
-                      >
-                        Source: {sourceLabel(source)}
-                      </span>
-
-                      {item.status ? (
-                        <span className="text-slate-600">
-                          Status: <b>{String(item.status)}</b>
-                        </span>
-                      ) : null}
-
-                      {item.category ? (
-                        <span className="text-slate-600">
-                          Category: <b>{categoryLabel(item.category)}</b>
-                        </span>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    {typeof item.cost_low === "number" && typeof item.cost_high === "number" ? (
-                      <div className="text-right">
-                        <div className="text-lg font-semibold text-slate-900">
-                          {money(item.cost_low)} – {money(item.cost_high)}
-                        </div>
-                        <div className="text-xs text-slate-600">estimated</div>
-                      </div>
-                    ) : null}
-
-                    <label className="inline-flex items-center gap-2 rounded-lg border bg-slate-50 px-3 py-2 text-sm print:hidden">
-                      <input
-                        type="checkbox"
-                        checked={isDone}
-                        onChange={(e) =>
-                          setDone((prev) => ({ ...prev, [key]: e.target.checked }))
-                        }
-                      />
-                      <span className="font-semibold text-slate-800">Already done</span>
-                    </label>
-                  </div>
-                </div>
-
-                {isDone ? (
-                  <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
-                    Marked as done — removed from exposure estimate.
-                  </div>
-                ) : null}
-
-                {item.why_flagged ? (
-                  <div className="mt-4 text-sm text-slate-700">
-                    <b>Why flagged:</b> {item.why_flagged}
-                  </div>
-                ) : null}
-
-                {item.why_it_matters ? (
-                  <div className="mt-3 rounded-lg bg-slate-50 p-4 text-sm text-slate-700">
-                    <div className="font-semibold text-slate-900">Why it matters</div>
-                    <div className="mt-1">{item.why_it_matters}</div>
-                  </div>
-                ) : null}
-
-                {Array.isArray(item.questions_to_ask) && item.questions_to_ask.length ? (
-                  <div className="mt-4">
-                    <div className="text-sm font-semibold">Questions to ask</div>
-                    <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
-                      {item.questions_to_ask.map((q: string, i: number) => (
-                        <li key={i}>{q}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
-              </div>
-            );
-          })}
-        </div>
-      </div>
     </>
   );
 }
