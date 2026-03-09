@@ -545,7 +545,7 @@ If you want, you can unlock the full report from that page, tick off anything al
 
                       <div className="ml-auto flex items-center gap-3">
                         {typeof item.cost_low === "number" && typeof item.cost_high === "number" ? (
-                          <div className="text-right">
+                          <div className="mr-auto text-left">
                             <div className="text-lg font-semibold text-slate-900">
                               {money(item.cost_low)} – {money(item.cost_high)}
                             </div>
@@ -602,231 +602,248 @@ If you want, you can unlock the full report from that page, tick off anything al
           </div>
         </div>
 
-        {/* Right column: MOT history */}
-        <div className="rounded-2xl border bg-white p-6 break-inside-avoid self-start">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                MoT history
-              </div>
-              <div className="mt-1 text-sm text-slate-600">
-                Real DVSA test history used to strengthen this report.
-              </div>
-            </div>
-
-            <div className="hidden sm:inline-flex items-center rounded-full border bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
-              DVSA data
-            </div>
-          </div>
-
-          {mot.available ? (
-            <>
-              <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-4">
-                <div className="font-semibold text-rose-900">
-                  {mot.credibilityTitle}
+        {/* Right column: MOT history + HPI placeholder */}
+        <div className="space-y-5">
+          <div className="rounded-2xl border bg-white p-6 break-inside-avoid self-start">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  MoT history
                 </div>
-                <div className="mt-1 text-sm text-rose-900/80">
-                  {mot.credibilityText}
+                <div className="mt-1 text-sm text-slate-600">
+                  Real DVSA test history used to strengthen this report.
                 </div>
               </div>
 
-              {motTests.length ? (
-                <>
-                  <div className="mt-4">
-                    <div className="mb-2 text-sm font-semibold text-slate-900">
-                      Test history by year · Advisories
-                    </div>
+              <div className="hidden sm:inline-flex items-center rounded-full border bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
+                DVSA data
+              </div>
+            </div>
 
-                    <div className="overflow-x-auto pb-1">
-                      <div className="grid min-w-full grid-flow-col auto-cols-[calc((100%-1rem)/3)] gap-2">
-                        {motTests.map((test, idx) => {
-                          const yearLabel = test.completedDate
-                            ? new Date(test.completedDate).getFullYear()
-                            : `Test ${idx + 1}`;
-
-                          const active = idx === selectedMotIndex;
-                          const result = String(test.testResult ?? "").toUpperCase();
-                          const isFail = result === "FAILED" || result === "FAIL";
-                          const hasAdvisories =
-                            Array.isArray(test.defects) &&
-                            test.defects.some((defect) => {
-                              const type = String(defect?.type ?? "").toUpperCase();
-                              return type === "ADVISORY" || type === "MINOR";
-                            });
-
-                          return (
-                            <button
-                              key={`${test.completedDate ?? "mot"}-${idx}`}
-                              type="button"
-                              onClick={() => setSelectedMotIndex(idx)}
-                              className={[
-                                "rounded-lg border px-3 py-2 text-left text-sm font-semibold transition",
-                                active
-                                  ? isFail
-                                    ? "border-rose-700 bg-rose-700 text-white"
-                                    : "border-slate-900 bg-slate-900 text-white"
-                                  : isFail
-                                  ? "border-rose-700 bg-rose-700 text-white hover:bg-rose-800"
-                                  : hasAdvisories
-                                  ? "border-rose-200 bg-white text-rose-700 hover:bg-rose-50"
-                                  : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50",
-                              ].join(" ")}
-                            >
-                              <div className={hasAdvisories && !active && !isFail ? "text-rose-700" : ""}>
-                                {yearLabel}
-                              </div>
-                              <div className="mt-0.5 text-xs opacity-80">
-                                {test.testResult ? titleCase(String(test.testResult)) : "Result unknown"}
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
+            {mot.available ? (
+              <>
+                <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-4">
+                  <div className="font-semibold text-rose-900">
+                    {mot.credibilityTitle}
                   </div>
-
-                  {selectedMotTest ? (
-                    <div className="mt-4 rounded-xl border bg-slate-50 p-4">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <div className="text-xs uppercase tracking-wide text-slate-500">
-                            Selected test
-                          </div>
-                          <div className="mt-1 text-lg font-semibold text-slate-900">
-                            {selectedMotTest.completedDate
-                              ? formatDate(selectedMotTest.completedDate)
-                              : "Unknown date"}
-                          </div>
-                        </div>
-
-                        <span
-                          className={[
-                            "inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold",
-                            resultBadgeClasses(selectedMotTest.testResult),
-                          ].join(" ")}
-                        >
-                          {selectedMotTest.testResult
-                            ? titleCase(String(selectedMotTest.testResult))
-                            : "Unknown"}
-                        </span>
-                      </div>
-
-                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                        <div className="rounded-lg border bg-white p-3">
-                          <div className="text-xs uppercase tracking-wide text-slate-500">
-                            Expiry
-                          </div>
-                          <div className="mt-1 text-sm font-semibold text-slate-900">
-                            {selectedMotTest.expiryDate
-                              ? formatDate(selectedMotTest.expiryDate)
-                              : "—"}
-                          </div>
-                        </div>
-
-                        <div className="rounded-lg border bg-white p-3">
-                          <div className="text-xs uppercase tracking-wide text-slate-500">
-                            Mileage at test
-                          </div>
-                          <div className="mt-1 text-sm font-semibold text-slate-900">
-                            {selectedMotTest.odometerValue
-                              ? `${selectedMotTest.odometerValue}${
-                                  selectedMotTest.odometerUnit
-                                    ? ` ${selectedMotTest.odometerUnit}`
-                                    : ""
-                                }`
-                              : "—"}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="mt-4">
-                        <div className="text-sm font-semibold text-slate-900">
-                          Recorded advisories / defects
-                        </div>
-
-                        {Array.isArray(selectedMotTest.defects) && selectedMotTest.defects.length ? (
-                          <div className="mt-3 space-y-2">
-                            {selectedMotTest.defects.map((defect, idx) => (
-                              <div
-                                key={`${defect.text ?? "defect"}-${idx}`}
-                                className="rounded-lg border bg-white p-3"
-                              >
-                                <div className="flex flex-wrap items-start justify-between gap-2">
-                                  <span
-                                    className={[
-                                      "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold",
-                                      defectBadgeClasses(defect.type),
-                                    ].join(" ")}
-                                  >
-                                    {defect.type ? titleCase(String(defect.type)) : "Recorded"}
-                                  </span>
-
-                                  {defect.dangerous ? (
-                                    <span className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-900">
-                                      Dangerous
-                                    </span>
-                                  ) : null}
-                                </div>
-
-                                <div className="mt-2 text-sm text-slate-700">
-                                  {defect.text ?? "No description available."}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="mt-2 text-sm text-slate-600">
-                            No advisories or defects were recorded for this test.
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ) : null}
-                </>
-              ) : (
-                <div className="mt-4 rounded-xl border bg-slate-50 p-4 text-sm text-slate-700">
-                  MoT history is available, but no test entries were returned for display.
-                </div>
-              )}
-
-              <div className="mt-4">
-                <div className="text-sm font-semibold text-slate-900">
-                  Standout MoT signals
+                  <div className="mt-1 text-sm text-rose-900/80">
+                    {mot.credibilityText}
+                  </div>
                 </div>
 
                 {motTests.length ? (
-                  <div className="mt-2 rounded-lg border bg-slate-50 p-4">
-                    <ul className="space-y-2 text-sm text-slate-700">
-                      {motTests.map((test, idx) => (
-                        <li key={`${test.completedDate ?? "summary"}-${idx}`}>
-                          {yearlyMotSummaryLine(test, idx)}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : motFlags.length ? (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {motFlags.map((flag) => (
-                      <span
-                        key={flag}
-                        className="inline-flex items-center rounded-full border bg-white px-3 py-1 text-sm text-slate-700"
-                      >
-                        {flag}
-                      </span>
-                    ))}
-                  </div>
+                  <>
+                    <div className="mt-4">
+                      <div className="mb-2 text-sm font-semibold text-slate-900">
+                        Test history by year · Advisories
+                      </div>
+
+                      <div className="overflow-x-auto pb-1">
+                        <div className="grid min-w-full grid-flow-col auto-cols-[calc((100%-1rem)/3)] gap-2">
+                          {motTests.map((test, idx) => {
+                            const yearLabel = test.completedDate
+                              ? new Date(test.completedDate).getFullYear()
+                              : `Test ${idx + 1}`;
+
+                            const active = idx === selectedMotIndex;
+                            const result = String(test.testResult ?? "").toUpperCase();
+                            const isFail = result === "FAILED" || result === "FAIL";
+                            const hasAdvisories =
+                              Array.isArray(test.defects) &&
+                              test.defects.some((defect) => {
+                                const type = String(defect?.type ?? "").toUpperCase();
+                                return type === "ADVISORY" || type === "MINOR";
+                              });
+
+                            return (
+                              <button
+                                key={`${test.completedDate ?? "mot"}-${idx}`}
+                                type="button"
+                                onClick={() => setSelectedMotIndex(idx)}
+                                className={[
+                                  "rounded-lg border px-3 py-2 text-left text-sm font-semibold transition",
+                                  active
+                                    ? isFail
+                                      ? "border-rose-700 bg-rose-700 text-white"
+                                      : "border-slate-900 bg-slate-900 text-white"
+                                    : isFail
+                                    ? "border-rose-700 bg-rose-700 text-white hover:bg-rose-800"
+                                    : hasAdvisories
+                                    ? "border-rose-200 bg-white text-rose-700 hover:bg-rose-50"
+                                    : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50",
+                                ].join(" ")}
+                              >
+                                <div className={hasAdvisories && !active && !isFail ? "text-rose-700" : ""}>
+                                  {yearLabel}
+                                </div>
+                                <div className="mt-0.5 text-xs opacity-80">
+                                  {test.testResult ? titleCase(String(test.testResult)) : "Result unknown"}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
+                    {selectedMotTest ? (
+                      <div className="mt-4 rounded-xl border bg-slate-50 p-4">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div>
+                            <div className="text-xs uppercase tracking-wide text-slate-500">
+                              Selected test
+                            </div>
+                            <div className="mt-1 text-lg font-semibold text-slate-900">
+                              {selectedMotTest.completedDate
+                                ? formatDate(selectedMotTest.completedDate)
+                                : "Unknown date"}
+                            </div>
+                          </div>
+
+                          <span
+                            className={[
+                              "inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold",
+                              resultBadgeClasses(selectedMotTest.testResult),
+                            ].join(" ")}
+                          >
+                            {selectedMotTest.testResult
+                              ? titleCase(String(selectedMotTest.testResult))
+                              : "Unknown"}
+                          </span>
+                        </div>
+
+                        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                          <div className="rounded-lg border bg-white p-3">
+                            <div className="text-xs uppercase tracking-wide text-slate-500">
+                              Expiry
+                            </div>
+                            <div className="mt-1 text-sm font-semibold text-slate-900">
+                              {selectedMotTest.expiryDate
+                                ? formatDate(selectedMotTest.expiryDate)
+                                : "—"}
+                            </div>
+                          </div>
+
+                          <div className="rounded-lg border bg-white p-3">
+                            <div className="text-xs uppercase tracking-wide text-slate-500">
+                              Mileage at test
+                            </div>
+                            <div className="mt-1 text-sm font-semibold text-slate-900">
+                              {selectedMotTest.odometerValue
+                                ? `${selectedMotTest.odometerValue}${
+                                    selectedMotTest.odometerUnit
+                                      ? ` ${selectedMotTest.odometerUnit}`
+                                      : ""
+                                  }`
+                                : "—"}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mt-4">
+                          <div className="text-sm font-semibold text-slate-900">
+                            Recorded advisories / defects
+                          </div>
+
+                          {Array.isArray(selectedMotTest.defects) && selectedMotTest.defects.length ? (
+                            <div className="mt-3 space-y-2">
+                              {selectedMotTest.defects.map((defect, idx) => (
+                                <div
+                                  key={`${defect.text ?? "defect"}-${idx}`}
+                                  className="rounded-lg border bg-white p-3"
+                                >
+                                  <div className="flex flex-wrap items-start justify-between gap-2">
+                                    <span
+                                      className={[
+                                        "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold",
+                                        defectBadgeClasses(defect.type),
+                                      ].join(" ")}
+                                    >
+                                      {defect.type ? titleCase(String(defect.type)) : "Recorded"}
+                                    </span>
+
+                                    {defect.dangerous ? (
+                                      <span className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-900">
+                                        Dangerous
+                                      </span>
+                                    ) : null}
+                                  </div>
+
+                                  <div className="mt-2 text-sm text-slate-700">
+                                    {defect.text ?? "No description available."}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="mt-2 text-sm text-slate-600">
+                              No advisories or defects were recorded for this test.
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : null}
+                  </>
                 ) : (
-                  <div className="mt-2 text-sm text-slate-600">
-                    No standout MoT warning themes detected in the most recent history.
+                  <div className="mt-4 rounded-xl border bg-slate-50 p-4 text-sm text-slate-700">
+                    MoT history is available, but no test entries were returned for display.
                   </div>
                 )}
+
+                <div className="mt-4">
+                  <div className="text-sm font-semibold text-slate-900">
+                    Standout MoT signals
+                  </div>
+
+                  {motTests.length ? (
+                    <div className="mt-2 rounded-lg border bg-slate-50 p-4">
+                      <ul className="space-y-2 text-sm text-slate-700">
+                        {motTests.map((test, idx) => (
+                          <li key={`${test.completedDate ?? "summary"}-${idx}`}>
+                            {yearlyMotSummaryLine(test, idx)}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : motFlags.length ? (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {motFlags.map((flag) => (
+                        <span
+                          key={flag}
+                          className="inline-flex items-center rounded-full border bg-white px-3 py-1 text-sm text-slate-700"
+                        >
+                          {flag}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="mt-2 text-sm text-slate-600">
+                      No standout MoT warning themes detected in the most recent history.
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="mt-4 rounded-xl border bg-slate-50 p-4 text-sm text-slate-700">
+                MoT history not available for this report yet.
               </div>
-            </>
-          ) : (
-            <div className="mt-4 rounded-xl border bg-slate-50 p-4 text-sm text-slate-700">
-              MoT history not available for this report yet.
+            )}
+          </div>
+
+          <div className="rounded-2xl border border-amber-200 bg-white p-6 break-inside-avoid">
+            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              HPI summary
             </div>
-          )}
+            <div className="mt-1 text-sm text-slate-600">
+              Provenance, finance, write-off and theft markers will appear here.
+            </div>
+
+            <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+              <div className="font-semibold text-amber-900">
+                HPI data summary coming soon...
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
