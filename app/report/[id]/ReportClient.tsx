@@ -461,7 +461,7 @@ If you want, you can unlock the full report from that page, tick off anything al
                   Service risk
                 </div>
                 <div className="mt-1 text-sm text-slate-600">
-                  Estimated immediate exposure, adjustable as you tick off items already done.
+                  Estimated immediate exposure, adjustable as you tick off items already done. Scroll down for full details.
                 </div>
               </div>
 
@@ -513,7 +513,7 @@ If you want, you can unlock the full report from that page, tick off anything al
 
                 return (
                   <div key={key} className="rounded-2xl border bg-white p-6 break-inside-avoid">
-                    <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div className="flex flex-wrap items-start gap-4">
                       <div className="min-w-[220px] flex-1">
                         <div className="text-lg font-semibold text-slate-900">
                           {item.label ?? "Service item"}
@@ -543,15 +543,17 @@ If you want, you can unlock the full report from that page, tick off anything al
                         </div>
                       </div>
 
-                      <div className="ml-auto flex items-center gap-3">
+                      <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:min-w-[320px]">
                         {typeof item.cost_low === "number" && typeof item.cost_high === "number" ? (
-                          <div className="mr-auto text-left">
+                          <div className="text-left">
                             <div className="text-lg font-semibold text-slate-900">
                               {money(item.cost_low)} – {money(item.cost_high)}
                             </div>
                             <div className="text-xs text-slate-600">estimated</div>
                           </div>
-                        ) : null}
+                        ) : (
+                          <div />
+                        )}
 
                         <label className="inline-flex items-center gap-2 rounded-lg border bg-slate-50 px-3 py-2 text-sm print:hidden">
                           <input
