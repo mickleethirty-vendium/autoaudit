@@ -93,14 +93,8 @@ function itemSource(item: Item): "mot" | "service" | "mixed" {
   return motSignals ? "mot" : "service";
 }
 
-function sourceBadgeClasses(source: "mot" | "service" | "mixed") {
-  if (source === "mot") {
-    return "border-rose-200 bg-rose-50 text-rose-900";
-  }
-  if (source === "mixed") {
-    return "border-amber-200 bg-amber-50 text-amber-900";
-  }
-  return "border-emerald-200 bg-emerald-50 text-emerald-900";
+function sourceBadgeClasses(_source: "mot" | "service" | "mixed") {
+  return "border-rose-200 bg-rose-50 text-rose-900";
 }
 
 function sourceLabel(source: "mot" | "service" | "mixed") {
@@ -520,7 +514,7 @@ If you want, you can unlock the full report from that page, tick off anything al
                 return (
                   <div key={key} className="rounded-2xl border bg-white p-6 break-inside-avoid">
                     <div className="flex flex-wrap items-start justify-between gap-4">
-                      <div className="min-w-[220px]">
+                      <div className="min-w-[220px] flex-1">
                         <div className="text-lg font-semibold text-slate-900">
                           {item.label ?? "Service item"}
                         </div>
@@ -549,7 +543,7 @@ If you want, you can unlock the full report from that page, tick off anything al
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3">
+                      <div className="ml-auto flex items-center gap-3">
                         {typeof item.cost_low === "number" && typeof item.cost_high === "number" ? (
                           <div className="text-right">
                             <div className="text-lg font-semibold text-slate-900">
@@ -640,7 +634,7 @@ If you want, you can unlock the full report from that page, tick off anything al
                 <>
                   <div className="mt-4">
                     <div className="mb-2 text-sm font-semibold text-slate-900">
-                      Test history by year
+                      Test history by year · Advisories
                     </div>
 
                     <div className="overflow-x-auto pb-1">
@@ -651,6 +645,8 @@ If you want, you can unlock the full report from that page, tick off anything al
                             : `Test ${idx + 1}`;
 
                           const active = idx === selectedMotIndex;
+                          const result = String(test.testResult ?? "").toUpperCase();
+                          const isFail = result === "FAILED" || result === "FAIL";
                           const hasAdvisories =
                             Array.isArray(test.defects) &&
                             test.defects.some((defect) => {
@@ -666,13 +662,19 @@ If you want, you can unlock the full report from that page, tick off anything al
                               className={[
                                 "rounded-lg border px-3 py-2 text-left text-sm font-semibold transition",
                                 active
-                                  ? "border-slate-900 bg-slate-900 text-white"
+                                  ? isFail
+                                    ? "border-rose-700 bg-rose-700 text-white"
+                                    : "border-slate-900 bg-slate-900 text-white"
+                                  : isFail
+                                  ? "border-rose-700 bg-rose-700 text-white hover:bg-rose-800"
                                   : hasAdvisories
                                   ? "border-rose-200 bg-white text-rose-700 hover:bg-rose-50"
                                   : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50",
                               ].join(" ")}
                             >
-                              <div>{yearLabel}</div>
+                              <div className={hasAdvisories && !active && !isFail ? "text-rose-700" : ""}>
+                                {yearLabel}
+                              </div>
                               <div className="mt-0.5 text-xs opacity-80">
                                 {test.testResult ? titleCase(String(test.testResult)) : "Result unknown"}
                               </div>
