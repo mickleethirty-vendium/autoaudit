@@ -457,7 +457,7 @@ If you want, you can unlock the full report from that page, tick off anything al
           <div className="rounded-2xl border bg-white p-6 break-inside-avoid">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <div className="text-lg font-bold uppercase tracking-wide text-teal-600">
                   Service risk
                 </div>
                 <div className="mt-1 text-sm text-slate-600">
@@ -543,7 +543,7 @@ If you want, you can unlock the full report from that page, tick off anything al
                         </div>
                       </div>
 
-                      <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:min-w-[320px]">
+                      <div className="flex w-full items-start justify-between gap-3 sm:w-auto sm:min-w-[340px]">
                         {typeof item.cost_low === "number" && typeof item.cost_high === "number" ? (
                           <div className="text-left">
                             <div className="text-lg font-semibold text-slate-900">
@@ -552,10 +552,10 @@ If you want, you can unlock the full report from that page, tick off anything al
                             <div className="text-xs text-slate-600">estimated</div>
                           </div>
                         ) : (
-                          <div />
+                          <div className="min-h-[1px]" />
                         )}
 
-                        <label className="inline-flex items-center gap-2 rounded-lg border bg-slate-50 px-3 py-2 text-sm print:hidden">
+                        <label className="ml-auto inline-flex items-center gap-2 rounded-lg border bg-slate-50 px-3 py-2 text-sm print:hidden">
                           <input
                             type="checkbox"
                             checked={isDone}
@@ -609,8 +609,8 @@ If you want, you can unlock the full report from that page, tick off anything al
           <div className="rounded-2xl border bg-white p-6 break-inside-avoid self-start">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  MoT history
+                <div className="text-lg font-bold uppercase tracking-wide text-teal-600">
+                  Mot history
                 </div>
                 <div className="mt-1 text-sm text-slate-600">
                   Real DVSA test history used to strengthen this report.
@@ -833,8 +833,8 @@ If you want, you can unlock the full report from that page, tick off anything al
           </div>
 
           <div className="rounded-2xl border border-amber-200 bg-white p-6 break-inside-avoid">
-            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              HPI summary
+            <div className="text-lg font-bold uppercase tracking-wide text-teal-600">
+              Hpi summary
             </div>
             <div className="mt-1 text-sm text-slate-600">
               Provenance, finance, write-off and theft markers will appear here.
@@ -849,7 +849,6 @@ If you want, you can unlock the full report from that page, tick off anything al
         </div>
       </div>
 
-      {/* Seller message moved to bottom full-width */}
       {sellerMessage ? (
         <div className="mt-6 rounded-2xl border bg-white p-6 break-inside-avoid">
           <div className="text-lg font-semibold text-slate-900">
