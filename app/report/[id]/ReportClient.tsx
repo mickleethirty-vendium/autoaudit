@@ -281,6 +281,23 @@ function defectBadgeClasses(type?: string | null) {
   return "border-slate-200 bg-slate-50 text-slate-900";
 }
 
+function advisoryCountForTest(test?: MotTest | null) {
+  if (!test || !Array.isArray(test.defects)) return 0;
+  return test.defects.filter((defect) => {
+    const type = String(defect?.type ?? "").toUpperCase();
+    return type === "ADVISORY" || type === "MINOR";
+  }).length;
+}
+
+function yearlyMotSummaryLine(test: MotTest, idx: number) {
+  const yearLabel = test.completedDate
+    ? new Date(test.completedDate).getFullYear()
+    : `Test ${idx + 1}`;
+  const result = test.testResult ? titleCase(String(test.testResult)) : "Unknown";
+  const advisoryCount = advisoryCountForTest(test);
+  return `${yearLabel}: ${result} · ${advisoryCount} advis${advisoryCount === 1 ? "ory" : "ories"}`;
+}
+
 export default function ReportClient({
   summary,
   items,
@@ -491,7 +508,6 @@ If you want, you can unlock the full report from that page, tick off anything al
             ) : null}
           </div>
 
-          {/* Itemised checks moved up into left column */}
           <div className="rounded-2xl border bg-white p-6 break-inside-avoid">
             <h2 className="text-xl font-semibold">Itemised checks</h2>
 
@@ -776,7 +792,17 @@ If you want, you can unlock the full report from that page, tick off anything al
                   Standout MoT signals
                 </div>
 
-                {motFlags.length ? (
+                {motTests.length ? (
+                  <div className="mt-2 rounded-lg border bg-slate-50 p-4">
+                    <ul className="space-y-2 text-sm text-slate-700">
+                      {motTests.map((test, idx) => (
+                        <li key={`${test.completedDate ?? "summary"}-${idx}`}>
+                          {yearlyMotSummaryLine(test, idx)}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : motFlags.length ? (
                   <div className="mt-2 flex flex-wrap gap-2">
                     {motFlags.map((flag) => (
                       <span
