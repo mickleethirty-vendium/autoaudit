@@ -2,8 +2,9 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import Stripe from "stripe";
-import { supabasePublic } from "@/lib/supabase";
+import { supabaseAdmin, supabasePublic } from "@/lib/supabase";
 import { mustGetEnv } from "@/lib/env";
+import { buildUkvdHpiSummary, fetchUkvdHpiByVrm } from "@/lib/hpi";
 import ExposureBar from "@/app/components/ExposureBar";
 import ReportClient from "./ReportClient";
 
@@ -122,6 +123,63 @@ export default async function Page({
   const justUnlocked = Boolean(sessionId);
   const motPayload: any = data.mot_payload ?? null;
 
+  let hpiPayload: any = data.hpi_payload ?? null;
+  let hpiSummary: any = data.hpi_summary ?? null;
+  let hpiChecked: boolean = data.hpi_checked === true;
+  let hpiStatus: string | null = (data.hpi_status as string | null) ?? null;
+
+  if (isPaid && reg && !hpiChecked) {
+    try {
+      const rawPayload = await fetchUkvdHpiByVrm(reg);
+      const summary = buildUkvdHpiSummary(rawPayload);
+
+      const { error: updateError } = await supabaseAdmin
+        .from("reports")
+        .update({
+          hpi_checked: true,
+          hpi_checked_at: new Date().toISOString(),
+          hpi_status: "success",
+          hpi_payload: rawPayload,
+          hpi_summary: summary,
+        })
+        .eq("id", params.id);
+
+      if (updateError) {
+        console.error("Failed to save HPI data:", updateError);
+      } else {
+        hpiPayload = rawPayload;
+        hpiSummary = summary;
+        hpiChecked = true;
+        hpiStatus = "success";
+      }
+    } catch (e: any) {
+      console.error("HPI lookup failed:", e);
+
+      const errorPayload = {
+        message: e?.message ?? "HPI lookup failed",
+      };
+
+      const { error: updateError } = await supabaseAdmin
+        .from("reports")
+        .update({
+          hpi_checked: true,
+          hpi_checked_at: new Date().toISOString(),
+          hpi_status: "error",
+          hpi_payload: errorPayload,
+        })
+        .eq("id", params.id);
+
+      if (updateError) {
+        console.error("Failed to save HPI error state:", updateError);
+      }
+
+      hpiPayload = errorPayload;
+      hpiSummary = null;
+      hpiChecked = true;
+      hpiStatus = "error";
+    }
+  }
+
   if (isPaid) {
     return (
       <div className="mx-auto w-full max-w-5xl px-4 py-6">
@@ -173,6 +231,9 @@ export default async function Page({
           reportUrl={`/report/${data.id}`}
           previewUrl={`/preview/${data.id}`}
           motPayload={motPayload}
+          hpiPayload={hpiPayload}
+          hpiSummary={hpiSummary}
+          hpiStatus={hpiStatus}
         />
       </div>
     );

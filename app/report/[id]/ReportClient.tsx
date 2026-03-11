@@ -56,6 +56,25 @@ type MotTest = {
   defects?: MotDefect[];
 };
 
+type HpiSummary = {
+  finance?: boolean;
+  financeCount?: number;
+  stolen?: boolean;
+  writeOff?: boolean;
+  writeOffCount?: number;
+  writeOffCategories?: string[];
+  mileageFlag?: boolean;
+  importFlag?: boolean;
+  exportFlag?: boolean;
+  scrappedFlag?: boolean;
+  keeperChanges?: number;
+  plateChanges?: number;
+  colourChanges?: number;
+  caution?: boolean;
+  headline?: string;
+  notes?: string[];
+};
+
 function formatDate(value?: string | null) {
   if (!value) return "—";
   const d = new Date(value);
@@ -292,6 +311,24 @@ function yearlyMotSummaryLine(test: MotTest, idx: number) {
   return `${yearLabel}: ${result} · ${advisoryCount} advis${advisoryCount === 1 ? "ory" : "ories"}`;
 }
 
+function hpiStatusRow(label: string, value: string, isFlagged = false) {
+  return (
+    <div className="flex items-start justify-between gap-4 rounded-lg border bg-white p-3">
+      <div className="text-sm font-medium text-slate-700">{label}</div>
+      <div
+        className={[
+          "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold",
+          isFlagged
+            ? "border-rose-200 bg-rose-50 text-rose-900"
+            : "border-emerald-200 bg-emerald-50 text-emerald-900",
+        ].join(" ")}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
 export default function ReportClient({
   summary,
   items,
@@ -300,6 +337,9 @@ export default function ReportClient({
   reportUrl,
   previewUrl,
   motPayload,
+  hpiPayload,
+  hpiSummary,
+  hpiStatus,
 }: {
   summary: any;
   items: Item[];
@@ -308,6 +348,9 @@ export default function ReportClient({
   reportUrl?: string;
   previewUrl?: string;
   motPayload?: any;
+  hpiPayload?: any;
+  hpiSummary?: HpiSummary | null;
+  hpiStatus?: string | null;
 }) {
   const [done, setDone] = useState<Record<string, boolean>>({});
   const [sellerCopied, setSellerCopied] = useState(false);
@@ -419,6 +462,11 @@ If you want, you can unlock the full report from that page, tick off anything al
     mot.tyreFlag ? "Tyre-related history" : null,
     mot.suspensionFlag ? "Suspension / steering history" : null,
   ].filter(Boolean);
+
+  const hpiNotes = Array.isArray(hpiSummary?.notes) ? hpiSummary.notes : [];
+  const hpiWriteOffCategories = Array.isArray(hpiSummary?.writeOffCategories)
+    ? hpiSummary.writeOffCategories.filter(Boolean)
+    : [];
 
   return (
     <>
@@ -604,7 +652,7 @@ If you want, you can unlock the full report from that page, tick off anything al
           </div>
         </div>
 
-        {/* Right column: MOT history + HPI placeholder */}
+        {/* Right column: MOT history + HPI */}
         <div className="space-y-5">
           <div className="rounded-2xl border bg-white p-6 break-inside-avoid self-start">
             <div className="flex items-start justify-between gap-4">
@@ -837,14 +885,152 @@ If you want, you can unlock the full report from that page, tick off anything al
               Hpi summary
             </div>
             <div className="mt-1 text-sm text-slate-600">
-              Provenance, finance, write-off and theft markers will appear here.
+              Provenance, finance, write-off and theft markers from the paid HPI lookup.
             </div>
 
-            <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
-              <div className="font-semibold text-amber-900">
-                HPI data summary coming soon...
+            {hpiStatus === "error" ? (
+              <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                <div className="font-semibold text-amber-900">
+                  HPI data temporarily unavailable
+                </div>
+                <div className="mt-1 text-sm text-amber-900/80">
+                  The report is still available, but the HPI provider did not return a usable result for this lookup.
+                </div>
               </div>
-            </div>
+            ) : hpiSummary ? (
+              <>
+                <div
+                  className={[
+                    "mt-4 rounded-xl border p-4",
+                    hpiSummary.caution
+                      ? "border-rose-200 bg-rose-50"
+                      : "border-emerald-200 bg-emerald-50",
+                  ].join(" ")}
+                >
+                  <div
+                    className={[
+                      "font-semibold",
+                      hpiSummary.caution ? "text-rose-900" : "text-emerald-900",
+                    ].join(" ")}
+                  >
+                    {hpiSummary.headline ?? "HPI summary"}
+                  </div>
+                  <div
+                    className={[
+                      "mt-1 text-sm",
+                      hpiSummary.caution ? "text-rose-900/80" : "text-emerald-900/80",
+                    ].join(" ")}
+                  >
+                    {hpiSummary.caution
+                      ? "Finance, theft, write-off, mileage or status markers may materially affect value and risk."
+                      : "No major HPI warning markers were returned in this lookup."}
+                  </div>
+                </div>
+
+                <div className="mt-4 space-y-3">
+                  {hpiStatusRow(
+                    "Outstanding finance",
+                    hpiSummary.finance
+                      ? `${hpiSummary.financeCount ?? 1} record${(hpiSummary.financeCount ?? 1) === 1 ? "" : "s"} found`
+                      : "Clear",
+                    !!hpiSummary.finance
+                  )}
+
+                  {hpiStatusRow(
+                    "Stolen marker",
+                    hpiSummary.stolen ? "Recorded" : "Clear",
+                    !!hpiSummary.stolen
+                  )}
+
+                  {hpiStatusRow(
+                    "Insurance write-off",
+                    hpiSummary.writeOff
+                      ? hpiWriteOffCategories.length
+                        ? hpiWriteOffCategories.join(", ")
+                        : `${hpiSummary.writeOffCount ?? 1} record found`
+                      : "Clear",
+                    !!hpiSummary.writeOff
+                  )}
+
+                  {hpiStatusRow(
+                    "Mileage anomaly",
+                    hpiSummary.mileageFlag ? "Flagged" : "Clear",
+                    !!hpiSummary.mileageFlag
+                  )}
+
+                  {hpiStatusRow(
+                    "Import marker",
+                    hpiSummary.importFlag ? "Recorded" : "Clear",
+                    !!hpiSummary.importFlag
+                  )}
+
+                  {hpiStatusRow(
+                    "Export marker",
+                    hpiSummary.exportFlag ? "Recorded" : "Clear",
+                    !!hpiSummary.exportFlag
+                  )}
+
+                  {hpiStatusRow(
+                    "Scrapped marker",
+                    hpiSummary.scrappedFlag ? "Recorded" : "Clear",
+                    !!hpiSummary.scrappedFlag
+                  )}
+                </div>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-lg border bg-slate-50 p-3">
+                    <div className="text-xs uppercase tracking-wide text-slate-500">
+                      Keeper history
+                    </div>
+                    <div className="mt-1 text-lg font-semibold text-slate-900">
+                      {typeof hpiSummary.keeperChanges === "number" ? hpiSummary.keeperChanges : 0}
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border bg-slate-50 p-3">
+                    <div className="text-xs uppercase tracking-wide text-slate-500">
+                      Plate changes
+                    </div>
+                    <div className="mt-1 text-lg font-semibold text-slate-900">
+                      {typeof hpiSummary.plateChanges === "number" ? hpiSummary.plateChanges : 0}
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border bg-slate-50 p-3">
+                    <div className="text-xs uppercase tracking-wide text-slate-500">
+                      Colour changes
+                    </div>
+                    <div className="mt-1 text-lg font-semibold text-slate-900">
+                      {typeof hpiSummary.colourChanges === "number" ? hpiSummary.colourChanges : 0}
+                    </div>
+                  </div>
+                </div>
+
+                {hpiNotes.length ? (
+                  <div className="mt-4">
+                    <div className="text-sm font-semibold text-slate-900">
+                      HPI notes
+                    </div>
+                    <div className="mt-2 rounded-lg border bg-slate-50 p-4">
+                      <ul className="space-y-2 text-sm text-slate-700">
+                        {hpiNotes.map((note, idx) => (
+                          <li key={`${note}-${idx}`}>{note}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                ) : null}
+              </>
+            ) : (
+              <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                <div className="font-semibold text-amber-900">
+                  HPI lookup pending
+                </div>
+                <div className="mt-1 text-sm text-amber-900/80">
+                  The report is ready. HPI data will appear here once a successful lookup has been stored.
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
