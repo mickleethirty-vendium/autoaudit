@@ -380,13 +380,15 @@ function hpiStatusRow(label: string, value: string, isFlagged = false) {
   );
 }
 
-function tabClasses(tab: ActiveTab, activeTab: ActiveTab) {
+function tabClasses(tab: ActiveTab, activeTab: ActiveTab, idx: number) {
   const active = tab === activeTab;
+
   return [
-    "relative rounded-t-2xl border border-b-0 px-4 py-3 text-sm font-bold uppercase tracking-wide transition",
+    "relative -mr-2 min-w-[140px] rounded-t-2xl border px-5 py-3 text-sm font-bold uppercase tracking-wide transition-all duration-200",
+    idx === 0 ? "ml-0" : "",
     active
-      ? "z-20 -mb-px bg-white text-teal-600 shadow-sm"
-      : "z-10 bg-slate-100 text-slate-600 hover:bg-slate-50 hover:text-teal-600",
+      ? "z-20 border-slate-200 border-b-white bg-white text-teal-600 shadow-[0_-4px_14px_rgba(15,23,42,0.08)]"
+      : "z-10 mt-2 border-slate-200 bg-slate-100 text-slate-600 hover:z-20 hover:-translate-y-0.5 hover:bg-slate-50 hover:text-teal-600",
   ].join(" ");
 }
 
@@ -451,7 +453,12 @@ function getHpiValueImpact(summary?: HpiSummary | null) {
     };
   }
 
-  if (summary.importFlag || summary.exportFlag || (summary.plateChanges ?? 0) > 0 || (summary.colourChanges ?? 0) > 0) {
+  if (
+    summary.importFlag ||
+    summary.exportFlag ||
+    (summary.plateChanges ?? 0) > 0 ||
+    (summary.colourChanges ?? 0) > 0
+  ) {
     if (summary.importFlag) notes.push("Import history can affect buyer pool and pricing.");
     if (summary.exportFlag) notes.push("Export history can raise questions that reduce confidence.");
     if ((summary.plateChanges ?? 0) > 0) notes.push("Plate changes may prompt additional history checks.");
@@ -644,6 +651,12 @@ If you want, you can unlock the full report from that page, tick off anything al
 
   const hpiValueImpact = useMemo(() => getHpiValueImpact(hpiSummary), [hpiSummary]);
 
+  const topTabs: { key: ActiveTab; label: string }[] = [
+    { key: "service", label: "Service risk" },
+    { key: "mot", label: "MoT history" },
+    { key: "hpi", label: "HPI summary" },
+  ];
+
   return (
     <>
       {justUnlocked ? (
@@ -675,31 +688,24 @@ If you want, you can unlock the full report from that page, tick off anything al
         </button>
       </div>
 
-      <div className="mb-0 flex flex-wrap items-end gap-2">
-        <button
-          type="button"
-          onClick={() => setActiveTab("service")}
-          className={tabClasses("service", activeTab)}
-        >
-          Service risk
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("mot")}
-          className={tabClasses("mot", activeTab)}
-        >
-          MoT history
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("hpi")}
-          className={tabClasses("hpi", activeTab)}
-        >
-          HPI summary
-        </button>
+      <div className="mb-6">
+        <div className="relative flex flex-wrap items-end gap-0 overflow-x-auto pb-0">
+          {topTabs.map((tab, idx) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={tabClasses(tab.key, activeTab, idx)}
+            >
+              <span className="block">{tab.label}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="-mt-px border-t border-slate-200" />
       </div>
 
-      <div className="rounded-b-2xl rounded-tr-2xl border bg-white p-6 break-inside-avoid">
+      <div className="rounded-b-2xl rounded-tr-2xl border border-slate-200 bg-white p-6 shadow-[0_10px_30px_rgba(15,23,42,0.06)] break-inside-avoid">
         {activeTab === "service" ? (
           <div className="space-y-5">
             <div className="rounded-2xl border bg-white p-6 break-inside-avoid">
