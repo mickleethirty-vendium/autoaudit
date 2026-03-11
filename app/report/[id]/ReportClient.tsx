@@ -392,6 +392,20 @@ function tabClasses(tab: ActiveTab, activeTab: ActiveTab, idx: number) {
   ].join(" ");
 }
 
+function panelToneClasses(tone: "teal" | "blue" | "amber") {
+  if (tone === "teal") {
+    return "border-teal-200 bg-teal-50/20";
+  }
+  if (tone === "blue") {
+    return "border-blue-200 bg-blue-50/20";
+  }
+  return "border-amber-200 bg-amber-50/20";
+}
+
+function hpiStatusLabel(label: string, hasDetails = false) {
+  return hasDetails ? `${label} (scroll down for details)` : label;
+}
+
 function getHpiValueImpact(summary?: HpiSummary | null) {
   const notes: string[] = [];
 
@@ -705,10 +719,19 @@ If you want, you can unlock the full report from that page, tick off anything al
         <div className="-mt-px border-t border-slate-200" />
       </div>
 
-      <div className="rounded-b-2xl rounded-tr-2xl border border-slate-200 bg-white p-6 shadow-[0_10px_30px_rgba(15,23,42,0.06)] break-inside-avoid">
+      <div
+        className={[
+          "rounded-b-2xl rounded-tr-2xl border p-6 shadow-[0_10px_30px_rgba(15,23,42,0.06)] break-inside-avoid",
+          activeTab === "service"
+            ? panelToneClasses("teal")
+            : activeTab === "mot"
+            ? panelToneClasses("blue")
+            : panelToneClasses("amber"),
+        ].join(" ")}
+      >
         {activeTab === "service" ? (
           <div className="space-y-5">
-            <div className="rounded-2xl border bg-white p-6 break-inside-avoid">
+            <div className="rounded-2xl border border-teal-200 bg-white p-6 break-inside-avoid">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="text-lg font-bold uppercase tracking-wide text-teal-600">
@@ -756,7 +779,7 @@ If you want, you can unlock the full report from that page, tick off anything al
               ) : null}
             </div>
 
-            <div className="rounded-2xl border bg-white p-6 break-inside-avoid">
+            <div className="rounded-2xl border border-teal-200 bg-white p-6 break-inside-avoid">
               <h2 className="text-xl font-semibold">Itemised checks</h2>
 
               <div className="mt-4 space-y-4">
@@ -860,7 +883,7 @@ If you want, you can unlock the full report from that page, tick off anything al
         ) : null}
 
         {activeTab === "mot" ? (
-          <div className="rounded-2xl border bg-white p-6 break-inside-avoid self-start">
+          <div className="rounded-2xl border border-blue-200 bg-white p-6 break-inside-avoid self-start">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="text-lg font-bold uppercase tracking-wide text-teal-600">
@@ -1150,7 +1173,7 @@ If you want, you can unlock the full report from that page, tick off anything al
 
                 <div className="mt-4 space-y-3">
                   {hpiStatusRow(
-                    "Outstanding finance",
+                    hpiStatusLabel("Outstanding finance", financeRecords.length > 0),
                     hpiSummary.finance
                       ? `${hpiSummary.financeCount ?? 1} record${(hpiSummary.financeCount ?? 1) === 1 ? "" : "s"} found`
                       : "Clear",
@@ -1158,13 +1181,13 @@ If you want, you can unlock the full report from that page, tick off anything al
                   )}
 
                   {hpiStatusRow(
-                    "Stolen marker",
+                    hpiStatusLabel("Stolen marker", !!pncDetails?.IsStolen),
                     hpiSummary.stolen ? "Recorded" : "Clear",
                     !!hpiSummary.stolen
                   )}
 
                   {hpiStatusRow(
-                    "Insurance write-off",
+                    hpiStatusLabel("Insurance write-off", writeOffRecords.length > 0),
                     hpiSummary.writeOff
                       ? hpiWriteOffCategories.length
                         ? hpiWriteOffCategories.join(", ")
@@ -1174,7 +1197,10 @@ If you want, you can unlock the full report from that page, tick off anything al
                   )}
 
                   {hpiStatusRow(
-                    "Mileage anomaly",
+                    hpiStatusLabel(
+                      "Mileage anomaly",
+                      mileageSummary.anomaly || mileageResults.length > 0
+                    ),
                     hpiSummary.mileageFlag ? "Flagged" : "Clear",
                     !!hpiSummary.mileageFlag
                   )}
