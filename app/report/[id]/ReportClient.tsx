@@ -75,6 +75,40 @@ type HpiSummary = {
   notes?: string[];
 };
 
+type HpiFinanceRecord = {
+  AgreementDate?: string | null;
+  AgreementType?: string | null;
+  AgreementTerm?: number | null;
+  AgreementNumber?: string | null;
+  FinanceCompany?: string | null;
+  ContactNumber?: string | null;
+  VehicleDescription?: string | null;
+};
+
+type HpiWriteOffRecord = {
+  Category?: string | null;
+  Status?: string | null;
+  LossDate?: string | null;
+  InsurerName?: string | null;
+  InsurerBranch?: string | null;
+  ClaimNumber?: string | null;
+};
+
+type HpiPncDetails = {
+  IsStolen?: boolean;
+  CurrentStatusOnRecord?: string | null;
+  PoliceForceName?: string | null;
+  DateReportedStolen?: string | null;
+  DateRecordAddedToPnc?: string | null;
+};
+
+type HpiMileageResult = {
+  Mileage?: number | null;
+  DateRecorded?: string | null;
+  InSequence?: boolean;
+  DataSource?: string | null;
+};
+
 function formatDate(value?: string | null) {
   if (!value) return "—";
   const d = new Date(value);
@@ -92,6 +126,21 @@ function normaliseText(value: string) {
 
 function includesAny(text: string, phrases: string[]) {
   return phrases.some((p) => text.includes(p));
+}
+
+function safeText(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function safeNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function maskAgreementNumber(value?: string | null) {
+  const raw = String(value ?? "").trim();
+  if (!raw) return null;
+  if (raw.length <= 4) return raw;
+  return `••••${raw.slice(-4)}`;
 }
 
 function itemSource(item: Item): "mot" | "service" | "mixed" {
@@ -468,6 +517,35 @@ If you want, you can unlock the full report from that page, tick off anything al
     ? hpiSummary.writeOffCategories.filter(Boolean)
     : [];
 
+  const financeRecords = useMemo(() => {
+    const list = hpiPayload?.Results?.FinanceDetails?.FinanceRecordList;
+    return Array.isArray(list) ? (list as HpiFinanceRecord[]) : [];
+  }, [hpiPayload]);
+
+  const writeOffRecords = useMemo(() => {
+    const list = hpiPayload?.Results?.MiaftrDetails?.WriteOffRecordList;
+    return Array.isArray(list) ? (list as HpiWriteOffRecord[]) : [];
+  }, [hpiPayload]);
+
+  const pncDetails = useMemo(() => {
+    const value = hpiPayload?.Results?.PncDetails;
+    return value ? (value as HpiPncDetails) : null;
+  }, [hpiPayload]);
+
+  const mileageResults = useMemo(() => {
+    const list = hpiPayload?.Results?.MileageCheckDetails?.MileageResultList;
+    return Array.isArray(list) ? (list as HpiMileageResult[]) : [];
+  }, [hpiPayload]);
+
+  const mileageSummary = useMemo(() => {
+    const details = hpiPayload?.Results?.MileageCheckDetails;
+    return {
+      anomaly: details?.MileageAnomalyDetected === true,
+      calculatedAverageAnnualMileage: safeNumber(details?.CalculatedAverageAnnualMileage),
+      averageMileageForAge: safeNumber(details?.AverageMileageForAge),
+    };
+  }, [hpiPayload]);
+
   return (
     <>
       {justUnlocked ? (
@@ -500,7 +578,6 @@ If you want, you can unlock the full report from that page, tick off anything al
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">
-        {/* Left column: Service risk + itemised checks */}
         <div className="space-y-5">
           <div className="rounded-2xl border bg-white p-6 break-inside-avoid">
             <div className="flex items-start justify-between gap-4">
@@ -652,7 +729,6 @@ If you want, you can unlock the full report from that page, tick off anything al
           </div>
         </div>
 
-        {/* Right column: MOT history + HPI */}
         <div className="space-y-5">
           <div className="rounded-2xl border bg-white p-6 break-inside-avoid self-start">
             <div className="flex items-start justify-between gap-4">
@@ -976,6 +1052,279 @@ If you want, you can unlock the full report from that page, tick off anything al
                     !!hpiSummary.scrappedFlag
                   )}
                 </div>
+
+                {financeRecords.length ? (
+                  <div className="mt-4">
+                    <div className="text-sm font-semibold text-slate-900">
+                      Outstanding finance details
+                    </div>
+                    <div className="mt-2 space-y-3">
+                      {financeRecords.map((record, idx) => (
+                        <div
+                          key={`finance-${idx}`}
+                          className="rounded-lg border bg-slate-50 p-4"
+                        >
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <div>
+                              <div className="text-xs uppercase tracking-wide text-slate-500">
+                                Finance company
+                              </div>
+                              <div className="mt-1 text-sm font-semibold text-slate-900">
+                                {safeText(record.FinanceCompany) ?? "—"}
+                              </div>
+                            </div>
+
+                            <div>
+                              <div className="text-xs uppercase tracking-wide text-slate-500">
+                                Agreement type
+                              </div>
+                              <div className="mt-1 text-sm font-semibold text-slate-900">
+                                {safeText(record.AgreementType) ?? "—"}
+                              </div>
+                            </div>
+
+                            <div>
+                              <div className="text-xs uppercase tracking-wide text-slate-500">
+                                Agreement start date
+                              </div>
+                              <div className="mt-1 text-sm font-semibold text-slate-900">
+                                {formatDate(record.AgreementDate)}
+                              </div>
+                            </div>
+
+                            <div>
+                              <div className="text-xs uppercase tracking-wide text-slate-500">
+                                Agreement term
+                              </div>
+                              <div className="mt-1 text-sm font-semibold text-slate-900">
+                                {typeof record.AgreementTerm === "number"
+                                  ? `${record.AgreementTerm} months`
+                                  : "—"}
+                              </div>
+                            </div>
+
+                            <div>
+                              <div className="text-xs uppercase tracking-wide text-slate-500">
+                                Agreement reference
+                              </div>
+                              <div className="mt-1 text-sm font-semibold text-slate-900">
+                                {maskAgreementNumber(record.AgreementNumber) ?? "—"}
+                              </div>
+                            </div>
+
+                            <div>
+                              <div className="text-xs uppercase tracking-wide text-slate-500">
+                                Contact number
+                              </div>
+                              <div className="mt-1 text-sm font-semibold text-slate-900">
+                                {safeText(record.ContactNumber) ?? "—"}
+                              </div>
+                            </div>
+                          </div>
+
+                          {safeText(record.VehicleDescription) ? (
+                            <div className="mt-3 rounded-lg border bg-white p-3 text-sm text-slate-700">
+                              <b>Vehicle description on finance record:</b>{" "}
+                              {safeText(record.VehicleDescription)}
+                            </div>
+                          ) : null}
+
+                          <div className="mt-3 text-sm text-rose-900">
+                            Ask the seller to confirm this finance has been fully settled before purchase.
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {pncDetails?.IsStolen ? (
+                  <div className="mt-4">
+                    <div className="text-sm font-semibold text-slate-900">
+                      Stolen marker details
+                    </div>
+                    <div className="mt-2 rounded-lg border bg-slate-50 p-4">
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div>
+                          <div className="text-xs uppercase tracking-wide text-slate-500">
+                            Status on record
+                          </div>
+                          <div className="mt-1 text-sm font-semibold text-slate-900">
+                            {safeText(pncDetails.CurrentStatusOnRecord) ?? "—"}
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="text-xs uppercase tracking-wide text-slate-500">
+                            Police force
+                          </div>
+                          <div className="mt-1 text-sm font-semibold text-slate-900">
+                            {safeText(pncDetails.PoliceForceName) ?? "—"}
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="text-xs uppercase tracking-wide text-slate-500">
+                            Date reported stolen
+                          </div>
+                          <div className="mt-1 text-sm font-semibold text-slate-900">
+                            {formatDate(pncDetails.DateReportedStolen)}
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="text-xs uppercase tracking-wide text-slate-500">
+                            Date added to record
+                          </div>
+                          <div className="mt-1 text-sm font-semibold text-slate-900">
+                            {formatDate(pncDetails.DateRecordAddedToPnc)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+
+                {writeOffRecords.length ? (
+                  <div className="mt-4">
+                    <div className="text-sm font-semibold text-slate-900">
+                      Insurance write-off details
+                    </div>
+                    <div className="mt-2 space-y-3">
+                      {writeOffRecords.map((record, idx) => (
+                        <div
+                          key={`writeoff-${idx}`}
+                          className="rounded-lg border bg-slate-50 p-4"
+                        >
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <div>
+                              <div className="text-xs uppercase tracking-wide text-slate-500">
+                                Category
+                              </div>
+                              <div className="mt-1 text-sm font-semibold text-slate-900">
+                                {safeText(record.Category) ?? "—"}
+                              </div>
+                            </div>
+
+                            <div>
+                              <div className="text-xs uppercase tracking-wide text-slate-500">
+                                Status
+                              </div>
+                              <div className="mt-1 text-sm font-semibold text-slate-900">
+                                {safeText(record.Status) ?? "—"}
+                              </div>
+                            </div>
+
+                            <div>
+                              <div className="text-xs uppercase tracking-wide text-slate-500">
+                                Loss date
+                              </div>
+                              <div className="mt-1 text-sm font-semibold text-slate-900">
+                                {formatDate(record.LossDate)}
+                              </div>
+                            </div>
+
+                            <div>
+                              <div className="text-xs uppercase tracking-wide text-slate-500">
+                                Insurer
+                              </div>
+                              <div className="mt-1 text-sm font-semibold text-slate-900">
+                                {safeText(record.InsurerName) ??
+                                  safeText(record.InsurerBranch) ??
+                                  "—"}
+                              </div>
+                            </div>
+                          </div>
+
+                          {safeText(record.ClaimNumber) ? (
+                            <div className="mt-3 rounded-lg border bg-white p-3 text-sm text-slate-700">
+                              <b>Claim reference:</b> {safeText(record.ClaimNumber)}
+                            </div>
+                          ) : null}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {mileageSummary.anomaly || mileageResults.length ? (
+                  <div className="mt-4">
+                    <div className="text-sm font-semibold text-slate-900">
+                      Mileage check details
+                    </div>
+                    <div className="mt-2 rounded-lg border bg-slate-50 p-4">
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div>
+                          <div className="text-xs uppercase tracking-wide text-slate-500">
+                            Mileage anomaly
+                          </div>
+                          <div className="mt-1 text-sm font-semibold text-slate-900">
+                            {mileageSummary.anomaly ? "Flagged" : "No anomaly returned"}
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="text-xs uppercase tracking-wide text-slate-500">
+                            Average annual mileage
+                          </div>
+                          <div className="mt-1 text-sm font-semibold text-slate-900">
+                            {typeof mileageSummary.calculatedAverageAnnualMileage === "number"
+                              ? `${mileageSummary.calculatedAverageAnnualMileage.toLocaleString()} miles`
+                              : "—"}
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="text-xs uppercase tracking-wide text-slate-500">
+                            Typical mileage for age
+                          </div>
+                          <div className="mt-1 text-sm font-semibold text-slate-900">
+                            {typeof mileageSummary.averageMileageForAge === "number"
+                              ? `${mileageSummary.averageMileageForAge.toLocaleString()} miles`
+                              : "—"}
+                          </div>
+                        </div>
+                      </div>
+
+                      {mileageResults.length ? (
+                        <div className="mt-4">
+                          <div className="text-sm font-semibold text-slate-900">
+                            Recorded mileage history
+                          </div>
+                          <div className="mt-2 space-y-2">
+                            {mileageResults.slice(0, 8).map((row, idx) => {
+                              const outOfSequence = row.InSequence === false;
+                              return (
+                                <div
+                                  key={`mileage-${idx}`}
+                                  className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-white p-3"
+                                >
+                                  <div className="text-sm text-slate-700">
+                                    <b>{typeof row.Mileage === "number" ? row.Mileage.toLocaleString() : "—"}</b>
+                                    {" · "}
+                                    {formatDate(row.DateRecorded)}
+                                    {safeText(row.DataSource) ? ` · ${safeText(row.DataSource)}` : ""}
+                                  </div>
+
+                                  <span
+                                    className={[
+                                      "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold",
+                                      outOfSequence
+                                        ? "border-rose-200 bg-rose-50 text-rose-900"
+                                        : "border-slate-200 bg-slate-50 text-slate-700",
+                                    ].join(" ")}
+                                  >
+                                    {outOfSequence ? "Out of sequence" : "In sequence"}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : null}
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
                   <div className="rounded-lg border bg-slate-50 p-3">
