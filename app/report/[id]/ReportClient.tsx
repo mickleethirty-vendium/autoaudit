@@ -28,6 +28,8 @@ function riskColor(risk: string | null) {
   return "bg-slate-50 border-slate-200 text-slate-900";
 }
 
+type ActiveTab = "service" | "mot" | "hpi";
+
 type Item = {
   item_id?: string;
   label?: string;
@@ -378,6 +380,99 @@ function hpiStatusRow(label: string, value: string, isFlagged = false) {
   );
 }
 
+function tabClasses(tab: ActiveTab, activeTab: ActiveTab) {
+  const active = tab === activeTab;
+  return [
+    "relative rounded-t-2xl border border-b-0 px-4 py-3 text-sm font-bold uppercase tracking-wide transition",
+    active
+      ? "z-20 -mb-px bg-white text-teal-600 shadow-sm"
+      : "z-10 bg-slate-100 text-slate-600 hover:bg-slate-50 hover:text-teal-600",
+  ].join(" ");
+}
+
+function getHpiValueImpact(summary?: HpiSummary | null) {
+  const notes: string[] = [];
+
+  if (!summary) {
+    return {
+      title: "Value impact not available yet",
+      tone: "border-slate-200 bg-slate-50 text-slate-900",
+      body: "A value impact summary will appear once HPI data has been returned.",
+      bullets: [] as string[],
+    };
+  }
+
+  if (summary.stolen || summary.scrappedFlag) {
+    if (summary.stolen) {
+      notes.push("A stolen marker can make the vehicle effectively unbuyable until fully resolved.");
+    }
+    if (summary.scrappedFlag) {
+      notes.push("A scrapped marker can severely affect legality, insurability and resale value.");
+    }
+
+    return {
+      title: "Severe value impact",
+      tone: "border-rose-200 bg-rose-50 text-rose-900",
+      body: "This HPI result suggests a serious value and ownership risk.",
+      bullets: notes,
+    };
+  }
+
+  if (summary.writeOff) {
+    notes.push("Insurance write-off history usually reduces resale value materially.");
+    if (summary.writeOffCategories?.length) {
+      notes.push(`Category recorded: ${summary.writeOffCategories.join(", ")}.`);
+    }
+    if (summary.finance) {
+      notes.push("Outstanding finance adds a further transaction risk until settled.");
+    }
+
+    return {
+      title: "Major value impact",
+      tone: "border-rose-200 bg-rose-50 text-rose-900",
+      body: "Write-off history is likely to reduce buyer confidence and resale value.",
+      bullets: notes,
+    };
+  }
+
+  if (summary.finance || summary.mileageFlag) {
+    if (summary.finance) {
+      notes.push("Outstanding finance should normally be cleared before purchase completes.");
+    }
+    if (summary.mileageFlag) {
+      notes.push("A mileage anomaly can materially affect trust, valuation and resale.");
+    }
+
+    return {
+      title: "Moderate value impact",
+      tone: "border-amber-200 bg-amber-50 text-amber-900",
+      body: "The HPI result contains issues that can affect negotiation and buyer confidence.",
+      bullets: notes,
+    };
+  }
+
+  if (summary.importFlag || summary.exportFlag || (summary.plateChanges ?? 0) > 0 || (summary.colourChanges ?? 0) > 0) {
+    if (summary.importFlag) notes.push("Import history can affect buyer pool and pricing.");
+    if (summary.exportFlag) notes.push("Export history can raise questions that reduce confidence.");
+    if ((summary.plateChanges ?? 0) > 0) notes.push("Plate changes may prompt additional history checks.");
+    if ((summary.colourChanges ?? 0) > 0) notes.push("Colour changes can prompt closer inspection and questions.");
+
+    return {
+      title: "Limited to moderate value impact",
+      tone: "border-amber-200 bg-amber-50 text-amber-900",
+      body: "The HPI result is not necessarily a deal-breaker, but it may influence resale and negotiation.",
+      bullets: notes,
+    };
+  }
+
+  return {
+    title: "Minimal value impact",
+    tone: "border-emerald-200 bg-emerald-50 text-emerald-900",
+    body: "No major HPI warning markers were returned in this lookup.",
+    bullets: ["This should support cleaner resale positioning, subject to condition and service history."],
+  };
+}
+
 export default function ReportClient({
   summary,
   items,
@@ -405,6 +500,7 @@ export default function ReportClient({
   const [sellerCopied, setSellerCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [selectedMotIndex, setSelectedMotIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState<ActiveTab>("service");
 
   const adjusted = useMemo(() => {
     let low = 0;
@@ -546,6 +642,8 @@ If you want, you can unlock the full report from that page, tick off anything al
     };
   }, [hpiPayload]);
 
+  const hpiValueImpact = useMemo(() => getHpiValueImpact(hpiSummary), [hpiSummary]);
+
   return (
     <>
       {justUnlocked ? (
@@ -577,159 +675,185 @@ If you want, you can unlock the full report from that page, tick off anything al
         </button>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2">
-        <div className="space-y-5">
-          <div className="rounded-2xl border bg-white p-6 break-inside-avoid">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="text-lg font-bold uppercase tracking-wide text-teal-600">
-                  Service risk
-                </div>
-                <div className="mt-1 text-sm text-slate-600">
-                  Estimated immediate exposure, adjustable as you tick off items already done. Scroll down for full details.
-                </div>
-              </div>
+      <div className="mb-0 flex flex-wrap items-end gap-2">
+        <button
+          type="button"
+          onClick={() => setActiveTab("service")}
+          className={tabClasses("service", activeTab)}
+        >
+          Service risk
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("mot")}
+          className={tabClasses("mot", activeTab)}
+        >
+          MoT history
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("hpi")}
+          className={tabClasses("hpi", activeTab)}
+        >
+          HPI summary
+        </button>
+      </div>
 
-              <div className="hidden sm:inline-flex items-center rounded-full border bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
-                Predicted
-              </div>
-            </div>
-
-            <div className="mt-4 text-4xl font-extrabold text-slate-900">
-              {money(adjusted.low)} – {money(adjusted.high)}
-            </div>
-
-            <div
-              className={[
-                "mt-3 inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold border",
-                riskColor(adjusted.risk),
-              ].join(" ")}
-            >
-              Risk: {titleCase(adjusted.risk)}
-            </div>
-
-            <div className="mt-3 text-sm text-slate-600">
-              Tick items you can prove are already done to reduce the estimate.
-            </div>
-
-            {negotiationAdjusted !== null ? (
-              <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 break-inside-avoid">
-                <div className="font-semibold text-emerald-900">
-                  Suggested negotiation: ~{money(negotiationAdjusted)}
-                </div>
-                <div className="mt-1 text-sm text-emerald-900/80">
-                  (Based on remaining items not ticked as done)
-                </div>
-                <div className="mt-1 text-sm font-medium text-emerald-900">
-                  Scroll down for details
-                </div>
-              </div>
-            ) : null}
-          </div>
-
-          <div className="rounded-2xl border bg-white p-6 break-inside-avoid">
-            <h2 className="text-xl font-semibold">Itemised checks</h2>
-
-            <div className="mt-4 space-y-4">
-              {items.map((item, idx) => {
-                const key = String(item.item_id ?? item.label ?? `item-${idx}`);
-                const isDone = !!done[key];
-                const source = itemSource(item);
-
-                return (
-                  <div key={key} className="rounded-2xl border bg-white p-6 break-inside-avoid">
-                    <div className="flex flex-wrap items-start gap-4">
-                      <div className="min-w-[220px] flex-1">
-                        <div className="text-lg font-semibold text-slate-900">
-                          {item.label ?? "Service item"}
-                        </div>
-
-                        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-                          <span
-                            className={[
-                              "inline-flex items-center rounded-full border px-2.5 py-1 font-semibold",
-                              sourceBadgeClasses(source),
-                            ].join(" ")}
-                          >
-                            Source: {sourceLabel(source)}
-                          </span>
-
-                          {item.status ? (
-                            <span className="text-slate-600">
-                              Status: <b>{String(item.status)}</b>
-                            </span>
-                          ) : null}
-
-                          {item.category ? (
-                            <span className="text-slate-600">
-                              Category: <b>{categoryLabel(item.category)}</b>
-                            </span>
-                          ) : null}
-                        </div>
-                      </div>
-
-                      <div className="flex w-full items-start justify-between gap-3 sm:w-auto sm:min-w-[340px]">
-                        {typeof item.cost_low === "number" && typeof item.cost_high === "number" ? (
-                          <div className="text-left">
-                            <div className="text-lg font-semibold text-slate-900">
-                              {money(item.cost_low)} – {money(item.cost_high)}
-                            </div>
-                            <div className="text-xs text-slate-600">estimated</div>
-                          </div>
-                        ) : (
-                          <div className="min-h-[1px]" />
-                        )}
-
-                        <label className="ml-auto inline-flex items-center gap-2 rounded-lg border bg-slate-50 px-3 py-2 text-sm print:hidden">
-                          <input
-                            type="checkbox"
-                            checked={isDone}
-                            onChange={(e) =>
-                              setDone((prev) => ({ ...prev, [key]: e.target.checked }))
-                            }
-                          />
-                          <span className="font-semibold text-slate-800">Already done</span>
-                        </label>
-                      </div>
-                    </div>
-
-                    {isDone ? (
-                      <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
-                        Marked as done — removed from exposure estimate.
-                      </div>
-                    ) : null}
-
-                    {item.why_flagged ? (
-                      <div className="mt-4 text-sm text-slate-700">
-                        <b>Why flagged:</b> {item.why_flagged}
-                      </div>
-                    ) : null}
-
-                    {item.why_it_matters ? (
-                      <div className="mt-3 rounded-lg bg-slate-50 p-4 text-sm text-slate-700">
-                        <div className="font-semibold text-slate-900">Why it matters</div>
-                        <div className="mt-1">{item.why_it_matters}</div>
-                      </div>
-                    ) : null}
-
-                    {Array.isArray(item.questions_to_ask) && item.questions_to_ask.length ? (
-                      <div className="mt-4">
-                        <div className="text-sm font-semibold">Questions to ask</div>
-                        <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
-                          {item.questions_to_ask.map((q: string, i: number) => (
-                            <li key={i}>{q}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    ) : null}
+      <div className="rounded-b-2xl rounded-tr-2xl border bg-white p-6 break-inside-avoid">
+        {activeTab === "service" ? (
+          <div className="space-y-5">
+            <div className="rounded-2xl border bg-white p-6 break-inside-avoid">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-lg font-bold uppercase tracking-wide text-teal-600">
+                    Service risk
                   </div>
-                );
-              })}
+                  <div className="mt-1 text-sm text-slate-600">
+                    Estimated immediate exposure, adjustable as you tick off items already done. Scroll down for full details.
+                  </div>
+                </div>
+
+                <div className="hidden sm:inline-flex items-center rounded-full border bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
+                  Predicted
+                </div>
+              </div>
+
+              <div className="mt-4 text-4xl font-extrabold text-slate-900">
+                {money(adjusted.low)} – {money(adjusted.high)}
+              </div>
+
+              <div
+                className={[
+                  "mt-3 inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold border",
+                  riskColor(adjusted.risk),
+                ].join(" ")}
+              >
+                Risk: {titleCase(adjusted.risk)}
+              </div>
+
+              <div className="mt-3 text-sm text-slate-600">
+                Tick items you can prove are already done to reduce the estimate.
+              </div>
+
+              {negotiationAdjusted !== null ? (
+                <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 break-inside-avoid">
+                  <div className="font-semibold text-emerald-900">
+                    Suggested negotiation: ~{money(negotiationAdjusted)}
+                  </div>
+                  <div className="mt-1 text-sm text-emerald-900/80">
+                    (Based on remaining items not ticked as done)
+                  </div>
+                  <div className="mt-1 text-sm font-medium text-emerald-900">
+                    Scroll down for details
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            <div className="rounded-2xl border bg-white p-6 break-inside-avoid">
+              <h2 className="text-xl font-semibold">Itemised checks</h2>
+
+              <div className="mt-4 space-y-4">
+                {items.map((item, idx) => {
+                  const key = String(item.item_id ?? item.label ?? `item-${idx}`);
+                  const isDone = !!done[key];
+                  const source = itemSource(item);
+
+                  return (
+                    <div key={key} className="rounded-2xl border bg-white p-6 break-inside-avoid">
+                      <div className="flex flex-wrap items-start gap-4">
+                        <div className="min-w-[220px] flex-1">
+                          <div className="text-lg font-semibold text-slate-900">
+                            {item.label ?? "Service item"}
+                          </div>
+
+                          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                            <span
+                              className={[
+                                "inline-flex items-center rounded-full border px-2.5 py-1 font-semibold",
+                                sourceBadgeClasses(source),
+                              ].join(" ")}
+                            >
+                              Source: {sourceLabel(source)}
+                            </span>
+
+                            {item.status ? (
+                              <span className="text-slate-600">
+                                Status: <b>{String(item.status)}</b>
+                              </span>
+                            ) : null}
+
+                            {item.category ? (
+                              <span className="text-slate-600">
+                                Category: <b>{categoryLabel(item.category)}</b>
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+
+                        <div className="flex w-full items-start justify-between gap-3 sm:w-auto sm:min-w-[340px]">
+                          {typeof item.cost_low === "number" && typeof item.cost_high === "number" ? (
+                            <div className="text-left">
+                              <div className="text-lg font-semibold text-slate-900">
+                                {money(item.cost_low)} – {money(item.cost_high)}
+                              </div>
+                              <div className="text-xs text-slate-600">estimated</div>
+                            </div>
+                          ) : (
+                            <div className="min-h-[1px]" />
+                          )}
+
+                          <label className="ml-auto inline-flex items-center gap-2 rounded-lg border bg-slate-50 px-3 py-2 text-sm print:hidden">
+                            <input
+                              type="checkbox"
+                              checked={isDone}
+                              onChange={(e) =>
+                                setDone((prev) => ({ ...prev, [key]: e.target.checked }))
+                              }
+                            />
+                            <span className="font-semibold text-slate-800">Already done</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      {isDone ? (
+                        <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+                          Marked as done — removed from exposure estimate.
+                        </div>
+                      ) : null}
+
+                      {item.why_flagged ? (
+                        <div className="mt-4 text-sm text-slate-700">
+                          <b>Why flagged:</b> {item.why_flagged}
+                        </div>
+                      ) : null}
+
+                      {item.why_it_matters ? (
+                        <div className="mt-3 rounded-lg bg-slate-50 p-4 text-sm text-slate-700">
+                          <div className="font-semibold text-slate-900">Why it matters</div>
+                          <div className="mt-1">{item.why_it_matters}</div>
+                        </div>
+                      ) : null}
+
+                      {Array.isArray(item.questions_to_ask) && item.questions_to_ask.length ? (
+                        <div className="mt-4">
+                          <div className="text-sm font-semibold">Questions to ask</div>
+                          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
+                            {item.questions_to_ask.map((q: string, i: number) => (
+                              <li key={i}>{q}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
+        ) : null}
 
-        <div className="space-y-5">
+        {activeTab === "mot" ? (
           <div className="rounded-2xl border bg-white p-6 break-inside-avoid self-start">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -955,7 +1079,9 @@ If you want, you can unlock the full report from that page, tick off anything al
               </div>
             )}
           </div>
+        ) : null}
 
+        {activeTab === "hpi" ? (
           <div className="rounded-2xl border border-amber-200 bg-white p-6 break-inside-avoid">
             <div className="text-lg font-bold uppercase tracking-wide text-teal-600">
               Hpi summary
@@ -1001,6 +1127,19 @@ If you want, you can unlock the full report from that page, tick off anything al
                       ? "Finance, theft, write-off, mileage or status markers may materially affect value and risk."
                       : "No major HPI warning markers were returned in this lookup."}
                   </div>
+                </div>
+
+                <div className={`mt-4 rounded-xl border p-4 ${hpiValueImpact.tone}`}>
+                  <div className="font-semibold">{hpiValueImpact.title}</div>
+                  <div className="mt-1 text-sm">{hpiValueImpact.body}</div>
+
+                  {hpiValueImpact.bullets.length ? (
+                    <ul className="mt-3 list-disc space-y-1 pl-5 text-sm">
+                      {hpiValueImpact.bullets.map((bullet, idx) => (
+                        <li key={`${bullet}-${idx}`}>{bullet}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
 
                 <div className="mt-4 space-y-3">
@@ -1381,7 +1520,7 @@ If you want, you can unlock the full report from that page, tick off anything al
               </div>
             )}
           </div>
-        </div>
+        ) : null}
       </div>
 
       {sellerMessage ? (
