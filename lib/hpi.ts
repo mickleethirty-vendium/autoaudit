@@ -98,8 +98,8 @@ export function buildUkvdHpiSummary(payload: any): HpiSummary {
   const writeOffCategories: string[] = Array.from(
     new Set<string>(
       writeOffRecords
-        .map((r: any) => String(r?.Category ?? "").trim())
-        .filter((value): value is string => value.length > 0)
+        .map((r: any): string => String(r?.Category ?? "").trim())
+        .filter((value: string) => value.length > 0)
     )
   );
 
@@ -164,11 +164,15 @@ export function buildUkvdHpiSummary(payload: any): HpiSummary {
   }
 
   if (plateChanges > 0) {
-    notes.push(`${plateChanges} plate change${plateChanges === 1 ? "" : "s"} recorded`);
+    notes.push(
+      `${plateChanges} plate change${plateChanges === 1 ? "" : "s"} recorded`
+    );
   }
 
   if (colourChanges > 0) {
-    notes.push(`${colourChanges} colour change${colourChanges === 1 ? "" : "s"} recorded`);
+    notes.push(
+      `${colourChanges} colour change${colourChanges === 1 ? "" : "s"} recorded`
+    );
   }
 
   if (keeperChanges > 0) {
