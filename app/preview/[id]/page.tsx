@@ -235,10 +235,9 @@ export default async function Page({
   return (
     <>
       <div className="mx-auto w-full max-w-5xl px-4 pt-2 pb-28">
-        {/* Header */}
-        <div className="mb-4 border-b pb-2">
+        <div className="mb-4 border-b border-[var(--aa-silver)] pb-2">
           {reg ? (
-            <h1 className="text-2xl font-extrabold tracking-tight">
+            <h1 className="text-2xl font-extrabold tracking-tight text-black">
               {reg}
               {make ? (
                 <span className="ml-2 font-normal text-slate-600">
@@ -247,7 +246,7 @@ export default async function Page({
               ) : null}
             </h1>
           ) : (
-            <h1 className="text-2xl font-extrabold tracking-tight">
+            <h1 className="text-2xl font-extrabold tracking-tight text-black">
               AutoAudit Snapshot
             </h1>
           )}
@@ -262,10 +261,8 @@ export default async function Page({
           </div>
         </div>
 
-        {/* Service risk + MOT side by side */}
         <div className="grid gap-5 md:grid-cols-2">
-          {/* Service risk */}
-          <div className="rounded-2xl border bg-white p-4 shadow-sm">
+          <div className="rounded-2xl border-2 border-black bg-white p-4 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -276,7 +273,7 @@ export default async function Page({
                 </div>
               </div>
 
-              <div className="hidden sm:inline-flex items-center rounded-full border bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
+              <div className="hidden sm:inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
                 Predicted
               </div>
             </div>
@@ -293,14 +290,14 @@ export default async function Page({
 
             <div className="mt-3 flex flex-wrap items-center gap-2">
               {riskLevel ? (
-                <span className="inline-flex items-center rounded-full border px-3 py-1 text-sm bg-white">
+                <span className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-white px-3 py-1 text-sm">
                   <span className="font-semibold">Risk:</span>
                   <span className="ml-2">{titleCase(String(riskLevel))}</span>
                 </span>
               ) : null}
 
               {confidence ? (
-                <span className="inline-flex items-center rounded-full border px-3 py-1 text-sm bg-white">
+                <span className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-white px-3 py-1 text-sm">
                   <span className="font-semibold">Confidence:</span>
                   <span className="ml-2">
                     {confidence.label ?? "—"} ({confidence.score ?? "—"}/100)
@@ -310,8 +307,7 @@ export default async function Page({
             </div>
           </div>
 
-          {/* MOT history */}
-          <div className="rounded-2xl border bg-white p-4 shadow-sm">
+          <div className="rounded-2xl border-2 border-[var(--aa-red)] bg-white p-4 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -322,24 +318,24 @@ export default async function Page({
                 </div>
               </div>
 
-              <div className="hidden sm:inline-flex items-center rounded-full border bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
+              <div className="hidden sm:inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
                 DVSA data
               </div>
             </div>
 
             {mot.available ? (
               <>
-                <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-4">
-                  <div className="font-semibold text-rose-900">
+                <div className="mt-4 rounded-xl border border-[var(--aa-red)] bg-red-50 p-4">
+                  <div className="font-semibold text-[var(--aa-red)]">
                     {mot.credibilityTitle}
                   </div>
-                  <div className="mt-1 text-sm text-rose-900/80">
+                  <div className="mt-1 text-sm text-red-900/80">
                     {mot.credibilityText}
                   </div>
                 </div>
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-xl border bg-slate-50 p-3">
+                  <div className="rounded-xl border border-[var(--aa-silver)] bg-slate-50 p-3">
                     <div className="text-xs uppercase tracking-wide text-slate-500">
                       Latest test
                     </div>
@@ -354,7 +350,7 @@ export default async function Page({
                     </div>
                   </div>
 
-                  <div className="rounded-xl border bg-slate-50 p-3">
+                  <div className="rounded-xl border border-[var(--aa-silver)] bg-slate-50 p-3">
                     <div className="text-xs uppercase tracking-wide text-slate-500">
                       Recent history
                     </div>
@@ -377,7 +373,7 @@ export default async function Page({
                       {motFlags.map((flag) => (
                         <span
                           key={flag}
-                          className="inline-flex items-center rounded-full border bg-white px-3 py-1 text-sm text-slate-700"
+                          className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-white px-3 py-1 text-sm text-slate-700"
                         >
                           {flag}
                         </span>
@@ -391,21 +387,20 @@ export default async function Page({
                 </div>
               </>
             ) : (
-              <div className="mt-4 rounded-xl border bg-slate-50 p-4 text-sm text-slate-700">
+              <div className="mt-4 rounded-xl border border-[var(--aa-silver)] bg-slate-50 p-4 text-sm text-slate-700">
                 MoT history not available for this report yet.
               </div>
             )}
           </div>
         </div>
 
-        {/* Buckets */}
         <div className="mt-5">
-          <h2 className="text-lg font-semibold">Risk breakdown by system</h2>
+          <h2 className="text-lg font-semibold text-black">Risk breakdown by system</h2>
 
           <div className="mt-3 space-y-2">
             {buckets.length ? (
               buckets.map((b: any) => (
-                <div key={b.key} className="rounded-xl border bg-white p-3">
+                <div key={b.key} className="rounded-xl border border-[var(--aa-silver)] bg-white p-3">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <div className="text-sm font-semibold">
@@ -429,16 +424,15 @@ export default async function Page({
                 </div>
               ))
             ) : (
-              <div className="rounded-xl border bg-white p-4 text-sm text-slate-700">
+              <div className="rounded-xl border border-[var(--aa-silver)] bg-white p-4 text-sm text-slate-700">
                 No category breakdown available.
               </div>
             )}
           </div>
         </div>
 
-        {/* Locked Teaser */}
-        <div className="mt-5 rounded-xl border bg-white p-4">
-          <div className="text-base font-semibold">Detailed findings locked</div>
+        <div className="mt-5 rounded-xl border border-[var(--aa-silver)] bg-white p-4">
+          <div className="text-base font-semibold text-black">Detailed findings locked</div>
           <div className="mt-1 text-sm text-slate-600">
             {hiddenCount
               ? `${hiddenCount} detailed checks detected`
@@ -457,7 +451,7 @@ export default async function Page({
               .map((t, i) => (
                 <div
                   key={i}
-                  className="rounded-lg border bg-slate-50 px-3 py-2 text-sm text-slate-800"
+                  className="rounded-lg border border-[var(--aa-silver)] bg-slate-50 px-3 py-2 text-sm text-slate-800"
                 >
                   <span className="select-none blur-sm">{t}</span>
                 </div>
@@ -478,11 +472,10 @@ export default async function Page({
         </div>
       </div>
 
-      {/* FIXED CTA BAR */}
-      <div className="fixed bottom-0 left-0 right-0 z-[9999] border-t bg-white/95 backdrop-blur px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+      <div className="fixed bottom-0 left-0 right-0 z-[9999] border-t border-[var(--aa-silver)] bg-white/95 backdrop-blur px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
           <div className="text-sm">
-            <div className="font-semibold">
+            <div className="font-semibold text-black">
               Unlock full report · {priceLabel}
             </div>
             <div className="text-xs text-slate-600">

@@ -2,12 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ========== AutoAudit Brand Tokens ========== */
+:root {
+  --aa-black: #0a0a0a;
+  --aa-black-soft: #171717;
+  --aa-red: #c1121f;
+  --aa-red-strong: #991b1b;
+  --aa-red-soft: #fee2e2;
+  --aa-silver: #c0c7cf;
+  --aa-silver-dark: #94a3b8;
+  --aa-silver-soft: #f1f5f9;
+  --aa-white: #ffffff;
+  --aa-bg: #f8fafc;
+  --aa-text: #0f172a;
+}
+
 /* ========== Base Reset ========== */
-html, body {
+html,
+body {
   padding: 0;
   margin: 0;
-  background: #f8fafc; /* Light grey background */
-  color: #0f172a; /* Slate-900 for text */
+  background: var(--aa-bg);
+  color: var(--aa-text);
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
 }
@@ -18,15 +34,17 @@ html, body {
 }
 
 /* Global typography */
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   letter-spacing: -0.02em;
-  font-weight: 600;
-  color: #005f85; /* Dark blue from logo */
+  font-weight: 700;
+  color: var(--aa-black);
 }
 
 /* ========== Layout - Logo container ========== */
 .logo-container {
-  width: 33%; /* Make logo take up 1/3rd of the page */
+  width: 33%;
   max-width: 360px;
   margin-bottom: 32px;
   text-align: left;
@@ -39,11 +57,11 @@ h1, h2, h3 {
 
 /* ========== Professional Card Styling ========== */
 .card {
-  background: white;
+  background: var(--aa-white);
   border-radius: 0.75rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--aa-silver);
   padding: 1rem;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
   margin-bottom: 1.5rem;
 }
 
@@ -54,15 +72,18 @@ h1, h2, h3 {
   justify-content: center;
   border-radius: 0.75rem;
   padding: 0.75rem 1.5rem;
-  font-weight: 600;
-  background: #16a34a; /* Teal for the primary button */
-  color: white;
+  font-weight: 700;
+  border: 1px solid var(--aa-black);
+  background: var(--aa-black);
+  color: var(--aa-white);
   transition: all 0.2s ease;
+  box-shadow: 0 6px 16px rgba(10, 10, 10, 0.18);
 }
 
 .btn-primary:hover {
-  background: #15803d;
-  transform: translateY(-1px); /* Slight hover effect */
+  background: var(--aa-black-soft);
+  border-color: var(--aa-black-soft);
+  transform: translateY(-1px);
 }
 
 .btn-outline {
@@ -71,53 +92,60 @@ h1, h2, h3 {
   justify-content: center;
   border-radius: 0.75rem;
   padding: 0.75rem 1.5rem;
-  font-weight: 600;
-  border: 1px solid #cbd5e1;
-  background: white;
+  font-weight: 700;
+  border: 1px solid var(--aa-silver);
+  background: var(--aa-white);
+  color: var(--aa-black);
   transition: all 0.2s ease;
 }
 
 .btn-outline:hover {
-  background: #f1f5f9;
+  background: var(--aa-silver-soft);
+  border-color: var(--aa-silver-dark);
 }
 
 /* ========== Inputs ========== */
-input, select {
+input,
+select {
   width: 100%;
   border: 1px solid #e2e8f0;
   border-radius: 0.75rem;
   padding: 0.75rem 1rem;
-  font-size: 1rem; /* Standardized font size */
-  background: white;
+  font-size: 1rem;
+  background: var(--aa-white);
   transition: all 0.2s ease;
 }
 
-input:focus, select:focus {
+input:focus,
+select:focus {
   outline: none;
-  border-color: #2563eb; /* Blue focus effect */
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); /* Blue glow on focus */
+  border-color: var(--aa-red);
+  box-shadow: 0 0 0 3px rgba(193, 18, 31, 0.12);
 }
 
 /* ========== Headings ========== */
 h1 {
-  font-size: 2.5rem; /* Larger font for main headers */
-  font-weight: 700;
-  color: #005f85; /* Dark blue */
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--aa-black);
 }
 
 h2 {
   font-size: 2rem;
+  color: var(--aa-black);
 }
 
 h3 {
   font-size: 1.5rem;
+  color: var(--aa-black);
 }
 
 /* ========== Page Layout ========== */
 section {
-  background-color: white;
+  background-color: var(--aa-white);
   border-radius: 12px;
-  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.05); /* Soft shadow for sections */
+  border: 1px solid var(--aa-silver);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
   padding: 24px;
   margin-bottom: 24px;
 }
@@ -133,28 +161,52 @@ section {
 
 /* ========== Custom Utilities ========== */
 .text-slate-900 {
-  color: #0f172a; /* Dark slate color */
+  color: var(--aa-text);
 }
 
 .text-teal-500 {
-  color: #16a34a; /* Teal color */
+  color: var(--aa-red);
+}
+
+/* Optional brand helper classes for future use */
+.aa-border-black {
+  border-color: var(--aa-black) !important;
+}
+
+.aa-border-red {
+  border-color: var(--aa-red) !important;
+}
+
+.aa-border-silver {
+  border-color: var(--aa-silver) !important;
+}
+
+.aa-bg-black {
+  background: var(--aa-black) !important;
+  color: var(--aa-white) !important;
+}
+
+.aa-bg-red-soft {
+  background: var(--aa-red-soft) !important;
+}
+
+.aa-bg-silver-soft {
+  background: var(--aa-silver-soft) !important;
 }
 
 /* ---------- PRINT / PDF STYLES ---------- */
 
 @media print {
-
-  /* Page setup */
   @page {
     size: A4;
     margin: 18mm;
   }
 
-  html, body {
+  html,
+  body {
     background: white !important;
   }
 
-  /* Print utility support */
   .print\:block {
     display: block !important;
   }
@@ -163,14 +215,12 @@ section {
     display: none !important;
   }
 
-  /* Hide interactive UI */
   button,
   a.btn-primary,
   a.btn-outline {
     display: none !important;
   }
 
-  /* Prevent card elements splitting across pages */
   .rounded-2xl,
   .rounded-xl,
   .break-inside-avoid {
@@ -178,13 +228,14 @@ section {
     page-break-inside: avoid;
   }
 
-  /* Keep headings with next block */
-  h1, h2, h3 {
+  h1,
+  h2,
+  h3 {
     break-after: avoid;
     page-break-after: avoid;
+    color: var(--aa-black) !important;
   }
 
-  /* Slightly tighten layout for print */
   body {
     font-size: 12pt;
     line-height: 1.4;
@@ -202,7 +253,6 @@ section {
     font-size: 14pt;
   }
 
-  /* Remove shadows in print */
   * {
     box-shadow: none !important;
   }

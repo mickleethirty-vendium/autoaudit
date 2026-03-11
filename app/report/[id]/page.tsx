@@ -183,8 +183,8 @@ export default async function Page({
   if (isPaid) {
     return (
       <div className="mx-auto w-full max-w-5xl px-4 py-6">
-        <div className="hidden print:block mb-6 border-b pb-3">
-          <div className="text-lg font-bold">AutoAudit Vehicle Report</div>
+        <div className="hidden print:block mb-6 border-b border-slate-300 pb-3">
+          <div className="text-lg font-bold text-slate-950">AutoAudit Vehicle Report</div>
           <div className="text-sm text-slate-600">
             Generated: {new Date().toLocaleDateString("en-GB")}
           </div>
@@ -197,23 +197,27 @@ export default async function Page({
           ) : null}
         </div>
 
-        <div className="mb-6 border-b pb-3">
+        <div className="mb-6 rounded-2xl border border-black bg-white px-5 py-4 shadow-[0_10px_30px_rgba(0,0,0,0.06)]">
+          <div className="mb-2 inline-flex items-center rounded-full border border-red-200 bg-red-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-red-700">
+            AutoAudit report
+          </div>
+
           {reg ? (
-            <h1 className="text-2xl font-extrabold tracking-tight">
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-950">
               {reg}
               {make ? (
-                <span className="ml-2 font-normal text-slate-600">
+                <span className="ml-2 font-medium text-slate-500">
                   · {make}
                 </span>
               ) : null}
             </h1>
           ) : (
-            <h1 className="text-2xl font-extrabold tracking-tight">
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-950">
               AutoAudit Report
             </h1>
           )}
 
-          <div className="mt-1 text-sm text-slate-600">
+          <div className="mt-2 text-sm text-slate-600">
             {year ? `${year} · ` : ""}
             {fuel ? `${fuel} · ` : ""}
             {transmission ? `${transmission} · ` : ""}
@@ -242,23 +246,27 @@ export default async function Page({
   return (
     <>
       <div className="mx-auto w-full max-w-3xl px-4 pt-2 pb-28">
-        <div className="mb-4 border-b pb-2">
+        <div className="mb-4 rounded-2xl border border-black bg-white px-5 py-4 shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
+          <div className="mb-2 inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-700">
+            AutoAudit snapshot
+          </div>
+
           {reg ? (
-            <h1 className="text-2xl font-extrabold tracking-tight">
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-950">
               {reg}
               {make ? (
-                <span className="ml-2 font-normal text-slate-600">
+                <span className="ml-2 font-medium text-slate-500">
                   · {make}
                 </span>
               ) : null}
             </h1>
           ) : (
-            <h1 className="text-2xl font-extrabold tracking-tight">
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-950">
               AutoAudit Snapshot
             </h1>
           )}
 
-          <div className="mt-1 text-sm text-slate-600">
+          <div className="mt-2 text-sm text-slate-600">
             {year ? `${year} · ` : ""}
             {fuel ? `${fuel} · ` : ""}
             {transmission ? `${transmission} · ` : ""}
@@ -268,7 +276,7 @@ export default async function Page({
           </div>
         </div>
 
-        <div className="rounded-2xl border bg-white p-4 shadow-sm">
+        <div className="rounded-2xl border border-black bg-white p-4 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -279,7 +287,7 @@ export default async function Page({
               </div>
             </div>
 
-            <div className="hidden sm:inline-flex items-center rounded-full border bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
+            <div className="hidden sm:inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
               Instant snapshot
             </div>
           </div>
@@ -296,7 +304,7 @@ export default async function Page({
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {confidence ? (
-              <span className="inline-flex items-center rounded-full border px-3 py-1 text-sm bg-white">
+              <span className="inline-flex items-center rounded-full border border-slate-300 bg-white px-3 py-1 text-sm">
                 <span className="font-semibold">Confidence:</span>
                 <span className="ml-2">
                   {confidence.label ?? "—"} ({confidence.score ?? "—"}/100)
@@ -304,22 +312,22 @@ export default async function Page({
               </span>
             ) : null}
 
-            <span className="inline-flex items-center rounded-full border px-3 py-1 text-sm bg-white text-slate-600">
+            <span className="inline-flex items-center rounded-full border border-slate-300 bg-white px-3 py-1 text-sm text-slate-600">
               Best with service history + latest MoT
             </span>
           </div>
         </div>
 
         <div className="mt-5">
-          <h2 className="text-lg font-semibold">Risk breakdown by system</h2>
+          <h2 className="text-lg font-semibold text-slate-950">Risk breakdown by system</h2>
 
           <div className="mt-3 space-y-2">
             {buckets.length ? (
               buckets.map((b: any) => (
-                <div key={b.key} className="rounded-xl border bg-white p-3">
+                <div key={b.key} className="rounded-xl border border-slate-200 bg-white p-3">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <div className="text-sm font-semibold">
+                      <div className="text-sm font-semibold text-slate-900">
                         {b.label ?? "Category"}
                       </div>
                       <div className="mt-1 text-xs text-slate-600">
@@ -330,7 +338,7 @@ export default async function Page({
                     </div>
 
                     <div className="text-right">
-                      <div className="text-sm font-semibold">
+                      <div className="text-sm font-semibold text-slate-900">
                         £{Number(b.exposure_low || 0).toLocaleString()} – £
                         {Number(b.exposure_high || 0).toLocaleString()}
                       </div>
@@ -340,15 +348,15 @@ export default async function Page({
                 </div>
               ))
             ) : (
-              <div className="rounded-xl border bg-white p-4 text-sm text-slate-700">
+              <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
                 No category breakdown available.
               </div>
             )}
           </div>
         </div>
 
-        <div className="mt-5 rounded-xl border bg-white p-4">
-          <div className="text-base font-semibold">Detailed findings locked</div>
+        <div className="mt-5 rounded-xl border border-red-200 bg-white p-4">
+          <div className="text-base font-semibold text-slate-950">Detailed findings locked</div>
           <div className="mt-1 text-sm text-slate-600">
             {hiddenCount
               ? `${hiddenCount} detailed checks detected`
@@ -367,7 +375,7 @@ export default async function Page({
               .map((t, i) => (
                 <div
                   key={i}
-                  className="rounded-lg border bg-slate-50 px-3 py-2 text-sm text-slate-800"
+                  className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800"
                 >
                   <span className="select-none blur-sm">{t}</span>
                 </div>
@@ -388,10 +396,10 @@ export default async function Page({
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-[9999] border-t bg-white/95 backdrop-blur px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+      <div className="fixed bottom-0 left-0 right-0 z-[9999] border-t border-slate-300 bg-white/95 backdrop-blur px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
           <div className="text-sm">
-            <div className="font-semibold">
+            <div className="font-semibold text-slate-950">
               Unlock full report · {priceLabel}
             </div>
             <div className="text-xs text-slate-600">

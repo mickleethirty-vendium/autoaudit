@@ -383,23 +383,35 @@ function hpiStatusRow(label: string, value: string, isFlagged = false) {
 function tabClasses(tab: ActiveTab, activeTab: ActiveTab, idx: number) {
   const active = tab === activeTab;
 
+  const activeTone =
+    tab === "service"
+      ? "border-black border-b-white bg-white text-black shadow-[0_-4px_14px_rgba(0,0,0,0.12)]"
+      : tab === "mot"
+      ? "border-red-600 border-b-white bg-white text-red-700 shadow-[0_-4px_14px_rgba(220,38,38,0.12)]"
+      : "border-slate-400 border-b-white bg-white text-slate-700 shadow-[0_-4px_14px_rgba(148,163,184,0.18)]";
+
+  const inactiveTone =
+    tab === "service"
+      ? "border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-50 hover:text-black"
+      : tab === "mot"
+      ? "border-slate-300 bg-slate-100 text-slate-700 hover:bg-red-50 hover:text-red-700"
+      : "border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-50 hover:text-slate-700";
+
   return [
     "relative -mr-2 min-w-[140px] rounded-t-2xl border px-5 py-3 text-sm font-bold uppercase tracking-wide transition-all duration-200",
     idx === 0 ? "ml-0" : "",
-    active
-      ? "z-20 border-slate-200 border-b-white bg-white text-teal-600 shadow-[0_-4px_14px_rgba(15,23,42,0.08)]"
-      : "z-10 mt-2 border-slate-200 bg-slate-100 text-slate-600 hover:z-20 hover:-translate-y-0.5 hover:bg-slate-50 hover:text-teal-600",
+    active ? `z-20 ${activeTone}` : `z-10 mt-2 ${inactiveTone} hover:z-20 hover:-translate-y-0.5`,
   ].join(" ");
 }
 
-function panelToneClasses(tone: "teal" | "blue" | "amber") {
-  if (tone === "teal") {
-    return "border-teal-200 bg-teal-50/20";
+function panelToneClasses(tone: "black" | "red" | "silver") {
+  if (tone === "black") {
+    return "border-black bg-white";
   }
-  if (tone === "blue") {
-    return "border-blue-200 bg-blue-50/20";
+  if (tone === "red") {
+    return "border-red-600 bg-white";
   }
-  return "border-amber-200 bg-amber-50/20";
+  return "border-slate-300 bg-white";
 }
 
 function hpiStatusLabel(label: string, hasDetails = false) {
@@ -723,18 +735,18 @@ If you want, you can unlock the full report from that page, tick off anything al
         className={[
           "rounded-b-2xl rounded-tr-2xl border p-6 shadow-[0_10px_30px_rgba(15,23,42,0.06)] break-inside-avoid",
           activeTab === "service"
-            ? panelToneClasses("teal")
+            ? panelToneClasses("black")
             : activeTab === "mot"
-            ? panelToneClasses("blue")
-            : panelToneClasses("amber"),
+            ? panelToneClasses("red")
+            : panelToneClasses("silver"),
         ].join(" ")}
       >
         {activeTab === "service" ? (
           <div className="space-y-5">
-            <div className="rounded-2xl border border-teal-200 bg-white p-6 break-inside-avoid">
+            <div className="rounded-2xl border border-black bg-white p-6 break-inside-avoid">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <div className="text-lg font-bold uppercase tracking-wide text-teal-600">
+                  <div className="text-lg font-bold uppercase tracking-wide text-slate-900">
                     Service risk
                   </div>
                   <div className="mt-1 text-sm text-slate-600">
@@ -779,8 +791,8 @@ If you want, you can unlock the full report from that page, tick off anything al
               ) : null}
             </div>
 
-            <div className="rounded-2xl border border-teal-200 bg-white p-6 break-inside-avoid">
-              <h2 className="text-xl font-semibold">Itemised checks</h2>
+            <div className="rounded-2xl border border-black bg-white p-6 break-inside-avoid">
+              <h2 className="text-xl font-semibold text-slate-900">Itemised checks</h2>
 
               <div className="mt-4 space-y-4">
                 {items.map((item, idx) => {
@@ -883,10 +895,10 @@ If you want, you can unlock the full report from that page, tick off anything al
         ) : null}
 
         {activeTab === "mot" ? (
-          <div className="rounded-2xl border border-blue-200 bg-white p-6 break-inside-avoid self-start">
+          <div className="rounded-2xl border border-red-600 bg-white p-6 break-inside-avoid self-start">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <div className="text-lg font-bold uppercase tracking-wide text-teal-600">
+                <div className="text-lg font-bold uppercase tracking-wide text-red-700">
                   Mot history
                 </div>
                 <div className="mt-1 text-sm text-slate-600">
@@ -1111,8 +1123,8 @@ If you want, you can unlock the full report from that page, tick off anything al
         ) : null}
 
         {activeTab === "hpi" ? (
-          <div className="rounded-2xl border border-amber-200 bg-white p-6 break-inside-avoid">
-            <div className="text-lg font-bold uppercase tracking-wide text-teal-600">
+          <div className="rounded-2xl border border-slate-300 bg-white p-6 break-inside-avoid">
+            <div className="text-lg font-bold uppercase tracking-wide text-slate-700">
               Hpi summary
             </div>
             <div className="mt-1 text-sm text-slate-600">
