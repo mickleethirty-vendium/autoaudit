@@ -88,17 +88,18 @@ export function buildUkvdHpiSummary(payload: any): HpiSummary {
     : [];
 
   const stolen = payload?.Results?.PncDetails?.IsStolen === true;
-  const mileageFlag = payload?.Results?.MileageCheckDetails?.MileageAnomalyDetected === true;
+  const mileageFlag =
+    payload?.Results?.MileageCheckDetails?.MileageAnomalyDetected === true;
 
   const vehicleStatus = payload?.Results?.VehicleDetails?.VehicleStatus ?? {};
   const vehicleHistory = payload?.Results?.VehicleDetails?.VehicleHistory ?? {};
   const colourDetails = vehicleHistory?.ColourDetails ?? {};
 
-  const writeOffCategories = Array.from(
-    new Set(
+  const writeOffCategories: string[] = Array.from(
+    new Set<string>(
       writeOffRecords
         .map((r: any) => String(r?.Category ?? "").trim())
-        .filter(Boolean)
+        .filter((value): value is string => value.length > 0)
     )
   );
 
