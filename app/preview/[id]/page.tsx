@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase";
 import ExposureBar from "@/app/components/ExposureBar";
 
@@ -172,7 +173,6 @@ export default async function Page({
       `
     )
     .eq("id", params.id)
-    .eq("is_paid", false)
     .maybeSingle();
 
   if (error || !data) {
@@ -190,6 +190,10 @@ export default async function Page({
         </div>
       </div>
     );
+  }
+
+  if (data.is_paid === true) {
+    redirect(`/report/${data.id}`);
   }
 
   const reg = (data.registration as string | null) ?? null;
