@@ -27,20 +27,30 @@ function riskColor(risk: "low" | "medium" | "high") {
   return "bg-red-50 border-red-200 text-red-900";
 }
 
+function fillColor(risk: "low" | "medium" | "high") {
+  if (risk === "low") return "bg-black";
+  if (risk === "medium") return "bg-gradient-to-r from-black to-slate-500";
+  return "bg-gradient-to-r from-black via-red-700 to-red-500";
+}
+
+function glowColor(risk: "low" | "medium" | "high") {
+  if (risk === "low") return "shadow-[0_0_0_4px_rgba(15,23,42,0.08)]";
+  if (risk === "medium") return "shadow-[0_0_0_4px_rgba(100,116,139,0.10)]";
+  return "shadow-[0_0_0_4px_rgba(185,28,28,0.16)]";
+}
+
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
 
 /**
  * Risk score mapping:
- * We want a slider that doesn't hit 100/100 too easily for typical UK used-car cases.
- * This is a piecewise curve:
  * - up to EXPOSURE_P50: 0..50
  * - EXPOSURE_P50..EXPOSURE_P90: 50..90
- * - above EXPOSURE_P90: 90..100 (slowly)
+ * - above EXPOSURE_P90: 90..100
  */
-const EXPOSURE_P50 = 1200; // ~50/100 around £1.2k
-const EXPOSURE_P90 = 3000; // ~90/100 around £3k
+const EXPOSURE_P50 = 1200;
+const EXPOSURE_P90 = 3000;
 
 function computeRiskScoreFromExposureHigh(exposureHigh: number) {
   if (exposureHigh <= 0) return 0;
@@ -81,13 +91,13 @@ export default function ExposureBar({
   return (
     <div>
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="text-3xl font-extrabold text-slate-950">
+        <div className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">
           {money(low)} – {money(high)}
         </div>
 
         <span
           className={[
-            "inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold",
+            "inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold shadow-sm",
             riskColor(riskLevel),
           ].join(" ")}
         >
@@ -95,7 +105,7 @@ export default function ExposureBar({
         </span>
       </div>
 
-      <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600">
+      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600">
         <span>
           <span className="font-semibold text-slate-800">Most likely:</span>{" "}
           {money(mid)}
@@ -109,24 +119,48 @@ export default function ExposureBar({
         </span>
       </div>
 
-      <div className="mt-3">
-        <div className="relative h-2 w-full rounded-full bg-slate-200">
+      <div className="mt-4">
+        <div className="relative h-3 w-full overflow-hidden rounded-full border border-slate-200 bg-slate-100">
           <div
-            className="absolute left-0 top-0 h-2 rounded-full bg-black transition-all"
+            className={[
+              "absolute left-0 top-0 h-full rounded-full transition-all duration-700 ease-out",
+              fillColor(riskLevel),
+            ].join(" ")}
             style={{ width: `${riskScore}%` }}
             aria-label={`Risk score ${riskScore} out of 100`}
           />
 
           <div
-            className="absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border border-slate-400 bg-white shadow-sm"
-            style={{ left: `calc(${riskScore}% - 8px)` }}
+            className="pointer-events-none absolute inset-y-0 left-0 w-full bg-[linear-gradient(90deg,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0)_20%,rgba(255,255,255,0.10)_40%,rgba(255,255,255,0)_60%,rgba(255,255,255,0.08)_100%)]"
             aria-hidden="true"
           />
+
+          <div
+            className={[
+              "absolute top-1/2 h-5 w-5 -translate-y-1/2 rounded-full border-2 border-white bg-white transition-all duration-700 ease-out",
+              glowColor(riskLevel),
+            ].join(" ")}
+            style={{ left: `calc(${riskScore}% - 10px)` }}
+            aria-hidden="true"
+          >
+            <div
+              className={[
+                "absolute inset-1 rounded-full",
+                riskLevel === "high"
+                  ? "bg-red-600"
+                  : riskLevel === "medium"
+                  ? "bg-slate-500"
+                  : "bg-black",
+              ].join(" ")}
+            />
+          </div>
         </div>
 
-        <div className="mt-2 flex justify-between text-xs text-slate-500">
+        <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
           <span>Lower</span>
-          <span className="font-semibold text-slate-800">{riskScore}/100</span>
+          <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 font-semibold text-slate-800 shadow-sm">
+            {riskScore}/100
+          </span>
           <span>Higher</span>
         </div>
       </div>
