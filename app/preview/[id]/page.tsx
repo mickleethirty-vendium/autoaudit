@@ -161,7 +161,6 @@ export default async function Page({
         registration,
         make,
         car_year,
-        year,
         mileage,
         fuel,
         transmission,
@@ -198,12 +197,7 @@ export default async function Page({
 
   const reg = (data.registration as string | null) ?? null;
   const make = (data.make as string | null) ?? null;
-
-  const year =
-    (data.car_year as number | null) ??
-    (data.year as number | null) ??
-    null;
-
+  const year = (data.car_year as number | null) ?? null;
   const mileage = (data.mileage as number | null) ?? null;
   const fuel = (data.fuel as string | null) ?? null;
   const transmission = (data.transmission as string | null) ?? null;
