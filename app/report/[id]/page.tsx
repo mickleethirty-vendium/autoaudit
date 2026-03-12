@@ -2,6 +2,8 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import Stripe from "stripe";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 import { supabaseAdmin, supabasePublic } from "@/lib/supabase";
 import { mustGetEnv } from "@/lib/env";
 import { buildUkvdHpiSummary, fetchUkvdHpiByVrm } from "@/lib/hpi";
@@ -12,6 +14,24 @@ const stripe = new Stripe(mustGetEnv("STRIPE_SECRET_KEY"), {
   apiVersion: "2024-06-20",
 });
 
+function formatDate(value?: string | null) {
+  if (!value) return null;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function isExpired(value?: string | null) {
+  if (!value) return false;
+  const t = new Date(value).getTime();
+  if (Number.isNaN(t)) return false;
+  return t < Date.now();
+}
+
 export default async function Page({
   params,
   searchParams,
@@ -19,6 +39,26 @@ export default async function Page({
   params: { id: string };
   searchParams?: { session_id?: string };
 }) {
+  const cookieStore = cookies();
+
+  const supabaseServer = createServerClient(
+    mustGetEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    mustGetEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set() {},
+        remove() {},
+      },
+    }
+  );
+
+  const {
+    data: { user },
+  } = await supabaseServer.auth.getUser();
+
   const { data, error } = await supabasePublic
     .from("reports")
     .select("*")
@@ -56,7 +96,14 @@ export default async function Page({
 
   let isPaid = data.is_paid === true;
 
+  const ownerUserId = (data.owner_user_id as string | null) ?? null;
+  const expiresAt = (data.expires_at as string | null) ?? null;
+  const expiresAtLabel = formatDate(expiresAt);
+  const hasExpired = isExpired(expiresAt);
+
   const sessionId = searchParams?.session_id;
+  let paymentJustVerified = false;
+
   if (!isPaid && sessionId) {
     try {
       const session = await stripe.checkout.sessions.retrieve(sessionId);
@@ -67,10 +114,92 @@ export default async function Page({
 
       if (isSessionPaid && sessionReportId === params.id) {
         isPaid = true;
+        paymentJustVerified = true;
       }
     } catch (e) {
       console.error("Failed to verify Stripe session on report page:", e);
     }
+  }
+
+  if (isPaid && hasExpired) {
+    return (
+      <div className="mx-auto w-full max-w-3xl px-4 py-10">
+        <div className="rounded-2xl border border-red-200 bg-white p-6 shadow-sm">
+          <div className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-red-700">
+            Report expired
+          </div>
+
+          <h1 className="mt-4 text-2xl font-extrabold tracking-tight text-slate-950">
+            This report is no longer available
+          </h1>
+
+          <p className="mt-3 text-sm leading-6 text-slate-700">
+            Paid reports can be revisited for 30 days. This one expired
+            {expiresAtLabel ? (
+              <>
+                {" "}
+                on <span className="font-semibold">{expiresAtLabel}</span>
+              </>
+            ) : null}
+            .
+          </p>
+
+          <p className="mt-2 text-sm leading-6 text-slate-700">
+            Please run a fresh check if you still want a current report for this
+            vehicle.
+          </p>
+
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link href="/check" className="btn-primary">
+              Start a new check
+            </Link>
+            <Link href="/" className="btn-outline">
+              Back home
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isPaid && ownerUserId && ownerUserId !== user?.id && !paymentJustVerified) {
+    const loginReturnUrl = encodeURIComponent(`/report/${data.id}`);
+    const loginUrl = `/auth?mode=login&next=${loginReturnUrl}`;
+
+    return (
+      <div className="mx-auto w-full max-w-3xl px-4 py-10">
+        <div className="rounded-2xl border border-black bg-white p-6 shadow-sm">
+          <div className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-700">
+            Account access required
+          </div>
+
+          <h1 className="mt-4 text-2xl font-extrabold tracking-tight text-slate-950">
+            This report is saved to another account
+          </h1>
+
+          <p className="mt-3 text-sm leading-6 text-slate-700">
+            This paid report has already been linked to an AutoAudit account.
+            Please log in with that account to view it.
+          </p>
+
+          {expiresAtLabel ? (
+            <p className="mt-2 text-sm leading-6 text-slate-700">
+              Access is available until{" "}
+              <span className="font-semibold">{expiresAtLabel}</span>.
+            </p>
+          ) : null}
+
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link href={loginUrl} className="btn-primary">
+              Log in
+            </Link>
+            <Link href="/" className="btn-outline">
+              Back home
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const preview: any = data.preview_payload ?? {};
@@ -131,12 +260,7 @@ export default async function Page({
   const shouldFetchHpi =
     isPaid &&
     reg &&
-    (
-      !hpiChecked ||
-      hpiStatus !== "success" ||
-      !hpiPayload ||
-      !hpiSummary
-    );
+    (!hpiChecked || hpiStatus !== "success" || !hpiPayload || !hpiSummary);
 
   if (shouldFetchHpi) {
     try {
@@ -191,11 +315,20 @@ export default async function Page({
     }
   }
 
+  const reportUrl = `/report/${data.id}`;
+  const previewUrl = `/preview/${data.id}`;
+  const authReturnUrl = encodeURIComponent(reportUrl);
+  const claimReportId = encodeURIComponent(data.id);
+  const registerUrl = `/auth?mode=signup&next=${authReturnUrl}&claim_report=${claimReportId}`;
+  const loginUrl = `/auth?mode=login&next=${authReturnUrl}&claim_report=${claimReportId}`;
+
   if (isPaid) {
     return (
       <div className="mx-auto w-full max-w-5xl px-4 py-6">
         <div className="hidden print:block mb-6 border-b border-slate-300 pb-3">
-          <div className="text-lg font-bold text-slate-950">AutoAudit Vehicle Report</div>
+          <div className="text-lg font-bold text-slate-950">
+            AutoAudit Vehicle Report
+          </div>
           <div className="text-sm text-slate-600">
             Generated: {new Date().toLocaleDateString("en-GB")}
           </div>
@@ -238,17 +371,60 @@ export default async function Page({
           </div>
         </div>
 
+        <div className="mb-6 rounded-2xl border border-red-200 bg-red-50/50 p-4">
+          <div className="text-sm font-semibold text-slate-950">
+            Save access to this report
+          </div>
+
+          <div className="mt-1 text-sm text-slate-700">
+            Create an account after purchase to keep access to this report for
+            30 days
+            {expiresAtLabel ? (
+              <>
+                {" "}
+                — until <span className="font-semibold">{expiresAtLabel}</span>
+              </>
+            ) : (
+              <> from the date of payment</>
+            )}
+            .
+          </div>
+
+          <div className="mt-2 text-sm text-slate-700">
+            If you do not register or download your report, you may not be able
+            to access it again after that 30-day period has ended.
+          </div>
+
+          {!ownerUserId ? (
+            <div className="mt-4 flex flex-wrap gap-3 print:hidden">
+              <Link href={registerUrl} className="btn-primary">
+                Create account to save report
+              </Link>
+
+              <Link href={loginUrl} className="btn-outline">
+                Log in to save report
+              </Link>
+            </div>
+          ) : user?.id === ownerUserId ? (
+            <div className="mt-4 inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-800 print:hidden">
+              This report is linked to your account
+            </div>
+          ) : null}
+        </div>
+
         <ReportClient
           summary={fullSummary}
           items={fullItems}
           negotiationSuggested={negotiationSuggested}
           justUnlocked={justUnlocked}
-          reportUrl={`/report/${data.id}`}
-          previewUrl={`/preview/${data.id}`}
+          reportUrl={reportUrl}
+          previewUrl={previewUrl}
           motPayload={motPayload}
           hpiPayload={hpiPayload}
           hpiSummary={hpiSummary}
           hpiStatus={hpiStatus}
+          expiresAt={expiresAt}
+          expiresAtLabel={expiresAtLabel}
         />
       </div>
     );
@@ -330,12 +506,17 @@ export default async function Page({
         </div>
 
         <div className="mt-5">
-          <h2 className="text-lg font-semibold text-slate-950">Risk breakdown by system</h2>
+          <h2 className="text-lg font-semibold text-slate-950">
+            Risk breakdown by system
+          </h2>
 
           <div className="mt-3 space-y-2">
             {buckets.length ? (
               buckets.map((b: any) => (
-                <div key={b.key} className="rounded-xl border border-slate-200 bg-white p-3">
+                <div
+                  key={b.key}
+                  className="rounded-xl border border-slate-200 bg-white p-3"
+                >
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <div className="text-sm font-semibold text-slate-900">
@@ -367,7 +548,9 @@ export default async function Page({
         </div>
 
         <div className="mt-5 rounded-xl border border-red-200 bg-white p-4">
-          <div className="text-base font-semibold text-slate-950">Detailed findings locked</div>
+          <div className="text-base font-semibold text-slate-950">
+            Detailed findings locked
+          </div>
           <div className="mt-1 text-sm text-slate-600">
             {hiddenCount
               ? `${hiddenCount} detailed checks detected`
@@ -381,7 +564,8 @@ export default async function Page({
                   "Timing belt replacement",
                   "Brake system wear",
                   "Suspension component wear",
-                ])
+                ]
+            )
               .slice(0, 5)
               .map((t, i) => (
                 <div

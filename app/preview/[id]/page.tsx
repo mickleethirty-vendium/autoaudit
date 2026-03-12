@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { supabasePublic } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase";
 import ExposureBar from "@/app/components/ExposureBar";
 
 function titleCase(s: string) {
@@ -152,10 +152,27 @@ export default async function Page({
 }: {
   params: { id: string };
 }) {
-  const { data, error } = await supabasePublic
+  const { data, error } = await supabaseAdmin
     .from("reports")
-    .select("*")
+    .select(
+      `
+        id,
+        registration,
+        make,
+        car_year,
+        year,
+        mileage,
+        fuel,
+        transmission,
+        mot_payload,
+        preview_payload,
+        is_paid,
+        owner_user_id,
+        expires_at
+      `
+    )
     .eq("id", params.id)
+    .eq("is_paid", false)
     .maybeSingle();
 
   if (error || !data) {

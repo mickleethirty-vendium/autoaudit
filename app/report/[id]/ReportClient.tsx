@@ -145,6 +145,13 @@ function maskAgreementNumber(value?: string | null) {
   return `••••${raw.slice(-4)}`;
 }
 
+function getReportIdFromPath(reportUrl?: string) {
+  const raw = String(reportUrl ?? "").trim();
+  if (!raw) return null;
+  const match = raw.match(/\/report\/([^/?#]+)/i);
+  return match?.[1] ?? null;
+}
+
 function itemSource(item: Item): "mot" | "service" | "mixed" {
   const explicit = String(item.source ?? "").toLowerCase();
   const id = String(item.item_id ?? "").toLowerCase();
@@ -387,15 +394,15 @@ function tabClasses(tab: ActiveTab, activeTab: ActiveTab, idx: number) {
     tab === "service"
       ? "border-black border-b-white bg-white text-black shadow-[0_-4px_14px_rgba(0,0,0,0.12)]"
       : tab === "mot"
-      ? "border-red-600 border-b-white bg-white text-red-700 shadow-[0_-4px_14px_rgba(220,38,38,0.12)]"
-      : "border-slate-400 border-b-white bg-white text-slate-700 shadow-[0_-4px_14px_rgba(148,163,184,0.18)]";
+        ? "border-red-600 border-b-white bg-white text-red-700 shadow-[0_-4px_14px_rgba(220,38,38,0.12)]"
+        : "border-slate-400 border-b-white bg-white text-slate-700 shadow-[0_-4px_14px_rgba(148,163,184,0.18)]";
 
   const inactiveTone =
     tab === "service"
       ? "border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-50 hover:text-black"
       : tab === "mot"
-      ? "border-slate-300 bg-slate-100 text-slate-700 hover:bg-red-50 hover:text-red-700"
-      : "border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-50 hover:text-slate-700";
+        ? "border-slate-300 bg-slate-100 text-slate-700 hover:bg-red-50 hover:text-red-700"
+        : "border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-50 hover:text-slate-700";
 
   return [
     "relative -mr-2 min-w-[140px] rounded-t-2xl border px-5 py-3 text-sm font-bold uppercase tracking-wide transition-all duration-200",
@@ -517,6 +524,8 @@ export default function ReportClient({
   hpiPayload,
   hpiSummary,
   hpiStatus,
+  expiresAt,
+  expiresAtLabel,
 }: {
   summary: any;
   items: Item[];
@@ -528,6 +537,8 @@ export default function ReportClient({
   hpiPayload?: any;
   hpiSummary?: HpiSummary | null;
   hpiStatus?: string | null;
+  expiresAt?: string | null;
+  expiresAtLabel?: string | null;
 }) {
   const [done, setDone] = useState<Record<string, boolean>>({});
   const [sellerCopied, setSellerCopied] = useState(false);
@@ -589,6 +600,25 @@ ${absolutePreviewUrl}
 
 If you want, you can unlock the full report from that page, tick off anything already done, and come back with a counter-offer.`;
   }, [adjusted.low, adjusted.high, negotiationAdjusted, previewUrl]);
+
+  const reportId = useMemo(() => getReportIdFromPath(reportUrl), [reportUrl]);
+
+  const authLinks = useMemo(() => {
+    if (!reportUrl) {
+      return {
+        registerHref: "/auth",
+        loginHref: "/auth",
+      };
+    }
+
+    const next = encodeURIComponent(reportUrl);
+    const claimPart = reportId ? `&claim_report=${encodeURIComponent(reportId)}` : "";
+
+    return {
+      registerHref: `/auth?mode=signup&next=${next}${claimPart}`,
+      loginHref: `/auth?mode=login&next=${next}${claimPart}`,
+    };
+  }, [reportId, reportUrl]);
 
   async function handleCopySellerMessage() {
     if (!sellerMessage) return;
@@ -683,6 +713,12 @@ If you want, you can unlock the full report from that page, tick off anything al
     { key: "hpi", label: "HPI summary" },
   ];
 
+  const expiryNotice = expiresAtLabel
+    ? `Access available until ${expiresAtLabel}.`
+    : expiresAt
+      ? `Access available until ${formatDate(expiresAt)}.`
+      : "Access available for 30 days from the report date.";
+
   return (
     <>
       {justUnlocked ? (
@@ -693,6 +729,39 @@ If you want, you can unlock the full report from that page, tick off anything al
           </div>
         </div>
       ) : null}
+
+      <div className="mb-6 rounded-2xl border border-red-200 bg-red-50/60 p-4 print:hidden">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-3xl">
+            <div className="text-sm font-semibold text-slate-950">
+              Save this report for later
+            </div>
+            <div className="mt-1 text-sm text-slate-700">
+              Create an account or log in to keep access to this paid report for 30 days.
+            </div>
+            <div className="mt-1 text-sm text-slate-700">
+              {expiryNotice} If you do not register or download your report, you may not be
+              able to access it again after that period.
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <a
+              href={authLinks.registerHref}
+              className="inline-flex items-center justify-center rounded-xl border border-[#b91c1c] bg-[#b91c1c] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#991b1b]"
+            >
+              Create account to save
+            </a>
+
+            <a
+              href={authLinks.loginHref}
+              className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-50"
+            >
+              Log in to save
+            </a>
+          </div>
+        </div>
+      </div>
 
       <div className="mb-6 flex flex-wrap gap-3 print:hidden">
         {reportUrl ? (
@@ -712,6 +781,10 @@ If you want, you can unlock the full report from that page, tick off anything al
         >
           Download PDF
         </button>
+
+        <span className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700">
+          {expiryNotice}
+        </span>
       </div>
 
       <div className="mb-6">
@@ -737,8 +810,8 @@ If you want, you can unlock the full report from that page, tick off anything al
           activeTab === "service"
             ? panelToneClasses("black")
             : activeTab === "mot"
-            ? panelToneClasses("red")
-            : panelToneClasses("silver"),
+              ? panelToneClasses("red")
+              : panelToneClasses("silver"),
         ].join(" ")}
       >
         {activeTab === "service" ? (
@@ -958,10 +1031,10 @@ If you want, you can unlock the full report from that page, tick off anything al
                                       ? "border-rose-700 bg-rose-700 text-white"
                                       : "border-slate-900 bg-slate-900 text-white"
                                     : isFail
-                                    ? "border-rose-700 bg-rose-700 text-white hover:bg-rose-800"
-                                    : hasAdvisories
-                                    ? "border-rose-200 bg-white text-rose-700 hover:bg-rose-50"
-                                    : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50",
+                                      ? "border-rose-700 bg-rose-700 text-white hover:bg-rose-800"
+                                      : hasAdvisories
+                                        ? "border-rose-200 bg-white text-rose-700 hover:bg-rose-50"
+                                        : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50",
                                 ].join(" ")}
                               >
                                 <div className={hasAdvisories && !active && !isFail ? "text-rose-700" : ""}>

@@ -10,6 +10,10 @@ const stripe = new Stripe(mustGetEnv("STRIPE_SECRET_KEY"), {
   apiVersion: "2024-06-20",
 });
 
+function thirtyDaysFrom(date: Date) {
+  return new Date(date.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+}
+
 export async function POST(req: Request) {
   const body = await req.text();
 
@@ -54,23 +58,31 @@ export async function POST(req: Request) {
         return NextResponse.json({
           received: true,
           unlocked: false,
-          reason: "Session completed event received but payment not marked paid",
+          reason:
+            "Session completed event received but payment not marked paid",
         });
       }
+
+      const paidAt = new Date();
+      const paidAtIso = paidAt.toISOString();
+      const expiresAtIso = thirtyDaysFrom(paidAt);
+
+      const paymentIntentId =
+        typeof session.payment_intent === "string"
+          ? session.payment_intent
+          : null;
 
       const { data, error } = await supabaseAdmin
         .from("reports")
         .update({
           is_paid: true,
-          paid_at: new Date().toISOString(),
+          paid_at: paidAtIso,
+          expires_at: expiresAtIso,
           stripe_session_id: session.id,
-          stripe_payment_intent_id:
-            typeof session.payment_intent === "string"
-              ? session.payment_intent
-              : null,
+          stripe_payment_intent_id: paymentIntentId,
         })
         .eq("id", reportId)
-        .select("id,is_paid")
+        .select("id,is_paid,paid_at,expires_at")
         .single();
 
       if (error) {
@@ -92,6 +104,8 @@ export async function POST(req: Request) {
         unlocked: true,
         report_id: data.id,
         is_paid: data.is_paid,
+        paid_at: data.paid_at,
+        expires_at: data.expires_at,
       });
     }
 
