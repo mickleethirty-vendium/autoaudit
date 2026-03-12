@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
@@ -12,15 +12,12 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 function getSafeNext(nextValue: string | null) {
   if (!nextValue) return "/";
-
   if (!nextValue.startsWith("/")) return "/";
-
   if (nextValue.startsWith("//")) return "/";
-
   return nextValue;
 }
 
-export default function AuthPage() {
+function AuthPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -311,5 +308,23 @@ export default function AuthPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function AuthPageFallback() {
+  return (
+    <div className="mx-auto max-w-md px-4 py-10">
+      <div className="rounded-2xl border border-[var(--aa-silver)] bg-white p-6 shadow-sm">
+        <div className="text-sm text-slate-600">Loading account page...</div>
+      </div>
+    </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={<AuthPageFallback />}>
+      <AuthPageInner />
+    </Suspense>
   );
 }
