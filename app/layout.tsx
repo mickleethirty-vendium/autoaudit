@@ -31,9 +31,15 @@ export default function RootLayout({
 
                 <div className="hidden h-10 w-px bg-[var(--aa-silver)] sm:block" />
 
-                <span className="hidden sm:inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-white px-3 py-1 text-xs font-semibold text-black shadow-sm">
-                  Used car checks. Faster decisions.
-                </span>
+                <div className="hidden sm:flex sm:flex-col sm:gap-2">
+                  <span className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-white px-3 py-1 text-xs font-semibold text-black shadow-sm">
+                    Used car checks. Faster decisions.
+                  </span>
+
+                  <span className="inline-flex w-fit items-center rounded-full border border-[#b91c1c]/20 bg-[#b91c1c]/5 px-3 py-1 text-xs font-semibold text-[#b91c1c] shadow-sm">
+                    127 cars checked today
+                  </span>
+                </div>
               </div>
 
               {/* Right: Nav */}
