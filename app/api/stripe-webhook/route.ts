@@ -11,12 +11,14 @@ const stripe = new Stripe(mustGetEnv("STRIPE_SECRET_KEY"), {
 });
 
 export async function POST(req: Request) {
-  // IMPORTANT: raw body is required for signature verification
   const body = await req.text();
 
   const sig = (await headers()).get("stripe-signature");
   if (!sig) {
-    return NextResponse.json({ error: "Missing Stripe signature" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing Stripe signature" },
+      { status: 400 }
+    );
   }
 
   let event: Stripe.Event;
@@ -39,23 +41,39 @@ export async function POST(req: Request) {
       const reportId = session.metadata?.report_id;
 
       if (!reportId) {
-        // If metadata is missing, that's a bug in checkout session creation
         return NextResponse.json(
           { error: "Missing report_id in session metadata" },
           { status: 400 }
         );
       }
 
-      // Update Supabase to unlock the report
+      const isSessionPaid =
+        session.payment_status === "paid" || session.status === "complete";
+
+      if (!isSessionPaid) {
+        return NextResponse.json({
+          received: true,
+          unlocked: false,
+          reason: "Session completed event received but payment not marked paid",
+        });
+      }
+
       const { data, error } = await supabaseAdmin
         .from("reports")
-        .update({ is_paid: true })
+        .update({
+          is_paid: true,
+          paid_at: new Date().toISOString(),
+          stripe_session_id: session.id,
+          stripe_payment_intent_id:
+            typeof session.payment_intent === "string"
+              ? session.payment_intent
+              : null,
+        })
         .eq("id", reportId)
         .select("id,is_paid")
         .single();
 
       if (error) {
-        // Return non-200 so Stripe shows this delivery as failed
         return NextResponse.json(
           { error: `Supabase update failed: ${error.message}` },
           { status: 500 }
@@ -77,10 +95,8 @@ export async function POST(req: Request) {
       });
     }
 
-    // For other event types, just acknowledge
     return NextResponse.json({ received: true, ignored: true });
   } catch (err: any) {
-    // Catch-all: if anything unexpected happens, fail loudly
     return NextResponse.json(
       { error: `Webhook handler error: ${err.message}` },
       { status: 500 }

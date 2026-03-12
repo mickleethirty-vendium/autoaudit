@@ -17,9 +17,14 @@ export async function POST(req: Request) {
     const year = Number(body.year);
     const mileage = Number(body.mileage);
 
-    if (!Number.isFinite(year) || year < 1990 || year > new Date().getFullYear()) {
+    if (
+      !Number.isFinite(year) ||
+      year < 1990 ||
+      year > new Date().getFullYear()
+    ) {
       return NextResponse.json({ error: "Invalid year" }, { status: 400 });
     }
+
     if (!Number.isFinite(mileage) || mileage < 0 || mileage > 500000) {
       return NextResponse.json({ error: "Invalid mileage" }, { status: 400 });
     }
@@ -66,6 +71,13 @@ export async function POST(req: Request) {
         preview_payload: preview,
         full_payload: full,
         is_paid: false,
+
+        // Ensure every new check starts with a fresh HPI state
+        hpi_checked: false,
+        hpi_checked_at: null,
+        hpi_status: null,
+        hpi_payload: null,
+        hpi_summary: null,
       })
       .select("id")
       .single();
@@ -79,6 +91,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ report_id: data.id });
   } catch (e: any) {
-    return NextResponse.json({ error: e?.message ?? "Server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: e?.message ?? "Server error" },
+      { status: 500 }
+    );
   }
 }

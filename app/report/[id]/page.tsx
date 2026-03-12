@@ -113,12 +113,12 @@ export default async function Page({
     typeof fullPayload.negotiation_suggested === "number"
       ? fullPayload.negotiation_suggested
       : typeof fullPayload.negotiationSuggested === "number"
-      ? fullPayload.negotiationSuggested
-      : typeof fullSummary.negotiation_suggested === "number"
-      ? fullSummary.negotiation_suggested
-      : typeof fullSummary.negotiationSuggested === "number"
-      ? fullSummary.negotiationSuggested
-      : null;
+        ? fullPayload.negotiationSuggested
+        : typeof fullSummary.negotiation_suggested === "number"
+          ? fullSummary.negotiation_suggested
+          : typeof fullSummary.negotiationSuggested === "number"
+            ? fullSummary.negotiationSuggested
+            : null;
 
   const justUnlocked = Boolean(sessionId);
   const motPayload: any = data.mot_payload ?? null;
@@ -128,7 +128,17 @@ export default async function Page({
   let hpiChecked: boolean = data.hpi_checked === true;
   let hpiStatus: string | null = (data.hpi_status as string | null) ?? null;
 
-  if (isPaid && reg && !hpiChecked) {
+  const shouldFetchHpi =
+    isPaid &&
+    reg &&
+    (
+      !hpiChecked ||
+      hpiStatus !== "success" ||
+      !hpiPayload ||
+      !hpiSummary
+    );
+
+  if (shouldFetchHpi) {
     try {
       const rawPayload = await fetchUkvdHpiByVrm(reg);
       const summary = buildUkvdHpiSummary(rawPayload);
@@ -166,6 +176,7 @@ export default async function Page({
           hpi_checked_at: new Date().toISOString(),
           hpi_status: "error",
           hpi_payload: errorPayload,
+          hpi_summary: null,
         })
         .eq("id", params.id);
 
