@@ -53,7 +53,7 @@ export default async function MyReportsPage() {
   const { data: reports, error } = await supabase
     .from("reports")
     .select(
-      "id, registration, make, car_year, mileage, fuel, transmission, created_at, expires_at, is_paid, owner_user_id"
+      "id, registration, make, car_year, mileage, fuel, transmission, created_at, expires_at, is_paid, owner_user_id, hpi_unlocked"
     )
     .eq("owner_user_id", user.id)
     .eq("is_paid", true)
@@ -71,9 +71,7 @@ export default async function MyReportsPage() {
             We couldn&apos;t load your saved reports
           </h1>
 
-          <p className="mt-3 text-sm text-slate-700">
-            {error.message}
-          </p>
+          <p className="mt-3 text-sm text-slate-700">{error.message}</p>
 
           <div className="mt-5">
             <Link href="/" className="btn-outline">
@@ -86,10 +84,12 @@ export default async function MyReportsPage() {
   }
 
   const activeReports =
-    reports?.filter((report) => !isExpired(report.expires_at as string | null)) ?? [];
+    reports?.filter((report) => !isExpired(report.expires_at as string | null)) ??
+    [];
 
   const expiredReports =
-    reports?.filter((report) => isExpired(report.expires_at as string | null)) ?? [];
+    reports?.filter((report) => isExpired(report.expires_at as string | null)) ??
+    [];
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -104,7 +104,8 @@ export default async function MyReportsPage() {
 
         <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700">
           These are the paid reports linked to your account. Saved reports remain
-          available for up to 30 days from the payment date.
+          available for up to 30 days from the payment date. Tier 1 includes the
+          full report and MoT analysis. Tier 2 adds the HPI history check.
         </p>
       </div>
 
@@ -133,6 +134,7 @@ export default async function MyReportsPage() {
               const transmission = (report.transmission as string | null) ?? null;
               const createdAtLabel = formatDate(report.created_at as string | null);
               const expiresAtLabel = formatDate(report.expires_at as string | null);
+              const hpiUnlocked = report.hpi_unlocked === true;
 
               return (
                 <div
@@ -141,8 +143,20 @@ export default async function MyReportsPage() {
                 >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-700">
-                        Active
+                      <div className="flex flex-wrap gap-2">
+                        <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-700">
+                          Active
+                        </span>
+
+                        {hpiUnlocked ? (
+                          <span className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-red-700">
+                            Tier 2 · HPI included
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-700">
+                            Tier 1 · HPI not added
+                          </span>
+                        )}
                       </div>
 
                       <h3 className="mt-3 text-2xl font-extrabold tracking-tight text-slate-950">
@@ -176,12 +190,28 @@ export default async function MyReportsPage() {
                           </span>
                         ) : null}
                       </div>
+
+                      {!hpiUnlocked ? (
+                        <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                          This report currently includes Tier 1 only. You can
+                          still upgrade it to add the HPI history check.
+                        </div>
+                      ) : null}
                     </div>
 
                     <div className="flex flex-wrap gap-3">
                       <Link href={`/report/${report.id}`} className="btn-primary">
                         Open report
                       </Link>
+
+                      {!hpiUnlocked ? (
+                        <Link
+                          href={`/report/${report.id}`}
+                          className="btn-outline"
+                        >
+                          Upgrade to HPI
+                        </Link>
+                      ) : null}
                     </div>
                   </div>
                 </div>
@@ -200,7 +230,8 @@ export default async function MyReportsPage() {
           <div className="mb-4">
             <h2 className="text-xl font-bold text-slate-950">Expired reports</h2>
             <p className="mt-1 text-sm text-slate-600">
-              These are no longer accessible and will need a fresh check if you want a new report.
+              These are no longer accessible and will need a fresh check if you
+              want a new report.
             </p>
           </div>
 
@@ -210,7 +241,10 @@ export default async function MyReportsPage() {
               const make = (report.make as string | null) ?? null;
               const year = (report.car_year as number | null) ?? null;
               const mileage = (report.mileage as number | null) ?? null;
+              const fuel = (report.fuel as string | null) ?? null;
+              const transmission = (report.transmission as string | null) ?? null;
               const expiresAtLabel = formatDate(report.expires_at as string | null);
+              const hpiUnlocked = report.hpi_unlocked === true;
 
               return (
                 <div
@@ -219,8 +253,20 @@ export default async function MyReportsPage() {
                 >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <div className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-600">
-                        Expired
+                      <div className="flex flex-wrap gap-2">
+                        <span className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-600">
+                          Expired
+                        </span>
+
+                        {hpiUnlocked ? (
+                          <span className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-red-700">
+                            Tier 2 · HPI included
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-700">
+                            Tier 1 only
+                          </span>
+                        )}
                       </div>
 
                       <h3 className="mt-3 text-xl font-bold tracking-tight text-slate-900">
@@ -234,6 +280,8 @@ export default async function MyReportsPage() {
 
                       <div className="mt-2 text-sm text-slate-600">
                         {year ? `${year} · ` : ""}
+                        {fuel ? `${fuel} · ` : ""}
+                        {transmission ? `${transmission} · ` : ""}
                         {typeof mileage === "number"
                           ? `${mileage.toLocaleString()} miles`
                           : ""}

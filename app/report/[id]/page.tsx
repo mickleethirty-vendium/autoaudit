@@ -4,7 +4,7 @@ import Link from "next/link";
 import Stripe from "stripe";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
-import { supabaseAdmin, supabasePublic } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase";
 import { mustGetEnv } from "@/lib/env";
 import { buildUkvdHpiSummary, fetchUkvdHpiByVrm } from "@/lib/hpi";
 import ExposureBar from "@/app/components/ExposureBar";
@@ -13,6 +13,8 @@ import ReportClient from "./ReportClient";
 const stripe = new Stripe(mustGetEnv("STRIPE_SECRET_KEY"), {
   apiVersion: "2024-06-20",
 });
+
+type CheckoutTier = "report" | "hpi_upgrade";
 
 function formatDate(value?: string | null) {
   if (!value) return null;
@@ -32,12 +34,16 @@ function isExpired(value?: string | null) {
   return t < Date.now();
 }
 
+function parseCheckoutTier(value?: string | null): CheckoutTier {
+  return value === "hpi_upgrade" ? "hpi_upgrade" : "report";
+}
+
 export default async function Page({
   params,
   searchParams,
 }: {
   params: { id: string };
-  searchParams?: { session_id?: string };
+  searchParams?: { session_id?: string; tier?: string };
 }) {
   const cookieStore = cookies();
 
@@ -59,7 +65,7 @@ export default async function Page({
     data: { user },
   } = await supabaseServer.auth.getUser();
 
-  const { data, error } = await supabasePublic
+  const { data, error } = await supabaseAdmin
     .from("reports")
     .select("*")
     .eq("id", params.id)
@@ -95,6 +101,7 @@ export default async function Page({
   const transmission = (data.transmission as string | null) ?? null;
 
   let isPaid = data.is_paid === true;
+  let hpiUnlocked = data.hpi_unlocked === true;
 
   const ownerUserId = (data.owner_user_id as string | null) ?? null;
   const expiresAt = (data.expires_at as string | null) ?? null;
@@ -103,18 +110,31 @@ export default async function Page({
 
   const sessionId = searchParams?.session_id;
   let paymentJustVerified = false;
+  let justUnlockedTier: CheckoutTier | null = null;
 
-  if (!isPaid && sessionId) {
+  if (sessionId) {
     try {
       const session = await stripe.checkout.sessions.retrieve(sessionId);
 
       const sessionReportId = session.metadata?.report_id;
+      const sessionCheckoutTier = parseCheckoutTier(
+        session.metadata?.checkout_tier
+      );
       const isSessionPaid =
         session.payment_status === "paid" || session.status === "complete";
 
       if (isSessionPaid && sessionReportId === params.id) {
-        isPaid = true;
         paymentJustVerified = true;
+        justUnlockedTier = sessionCheckoutTier;
+
+        if (sessionCheckoutTier === "report") {
+          isPaid = true;
+        }
+
+        if (sessionCheckoutTier === "hpi_upgrade") {
+          isPaid = true;
+          hpiUnlocked = true;
+        }
       }
     } catch (e) {
       console.error("Failed to verify Stripe session on report page:", e);
@@ -229,8 +249,10 @@ export default async function Page({
 
   const confidence: any = previewSummary.confidence ?? null;
 
-  const checkoutUrl = `/api/checkout?report_id=${data.id}`;
+  const reportCheckoutUrl = `/api/checkout?report_id=${data.id}&tier=report`;
+  const hpiUpgradeCheckoutUrl = `/api/checkout?report_id=${data.id}&tier=hpi_upgrade`;
   const priceLabel = "£4.99";
+  const hpiUpgradePriceLabel = "£5";
 
   const fullPayload: any = data.full_payload ?? {};
   const fullSummary: any = fullPayload.summary ?? {};
@@ -249,15 +271,20 @@ export default async function Page({
             ? fullSummary.negotiationSuggested
             : null;
 
-  const justUnlocked = Boolean(sessionId);
+  const justUnlockedReport = justUnlockedTier === "report";
+  const justUnlockedHpi = justUnlockedTier === "hpi_upgrade";
+
   const motPayload: any = data.mot_payload ?? null;
 
-  let hpiPayload: any = data.hpi_payload ?? null;
-  let hpiSummary: any = data.hpi_summary ?? null;
-  let hpiChecked: boolean = data.hpi_checked === true;
-  let hpiStatus: string | null = (data.hpi_status as string | null) ?? null;
+  let hpiPayload: any = hpiUnlocked ? data.hpi_payload ?? null : null;
+  let hpiSummary: any = hpiUnlocked ? data.hpi_summary ?? null : null;
+  let hpiChecked: boolean = hpiUnlocked ? data.hpi_checked === true : false;
+  let hpiStatus: string | null = hpiUnlocked
+    ? ((data.hpi_status as string | null) ?? null)
+    : "locked";
 
   const shouldFetchHpi =
+    hpiUnlocked &&
     isPaid &&
     reg &&
     (!hpiChecked || hpiStatus !== "success" || !hpiPayload || !hpiSummary);
@@ -371,6 +398,21 @@ export default async function Page({
           </div>
         </div>
 
+        {(justUnlockedReport || justUnlockedHpi) ? (
+          <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+            <div className="text-sm font-semibold text-emerald-900">
+              {justUnlockedHpi
+                ? "HPI upgrade unlocked"
+                : "Tier 1 report unlocked"}
+            </div>
+            <div className="mt-1 text-sm text-emerald-900/80">
+              {justUnlockedHpi
+                ? "Your HPI panel is now included in this report."
+                : "You now have service risk, detailed findings and MoT analysis."}
+            </div>
+          </div>
+        ) : null}
+
         <div className="mb-6 rounded-2xl border border-red-200 bg-red-50/50 p-4">
           <div className="text-sm font-semibold text-slate-950">
             Save access to this report
@@ -412,17 +454,48 @@ export default async function Page({
           ) : null}
         </div>
 
+        {!hpiUnlocked ? (
+          <div className="mb-6 rounded-2xl border border-black bg-white p-5 shadow-sm print:hidden">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <div className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-700">
+                  Optional upgrade
+                </div>
+
+                <h2 className="mt-3 text-xl font-extrabold tracking-tight text-slate-950">
+                  Add HPI history check · {hpiUpgradePriceLabel}
+                </h2>
+
+                <p className="mt-2 text-sm leading-6 text-slate-700">
+                  Upgrade this report to include HPI-style history data such as
+                  finance markers, insurance write-off records, stolen markers,
+                  mileage anomalies, keeper history and plate changes.
+                </p>
+              </div>
+
+              <div className="flex-shrink-0">
+                <a href={hpiUpgradeCheckoutUrl} className="btn-primary">
+                  Upgrade with HPI · {hpiUpgradePriceLabel}
+                </a>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
         <ReportClient
           summary={fullSummary}
           items={fullItems}
           negotiationSuggested={negotiationSuggested}
-          justUnlocked={justUnlocked}
+          justUnlocked={justUnlockedReport}
           reportUrl={reportUrl}
           previewUrl={previewUrl}
           motPayload={motPayload}
           hpiPayload={hpiPayload}
           hpiSummary={hpiSummary}
           hpiStatus={hpiStatus}
+          hpiUnlocked={hpiUnlocked}
+          hpiUpgradeUrl={hpiUpgradeCheckoutUrl}
+          hpiUpgradePriceLabel={hpiUpgradePriceLabel}
           expiresAt={expiresAt}
           expiresAtLabel={expiresAtLabel}
         />
@@ -564,8 +637,7 @@ export default async function Page({
                   "Timing belt replacement",
                   "Brake system wear",
                   "Suspension component wear",
-                ]
-            )
+                ])
               .slice(0, 5)
               .map((t, i) => (
                 <div
@@ -585,6 +657,44 @@ export default async function Page({
           </div>
         </div>
 
+        <div className="mt-6 rounded-2xl border border-black bg-white p-5 shadow-sm">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div className="text-sm font-semibold text-slate-950">
+                Tier 1 report · {priceLabel}
+              </div>
+              <div className="mt-2 text-sm text-slate-700">
+                Service risk, detailed findings, seller questions, negotiation
+                guidance and MoT analysis.
+              </div>
+              <div className="mt-4">
+                <a href={reportCheckoutUrl} className="btn-primary">
+                  Unlock Tier 1 · {priceLabel}
+                </a>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-red-200 bg-red-50/40 p-4">
+              <div className="text-sm font-semibold text-slate-950">
+                Tier 2 bundle · £9.99 total
+              </div>
+              <div className="mt-2 text-sm text-slate-700">
+                Everything in Tier 1, plus HPI-style history checks including
+                finance markers, write-off records, stolen markers and mileage
+                anomalies.
+              </div>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <a href={reportCheckoutUrl} className="btn-outline">
+                  Start with Tier 1
+                </a>
+                <span className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700">
+                  Add HPI later for {hpiUpgradePriceLabel}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="mt-6 text-xs text-slate-500">
           AutoAudit provides guidance only and is not a substitute for a
           mechanical inspection.
@@ -595,15 +705,15 @@ export default async function Page({
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
           <div className="text-sm">
             <div className="font-semibold text-slate-950">
-              Unlock full report · {priceLabel}
+              Unlock Tier 1 report · {priceLabel}
             </div>
             <div className="text-xs text-slate-600">
-              Reveal all checks and potential costs
+              Service risk, MoT analysis and full report findings
             </div>
           </div>
 
-          <a href={checkoutUrl} className="btn-primary">
-            View full report
+          <a href={reportCheckoutUrl} className="btn-primary">
+            Unlock report
           </a>
         </div>
       </div>

@@ -224,7 +224,9 @@ function getMotSummary(motPayload: any) {
 
   if (!motPayload || motPayload?._error) return empty;
 
-  const tests: any[] = Array.isArray(motPayload?.motTests) ? motPayload.motTests : [];
+  const tests: any[] = Array.isArray(motPayload?.motTests)
+    ? motPayload.motTests
+    : [];
   if (!tests.length) {
     return {
       ...empty,
@@ -265,7 +267,9 @@ function getMotSummary(motPayload: any) {
         recentFailureCount += 1;
       }
 
-      if (includesAny(text, ["corrosion", "corroded", "excessively corroded"])) {
+      if (
+        includesAny(text, ["corrosion", "corroded", "excessively corroded"])
+      ) {
         corrosionFlag = true;
       }
       if (includesAny(text, ["brake", "disc", "pad", "drum", "handbrake"])) {
@@ -315,7 +319,9 @@ function getMotSummary(motPayload: any) {
     brakeFlag,
     tyreFlag,
     suspensionFlag,
-    credibilityTitle: hasFlags ? "MoT history flags found" : "MoT history included",
+    credibilityTitle: hasFlags
+      ? "MoT history flags found"
+      : "MoT history included",
     credibilityText: hasFlags
       ? "Repeated advisories or recent defects may affect near-term costs."
       : "Advisories and recent test history used in this estimate.",
@@ -325,7 +331,9 @@ function getMotSummary(motPayload: any) {
 function normaliseMotTests(motPayload: any): MotTest[] {
   if (!motPayload || motPayload?._error) return [];
 
-  const tests: MotTest[] = Array.isArray(motPayload?.motTests) ? motPayload.motTests : [];
+  const tests: MotTest[] = Array.isArray(motPayload?.motTests)
+    ? motPayload.motTests
+    : [];
 
   return [...tests].sort((a, b) => {
     const aTime = a?.completedDate ? new Date(a.completedDate).getTime() : 0;
@@ -336,8 +344,10 @@ function normaliseMotTests(motPayload: any): MotTest[] {
 
 function resultBadgeClasses(result?: string | null) {
   const r = String(result ?? "").toUpperCase();
-  if (r === "PASSED" || r === "PASS") return "border-emerald-200 bg-emerald-50 text-emerald-900";
-  if (r === "FAILED" || r === "FAIL") return "border-rose-200 bg-rose-50 text-rose-900";
+  if (r === "PASSED" || r === "PASS")
+    return "border-emerald-200 bg-emerald-50 text-emerald-900";
+  if (r === "FAILED" || r === "FAIL")
+    return "border-rose-200 bg-rose-50 text-rose-900";
   return "border-slate-200 bg-slate-50 text-slate-900";
 }
 
@@ -364,9 +374,13 @@ function yearlyMotSummaryLine(test: MotTest, idx: number) {
   const yearLabel = test.completedDate
     ? new Date(test.completedDate).getFullYear()
     : `Test ${idx + 1}`;
-  const result = test.testResult ? titleCase(String(test.testResult)) : "Unknown";
+  const result = test.testResult
+    ? titleCase(String(test.testResult))
+    : "Unknown";
   const advisoryCount = advisoryCountForTest(test);
-  return `${yearLabel}: ${result} · ${advisoryCount} advis${advisoryCount === 1 ? "ory" : "ories"}`;
+  return `${yearLabel}: ${result} · ${advisoryCount} advis${
+    advisoryCount === 1 ? "ory" : "ories"
+  }`;
 }
 
 function hpiStatusRow(label: string, value: string, isFlagged = false) {
@@ -407,7 +421,9 @@ function tabClasses(tab: ActiveTab, activeTab: ActiveTab, idx: number) {
   return [
     "relative -mr-2 min-w-[140px] rounded-t-2xl border px-5 py-3 text-sm font-bold uppercase tracking-wide transition-all duration-200",
     idx === 0 ? "ml-0" : "",
-    active ? `z-20 ${activeTone}` : `z-10 mt-2 ${inactiveTone} hover:z-20 hover:-translate-y-0.5`,
+    active
+      ? `z-20 ${activeTone}`
+      : `z-10 mt-2 ${inactiveTone} hover:z-20 hover:-translate-y-0.5`,
   ].join(" ");
 }
 
@@ -439,10 +455,14 @@ function getHpiValueImpact(summary?: HpiSummary | null) {
 
   if (summary.stolen || summary.scrappedFlag) {
     if (summary.stolen) {
-      notes.push("A stolen marker can make the vehicle effectively unbuyable until fully resolved.");
+      notes.push(
+        "A stolen marker can make the vehicle effectively unbuyable until fully resolved."
+      );
     }
     if (summary.scrappedFlag) {
-      notes.push("A scrapped marker can severely affect legality, insurability and resale value.");
+      notes.push(
+        "A scrapped marker can severely affect legality, insurability and resale value."
+      );
     }
 
     return {
@@ -454,12 +474,18 @@ function getHpiValueImpact(summary?: HpiSummary | null) {
   }
 
   if (summary.writeOff) {
-    notes.push("Insurance write-off history usually reduces resale value materially.");
+    notes.push(
+      "Insurance write-off history usually reduces resale value materially."
+    );
     if (summary.writeOffCategories?.length) {
-      notes.push(`Category recorded: ${summary.writeOffCategories.join(", ")}.`);
+      notes.push(
+        `Category recorded: ${summary.writeOffCategories.join(", ")}.`
+      );
     }
     if (summary.finance) {
-      notes.push("Outstanding finance adds a further transaction risk until settled.");
+      notes.push(
+        "Outstanding finance adds a further transaction risk until settled."
+      );
     }
 
     return {
@@ -472,10 +498,14 @@ function getHpiValueImpact(summary?: HpiSummary | null) {
 
   if (summary.finance || summary.mileageFlag) {
     if (summary.finance) {
-      notes.push("Outstanding finance should normally be cleared before purchase completes.");
+      notes.push(
+        "Outstanding finance should normally be cleared before purchase completes."
+      );
     }
     if (summary.mileageFlag) {
-      notes.push("A mileage anomaly can materially affect trust, valuation and resale.");
+      notes.push(
+        "A mileage anomaly can materially affect trust, valuation and resale."
+      );
     }
 
     return {
@@ -492,10 +522,14 @@ function getHpiValueImpact(summary?: HpiSummary | null) {
     (summary.plateChanges ?? 0) > 0 ||
     (summary.colourChanges ?? 0) > 0
   ) {
-    if (summary.importFlag) notes.push("Import history can affect buyer pool and pricing.");
-    if (summary.exportFlag) notes.push("Export history can raise questions that reduce confidence.");
-    if ((summary.plateChanges ?? 0) > 0) notes.push("Plate changes may prompt additional history checks.");
-    if ((summary.colourChanges ?? 0) > 0) notes.push("Colour changes can prompt closer inspection and questions.");
+    if (summary.importFlag)
+      notes.push("Import history can affect buyer pool and pricing.");
+    if (summary.exportFlag)
+      notes.push("Export history can raise questions that reduce confidence.");
+    if ((summary.plateChanges ?? 0) > 0)
+      notes.push("Plate changes may prompt additional history checks.");
+    if ((summary.colourChanges ?? 0) > 0)
+      notes.push("Colour changes can prompt closer inspection and questions.");
 
     return {
       title: "Limited to moderate value impact",
@@ -509,7 +543,9 @@ function getHpiValueImpact(summary?: HpiSummary | null) {
     title: "Minimal value impact",
     tone: "border-emerald-200 bg-emerald-50 text-emerald-900",
     body: "No major HPI warning markers were returned in this lookup.",
-    bullets: ["This should support cleaner resale positioning, subject to condition and service history."],
+    bullets: [
+      "This should support cleaner resale positioning, subject to condition and service history.",
+    ],
   };
 }
 
@@ -524,6 +560,9 @@ export default function ReportClient({
   hpiPayload,
   hpiSummary,
   hpiStatus,
+  hpiUnlocked = false,
+  hpiUpgradeUrl,
+  hpiUpgradePriceLabel = "£5",
   expiresAt,
   expiresAtLabel,
 }: {
@@ -537,6 +576,9 @@ export default function ReportClient({
   hpiPayload?: any;
   hpiSummary?: HpiSummary | null;
   hpiStatus?: string | null;
+  hpiUnlocked?: boolean;
+  hpiUpgradeUrl?: string;
+  hpiUpgradePriceLabel?: string;
   expiresAt?: string | null;
   expiresAtLabel?: string | null;
 }) {
@@ -612,7 +654,9 @@ If you want, you can unlock the full report from that page, tick off anything al
     }
 
     const next = encodeURIComponent(reportUrl);
-    const claimPart = reportId ? `&claim_report=${encodeURIComponent(reportId)}` : "";
+    const claimPart = reportId
+      ? `&claim_report=${encodeURIComponent(reportId)}`
+      : "";
 
     return {
       registerHref: `/auth?mode=signup&next=${next}${claimPart}`,
@@ -659,10 +703,14 @@ If you want, you can unlock the full report from that page, tick off anything al
 
   const motFlags = [
     mot.recentFailureCount > 0
-      ? `${mot.recentFailureCount} recent fail${mot.recentFailureCount === 1 ? "" : "ures"}`
+      ? `${mot.recentFailureCount} recent fail${
+          mot.recentFailureCount === 1 ? "" : "ures"
+        }`
       : null,
     mot.recentAdvisoryCount > 0
-      ? `${mot.recentAdvisoryCount} recent advisory${mot.recentAdvisoryCount === 1 ? "" : "ies"}`
+      ? `${mot.recentAdvisoryCount} recent advisory${
+          mot.recentAdvisoryCount === 1 ? "" : "ies"
+        }`
       : null,
     mot.repeatAdvisories.length > 0 ? "Repeated advisory patterns" : null,
     mot.corrosionFlag ? "Corrosion wording in history" : null,
@@ -700,17 +748,22 @@ If you want, you can unlock the full report from that page, tick off anything al
     const details = hpiPayload?.Results?.MileageCheckDetails;
     return {
       anomaly: details?.MileageAnomalyDetected === true,
-      calculatedAverageAnnualMileage: safeNumber(details?.CalculatedAverageAnnualMileage),
+      calculatedAverageAnnualMileage: safeNumber(
+        details?.CalculatedAverageAnnualMileage
+      ),
       averageMileageForAge: safeNumber(details?.AverageMileageForAge),
     };
   }, [hpiPayload]);
 
-  const hpiValueImpact = useMemo(() => getHpiValueImpact(hpiSummary), [hpiSummary]);
+  const hpiValueImpact = useMemo(
+    () => getHpiValueImpact(hpiSummary),
+    [hpiSummary]
+  );
 
   const topTabs: { key: ActiveTab; label: string }[] = [
     { key: "service", label: "Service risk" },
     { key: "mot", label: "MoT history" },
-    { key: "hpi", label: "HPI summary" },
+    { key: "hpi", label: hpiUnlocked ? "HPI summary" : "HPI upgrade" },
   ];
 
   const expiryNotice = expiresAtLabel
@@ -723,7 +776,9 @@ If you want, you can unlock the full report from that page, tick off anything al
     <>
       {justUnlocked ? (
         <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-          <div className="font-semibold text-emerald-900">Full report unlocked</div>
+          <div className="font-semibold text-emerald-900">
+            Full report unlocked
+          </div>
           <div className="mt-1 text-sm text-emerald-900/80">
             You now have access to all findings, costs, and negotiation guidance.
           </div>
@@ -737,11 +792,12 @@ If you want, you can unlock the full report from that page, tick off anything al
               Save this report for later
             </div>
             <div className="mt-1 text-sm text-slate-700">
-              Create an account or log in to keep access to this paid report for 30 days.
+              Create an account or log in to keep access to this paid report for
+              30 days.
             </div>
             <div className="mt-1 text-sm text-slate-700">
-              {expiryNotice} If you do not register or download your report, you may not be
-              able to access it again after that period.
+              {expiryNotice} If you do not register or download your report, you
+              may not be able to access it again after that period.
             </div>
           </div>
 
@@ -823,7 +879,8 @@ If you want, you can unlock the full report from that page, tick off anything al
                     Service risk
                   </div>
                   <div className="mt-1 text-sm text-slate-600">
-                    Estimated immediate exposure, adjustable as you tick off items already done. Scroll down for full details.
+                    Estimated immediate exposure, adjustable as you tick off
+                    items already done. Scroll down for full details.
                   </div>
                 </div>
 
@@ -865,7 +922,9 @@ If you want, you can unlock the full report from that page, tick off anything al
             </div>
 
             <div className="rounded-2xl border border-black bg-white p-6 break-inside-avoid">
-              <h2 className="text-xl font-semibold text-slate-900">Itemised checks</h2>
+              <h2 className="text-xl font-semibold text-slate-900">
+                Itemised checks
+              </h2>
 
               <div className="mt-4 space-y-4">
                 {items.map((item, idx) => {
@@ -874,7 +933,10 @@ If you want, you can unlock the full report from that page, tick off anything al
                   const source = itemSource(item);
 
                   return (
-                    <div key={key} className="rounded-2xl border bg-white p-6 break-inside-avoid">
+                    <div
+                      key={key}
+                      className="rounded-2xl border bg-white p-6 break-inside-avoid"
+                    >
                       <div className="flex flex-wrap items-start gap-4">
                         <div className="min-w-[220px] flex-1">
                           <div className="text-lg font-semibold text-slate-900">
@@ -906,12 +968,15 @@ If you want, you can unlock the full report from that page, tick off anything al
                         </div>
 
                         <div className="flex w-full items-start justify-between gap-3 sm:w-auto sm:min-w-[340px]">
-                          {typeof item.cost_low === "number" && typeof item.cost_high === "number" ? (
+                          {typeof item.cost_low === "number" &&
+                          typeof item.cost_high === "number" ? (
                             <div className="text-left">
                               <div className="text-lg font-semibold text-slate-900">
                                 {money(item.cost_low)} – {money(item.cost_high)}
                               </div>
-                              <div className="text-xs text-slate-600">estimated</div>
+                              <div className="text-xs text-slate-600">
+                                estimated
+                              </div>
                             </div>
                           ) : (
                             <div className="min-h-[1px]" />
@@ -922,10 +987,15 @@ If you want, you can unlock the full report from that page, tick off anything al
                               type="checkbox"
                               checked={isDone}
                               onChange={(e) =>
-                                setDone((prev) => ({ ...prev, [key]: e.target.checked }))
+                                setDone((prev) => ({
+                                  ...prev,
+                                  [key]: e.target.checked,
+                                }))
                               }
                             />
-                            <span className="font-semibold text-slate-800">Already done</span>
+                            <span className="font-semibold text-slate-800">
+                              Already done
+                            </span>
                           </label>
                         </div>
                       </div>
@@ -944,14 +1014,19 @@ If you want, you can unlock the full report from that page, tick off anything al
 
                       {item.why_it_matters ? (
                         <div className="mt-3 rounded-lg bg-slate-50 p-4 text-sm text-slate-700">
-                          <div className="font-semibold text-slate-900">Why it matters</div>
+                          <div className="font-semibold text-slate-900">
+                            Why it matters
+                          </div>
                           <div className="mt-1">{item.why_it_matters}</div>
                         </div>
                       ) : null}
 
-                      {Array.isArray(item.questions_to_ask) && item.questions_to_ask.length ? (
+                      {Array.isArray(item.questions_to_ask) &&
+                      item.questions_to_ask.length ? (
                         <div className="mt-4">
-                          <div className="text-sm font-semibold">Questions to ask</div>
+                          <div className="text-sm font-semibold">
+                            Questions to ask
+                          </div>
                           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
                             {item.questions_to_ask.map((q: string, i: number) => (
                               <li key={i}>{q}</li>
@@ -1010,13 +1085,20 @@ If you want, you can unlock the full report from that page, tick off anything al
                               : `Test ${idx + 1}`;
 
                             const active = idx === selectedMotIndex;
-                            const result = String(test.testResult ?? "").toUpperCase();
-                            const isFail = result === "FAILED" || result === "FAIL";
+                            const result = String(
+                              test.testResult ?? ""
+                            ).toUpperCase();
+                            const isFail =
+                              result === "FAILED" || result === "FAIL";
                             const hasAdvisories =
                               Array.isArray(test.defects) &&
                               test.defects.some((defect) => {
-                                const type = String(defect?.type ?? "").toUpperCase();
-                                return type === "ADVISORY" || type === "MINOR";
+                                const type = String(
+                                  defect?.type ?? ""
+                                ).toUpperCase();
+                                return (
+                                  type === "ADVISORY" || type === "MINOR"
+                                );
                               });
 
                             return (
@@ -1037,11 +1119,19 @@ If you want, you can unlock the full report from that page, tick off anything al
                                         : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50",
                                 ].join(" ")}
                               >
-                                <div className={hasAdvisories && !active && !isFail ? "text-rose-700" : ""}>
+                                <div
+                                  className={
+                                    hasAdvisories && !active && !isFail
+                                      ? "text-rose-700"
+                                      : ""
+                                  }
+                                >
                                   {yearLabel}
                                 </div>
                                 <div className="mt-0.5 text-xs opacity-80">
-                                  {test.testResult ? titleCase(String(test.testResult)) : "Result unknown"}
+                                  {test.testResult
+                                    ? titleCase(String(test.testResult))
+                                    : "Result unknown"}
                                 </div>
                               </button>
                             );
@@ -1109,7 +1199,8 @@ If you want, you can unlock the full report from that page, tick off anything al
                             Recorded advisories / defects
                           </div>
 
-                          {Array.isArray(selectedMotTest.defects) && selectedMotTest.defects.length ? (
+                          {Array.isArray(selectedMotTest.defects) &&
+                          selectedMotTest.defects.length ? (
                             <div className="mt-3 space-y-2">
                               {selectedMotTest.defects.map((defect, idx) => (
                                 <div
@@ -1123,7 +1214,9 @@ If you want, you can unlock the full report from that page, tick off anything al
                                         defectBadgeClasses(defect.type),
                                       ].join(" ")}
                                     >
-                                      {defect.type ? titleCase(String(defect.type)) : "Recorded"}
+                                      {defect.type
+                                        ? titleCase(String(defect.type))
+                                        : "Recorded"}
                                     </span>
 
                                     {defect.dangerous ? (
@@ -1141,7 +1234,8 @@ If you want, you can unlock the full report from that page, tick off anything al
                             </div>
                           ) : (
                             <div className="mt-2 text-sm text-slate-600">
-                              No advisories or defects were recorded for this test.
+                              No advisories or defects were recorded for this
+                              test.
                             </div>
                           )}
                         </div>
@@ -1150,7 +1244,8 @@ If you want, you can unlock the full report from that page, tick off anything al
                   </>
                 ) : (
                   <div className="mt-4 rounded-xl border bg-slate-50 p-4 text-sm text-slate-700">
-                    MoT history is available, but no test entries were returned for display.
+                    MoT history is available, but no test entries were returned
+                    for display.
                   </div>
                 )}
 
@@ -1163,7 +1258,9 @@ If you want, you can unlock the full report from that page, tick off anything al
                     <div className="mt-2 rounded-lg border bg-slate-50 p-4">
                       <ul className="space-y-2 text-sm text-slate-700">
                         {motTests.map((test, idx) => (
-                          <li key={`${test.completedDate ?? "summary"}-${idx}`}>
+                          <li
+                            key={`${test.completedDate ?? "summary"}-${idx}`}
+                          >
                             {yearlyMotSummaryLine(test, idx)}
                           </li>
                         ))}
@@ -1182,7 +1279,8 @@ If you want, you can unlock the full report from that page, tick off anything al
                     </div>
                   ) : (
                     <div className="mt-2 text-sm text-slate-600">
-                      No standout MoT warning themes detected in the most recent history.
+                      No standout MoT warning themes detected in the most recent
+                      history.
                     </div>
                   )}
                 </div>
@@ -1198,19 +1296,61 @@ If you want, you can unlock the full report from that page, tick off anything al
         {activeTab === "hpi" ? (
           <div className="rounded-2xl border border-slate-300 bg-white p-6 break-inside-avoid">
             <div className="text-lg font-bold uppercase tracking-wide text-slate-700">
-              Hpi summary
+              {hpiUnlocked ? "Hpi summary" : "Hpi upgrade"}
             </div>
             <div className="mt-1 text-sm text-slate-600">
-              Provenance, finance, write-off and theft markers from the paid HPI lookup.
+              {hpiUnlocked
+                ? "Provenance, finance, write-off and theft markers from the paid HPI lookup."
+                : "Add an optional HPI-style history check to this report."}
             </div>
 
-            {hpiStatus === "error" ? (
+            {!hpiUnlocked ? (
+              <div className="mt-4 rounded-2xl border border-black bg-white p-5">
+                <div className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-700">
+                  Optional upgrade
+                </div>
+
+                <h3 className="mt-4 text-xl font-extrabold tracking-tight text-slate-950">
+                  Unlock HPI history check · {hpiUpgradePriceLabel}
+                </h3>
+
+                <p className="mt-2 text-sm leading-6 text-slate-700">
+                  Add an HPI-style history lookup to this report for extra
+                  ownership and provenance checks.
+                </p>
+
+                <ul className="mt-4 space-y-2 text-sm text-slate-700">
+                  <li>✔ Outstanding finance markers</li>
+                  <li>✔ Insurance write-off records</li>
+                  <li>✔ Stolen vehicle markers</li>
+                  <li>✔ Mileage anomaly checks</li>
+                  <li>✔ Keeper, plate and colour history</li>
+                </ul>
+
+                <div className="mt-5 flex flex-wrap gap-3">
+                  {hpiUpgradeUrl ? (
+                    <a href={hpiUpgradeUrl} className="btn-primary">
+                      Add HPI upgrade · {hpiUpgradePriceLabel}
+                    </a>
+                  ) : null}
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("service")}
+                    className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-50"
+                  >
+                    Back to service report
+                  </button>
+                </div>
+              </div>
+            ) : hpiStatus === "error" ? (
               <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
                 <div className="font-semibold text-amber-900">
                   HPI data temporarily unavailable
                 </div>
                 <div className="mt-1 text-sm text-amber-900/80">
-                  The report is still available, but the HPI provider did not return a usable result for this lookup.
+                  The report is still available, but the HPI provider did not
+                  return a usable result for this lookup.
                 </div>
               </div>
             ) : hpiSummary ? (
@@ -1226,7 +1366,9 @@ If you want, you can unlock the full report from that page, tick off anything al
                   <div
                     className={[
                       "font-semibold",
-                      hpiSummary.caution ? "text-rose-900" : "text-emerald-900",
+                      hpiSummary.caution
+                        ? "text-rose-900"
+                        : "text-emerald-900",
                     ].join(" ")}
                   >
                     {hpiSummary.headline ?? "HPI summary"}
@@ -1234,7 +1376,9 @@ If you want, you can unlock the full report from that page, tick off anything al
                   <div
                     className={[
                       "mt-1 text-sm",
-                      hpiSummary.caution ? "text-rose-900/80" : "text-emerald-900/80",
+                      hpiSummary.caution
+                        ? "text-rose-900/80"
+                        : "text-emerald-900/80",
                     ].join(" ")}
                   >
                     {hpiSummary.caution
@@ -1243,7 +1387,9 @@ If you want, you can unlock the full report from that page, tick off anything al
                   </div>
                 </div>
 
-                <div className={`mt-4 rounded-xl border p-4 ${hpiValueImpact.tone}`}>
+                <div
+                  className={`mt-4 rounded-xl border p-4 ${hpiValueImpact.tone}`}
+                >
                   <div className="font-semibold">{hpiValueImpact.title}</div>
                   <div className="mt-1 text-sm">{hpiValueImpact.body}</div>
 
@@ -1258,9 +1404,14 @@ If you want, you can unlock the full report from that page, tick off anything al
 
                 <div className="mt-4 space-y-3">
                   {hpiStatusRow(
-                    hpiStatusLabel("Outstanding finance", financeRecords.length > 0),
+                    hpiStatusLabel(
+                      "Outstanding finance",
+                      financeRecords.length > 0
+                    ),
                     hpiSummary.finance
-                      ? `${hpiSummary.financeCount ?? 1} record${(hpiSummary.financeCount ?? 1) === 1 ? "" : "s"} found`
+                      ? `${hpiSummary.financeCount ?? 1} record${
+                          (hpiSummary.financeCount ?? 1) === 1 ? "" : "s"
+                        } found`
                       : "Clear",
                     !!hpiSummary.finance
                   )}
@@ -1272,7 +1423,10 @@ If you want, you can unlock the full report from that page, tick off anything al
                   )}
 
                   {hpiStatusRow(
-                    hpiStatusLabel("Insurance write-off", writeOffRecords.length > 0),
+                    hpiStatusLabel(
+                      "Insurance write-off",
+                      writeOffRecords.length > 0
+                    ),
                     hpiSummary.writeOff
                       ? hpiWriteOffCategories.length
                         ? hpiWriteOffCategories.join(", ")
@@ -1364,7 +1518,9 @@ If you want, you can unlock the full report from that page, tick off anything al
                                 Agreement reference
                               </div>
                               <div className="mt-1 text-sm font-semibold text-slate-900">
-                                {maskAgreementNumber(record.AgreementNumber) ?? "—"}
+                                {maskAgreementNumber(
+                                  record.AgreementNumber
+                                ) ?? "—"}
                               </div>
                             </div>
 
@@ -1386,7 +1542,8 @@ If you want, you can unlock the full report from that page, tick off anything al
                           ) : null}
 
                           <div className="mt-3 text-sm text-rose-900">
-                            Ask the seller to confirm this finance has been fully settled before purchase.
+                            Ask the seller to confirm this finance has been fully
+                            settled before purchase.
                           </div>
                         </div>
                       ))}
@@ -1494,7 +1651,8 @@ If you want, you can unlock the full report from that page, tick off anything al
 
                           {safeText(record.ClaimNumber) ? (
                             <div className="mt-3 rounded-lg border bg-white p-3 text-sm text-slate-700">
-                              <b>Claim reference:</b> {safeText(record.ClaimNumber)}
+                              <b>Claim reference:</b>{" "}
+                              {safeText(record.ClaimNumber)}
                             </div>
                           ) : null}
                         </div>
@@ -1515,7 +1673,9 @@ If you want, you can unlock the full report from that page, tick off anything al
                             Mileage anomaly
                           </div>
                           <div className="mt-1 text-sm font-semibold text-slate-900">
-                            {mileageSummary.anomaly ? "Flagged" : "No anomaly returned"}
+                            {mileageSummary.anomaly
+                              ? "Flagged"
+                              : "No anomaly returned"}
                           </div>
                         </div>
 
@@ -1524,7 +1684,8 @@ If you want, you can unlock the full report from that page, tick off anything al
                             Average annual mileage
                           </div>
                           <div className="mt-1 text-sm font-semibold text-slate-900">
-                            {typeof mileageSummary.calculatedAverageAnnualMileage === "number"
+                            {typeof mileageSummary.calculatedAverageAnnualMileage ===
+                            "number"
                               ? `${mileageSummary.calculatedAverageAnnualMileage.toLocaleString()} miles`
                               : "—"}
                           </div>
@@ -1535,7 +1696,8 @@ If you want, you can unlock the full report from that page, tick off anything al
                             Typical mileage for age
                           </div>
                           <div className="mt-1 text-sm font-semibold text-slate-900">
-                            {typeof mileageSummary.averageMileageForAge === "number"
+                            {typeof mileageSummary.averageMileageForAge ===
+                            "number"
                               ? `${mileageSummary.averageMileageForAge.toLocaleString()} miles`
                               : "—"}
                           </div>
@@ -1556,10 +1718,16 @@ If you want, you can unlock the full report from that page, tick off anything al
                                   className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-white p-3"
                                 >
                                   <div className="text-sm text-slate-700">
-                                    <b>{typeof row.Mileage === "number" ? row.Mileage.toLocaleString() : "—"}</b>
+                                    <b>
+                                      {typeof row.Mileage === "number"
+                                        ? row.Mileage.toLocaleString()
+                                        : "—"}
+                                    </b>
                                     {" · "}
                                     {formatDate(row.DateRecorded)}
-                                    {safeText(row.DataSource) ? ` · ${safeText(row.DataSource)}` : ""}
+                                    {safeText(row.DataSource)
+                                      ? ` · ${safeText(row.DataSource)}`
+                                      : ""}
                                   </div>
 
                                   <span
@@ -1570,7 +1738,9 @@ If you want, you can unlock the full report from that page, tick off anything al
                                         : "border-slate-200 bg-slate-50 text-slate-700",
                                     ].join(" ")}
                                   >
-                                    {outOfSequence ? "Out of sequence" : "In sequence"}
+                                    {outOfSequence
+                                      ? "Out of sequence"
+                                      : "In sequence"}
                                   </span>
                                 </div>
                               );
@@ -1588,7 +1758,9 @@ If you want, you can unlock the full report from that page, tick off anything al
                       Keeper history
                     </div>
                     <div className="mt-1 text-lg font-semibold text-slate-900">
-                      {typeof hpiSummary.keeperChanges === "number" ? hpiSummary.keeperChanges : 0}
+                      {typeof hpiSummary.keeperChanges === "number"
+                        ? hpiSummary.keeperChanges
+                        : 0}
                     </div>
                   </div>
 
@@ -1597,7 +1769,9 @@ If you want, you can unlock the full report from that page, tick off anything al
                       Plate changes
                     </div>
                     <div className="mt-1 text-lg font-semibold text-slate-900">
-                      {typeof hpiSummary.plateChanges === "number" ? hpiSummary.plateChanges : 0}
+                      {typeof hpiSummary.plateChanges === "number"
+                        ? hpiSummary.plateChanges
+                        : 0}
                     </div>
                   </div>
 
@@ -1606,7 +1780,9 @@ If you want, you can unlock the full report from that page, tick off anything al
                       Colour changes
                     </div>
                     <div className="mt-1 text-lg font-semibold text-slate-900">
-                      {typeof hpiSummary.colourChanges === "number" ? hpiSummary.colourChanges : 0}
+                      {typeof hpiSummary.colourChanges === "number"
+                        ? hpiSummary.colourChanges
+                        : 0}
                     </div>
                   </div>
                 </div>
@@ -1632,7 +1808,8 @@ If you want, you can unlock the full report from that page, tick off anything al
                   HPI lookup pending
                 </div>
                 <div className="mt-1 text-sm text-amber-900/80">
-                  The report is ready. HPI data will appear here once a successful lookup has been stored.
+                  The report is ready. HPI data will appear here once a
+                  successful lookup has been stored.
                 </div>
               </div>
             )}
@@ -1646,9 +1823,9 @@ If you want, you can unlock the full report from that page, tick off anything al
             Share with the seller
           </div>
           <div className="mt-1 text-sm text-slate-600">
-            Send this message so the seller lands on the snapshot page, can review the
-            risk summary, and unlock the report themselves if they want to respond with a
-            counter-offer.
+            Send this message so the seller lands on the snapshot page, can
+            review the risk summary, and unlock the report themselves if they
+            want to respond with a counter-offer.
           </div>
 
           <div className="mt-4 rounded-lg border bg-slate-50 p-4 text-sm whitespace-pre-line text-slate-800">

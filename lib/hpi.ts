@@ -6,6 +6,27 @@ function cleanRegistration(reg: string): string {
   return reg.replace(/\s/g, "").toUpperCase();
 }
 
+function getErrorMessage(payload: any) {
+  return (
+    payload?.ResponseInformation?.StatusMessage ||
+    payload?.ResponseInformation?.Message ||
+    payload?.Message ||
+    payload?.error ||
+    payload?.raw ||
+    "unknown status"
+  );
+}
+
+function getResultsNode(payload: any) {
+  return (
+    payload?.Results ||
+    payload?.results ||
+    payload?.Data?.Results ||
+    payload?.data?.Results ||
+    null
+  );
+}
+
 export type HpiSummary = {
   finance: boolean;
   financeCount: number;
@@ -33,6 +54,10 @@ export async function fetchUkvdHpiByVrm(registration: string) {
 
   const vrm = cleanRegistration(registration);
 
+  if (!vrm) {
+    throw new Error("UKVD lookup failed: missing registration");
+  }
+
   const url = new URL("/r2/lookup", baseUrl);
   url.searchParams.set("ApiKey", apiKey);
   url.searchParams.set("PackageName", packageName);
@@ -44,6 +69,9 @@ export async function fetchUkvdHpiByVrm(registration: string) {
     res = await fetch(url.toString(), {
       method: "GET",
       cache: "no-store",
+      headers: {
+        Accept: "application/json",
+      },
     });
   } catch (error: any) {
     throw new Error(`UKVD fetch failed: ${error?.message ?? "unknown error"}`);
@@ -59,40 +87,60 @@ export async function fetchUkvdHpiByVrm(registration: string) {
   }
 
   if (!res.ok) {
-    throw new Error(`UKVD HTTP ${res.status}: ${JSON.stringify(json)}`);
+    throw new Error(`UKVD HTTP ${res.status}: ${getErrorMessage(json)}`);
   }
 
-  const topLevelSuccess = json?.ResponseInformation?.IsSuccessStatusCode === true;
-  const hasResults = !!json?.Results;
+  const responseInfo = json?.ResponseInformation ?? {};
+  const results = getResultsNode(json);
 
-  if (!topLevelSuccess || !hasResults) {
-    throw new Error(
-      `UKVD lookup failed: ${
-        json?.ResponseInformation?.StatusMessage ??
-        json?.ResponseInformation?.StatusCode ??
-        "unknown status"
-      }`
-    );
+  const topLevelSuccess =
+    responseInfo?.IsSuccessStatusCode === true ||
+    responseInfo?.StatusCode === 200 ||
+    responseInfo?.StatusCode === "200" ||
+    responseInfo?.StatusCode === "Success" ||
+    responseInfo?.StatusMessage === "Success";
+
+  const hasResultsObject =
+    !!results && typeof results === "object" && Object.keys(results).length > 0;
+
+  const hasMeaningfulHpiData =
+    !!results?.FinanceDetails ||
+    !!results?.MiaftrDetails ||
+    !!results?.PncDetails ||
+    !!results?.MileageCheckDetails ||
+    !!results?.VehicleDetails;
+
+  if ((!topLevelSuccess && !hasResultsObject) || !hasMeaningfulHpiData) {
+    throw new Error(`UKVD lookup failed: ${getErrorMessage(json)}`);
+  }
+
+  if (!json?.Results && results) {
+    return {
+      ...json,
+      Results: results,
+    };
   }
 
   return json;
 }
 
 export function buildUkvdHpiSummary(payload: any): HpiSummary {
-  const financeRecords = Array.isArray(payload?.Results?.FinanceDetails?.FinanceRecordList)
-    ? payload.Results.FinanceDetails.FinanceRecordList
+  const results = getResultsNode(payload) ?? {};
+
+  const financeRecords = Array.isArray(results?.FinanceDetails?.FinanceRecordList)
+    ? results.FinanceDetails.FinanceRecordList
     : [];
 
-  const writeOffRecords = Array.isArray(payload?.Results?.MiaftrDetails?.WriteOffRecordList)
-    ? payload.Results.MiaftrDetails.WriteOffRecordList
+  const writeOffRecords = Array.isArray(results?.MiaftrDetails?.WriteOffRecordList)
+    ? results.MiaftrDetails.WriteOffRecordList
     : [];
 
-  const stolen = payload?.Results?.PncDetails?.IsStolen === true;
+  const stolen = results?.PncDetails?.IsStolen === true;
   const mileageFlag =
-    payload?.Results?.MileageCheckDetails?.MileageAnomalyDetected === true;
+    results?.MileageCheckDetails?.MileageAnomalyDetected === true;
 
-  const vehicleStatus = payload?.Results?.VehicleDetails?.VehicleStatus ?? {};
-  const vehicleHistory = payload?.Results?.VehicleDetails?.VehicleHistory ?? {};
+  const vehicleStatus = results?.VehicleDetails?.VehicleStatus ?? {};
+  const vehicleHistory = results?.VehicleDetails?.VehicleHistory ?? {};
   const colourDetails = vehicleHistory?.ColourDetails ?? {};
 
   const writeOffCategories: string[] = Array.from(
@@ -185,9 +233,7 @@ export function buildUkvdHpiSummary(payload: any): HpiSummary {
     finance || stolen || writeOff || mileageFlag || exportFlag || scrappedFlag;
 
   let headline = "HPI clear";
-  if (stolen) {
-    headline = "HPI flags found";
-  } else if (writeOff || finance || mileageFlag || exportFlag || scrappedFlag) {
+  if (stolen || writeOff || finance || mileageFlag || exportFlag || scrappedFlag) {
     headline = "HPI flags found";
   }
 

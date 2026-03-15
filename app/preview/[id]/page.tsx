@@ -50,7 +50,9 @@ function getMotSummary(motPayload: any) {
 
   if (!motPayload || motPayload?._error) return empty;
 
-  const tests: any[] = Array.isArray(motPayload?.motTests) ? motPayload.motTests : [];
+  const tests: any[] = Array.isArray(motPayload?.motTests)
+    ? motPayload.motTests
+    : [];
   if (!tests.length) {
     return {
       ...empty,
@@ -91,7 +93,9 @@ function getMotSummary(motPayload: any) {
         recentFailureCount += 1;
       }
 
-      if (includesAny(text, ["corrosion", "corroded", "excessively corroded"])) {
+      if (
+        includesAny(text, ["corrosion", "corroded", "excessively corroded"])
+      ) {
         corrosionFlag = true;
       }
       if (includesAny(text, ["brake", "disc", "pad", "drum", "handbrake"])) {
@@ -141,7 +145,9 @@ function getMotSummary(motPayload: any) {
     brakeFlag,
     tyreFlag,
     suspensionFlag,
-    credibilityTitle: hasFlags ? "MoT history flags found" : "MoT history included",
+    credibilityTitle: hasFlags
+      ? "MoT history flags found"
+      : "MoT history included",
     credibilityText: hasFlags
       ? "Repeated advisories or recent defects may affect near-term costs."
       : "Advisories and recent test history used in this estimate.",
@@ -227,18 +233,24 @@ export default async function Page({
 
   const confidence: any = summary.confidence ?? null;
 
-  const checkoutUrl = `/api/checkout?report_id=${data.id}`;
-  const priceLabel = "£4.99";
+  const reportCheckoutUrl = `/api/checkout?report_id=${data.id}&tier=report`;
+  const reportPriceLabel = "£4.99";
+  const hpiUpgradePriceLabel = "£5";
+  const tier2TotalLabel = "£9.99";
 
   const motPayload: any = data.mot_payload ?? null;
   const mot = getMotSummary(motPayload);
 
   const motFlags = [
     mot.recentFailureCount > 0
-      ? `${mot.recentFailureCount} recent fail${mot.recentFailureCount === 1 ? "" : "ures"}`
+      ? `${mot.recentFailureCount} recent fail${
+          mot.recentFailureCount === 1 ? "" : "ures"
+        }`
       : null,
     mot.recentAdvisoryCount > 0
-      ? `${mot.recentAdvisoryCount} recent advisory${mot.recentAdvisoryCount === 1 ? "" : "ies"}`
+      ? `${mot.recentAdvisoryCount} recent advisory${
+          mot.recentAdvisoryCount === 1 ? "" : "ies"
+        }`
       : null,
     mot.repeatAdvisories.length > 0 ? "Repeated advisory patterns" : null,
     mot.corrosionFlag ? "Corrosion wording in history" : null,
@@ -249,7 +261,7 @@ export default async function Page({
 
   return (
     <>
-      <div className="mx-auto w-full max-w-5xl px-4 pt-2 pb-28">
+      <div className="mx-auto w-full max-w-5xl px-4 pt-2 pb-36">
         <div className="mb-4 border-b border-[var(--aa-silver)] pb-2">
           {reg ? (
             <h1 className="text-2xl font-extrabold tracking-tight text-black">
@@ -284,7 +296,8 @@ export default async function Page({
                   Service risk
                 </div>
                 <div className="mt-1 text-sm text-slate-600">
-                  Estimated near-term maintenance exposure based on age, mileage and known signals.
+                  Estimated near-term maintenance exposure based on age, mileage
+                  and known signals.
                 </div>
               </div>
 
@@ -358,10 +371,14 @@ export default async function Page({
                       {mot.latestResult ? titleCase(mot.latestResult) : "—"}
                     </div>
                     <div className="mt-1 text-sm text-slate-600">
-                      {mot.latestDate ? `Completed ${formatDate(mot.latestDate)}` : "—"}
+                      {mot.latestDate
+                        ? `Completed ${formatDate(mot.latestDate)}`
+                        : "—"}
                     </div>
                     <div className="text-sm text-slate-600">
-                      {mot.latestExpiry ? `Expires ${formatDate(mot.latestExpiry)}` : ""}
+                      {mot.latestExpiry
+                        ? `Expires ${formatDate(mot.latestExpiry)}`
+                        : ""}
                     </div>
                   </div>
 
@@ -396,7 +413,8 @@ export default async function Page({
                     </div>
                   ) : (
                     <div className="mt-2 text-sm text-slate-600">
-                      No standout MoT warning themes detected in the most recent history.
+                      No standout MoT warning themes detected in the most recent
+                      history.
                     </div>
                   )}
                 </div>
@@ -410,12 +428,17 @@ export default async function Page({
         </div>
 
         <div className="mt-5">
-          <h2 className="text-lg font-semibold text-black">Risk breakdown by system</h2>
+          <h2 className="text-lg font-semibold text-black">
+            Risk breakdown by system
+          </h2>
 
           <div className="mt-3 space-y-2">
             {buckets.length ? (
               buckets.map((b: any) => (
-                <div key={b.key} className="rounded-xl border border-[var(--aa-silver)] bg-white p-3">
+                <div
+                  key={b.key}
+                  className="rounded-xl border border-[var(--aa-silver)] bg-white p-3"
+                >
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <div className="text-sm font-semibold">
@@ -447,7 +470,9 @@ export default async function Page({
         </div>
 
         <div className="mt-5 rounded-xl border border-[var(--aa-silver)] bg-white p-4">
-          <div className="text-base font-semibold text-black">Detailed findings locked</div>
+          <div className="text-base font-semibold text-black">
+            Detailed findings locked
+          </div>
           <div className="mt-1 text-sm text-slate-600">
             {hiddenCount
               ? `${hiddenCount} detailed checks detected`
@@ -481,6 +506,85 @@ export default async function Page({
           </div>
         </div>
 
+        <div className="mt-6 rounded-2xl border border-black bg-white p-5 shadow-sm">
+          <div className="mb-4">
+            <div className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-700">
+              Choose your report
+            </div>
+            <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-slate-950">
+              Unlock the level of detail you need
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-slate-700">
+              Start with the core AutoAudit report for service risk and MoT
+              analysis, or upgrade to include an additional HPI-style history
+              check.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-2xl border border-black bg-white p-5">
+              <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                Tier 1
+              </div>
+              <div className="mt-2 text-3xl font-extrabold tracking-tight text-slate-950">
+                {reportPriceLabel}
+              </div>
+              <div className="mt-1 text-sm font-semibold text-slate-900">
+                Full report + MoT analysis
+              </div>
+
+              <ul className="mt-4 space-y-2 text-sm text-slate-700">
+                <li>✔ Full itemised findings</li>
+                <li>✔ Repair cost estimates</li>
+                <li>✔ Seller questions and negotiation guidance</li>
+                <li>✔ MoT failures and advisory analysis</li>
+              </ul>
+
+              <div className="mt-5">
+                <a href={reportCheckoutUrl} className="btn-primary">
+                  Unlock Tier 1 · {reportPriceLabel}
+                </a>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-[var(--aa-red)] bg-red-50/40 p-5">
+              <div className="text-sm font-semibold uppercase tracking-wide text-[var(--aa-red)]">
+                Tier 2
+              </div>
+              <div className="mt-2 text-3xl font-extrabold tracking-tight text-slate-950">
+                {tier2TotalLabel}
+              </div>
+              <div className="mt-1 text-sm font-semibold text-slate-900">
+                Tier 1 + HPI history check
+              </div>
+
+              <div className="mt-2 text-sm text-slate-700">
+                Includes everything in Tier 1, plus an added HPI-style history
+                lookup for an extra {hpiUpgradePriceLabel}.
+              </div>
+
+              <ul className="mt-4 space-y-2 text-sm text-slate-700">
+                <li>✔ Outstanding finance markers</li>
+                <li>✔ Insurance write-off records</li>
+                <li>✔ Stolen vehicle markers</li>
+                <li>✔ Mileage anomaly checks</li>
+                <li>✔ Keeper, plate and colour history</li>
+              </ul>
+
+              <div className="mt-5 rounded-xl border border-red-200 bg-white p-3 text-sm text-slate-700">
+                Buy Tier 1 now, then upgrade to Tier 2 from your report page for
+                just {hpiUpgradePriceLabel}.
+              </div>
+
+              <div className="mt-5">
+                <a href={reportCheckoutUrl} className="btn-primary">
+                  Start with Tier 1 · {reportPriceLabel}
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="mt-6 text-xs text-slate-500">
           AutoAudit provides guidance only and is not a substitute for a
           mechanical inspection.
@@ -488,19 +592,25 @@ export default async function Page({
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 z-[9999] border-t border-[var(--aa-silver)] bg-white/95 backdrop-blur px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-        <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="text-sm">
             <div className="font-semibold text-black">
-              Unlock full report · {priceLabel}
+              Tier 1 from {reportPriceLabel} · Tier 2 total {tier2TotalLabel}
             </div>
             <div className="text-xs text-slate-600">
-              Reveal all checks and potential costs
+              Unlock the full report now and add HPI history for {hpiUpgradePriceLabel} later
             </div>
           </div>
 
-          <a href={checkoutUrl} className="btn-primary">
-            View full report
-          </a>
+          <div className="flex flex-wrap gap-3">
+            <a href={reportCheckoutUrl} className="btn-primary">
+              Unlock Tier 1 · {reportPriceLabel}
+            </a>
+
+            <span className="inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700">
+              Tier 2 total {tier2TotalLabel}
+            </span>
+          </div>
         </div>
       </div>
     </>
