@@ -13,11 +13,24 @@ function mustGetEnv(name: string) {
 }
 
 function getBearerToken(req: Request) {
-  const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
+  const authHeader =
+    req.headers.get("authorization") || req.headers.get("Authorization");
+
   if (!authHeader) return null;
 
   const match = authHeader.match(/^Bearer\s+(.+)$/i);
   return match?.[1] ?? null;
+}
+
+function hasPurchasedAccess(report: any) {
+  return (
+    report?.is_paid === true ||
+    !!report?.paid_at ||
+    !!report?.stripe_session_id ||
+    report?.hpi_unlocked === true ||
+    !!report?.hpi_paid_at ||
+    !!report?.hpi_stripe_session_id
+  );
 }
 
 export async function POST(req: Request) {
@@ -58,7 +71,19 @@ export async function POST(req: Request) {
 
     const { data: report, error: reportError } = await supabaseAdmin
       .from("reports")
-      .select("id,is_paid,expires_at,owner_user_id")
+      .select(
+        `
+          id,
+          is_paid,
+          paid_at,
+          stripe_session_id,
+          expires_at,
+          owner_user_id,
+          hpi_unlocked,
+          hpi_paid_at,
+          hpi_stripe_session_id
+        `
+      )
       .eq("id", reportId)
       .maybeSingle();
 
@@ -73,7 +98,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Report not found" }, { status: 404 });
     }
 
-    if (report.is_paid !== true) {
+    if (!hasPurchasedAccess(report)) {
       return NextResponse.json(
         { error: "Only paid reports can be claimed" },
         { status: 400 }
@@ -88,6 +113,16 @@ export async function POST(req: Request) {
           { status: 410 }
         );
       }
+    }
+
+    if (report.owner_user_id === user.id) {
+      return NextResponse.json({
+        ok: true,
+        report_id: report.id,
+        owner_user_id: report.owner_user_id,
+        expires_at: report.expires_at,
+        already_linked: true,
+      });
     }
 
     if (report.owner_user_id && report.owner_user_id !== user.id) {
@@ -118,6 +153,7 @@ export async function POST(req: Request) {
       report_id: updated.id,
       owner_user_id: updated.owner_user_id,
       expires_at: updated.expires_at,
+      already_linked: false,
     });
   } catch (e: any) {
     return NextResponse.json(

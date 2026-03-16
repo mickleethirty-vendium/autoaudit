@@ -17,6 +17,33 @@ function getSafeNext(nextValue: string | null) {
   return nextValue;
 }
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function getAccessTokenWithRetry() {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
+
+    if (error) {
+      throw new Error(error.message ?? "Could not verify your session.");
+    }
+
+    if (session?.access_token) {
+      return session.access_token;
+    }
+
+    await sleep(250);
+  }
+
+  throw new Error(
+    "You must be logged in before this report can be linked to your account."
+  );
+}
+
 function AuthPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -41,19 +68,7 @@ function AuthPageInner() {
   async function handleClaimReport() {
     if (!claimReportId) return true;
 
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
-
-    if (sessionError) {
-      throw new Error(sessionError.message ?? "Could not verify your session.");
-    }
-
-    const accessToken = session?.access_token;
-    if (!accessToken) {
-      throw new Error("You must be logged in before this report can be linked to your account.");
-    }
+    const accessToken = await getAccessTokenWithRetry();
 
     const res = await fetch("/api/reports/claim", {
       method: "POST",
@@ -64,9 +79,12 @@ function AuthPageInner() {
       body: JSON.stringify({ report_id: claimReportId }),
     });
 
+    const data = await res.json().catch(() => null);
+
     if (!res.ok) {
-      const data = await res.json().catch(() => null);
-      throw new Error(data?.error ?? "Could not link this report to your account.");
+      throw new Error(
+        data?.error ?? "Could not link this report to your account."
+      );
     }
 
     return true;
@@ -216,8 +234,12 @@ function AuthPageInner() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder={mode === "signup" ? "At least 6 characters" : "Your password"}
-              autoComplete={mode === "signup" ? "new-password" : "current-password"}
+              placeholder={
+                mode === "signup" ? "At least 6 characters" : "Your password"
+              }
+              autoComplete={
+                mode === "signup" ? "new-password" : "current-password"
+              }
               className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900"
               required
             />
@@ -262,8 +284,8 @@ function AuthPageInner() {
                 ? "Creating account..."
                 : "Logging in..."
               : mode === "signup"
-                ? "Create account"
-                : "Log in"}
+              ? "Create account"
+              : "Log in"}
           </button>
         </form>
 
