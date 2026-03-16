@@ -14,7 +14,7 @@ const stripe = new Stripe(mustGetEnv("STRIPE_SECRET_KEY"), {
   apiVersion: "2024-06-20",
 });
 
-type CheckoutTier = "report" | "hpi_upgrade";
+type CheckoutTier = "report" | "hpi_upgrade" | "report_plus_hpi";
 
 function formatDate(value?: string | null) {
   if (!value) return null;
@@ -35,7 +35,9 @@ function isExpired(value?: string | null) {
 }
 
 function parseCheckoutTier(value?: string | null): CheckoutTier {
-  return value === "hpi_upgrade" ? "hpi_upgrade" : "report";
+  if (value === "hpi_upgrade") return "hpi_upgrade";
+  if (value === "report_plus_hpi") return "report_plus_hpi";
+  return "report";
 }
 
 export default async function Page({
@@ -131,7 +133,10 @@ export default async function Page({
           isPaid = true;
         }
 
-        if (sessionCheckoutTier === "hpi_upgrade") {
+        if (
+          sessionCheckoutTier === "hpi_upgrade" ||
+          sessionCheckoutTier === "report_plus_hpi"
+        ) {
           isPaid = true;
           hpiUnlocked = true;
         }
@@ -183,8 +188,12 @@ export default async function Page({
   }
 
   if (isPaid && ownerUserId && ownerUserId !== user?.id && !paymentJustVerified) {
-    const loginReturnUrl = encodeURIComponent(`/report/${data.id}`);
-    const loginUrl = `/auth?mode=login&next=${loginReturnUrl}`;
+    const loginReturnUrl = encodeURIComponent(
+      `/report/${data.id}?claim_report=${data.id}`
+    );
+    const loginUrl = `/auth?mode=login&next=${loginReturnUrl}&claim_report=${encodeURIComponent(
+      data.id
+    )}`;
 
     return (
       <div className="mx-auto w-full max-w-3xl px-4 py-10">
@@ -251,8 +260,11 @@ export default async function Page({
 
   const reportCheckoutUrl = `/api/checkout?report_id=${data.id}&tier=report`;
   const hpiUpgradeCheckoutUrl = `/api/checkout?report_id=${data.id}&tier=hpi_upgrade`;
+  const reportPlusHpiCheckoutUrl = `/api/checkout?report_id=${data.id}&tier=report_plus_hpi`;
+
   const priceLabel = "£4.99";
   const hpiUpgradePriceLabel = "£5";
+  const reportPlusHpiPriceLabel = "£9.99";
 
   const fullPayload: any = data.full_payload ?? {};
   const fullSummary: any = fullPayload.summary ?? {};
@@ -264,15 +276,17 @@ export default async function Page({
     typeof fullPayload.negotiation_suggested === "number"
       ? fullPayload.negotiation_suggested
       : typeof fullPayload.negotiationSuggested === "number"
-        ? fullPayload.negotiationSuggested
-        : typeof fullSummary.negotiation_suggested === "number"
-          ? fullSummary.negotiation_suggested
-          : typeof fullSummary.negotiationSuggested === "number"
-            ? fullSummary.negotiationSuggested
-            : null;
+      ? fullPayload.negotiationSuggested
+      : typeof fullSummary.negotiation_suggested === "number"
+      ? fullSummary.negotiation_suggested
+      : typeof fullSummary.negotiationSuggested === "number"
+      ? fullSummary.negotiationSuggested
+      : null;
 
   const justUnlockedReport = justUnlockedTier === "report";
-  const justUnlockedHpi = justUnlockedTier === "hpi_upgrade";
+  const justUnlockedHpi =
+    justUnlockedTier === "hpi_upgrade" ||
+    justUnlockedTier === "report_plus_hpi";
 
   const motPayload: any = data.mot_payload ?? null;
 
@@ -344,8 +358,11 @@ export default async function Page({
 
   const reportUrl = `/report/${data.id}`;
   const previewUrl = `/preview/${data.id}`;
-  const authReturnUrl = encodeURIComponent(reportUrl);
+
+  const authNextUrl = `/report/${data.id}?claim_report=${data.id}`;
+  const authReturnUrl = encodeURIComponent(authNextUrl);
   const claimReportId = encodeURIComponent(data.id);
+
   const registerUrl = `/auth?mode=signup&next=${authReturnUrl}&claim_report=${claimReportId}`;
   const loginUrl = `/auth?mode=login&next=${authReturnUrl}&claim_report=${claimReportId}`;
 
@@ -402,12 +419,12 @@ export default async function Page({
           <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
             <div className="text-sm font-semibold text-emerald-900">
               {justUnlockedHpi
-                ? "HPI upgrade unlocked"
-                : "Tier 1 report unlocked"}
+                ? "History & provenance check unlocked"
+                : "Core report unlocked"}
             </div>
             <div className="mt-1 text-sm text-emerald-900/80">
               {justUnlockedHpi
-                ? "Your HPI panel is now included in this report."
+                ? "Your report now includes the HPI-style history panel."
                 : "You now have service risk, detailed findings and MoT analysis."}
             </div>
           </div>
@@ -463,7 +480,7 @@ export default async function Page({
                 </div>
 
                 <h2 className="mt-3 text-xl font-extrabold tracking-tight text-slate-950">
-                  Add HPI history check · {hpiUpgradePriceLabel}
+                  Add vehicle history & provenance check · {hpiUpgradePriceLabel}
                 </h2>
 
                 <p className="mt-2 text-sm leading-6 text-slate-700">
@@ -475,7 +492,7 @@ export default async function Page({
 
               <div className="flex-shrink-0">
                 <a href={hpiUpgradeCheckoutUrl} className="btn-primary">
-                  Upgrade with HPI · {hpiUpgradePriceLabel}
+                  Add history check · {hpiUpgradePriceLabel}
                 </a>
               </div>
             </div>
@@ -658,10 +675,24 @@ export default async function Page({
         </div>
 
         <div className="mt-6 rounded-2xl border border-black bg-white p-5 shadow-sm">
+          <div className="mb-4">
+            <div className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-700">
+              Choose your report
+            </div>
+            <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-slate-950">
+              Pick the level of checking you want
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-slate-700">
+              Choose the core report for service risk and MoT analysis, or go
+              straight to the full bundle with the added vehicle history &
+              provenance check.
+            </p>
+          </div>
+
           <div className="grid gap-4 md:grid-cols-2">
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
               <div className="text-sm font-semibold text-slate-950">
-                Tier 1 report · {priceLabel}
+                Core report · {priceLabel}
               </div>
               <div className="mt-2 text-sm text-slate-700">
                 Service risk, detailed findings, seller questions, negotiation
@@ -669,26 +700,27 @@ export default async function Page({
               </div>
               <div className="mt-4">
                 <a href={reportCheckoutUrl} className="btn-primary">
-                  Unlock Tier 1 · {priceLabel}
+                  Buy core report · {priceLabel}
                 </a>
               </div>
             </div>
 
             <div className="rounded-xl border border-red-200 bg-red-50/40 p-4">
               <div className="text-sm font-semibold text-slate-950">
-                Tier 2 bundle · £9.99 total
+                Complete report bundle · {reportPlusHpiPriceLabel}
               </div>
               <div className="mt-2 text-sm text-slate-700">
-                Everything in Tier 1, plus HPI-style history checks including
-                finance markers, write-off records, stolen markers and mileage
-                anomalies.
+                Everything in the core report, plus HPI-style history checks
+                including finance markers, write-off records, stolen markers,
+                mileage anomalies, keeper history and plate changes.
               </div>
               <div className="mt-4 flex flex-wrap gap-3">
-                <a href={reportCheckoutUrl} className="btn-outline">
-                  Start with Tier 1
+                <a href={reportPlusHpiCheckoutUrl} className="btn-primary">
+                  Buy complete bundle · {reportPlusHpiPriceLabel}
                 </a>
                 <span className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700">
-                  Add HPI later for {hpiUpgradePriceLabel}
+                  Or start with core report and add history later for{" "}
+                  {hpiUpgradePriceLabel}
                 </span>
               </div>
             </div>
@@ -705,7 +737,7 @@ export default async function Page({
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
           <div className="text-sm">
             <div className="font-semibold text-slate-950">
-              Unlock Tier 1 report · {priceLabel}
+              Buy core report · {priceLabel}
             </div>
             <div className="text-xs text-slate-600">
               Service risk, MoT analysis and full report findings

@@ -24,15 +24,21 @@ const stripe = new Stripe(mustGetEnv("STRIPE_SECRET_KEY"), {
   apiVersion: "2024-06-20",
 });
 
-type CheckoutTier = "report" | "hpi_upgrade";
+type CheckoutTier = "report" | "hpi_upgrade" | "report_plus_hpi";
 
 function parseTier(value: string | null): CheckoutTier {
-  return value === "hpi_upgrade" ? "hpi_upgrade" : "report";
+  if (value === "hpi_upgrade") return "hpi_upgrade";
+  if (value === "report_plus_hpi") return "report_plus_hpi";
+  return "report";
 }
 
 function getStripePriceIdForTier(tier: CheckoutTier) {
   if (tier === "hpi_upgrade") {
     return mustGetEnv("STRIPE_HPI_UPGRADE_PRICE_ID");
+  }
+
+  if (tier === "report_plus_hpi") {
+    return mustGetEnv("STRIPE_REPORT_PLUS_HPI_PRICE_ID");
   }
 
   return mustGetEnv("STRIPE_REPORT_PRICE_ID");
