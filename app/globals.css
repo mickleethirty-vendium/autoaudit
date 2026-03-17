@@ -28,9 +28,29 @@ body {
     "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
 }
 
-/* Smooth rendering */
 * {
   box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }
 
 /* Global typography */
@@ -66,17 +86,22 @@ h3 {
 }
 
 /* ========== Buttons ========== */
-.btn-primary {
+.btn-primary,
+.btn-outline {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 0.75rem;
   padding: 0.75rem 1.5rem;
   font-weight: 700;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-primary {
   border: 1px solid var(--aa-black);
   background: var(--aa-black);
   color: var(--aa-white);
-  transition: all 0.2s ease;
   box-shadow: 0 6px 16px rgba(10, 10, 10, 0.18);
 }
 
@@ -86,17 +111,17 @@ h3 {
   transform: translateY(-1px);
 }
 
+.btn-primary:focus-visible {
+  outline: none;
+  box-shadow:
+    0 6px 16px rgba(10, 10, 10, 0.18),
+    0 0 0 3px rgba(15, 23, 42, 0.12);
+}
+
 .btn-outline {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.75rem;
-  padding: 0.75rem 1.5rem;
-  font-weight: 700;
   border: 1px solid var(--aa-silver);
   background: var(--aa-white);
   color: var(--aa-black);
-  transition: all 0.2s ease;
 }
 
 .btn-outline:hover {
@@ -104,71 +129,53 @@ h3 {
   border-color: var(--aa-silver-dark);
 }
 
-/* ========== Inputs ========== */
+.btn-outline:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.16);
+}
+
+.btn-primary:disabled,
+.btn-outline:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ========== Form element defaults ========== */
 input,
-select {
-  width: 100%;
+select,
+textarea {
   border: 1px solid #e2e8f0;
   border-radius: 0.75rem;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
   background: var(--aa-white);
   transition: all 0.2s ease;
 }
 
 input:focus,
-select:focus {
+select:focus,
+textarea:focus {
   outline: none;
   border-color: var(--aa-red);
   box-shadow: 0 0 0 3px rgba(193, 18, 31, 0.12);
 }
 
 /* ========== Headings ========== */
+/* Keep these modest so Tailwind utility sizes remain in control */
 h1 {
-  font-size: 2.5rem;
   font-weight: 800;
   color: var(--aa-black);
 }
 
 h2 {
-  font-size: 2rem;
   color: var(--aa-black);
 }
 
 h3 {
-  font-size: 1.5rem;
   color: var(--aa-black);
 }
 
-/* ========== Page Layout ========== */
-section {
-  background-color: var(--aa-white);
-  border-radius: 12px;
-  border: 1px solid var(--aa-silver);
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
-  padding: 24px;
-  margin-bottom: 24px;
-}
-
-/* ========== Spacing ========== */
-.mt-8 {
-  margin-top: 2rem;
-}
-
-.mb-8 {
-  margin-bottom: 2rem;
-}
-
 /* ========== Custom Utilities ========== */
-.text-slate-900 {
-  color: var(--aa-text);
-}
-
-.text-teal-500 {
-  color: var(--aa-red);
-}
-
-/* Optional brand helper classes for future use */
+/* Use sparingly — prefer Tailwind utilities in components */
 .aa-border-black {
   border-color: var(--aa-black) !important;
 }

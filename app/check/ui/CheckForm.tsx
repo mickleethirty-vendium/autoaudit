@@ -8,11 +8,53 @@ type TimingType = "belt" | "chain" | "unknown";
 
 // Keep this list reasonably broad for UK market.
 const MAKE_OPTIONS = [
-  "Abarth", "Alfa Romeo", "Aston Martin", "Audi", "Bentley", "BMW", "Bugatti",
-  "Citroen", "Cupra", "Dacia", "DS", "Ferrari", "Fiat", "Ford", "Honda", "Hyundai", "Jaguar", "Jeep",
-  "Kia", "Lamborghini", "Land Rover", "Lexus", "Lotus", "Maserati", "Mazda", "McLaren", "Mercedes-Benz",
-  "MG", "MINI", "Mitsubishi", "Nissan", "Peugeot", "Polestar", "Porsche", "Renault", "Rolls-Royce",
-  "SEAT", "Skoda", "Smart", "Subaru", "Suzuki", "Tesla", "Toyota", "Vauxhall", "Volkswagen", "Volvo", "Other",
+  "Abarth",
+  "Alfa Romeo",
+  "Aston Martin",
+  "Audi",
+  "Bentley",
+  "BMW",
+  "Bugatti",
+  "Citroen",
+  "Cupra",
+  "Dacia",
+  "DS",
+  "Ferrari",
+  "Fiat",
+  "Ford",
+  "Honda",
+  "Hyundai",
+  "Jaguar",
+  "Jeep",
+  "Kia",
+  "Lamborghini",
+  "Land Rover",
+  "Lexus",
+  "Lotus",
+  "Maserati",
+  "Mazda",
+  "McLaren",
+  "Mercedes-Benz",
+  "MG",
+  "MINI",
+  "Mitsubishi",
+  "Nissan",
+  "Peugeot",
+  "Polestar",
+  "Porsche",
+  "Renault",
+  "Rolls-Royce",
+  "SEAT",
+  "Skoda",
+  "Smart",
+  "Subaru",
+  "Suzuki",
+  "Tesla",
+  "Toyota",
+  "Vauxhall",
+  "Volkswagen",
+  "Volvo",
+  "Other",
 ];
 
 function mapDvlaFuelToFuel(dvlaFuel: string | null): Fuel {
@@ -40,6 +82,15 @@ function normalizeMake(input: string): string {
   return v;
 }
 
+function inputClass(hasError = false) {
+  return [
+    "w-full rounded-xl border px-4 py-3 text-slate-900 outline-none transition",
+    hasError
+      ? "border-[var(--aa-red)] focus:border-[var(--aa-red)]"
+      : "border-[var(--aa-silver)] focus:border-slate-400",
+  ].join(" ");
+}
+
 export default function CheckForm() {
   const [mode, setMode] = useState<"reg" | "manual">("reg");
 
@@ -60,6 +111,8 @@ export default function CheckForm() {
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
   async function lookupReg() {
     const trimmed = registration.trim();
@@ -100,6 +153,7 @@ export default function CheckForm() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setAttemptedSubmit(true);
     setBusy(true);
     setError(null);
 
@@ -107,7 +161,9 @@ export default function CheckForm() {
       const makeNormalized = normalizeMake(make);
 
       if (mode === "manual" && makeNormalized.trim() === "") {
-        throw new Error("Please select the vehicle make (e.g. Ford, BMW, Toyota).");
+        throw new Error(
+          "Please select the vehicle make (e.g. Ford, BMW, Toyota)."
+        );
       }
 
       if (mileage === "" || !Number.isFinite(Number(mileage))) {
@@ -151,7 +207,9 @@ export default function CheckForm() {
     }
   }
 
-  function handleRegistrationKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+  function handleRegistrationKeyDown(
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) {
     if (e.key === "Enter") {
       e.preventDefault();
       if (!lookupBusy && registration.trim().length >= 5) {
@@ -163,39 +221,54 @@ export default function CheckForm() {
   const makeRequiredOk = mode === "manual" ? make.trim() !== "" : true;
   const mileageRequiredOk = mileage !== "";
   const transmissionRequiredOk = transmission !== "";
-  const canSubmit = !busy && mileageRequiredOk && transmissionRequiredOk && makeRequiredOk;
+  const canSubmit =
+    !busy && mileageRequiredOk && transmissionRequiredOk && makeRequiredOk;
+
+  const showMakeError = attemptedSubmit && mode === "manual" && make.trim() === "";
+  const showMileageError = attemptedSubmit && mileage === "";
+  const showTransmissionError = attemptedSubmit && transmission === "";
 
   return (
     <form
       onSubmit={onSubmit}
       className="mx-auto grid max-w-lg gap-6 rounded-2xl border border-[var(--aa-silver)] bg-white p-6 shadow-sm"
     >
-      <div className="mb-2 flex flex-wrap gap-3">
-        <button
-          type="button"
-          onClick={() => setMode("reg")}
-          className={[
-            "rounded-xl border px-4 py-2 text-sm font-semibold transition",
-            mode === "reg"
-              ? "border-black bg-black text-white"
-              : "border-[var(--aa-silver)] bg-white text-slate-700 hover:bg-slate-50",
-          ].join(" ")}
-        >
-          Use registration
-        </button>
+      <div>
+        <div className="mb-2 text-sm font-semibold text-slate-900">
+          Choose how you want to start
+        </div>
 
-        <button
-          type="button"
-          onClick={() => setMode("manual")}
-          className={[
-            "rounded-xl border px-4 py-2 text-sm font-semibold transition",
-            mode === "manual"
-              ? "border-black bg-black text-white"
-              : "border-[var(--aa-silver)] bg-white text-slate-700 hover:bg-slate-50",
-          ].join(" ")}
-        >
-          Manual entry
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => setMode("reg")}
+            className={[
+              "rounded-xl border px-4 py-2 text-sm font-semibold transition",
+              mode === "reg"
+                ? "border-black bg-black text-white"
+                : "border-[var(--aa-silver)] bg-white text-slate-700 hover:bg-slate-50",
+            ].join(" ")}
+          >
+            Use registration
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setMode("manual")}
+            className={[
+              "rounded-xl border px-4 py-2 text-sm font-semibold transition",
+              mode === "manual"
+                ? "border-black bg-black text-white"
+                : "border-[var(--aa-silver)] bg-white text-slate-700 hover:bg-slate-50",
+            ].join(" ")}
+          >
+            Manual entry
+          </button>
+        </div>
+
+        <div className="mt-2 text-xs text-slate-600">
+          Registration lookup is the fastest route if you have the number plate.
+        </div>
       </div>
 
       {mode === "reg" && (
@@ -206,11 +279,14 @@ export default function CheckForm() {
 
           <div className="flex gap-3">
             <input
-              className="flex-1 rounded-xl border border-[var(--aa-silver)] px-4 py-3"
+              className={inputClass(false)}
               value={registration}
               onChange={(e) => setRegistration(e.target.value)}
               onKeyDown={handleRegistrationKeyDown}
               placeholder="e.g. AB12CDE"
+              autoCapitalize="characters"
+              autoCorrect="off"
+              spellCheck={false}
             />
 
             <button
@@ -224,14 +300,21 @@ export default function CheckForm() {
           </div>
 
           {lookupError ? (
-            <div className="mt-2 text-sm text-[var(--aa-red)]">{lookupError}</div>
+            <div className="mt-2 text-sm text-[var(--aa-red)]">
+              {lookupError}
+            </div>
           ) : null}
 
           {lookupResult ? (
-            <div className="mt-2 text-sm text-slate-600">
-              Vehicle details found. Enter mileage to continue.
+            <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+              Vehicle details found. Check the fields below, then enter mileage
+              and transmission to continue.
             </div>
-          ) : null}
+          ) : (
+            <div className="mt-2 text-xs text-slate-500">
+              Press Enter or click Lookup to pull in available vehicle details.
+            </div>
+          )}
         </div>
       )}
 
@@ -242,11 +325,7 @@ export default function CheckForm() {
 
         <input
           list="make-list"
-          className={`w-full rounded-xl border px-4 py-3 ${
-            mode === "manual" && make.trim() === ""
-              ? "border-[var(--aa-red)]"
-              : "border-[var(--aa-silver)]"
-          }`}
+          className={inputClass(showMakeError)}
           value={make}
           onChange={(e) => setMake(e.target.value)}
           onBlur={() => setMake(normalizeMake(make))}
@@ -259,17 +338,28 @@ export default function CheckForm() {
             <option key={m} value={m} />
           ))}
         </datalist>
+
+        {showMakeError ? (
+          <div className="mt-2 text-xs text-[var(--aa-red)]">
+            Please enter the vehicle make.
+          </div>
+        ) : null}
       </div>
 
       <div>
-        <label className="mb-2 block text-sm font-semibold text-slate-900">Year</label>
+        <label className="mb-2 block text-sm font-semibold text-slate-900">
+          Year
+        </label>
         <input
-          className="w-full rounded-xl border border-[var(--aa-silver)] px-4 py-3"
+          className={inputClass(false)}
           type="number"
           value={year}
           min={1990}
           max={new Date().getFullYear()}
-          onChange={(e) => setYear(parseInt(e.target.value || "0", 10))}
+          onChange={(e) => {
+            const next = parseInt(e.target.value || "0", 10);
+            setYear(Number.isFinite(next) ? next : new Date().getFullYear());
+          }}
           required
         />
       </div>
@@ -280,25 +370,31 @@ export default function CheckForm() {
         </label>
         <input
           ref={mileageRef}
-          className={`w-full rounded-xl border px-4 py-3 ${
-            mileage === "" ? "border-[var(--aa-red)]" : "border-[var(--aa-silver)]"
-          }`}
+          className={inputClass(showMileageError)}
           type="number"
           value={mileage}
           min={0}
           onChange={(e) =>
             setMileage(e.target.value === "" ? "" : parseInt(e.target.value, 10))
           }
-          placeholder="Enter current mileage here"
+          placeholder="Enter current mileage"
           required
         />
+
+        {showMileageError ? (
+          <div className="mt-2 text-xs text-[var(--aa-red)]">
+            Please enter the current mileage.
+          </div>
+        ) : null}
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <div>
-          <label className="mb-2 block text-sm font-semibold text-slate-900">Fuel</label>
+          <label className="mb-2 block text-sm font-semibold text-slate-900">
+            Fuel
+          </label>
           <select
-            className="w-full rounded-xl border border-[var(--aa-silver)] px-4 py-3"
+            className={inputClass(false)}
             value={fuel}
             onChange={(e) => setFuel(e.target.value as Fuel)}
           >
@@ -314,9 +410,7 @@ export default function CheckForm() {
             Transmission <span className="text-[var(--aa-red)]">*</span>
           </label>
           <select
-            className={`w-full rounded-xl border px-4 py-3 ${
-              transmission === "" ? "border-[var(--aa-red)]" : "border-[var(--aa-silver)]"
-            }`}
+            className={inputClass(showTransmissionError)}
             value={transmission}
             onChange={(e) => setTransmission(e.target.value as Transmission)}
             required
@@ -327,6 +421,12 @@ export default function CheckForm() {
             <option value="cvt">CVT</option>
             <option value="dct">DCT</option>
           </select>
+
+          {showTransmissionError ? (
+            <div className="mt-2 text-xs text-[var(--aa-red)]">
+              Please select the transmission type.
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -335,7 +435,7 @@ export default function CheckForm() {
           Timing type (if known)
         </label>
         <select
-          className="w-full rounded-xl border border-[var(--aa-silver)] px-4 py-3"
+          className={inputClass(false)}
           value={timingType}
           onChange={(e) => setTimingType(e.target.value as TimingType)}
         >
@@ -350,7 +450,7 @@ export default function CheckForm() {
           Asking price (optional)
         </label>
         <input
-          className="w-full rounded-xl border border-[var(--aa-silver)] px-4 py-3"
+          className={inputClass(false)}
           type="number"
           value={askingPrice}
           min={0}
@@ -361,15 +461,29 @@ export default function CheckForm() {
         />
       </div>
 
-      {error ? <div className="text-sm text-[var(--aa-red)]">{error}</div> : null}
+      {error ? (
+        <div className="rounded-xl border border-[var(--aa-red)]/20 bg-[var(--aa-red)]/5 px-4 py-3 text-sm text-[var(--aa-red)]">
+          {error}
+        </div>
+      ) : null}
 
       <button
         type="submit"
         disabled={!canSubmit}
         className="w-full rounded-xl bg-[var(--aa-red)] py-3 font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
       >
-        {busy ? "Creating…" : "Generate snapshot"}
+        {busy ? "Generating snapshot..." : "Generate free snapshot"}
       </button>
+
+      <div className="rounded-xl border border-[var(--aa-silver)] bg-slate-50/70 p-4 text-sm text-slate-700">
+        <div className="font-semibold text-black">What you’ll see next</div>
+        <div className="mt-2 grid gap-1">
+          <div>• Estimated near-term repair exposure</div>
+          <div>• Risk indicators and confidence score</div>
+          <div>• MoT-backed warning signals</div>
+          <div>• Option to unlock the full report if needed</div>
+        </div>
+      </div>
     </form>
   );
 }

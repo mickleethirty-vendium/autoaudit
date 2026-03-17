@@ -22,8 +22,10 @@ function titleCase(s: string) {
 }
 
 function riskColor(risk: string | null) {
-  if (risk === "low") return "bg-emerald-50 border-emerald-200 text-emerald-900";
-  if (risk === "medium") return "bg-amber-50 border-amber-200 text-amber-900";
+  if (risk === "low")
+    return "bg-emerald-50 border-emerald-200 text-emerald-900";
+  if (risk === "medium")
+    return "bg-amber-50 border-amber-200 text-amber-900";
   if (risk === "high") return "bg-rose-50 border-rose-200 text-rose-900";
   return "bg-slate-50 border-slate-200 text-slate-900";
 }
@@ -401,44 +403,27 @@ function hpiStatusRow(label: string, value: string, isFlagged = false) {
   );
 }
 
-function tabClasses(tab: ActiveTab, activeTab: ActiveTab, idx: number) {
+function tabClasses(tab: ActiveTab, activeTab: ActiveTab) {
   const active = tab === activeTab;
 
   const activeTone =
     tab === "service"
-      ? "border-black border-b-white bg-white text-black shadow-[0_-4px_14px_rgba(0,0,0,0.12)]"
+      ? "border-black bg-white text-black"
       : tab === "mot"
-        ? "border-red-600 border-b-white bg-white text-red-700 shadow-[0_-4px_14px_rgba(220,38,38,0.12)]"
-        : "border-slate-400 border-b-white bg-white text-slate-700 shadow-[0_-4px_14px_rgba(148,163,184,0.18)]";
+      ? "border-red-600 bg-white text-red-700"
+      : "border-slate-400 bg-white text-slate-700";
 
   const inactiveTone =
-    tab === "service"
-      ? "border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-50 hover:text-black"
-      : tab === "mot"
-        ? "border-slate-300 bg-slate-100 text-slate-700 hover:bg-red-50 hover:text-red-700"
-        : "border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-50 hover:text-slate-700";
+    "border-slate-200 bg-slate-50 text-slate-700 hover:bg-white";
 
   return [
-    "relative -mr-2 min-w-[140px] rounded-t-2xl border px-5 py-3 text-sm font-bold uppercase tracking-wide transition-all duration-200",
-    idx === 0 ? "ml-0" : "",
-    active
-      ? `z-20 ${activeTone}`
-      : `z-10 mt-2 ${inactiveTone} hover:z-20 hover:-translate-y-0.5`,
+    "rounded-xl border px-4 py-3 text-sm font-semibold transition",
+    active ? activeTone : inactiveTone,
   ].join(" ");
 }
 
-function panelToneClasses(tone: "black" | "red" | "silver") {
-  if (tone === "black") {
-    return "border-black bg-white";
-  }
-  if (tone === "red") {
-    return "border-red-600 bg-white";
-  }
-  return "border-slate-300 bg-white";
-}
-
 function hpiStatusLabel(label: string, hasDetails = false) {
-  return hasDetails ? `${label} (scroll down for details)` : label;
+  return hasDetails ? `${label} (details below)` : label;
 }
 
 function getHpiValueImpact(summary?: HpiSummary | null) {
@@ -478,9 +463,7 @@ function getHpiValueImpact(summary?: HpiSummary | null) {
       "Insurance write-off history usually reduces resale value materially."
     );
     if (summary.writeOffCategories?.length) {
-      notes.push(
-        `Category recorded: ${summary.writeOffCategories.join(", ")}.`
-      );
+      notes.push(`Category recorded: ${summary.writeOffCategories.join(", ")}.`);
     }
     if (summary.finance) {
       notes.push(
@@ -769,8 +752,25 @@ If you want, you can unlock the full report from that page, tick off anything al
   const expiryNotice = expiresAtLabel
     ? `Access available until ${expiresAtLabel}.`
     : expiresAt
-      ? `Access available until ${formatDate(expiresAt)}.`
-      : "Access available for 30 days from the report date.";
+    ? `Access available until ${formatDate(expiresAt)}.`
+    : "Access available for 30 days from the report date.";
+
+  const summaryHeadline =
+    typeof summary?.headline === "string" && summary.headline.trim()
+      ? summary.headline
+      : "Full vehicle report";
+
+  const summaryRisk =
+    typeof summary?.risk === "string" && summary.risk.trim()
+      ? titleCase(summary.risk)
+      : titleCase(adjusted.risk);
+
+  const summaryConfidence =
+    typeof summary?.confidence?.score === "number"
+      ? `${summary.confidence.score}/100`
+      : typeof summary?.confidence_score === "number"
+      ? `${summary.confidence_score}/100`
+      : null;
 
   return (
     <>
@@ -785,9 +785,67 @@ If you want, you can unlock the full report from that page, tick off anything al
         </div>
       ) : null}
 
-      <div className="mb-6 rounded-2xl border border-red-200 bg-red-50/60 p-4 print:hidden">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div className="mb-6 rounded-2xl border border-black bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl">
+            <div className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-700">
+              Paid report
+            </div>
+
+            <h2 className="mt-4 text-2xl font-extrabold tracking-tight text-slate-950 sm:text-3xl">
+              {summaryHeadline}
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-slate-700">
+              Use this report to understand likely near-term repair exposure,
+              MoT-backed warning patterns and any HPI history markers.
+            </p>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-xl border bg-slate-50 p-4">
+                <div className="text-xs uppercase tracking-wide text-slate-500">
+                  Remaining exposure
+                </div>
+                <div className="mt-1 text-xl font-bold text-slate-950">
+                  {money(adjusted.low)} – {money(adjusted.high)}
+                </div>
+              </div>
+
+              <div className="rounded-xl border bg-slate-50 p-4">
+                <div className="text-xs uppercase tracking-wide text-slate-500">
+                  Current risk
+                </div>
+                <div
+                  className={[
+                    "mt-2 inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold",
+                    riskColor(adjusted.risk),
+                  ].join(" ")}
+                >
+                  {summaryRisk}
+                </div>
+              </div>
+
+              <div className="rounded-xl border bg-slate-50 p-4">
+                <div className="text-xs uppercase tracking-wide text-slate-500">
+                  Negotiation signal
+                </div>
+                <div className="mt-1 text-xl font-bold text-slate-950">
+                  {negotiationAdjusted !== null ? money(negotiationAdjusted) : "—"}
+                </div>
+              </div>
+            </div>
+
+            {summaryConfidence ? (
+              <div className="mt-4 text-sm text-slate-600">
+                Confidence score:{" "}
+                <span className="font-semibold text-slate-900">
+                  {summaryConfidence}
+                </span>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="w-full max-w-md rounded-2xl border border-red-200 bg-red-50/60 p-4 print:hidden">
             <div className="text-sm font-semibold text-slate-950">
               Save this report for later
             </div>
@@ -799,22 +857,22 @@ If you want, you can unlock the full report from that page, tick off anything al
               {expiryNotice} If you do not register or download your report, you
               may not be able to access it again after that period.
             </div>
-          </div>
 
-          <div className="flex flex-wrap gap-3">
-            <a
-              href={authLinks.registerHref}
-              className="inline-flex items-center justify-center rounded-xl border border-[#b91c1c] bg-[#b91c1c] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#991b1b]"
-            >
-              Create account to save
-            </a>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <a
+                href={authLinks.registerHref}
+                className="inline-flex items-center justify-center rounded-xl border border-[#b91c1c] bg-[#b91c1c] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#991b1b]"
+              >
+                Create account to save
+              </a>
 
-            <a
-              href={authLinks.loginHref}
-              className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-50"
-            >
-              Log in to save
-            </a>
+              <a
+                href={authLinks.loginHref}
+                className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-50"
+              >
+                Log in to save
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -843,90 +901,90 @@ If you want, you can unlock the full report from that page, tick off anything al
         </span>
       </div>
 
-      <div className="mb-6">
-        <div className="relative flex flex-wrap items-end gap-0 overflow-x-auto pb-0">
-          {topTabs.map((tab, idx) => (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => setActiveTab(tab.key)}
-              className={tabClasses(tab.key, activeTab, idx)}
-            >
-              <span className="block">{tab.label}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="-mt-px border-t border-slate-200" />
+      <div className="mb-5 flex flex-wrap gap-3 border-b border-slate-200 pb-4">
+        {topTabs.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            onClick={() => setActiveTab(tab.key)}
+            className={tabClasses(tab.key, activeTab)}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      <div
-        className={[
-          "rounded-b-2xl rounded-tr-2xl border p-6 shadow-[0_10px_30px_rgba(15,23,42,0.06)] break-inside-avoid",
-          activeTab === "service"
-            ? panelToneClasses("black")
-            : activeTab === "mot"
-              ? panelToneClasses("red")
-              : panelToneClasses("silver"),
-        ].join(" ")}
-      >
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_10px_30px_rgba(15,23,42,0.06)] break-inside-avoid">
         {activeTab === "service" ? (
           <div className="space-y-5">
-            <div className="rounded-2xl border border-black bg-white p-6 break-inside-avoid">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="text-lg font-bold uppercase tracking-wide text-slate-900">
-                    Service risk
+            <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+              <div className="rounded-2xl border border-black bg-white p-6 break-inside-avoid">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="text-lg font-bold uppercase tracking-wide text-slate-900">
+                      Service risk
+                    </div>
+                    <div className="mt-1 text-sm text-slate-600">
+                      Estimated immediate exposure, adjustable as you tick off
+                      items already done.
+                    </div>
                   </div>
-                  <div className="mt-1 text-sm text-slate-600">
-                    Estimated immediate exposure, adjustable as you tick off
-                    items already done. Scroll down for full details.
-                  </div>
-                </div>
 
-                <div className="hidden sm:inline-flex items-center rounded-full border bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
-                  Predicted
-                </div>
-              </div>
-
-              <div className="mt-4 text-4xl font-extrabold text-slate-900">
-                {money(adjusted.low)} – {money(adjusted.high)}
-              </div>
-
-              <div
-                className={[
-                  "mt-3 inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold border",
-                  riskColor(adjusted.risk),
-                ].join(" ")}
-              >
-                Risk: {titleCase(adjusted.risk)}
-              </div>
-
-              <div className="mt-3 text-sm text-slate-600">
-                Tick items you can prove are already done to reduce the estimate.
-              </div>
-
-              {negotiationAdjusted !== null ? (
-                <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 break-inside-avoid">
-                  <div className="font-semibold text-emerald-900">
-                    Suggested negotiation: ~{money(negotiationAdjusted)}
-                  </div>
-                  <div className="mt-1 text-sm text-emerald-900/80">
-                    (Based on remaining items not ticked as done)
-                  </div>
-                  <div className="mt-1 text-sm font-medium text-emerald-900">
-                    Scroll down for details
+                  <div className="hidden sm:inline-flex items-center rounded-full border bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
+                    Predicted
                   </div>
                 </div>
-              ) : null}
+
+                <div className="mt-4 text-4xl font-extrabold text-slate-900">
+                  {money(adjusted.low)} – {money(adjusted.high)}
+                </div>
+
+                <div
+                  className={[
+                    "mt-3 inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold",
+                    riskColor(adjusted.risk),
+                  ].join(" ")}
+                >
+                  Risk: {titleCase(adjusted.risk)}
+                </div>
+
+                <div className="mt-3 text-sm text-slate-600">
+                  Tick items you can prove are already done to reduce the estimate.
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 break-inside-avoid">
+                <div className="text-lg font-bold text-emerald-900">
+                  Negotiation position
+                </div>
+                <div className="mt-2 text-sm text-emerald-900/80">
+                  This adjusts automatically based on items still outstanding.
+                </div>
+
+                <div className="mt-4 text-3xl font-extrabold text-emerald-900">
+                  {negotiationAdjusted !== null ? money(negotiationAdjusted) : "—"}
+                </div>
+
+                <div className="mt-3 text-sm text-emerald-900/80">
+                  Suggested reduction from asking price based on remaining exposure.
+                </div>
+
+                <div className="mt-4 rounded-lg border border-emerald-200 bg-white/70 p-3 text-sm text-emerald-900">
+                  Remaining flagged items:{" "}
+                  <span className="font-semibold">{adjusted.remainingCount}</span>
+                </div>
+              </div>
             </div>
 
-            <div className="rounded-2xl border border-black bg-white p-6 break-inside-avoid">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 break-inside-avoid">
               <h2 className="text-xl font-semibold text-slate-900">
                 Itemised checks
               </h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Review each flagged item, why it matters and what to ask the seller.
+              </p>
 
-              <div className="mt-4 space-y-4">
+              <div className="mt-5 space-y-4">
                 {items.map((item, idx) => {
                   const key = String(item.item_id ?? item.label ?? `item-${idx}`);
                   const isDone = !!done[key];
@@ -935,10 +993,10 @@ If you want, you can unlock the full report from that page, tick off anything al
                   return (
                     <div
                       key={key}
-                      className="rounded-2xl border bg-white p-6 break-inside-avoid"
+                      className="rounded-2xl border bg-white p-5 break-inside-avoid"
                     >
-                      <div className="flex flex-wrap items-start gap-4">
-                        <div className="min-w-[220px] flex-1">
+                      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="min-w-0 flex-1">
                           <div className="text-lg font-semibold text-slate-900">
                             {item.label ?? "Service item"}
                           </div>
@@ -967,22 +1025,18 @@ If you want, you can unlock the full report from that page, tick off anything al
                           </div>
                         </div>
 
-                        <div className="flex w-full items-start justify-between gap-3 sm:w-auto sm:min-w-[340px]">
+                        <div className="flex flex-wrap items-start gap-3 lg:justify-end">
                           {typeof item.cost_low === "number" &&
                           typeof item.cost_high === "number" ? (
-                            <div className="text-left">
+                            <div className="rounded-xl border bg-slate-50 px-4 py-3 text-left">
                               <div className="text-lg font-semibold text-slate-900">
                                 {money(item.cost_low)} – {money(item.cost_high)}
                               </div>
-                              <div className="text-xs text-slate-600">
-                                estimated
-                              </div>
+                              <div className="text-xs text-slate-600">estimated</div>
                             </div>
-                          ) : (
-                            <div className="min-h-[1px]" />
-                          )}
+                          ) : null}
 
-                          <label className="ml-auto inline-flex items-center gap-2 rounded-lg border bg-slate-50 px-3 py-2 text-sm print:hidden">
+                          <label className="inline-flex items-center gap-2 rounded-lg border bg-slate-50 px-3 py-2 text-sm print:hidden">
                             <input
                               type="checkbox"
                               checked={isDone}
@@ -1001,19 +1055,22 @@ If you want, you can unlock the full report from that page, tick off anything al
                       </div>
 
                       {isDone ? (
-                        <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+                        <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
                           Marked as done — removed from exposure estimate.
                         </div>
                       ) : null}
 
                       {item.why_flagged ? (
-                        <div className="mt-4 text-sm text-slate-700">
-                          <b>Why flagged:</b> {item.why_flagged}
+                        <div className="mt-4 rounded-lg border bg-slate-50 p-4 text-sm text-slate-700">
+                          <div className="font-semibold text-slate-900">
+                            Why flagged
+                          </div>
+                          <div className="mt-1">{item.why_flagged}</div>
                         </div>
                       ) : null}
 
                       {item.why_it_matters ? (
-                        <div className="mt-3 rounded-lg bg-slate-50 p-4 text-sm text-slate-700">
+                        <div className="mt-4 rounded-lg border bg-white p-4 text-sm text-slate-700">
                           <div className="font-semibold text-slate-900">
                             Why it matters
                           </div>
@@ -1024,7 +1081,7 @@ If you want, you can unlock the full report from that page, tick off anything al
                       {Array.isArray(item.questions_to_ask) &&
                       item.questions_to_ask.length ? (
                         <div className="mt-4">
-                          <div className="text-sm font-semibold">
+                          <div className="text-sm font-semibold text-slate-900">
                             Questions to ask
                           </div>
                           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
@@ -1037,6 +1094,12 @@ If you want, you can unlock the full report from that page, tick off anything al
                     </div>
                   );
                 })}
+
+                {!items.length ? (
+                  <div className="rounded-xl border bg-slate-50 p-4 text-sm text-slate-700">
+                    No itemised checks were returned for this report.
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>
@@ -1047,7 +1110,7 @@ If you want, you can unlock the full report from that page, tick off anything al
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="text-lg font-bold uppercase tracking-wide text-red-700">
-                  Mot history
+                  MoT history
                 </div>
                 <div className="mt-1 text-sm text-slate-600">
                   Real DVSA test history used to strengthen this report.
@@ -1096,9 +1159,7 @@ If you want, you can unlock the full report from that page, tick off anything al
                                 const type = String(
                                   defect?.type ?? ""
                                 ).toUpperCase();
-                                return (
-                                  type === "ADVISORY" || type === "MINOR"
-                                );
+                                return type === "ADVISORY" || type === "MINOR";
                               });
 
                             return (
@@ -1113,10 +1174,10 @@ If you want, you can unlock the full report from that page, tick off anything al
                                       ? "border-rose-700 bg-rose-700 text-white"
                                       : "border-slate-900 bg-slate-900 text-white"
                                     : isFail
-                                      ? "border-rose-700 bg-rose-700 text-white hover:bg-rose-800"
-                                      : hasAdvisories
-                                        ? "border-rose-200 bg-white text-rose-700 hover:bg-rose-50"
-                                        : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50",
+                                    ? "border-rose-700 bg-rose-700 text-white hover:bg-rose-800"
+                                    : hasAdvisories
+                                    ? "border-rose-200 bg-white text-rose-700 hover:bg-rose-50"
+                                    : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50",
                                 ].join(" ")}
                               >
                                 <div
@@ -1296,7 +1357,7 @@ If you want, you can unlock the full report from that page, tick off anything al
         {activeTab === "hpi" ? (
           <div className="rounded-2xl border border-slate-300 bg-white p-6 break-inside-avoid">
             <div className="text-lg font-bold uppercase tracking-wide text-slate-700">
-              {hpiUnlocked ? "Hpi summary" : "Hpi upgrade"}
+              {hpiUnlocked ? "HPI summary" : "HPI upgrade"}
             </div>
             <div className="mt-1 text-sm text-slate-600">
               {hpiUnlocked
@@ -1518,9 +1579,7 @@ If you want, you can unlock the full report from that page, tick off anything al
                                 Agreement reference
                               </div>
                               <div className="mt-1 text-sm font-semibold text-slate-900">
-                                {maskAgreementNumber(
-                                  record.AgreementNumber
-                                ) ?? "—"}
+                                {maskAgreementNumber(record.AgreementNumber) ?? "—"}
                               </div>
                             </div>
 
@@ -1651,8 +1710,7 @@ If you want, you can unlock the full report from that page, tick off anything al
 
                           {safeText(record.ClaimNumber) ? (
                             <div className="mt-3 rounded-lg border bg-white p-3 text-sm text-slate-700">
-                              <b>Claim reference:</b>{" "}
-                              {safeText(record.ClaimNumber)}
+                              <b>Claim reference:</b> {safeText(record.ClaimNumber)}
                             </div>
                           ) : null}
                         </div>
@@ -1696,8 +1754,7 @@ If you want, you can unlock the full report from that page, tick off anything al
                             Typical mileage for age
                           </div>
                           <div className="mt-1 text-sm font-semibold text-slate-900">
-                            {typeof mileageSummary.averageMileageForAge ===
-                            "number"
+                            {typeof mileageSummary.averageMileageForAge === "number"
                               ? `${mileageSummary.averageMileageForAge.toLocaleString()} miles`
                               : "—"}
                           </div>
@@ -1828,7 +1885,7 @@ If you want, you can unlock the full report from that page, tick off anything al
             want to respond with a counter-offer.
           </div>
 
-          <div className="mt-4 rounded-lg border bg-slate-50 p-4 text-sm whitespace-pre-line text-slate-800">
+          <div className="mt-4 rounded-lg border bg-slate-50 p-4 whitespace-pre-line text-sm text-slate-800">
             {sellerMessage}
           </div>
 

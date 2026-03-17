@@ -13,11 +13,20 @@ function mustGetEnv(name: string) {
 }
 
 function appUrl() {
-  return (
-    process.env.NEXT_PUBLIC_APP_URL ||
-    process.env.APP_URL ||
-    "http://localhost:3000"
-  );
+  const explicit =
+    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
+    process.env.APP_URL?.trim();
+
+  if (explicit) {
+    return explicit.replace(/\/+$/, "");
+  }
+
+  const vercelUrl = process.env.VERCEL_URL?.trim();
+  if (vercelUrl) {
+    return `https://${vercelUrl.replace(/\/+$/, "")}`;
+  }
+
+  return "http://localhost:3000";
 }
 
 const stripe = new Stripe(mustGetEnv("STRIPE_SECRET_KEY"), {
@@ -30,6 +39,15 @@ function parseTier(value: string | null): CheckoutTier {
   if (value === "hpi_upgrade") return "hpi_upgrade";
   if (value === "report_plus_hpi") return "report_plus_hpi";
   return "report";
+}
+
+function isLikelyValidReportId(value: string | null) {
+  if (!value) return false;
+  const trimmed = value.trim();
+  if (!trimmed) return false;
+
+  // permissive on purpose: UUIDs, cuid-ish ids, etc.
+  return /^[a-zA-Z0-9_-]{6,}$/.test(trimmed);
 }
 
 function getStripePriceIdForTier(tier: CheckoutTier) {
@@ -56,32 +74,44 @@ function getCancelUrl(reportId: string, tier: CheckoutTier) {
   return `${appUrl()}/preview/${reportId}`;
 }
 
+function getProductName(tier: CheckoutTier) {
+  if (tier === "hpi_upgrade") return "HPI Upgrade";
+  if (tier === "report_plus_hpi") return "Report + HPI Bundle";
+  return "Core Report";
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const reportId = searchParams.get("report_id");
+    const reportId = searchParams.get("report_id")?.trim() ?? null;
     const tier = parseTier(searchParams.get("tier"));
 
-    if (!reportId) {
+    if (!isLikelyValidReportId(reportId)) {
       return NextResponse.json(
-        { error: "Missing report_id" },
+        { error: "Missing or invalid report_id" },
         { status: 400 }
       );
     }
+
+    const successUrl = getSuccessUrl(reportId, tier);
+    const cancelUrl = getCancelUrl(reportId, tier);
+    const priceId = getStripePriceIdForTier(tier);
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: [
         {
-          price: getStripePriceIdForTier(tier),
+          price: priceId,
           quantity: 1,
         },
       ],
-      success_url: getSuccessUrl(reportId, tier),
-      cancel_url: getCancelUrl(reportId, tier),
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      customer_creation: "if_required",
       metadata: {
         report_id: reportId,
         checkout_tier: tier,
+        product_name: getProductName(tier),
       },
     });
 

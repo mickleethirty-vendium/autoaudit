@@ -6,8 +6,49 @@ import { extractMotSignals } from "@/lib/motSignals";
 
 export const runtime = "nodejs";
 
+type Fuel = "petrol" | "diesel" | "hybrid" | "ev";
+type Transmission = "manual" | "automatic" | "cvt" | "dct";
+type TimingType = "belt" | "chain" | "unknown";
+
+const VALID_FUELS: Fuel[] = ["petrol", "diesel", "hybrid", "ev"];
+const VALID_TRANSMISSIONS: Transmission[] = [
+  "manual",
+  "automatic",
+  "cvt",
+  "dct",
+];
+const VALID_TIMING_TYPES: TimingType[] = ["belt", "chain", "unknown"];
+
 function cleanRegistration(reg: string): string {
   return reg.replace(/\s/g, "").toUpperCase();
+}
+
+function normalizeOptionalString(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
+}
+
+function parseFuel(value: unknown): Fuel | null {
+  return VALID_FUELS.includes(value as Fuel) ? (value as Fuel) : null;
+}
+
+function parseTransmission(value: unknown): Transmission | null {
+  return VALID_TRANSMISSIONS.includes(value as Transmission)
+    ? (value as Transmission)
+    : null;
+}
+
+function parseTimingType(value: unknown): TimingType {
+  return VALID_TIMING_TYPES.includes(value as TimingType)
+    ? (value as TimingType)
+    : "unknown";
+}
+
+function parseOptionalNumber(value: unknown): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
 }
 
 export async function POST(req: Request) {
@@ -29,15 +70,37 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid mileage" }, { status: 400 });
     }
 
-    const fuel = body.fuel;
-    const transmission = body.transmission;
-    const timing_type = body.timing_type ?? "unknown";
-    const asking_price = body.asking_price ?? null;
+    const fuel = parseFuel(body.fuel);
+    if (!fuel) {
+      return NextResponse.json({ error: "Invalid fuel type" }, { status: 400 });
+    }
 
-    const registration =
-      body.registration ? cleanRegistration(String(body.registration)) : null;
+    const transmission = parseTransmission(body.transmission);
+    if (!transmission) {
+      return NextResponse.json(
+        { error: "Invalid transmission type" },
+        { status: 400 }
+      );
+    }
 
-    const make = body.make ? String(body.make) : null;
+    const timing_type = parseTimingType(body.timing_type);
+    const asking_price = parseOptionalNumber(body.asking_price);
+
+    if (
+      asking_price !== null &&
+      (!Number.isFinite(asking_price) || asking_price < 0 || asking_price > 1000000)
+    ) {
+      return NextResponse.json(
+        { error: "Invalid asking price" },
+        { status: 400 }
+      );
+    }
+
+    const registration = body.registration
+      ? cleanRegistration(String(body.registration))
+      : null;
+
+    const make = normalizeOptionalString(body.make);
 
     const mot_payload = registration
       ? await fetchDvsaMotHistory(registration)
