@@ -26,6 +26,14 @@ function isValidIsoDate(value: unknown): value is string {
   return typeof value === "string" && !Number.isNaN(new Date(value).getTime());
 }
 
+function isLikelyValidReportId(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.trim().length >= 6 &&
+    /^[a-zA-Z0-9_-]+$/.test(value.trim())
+  );
+}
+
 export async function POST(req: Request) {
   const body = await req.text();
 
@@ -60,9 +68,9 @@ export async function POST(req: Request) {
     const reportId = session.metadata?.report_id;
     const checkoutTier = parseCheckoutTier(session.metadata?.checkout_tier);
 
-    if (!reportId) {
+    if (!isLikelyValidReportId(reportId)) {
       return NextResponse.json(
-        { error: "Missing report_id in session metadata" },
+        { error: "Missing or invalid report_id in session metadata" },
         { status: 400 }
       );
     }
@@ -145,24 +153,34 @@ export async function POST(req: Request) {
     };
 
     if (checkoutTier === "report") {
-      updatePayload.stripe_session_id = session.id;
-      updatePayload.stripe_payment_intent_id = paymentIntentId;
+      // Avoid overwriting these if the same webhook is redelivered
+      updatePayload.stripe_session_id =
+        existingReport.stripe_session_id ?? session.id;
+      updatePayload.stripe_payment_intent_id =
+        existingReport.stripe_payment_intent_id ?? paymentIntentId;
     }
 
     if (checkoutTier === "hpi_upgrade") {
       updatePayload.hpi_unlocked = true;
       updatePayload.hpi_paid_at = existingHpiPaidAt ?? nowIso;
-      updatePayload.hpi_stripe_session_id = session.id;
-      updatePayload.hpi_stripe_payment_intent_id = paymentIntentId;
+      updatePayload.hpi_stripe_session_id =
+        existingReport.hpi_stripe_session_id ?? session.id;
+      updatePayload.hpi_stripe_payment_intent_id =
+        existingReport.hpi_stripe_payment_intent_id ?? paymentIntentId;
     }
 
     if (checkoutTier === "report_plus_hpi") {
-      updatePayload.stripe_session_id = session.id;
-      updatePayload.stripe_payment_intent_id = paymentIntentId;
+      updatePayload.stripe_session_id =
+        existingReport.stripe_session_id ?? session.id;
+      updatePayload.stripe_payment_intent_id =
+        existingReport.stripe_payment_intent_id ?? paymentIntentId;
+
       updatePayload.hpi_unlocked = true;
       updatePayload.hpi_paid_at = existingHpiPaidAt ?? nowIso;
-      updatePayload.hpi_stripe_session_id = session.id;
-      updatePayload.hpi_stripe_payment_intent_id = paymentIntentId;
+      updatePayload.hpi_stripe_session_id =
+        existingReport.hpi_stripe_session_id ?? session.id;
+      updatePayload.hpi_stripe_payment_intent_id =
+        existingReport.hpi_stripe_payment_intent_id ?? paymentIntentId;
     }
 
     const { data, error } = await supabaseAdmin
