@@ -41,12 +41,11 @@ function parseTier(value: string | null): CheckoutTier {
   return "report";
 }
 
-function isLikelyValidReportId(value: string | null) {
+function isLikelyValidReportId(value: string | null): value is string {
   if (!value) return false;
   const trimmed = value.trim();
   if (!trimmed) return false;
 
-  // permissive on purpose: UUIDs, cuid-ish ids, etc.
   return /^[a-zA-Z0-9_-]{6,}$/.test(trimmed);
 }
 
