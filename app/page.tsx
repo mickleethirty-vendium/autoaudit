@@ -44,7 +44,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="border-t border-[var(--aa-silver)] bg-white">
+        <section className="-mt-1 border-t border-[var(--aa-silver)] bg-white">
           <div className="mx-auto max-w-7xl px-4 py-6 sm:py-8">
             <div className="grid gap-6 md:grid-cols-3 md:gap-8">
               <div className="flex items-start justify-center gap-4 text-center md:text-left">
