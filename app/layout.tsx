@@ -45,7 +45,7 @@ export default function RootLayout({
               {/* Right: Nav */}
               <nav className="hidden sm:flex items-center gap-2">
                 <Link
-                  href="/#how"
+                  href="/how-it-works"
                   className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition duration-200 hover:bg-slate-100 hover:text-black"
                 >
                   How it works
