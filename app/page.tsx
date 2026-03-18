@@ -1,6 +1,24 @@
+"use client";
+
+import { useState } from "react";
 import ShieldIcon from "@/app/components/ShieldIcon";
 
 export default function HomePage() {
+  const [registration, setRegistration] = useState("");
+
+  function cleanRegistration(reg: string) {
+    return reg.replace(/\s/g, "").toUpperCase();
+  }
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    const cleaned = cleanRegistration(registration.trim());
+    if (!cleaned) return;
+
+    window.location.href = `/check?registration=${encodeURIComponent(cleaned)}`;
+  }
+
   return (
     <div className="min-h-screen bg-[var(--aa-bg)]">
       <main>
@@ -21,21 +39,23 @@ export default function HomePage() {
             </p>
 
             <div className="mt-8 w-full max-w-3xl rounded-2xl border border-white/20 bg-white/92 p-3 shadow-[0_20px_60px_rgba(0,0,0,0.20)] backdrop-blur">
-              <form
-                action="/check"
-                method="get"
-                className="flex flex-col gap-3 sm:flex-row"
-              >
+              <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row">
                 <input
                   type="text"
                   name="registration"
+                  value={registration}
+                  onChange={(e) => setRegistration(e.target.value)}
                   placeholder="Enter Registration"
+                  autoCapitalize="characters"
+                  autoCorrect="off"
+                  spellCheck={false}
                   className="h-14 flex-1 rounded-xl border border-slate-200 bg-white px-5 text-lg font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)] sm:h-16 sm:text-xl"
                 />
 
                 <button
                   type="submit"
-                  className="inline-flex h-14 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-8 text-lg font-bold text-white transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] sm:h-16 sm:text-xl"
+                  disabled={!registration.trim()}
+                  className="inline-flex h-14 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-8 text-lg font-bold text-white transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:opacity-50 sm:h-16 sm:text-xl"
                 >
                   Check My Car
                 </button>

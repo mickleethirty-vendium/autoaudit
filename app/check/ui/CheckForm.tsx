@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 type Fuel = "petrol" | "diesel" | "hybrid" | "ev";
 type Transmission = "" | "manual" | "automatic" | "cvt" | "dct";
@@ -92,9 +93,11 @@ function inputClass(hasError = false) {
 }
 
 export default function CheckForm() {
-  const [mode, setMode] = useState<"reg" | "manual">("reg");
-
+  const searchParams = useSearchParams();
+  const autoLookupDoneRef = useRef(false);
   const mileageRef = useRef<HTMLInputElement | null>(null);
+
+  const [mode, setMode] = useState<"reg" | "manual">("reg");
 
   const [registration, setRegistration] = useState<string>("");
   const [lookupBusy, setLookupBusy] = useState(false);
@@ -114,8 +117,8 @@ export default function CheckForm() {
 
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
-  async function lookupReg() {
-    const trimmed = registration.trim();
+  async function lookupReg(regOverride?: string) {
+    const trimmed = (regOverride ?? registration).trim();
     if (trimmed.length < 5) return;
 
     setLookupBusy(true);
@@ -150,6 +153,20 @@ export default function CheckForm() {
       setLookupBusy(false);
     }
   }
+
+  useEffect(() => {
+    const regFromUrl = searchParams.get("registration");
+    const cleaned = regFromUrl ? cleanRegistration(regFromUrl) : "";
+
+    if (!cleaned || cleaned.length < 5) return;
+    if (autoLookupDoneRef.current) return;
+
+    setMode("reg");
+    setRegistration(cleaned);
+    autoLookupDoneRef.current = true;
+
+    void lookupReg(cleaned);
+  }, [searchParams]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -224,7 +241,8 @@ export default function CheckForm() {
   const canSubmit =
     !busy && mileageRequiredOk && transmissionRequiredOk && makeRequiredOk;
 
-  const showMakeError = attemptedSubmit && mode === "manual" && make.trim() === "";
+  const showMakeError =
+    attemptedSubmit && mode === "manual" && make.trim() === "";
   const showMileageError = attemptedSubmit && mileage === "";
   const showTransmissionError = attemptedSubmit && transmission === "";
 
@@ -291,7 +309,7 @@ export default function CheckForm() {
 
             <button
               type="button"
-              onClick={lookupReg}
+              onClick={() => void lookupReg()}
               disabled={lookupBusy || registration.trim().length < 5}
               className="rounded-xl bg-[var(--aa-red)] px-6 py-3 font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
             >
@@ -320,7 +338,10 @@ export default function CheckForm() {
 
       <div>
         <label className="mb-2 block text-sm font-semibold text-slate-900">
-          Make {mode === "manual" ? <span className="text-[var(--aa-red)]">*</span> : null}
+          Make{" "}
+          {mode === "manual" ? (
+            <span className="text-[var(--aa-red)]">*</span>
+          ) : null}
         </label>
 
         <input
@@ -375,7 +396,9 @@ export default function CheckForm() {
           value={mileage}
           min={0}
           onChange={(e) =>
-            setMileage(e.target.value === "" ? "" : parseInt(e.target.value, 10))
+            setMileage(
+              e.target.value === "" ? "" : parseInt(e.target.value, 10)
+            )
           }
           placeholder="Enter current mileage"
           required
@@ -455,7 +478,9 @@ export default function CheckForm() {
           value={askingPrice}
           min={0}
           onChange={(e) =>
-            setAskingPrice(e.target.value === "" ? "" : parseInt(e.target.value, 10))
+            setAskingPrice(
+              e.target.value === "" ? "" : parseInt(e.target.value, 10)
+            )
           }
           placeholder="e.g. 8995"
         />
