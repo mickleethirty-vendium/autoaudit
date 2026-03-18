@@ -59,10 +59,10 @@ export default function RootLayout({
                 </Link>
 
                 <Link
-                  href="/my-reports"
+                  href="/auth?mode=login"
                   className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition duration-200 hover:bg-slate-100 hover:text-black"
                 >
-                  My Reports
+                  Log In
                 </Link>
 
                 <Link
@@ -77,10 +77,10 @@ export default function RootLayout({
             <div className="pb-3 sm:hidden">
               <div className="flex flex-wrap items-center gap-2">
                 <Link
-                  href="/my-reports"
+                  href="/auth?mode=login"
                   className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm"
                 >
-                  My Reports
+                  Log In
                 </Link>
 
                 <Link
