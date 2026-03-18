@@ -63,22 +63,12 @@ export async function POST(req: Request) {
 
   try {
     if (event.type !== "checkout.session.completed") {
-      console.log("Ignoring Stripe event", { eventType: event.type });
       return NextResponse.json({ received: true, ignored: true });
     }
 
     const session = event.data.object as Stripe.Checkout.Session;
     const reportId = session.metadata?.report_id;
     const checkoutTier = parseCheckoutTier(session.metadata?.checkout_tier);
-
-    console.log("Stripe webhook received", {
-      eventType: event.type,
-      sessionId: session.id,
-      paymentStatus: session.payment_status,
-      sessionStatus: session.status,
-      reportId,
-      checkoutTier,
-    });
 
     if (!isLikelyValidReportId(reportId)) {
       console.error("Invalid or missing report_id in metadata", {
@@ -95,12 +85,6 @@ export async function POST(req: Request) {
       session.payment_status === "paid" || session.status === "complete";
 
     if (!isSessionPaid) {
-      console.log("Session not marked paid", {
-        reportId,
-        sessionId: session.id,
-        paymentStatus: session.payment_status,
-        sessionStatus: session.status,
-      });
       return NextResponse.json({
         received: true,
         unlocked: false,
@@ -133,12 +117,6 @@ export async function POST(req: Request) {
         )
         .eq("id", reportId)
         .maybeSingle();
-
-    console.log("Existing report lookup", {
-      reportId,
-      found: !!existingReport,
-      existingReportError: existingReportError?.message ?? null,
-    });
 
     if (existingReportError) {
       return NextResponse.json(
@@ -209,12 +187,6 @@ export async function POST(req: Request) {
         existingReport.hpi_stripe_payment_intent_id ?? paymentIntentId;
     }
 
-    console.log("Updating report with payload", {
-      reportId,
-      checkoutTier,
-      updatePayload,
-    });
-
     const { data, error } = await supabaseAdmin
       .from("reports")
       .update(updatePayload)
@@ -231,12 +203,6 @@ export async function POST(req: Request) {
       )
       .single();
 
-    console.log("Webhook update result", {
-      reportId,
-      error: error?.message ?? null,
-      updated: !!data,
-    });
-
     if (error) {
       return NextResponse.json(
         { error: `Supabase update failed: ${error.message}` },
@@ -250,6 +216,11 @@ export async function POST(req: Request) {
         { status: 500 }
       );
     }
+
+    console.log("Stripe webhook processed", {
+      reportId: data.id,
+      checkoutTier,
+    });
 
     return NextResponse.json({
       received: true,
