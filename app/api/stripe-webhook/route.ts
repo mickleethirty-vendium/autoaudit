@@ -39,6 +39,7 @@ export async function POST(req: Request) {
 
   const sig = (await headers()).get("stripe-signature");
   if (!sig) {
+    console.error("Stripe webhook missing signature header");
     return NextResponse.json(
       { error: "Missing Stripe signature" },
       { status: 400 }
@@ -53,6 +54,7 @@ export async function POST(req: Request) {
       mustGetEnv("STRIPE_WEBHOOK_SECRET")
     );
   } catch (err: any) {
+    console.error("Webhook signature verification failed", err?.message);
     return NextResponse.json(
       { error: `Webhook signature verification failed: ${err.message}` },
       { status: 400 }
@@ -61,6 +63,7 @@ export async function POST(req: Request) {
 
   try {
     if (event.type !== "checkout.session.completed") {
+      console.log("Ignoring Stripe event", { eventType: event.type });
       return NextResponse.json({ received: true, ignored: true });
     }
 
@@ -68,7 +71,20 @@ export async function POST(req: Request) {
     const reportId = session.metadata?.report_id;
     const checkoutTier = parseCheckoutTier(session.metadata?.checkout_tier);
 
+    console.log("Stripe webhook received", {
+      eventType: event.type,
+      sessionId: session.id,
+      paymentStatus: session.payment_status,
+      sessionStatus: session.status,
+      reportId,
+      checkoutTier,
+    });
+
     if (!isLikelyValidReportId(reportId)) {
+      console.error("Invalid or missing report_id in metadata", {
+        reportId,
+        metadata: session.metadata,
+      });
       return NextResponse.json(
         { error: "Missing or invalid report_id in session metadata" },
         { status: 400 }
@@ -79,6 +95,12 @@ export async function POST(req: Request) {
       session.payment_status === "paid" || session.status === "complete";
 
     if (!isSessionPaid) {
+      console.log("Session not marked paid", {
+        reportId,
+        sessionId: session.id,
+        paymentStatus: session.payment_status,
+        sessionStatus: session.status,
+      });
       return NextResponse.json({
         received: true,
         unlocked: false,
@@ -111,6 +133,12 @@ export async function POST(req: Request) {
         )
         .eq("id", reportId)
         .maybeSingle();
+
+    console.log("Existing report lookup", {
+      reportId,
+      found: !!existingReport,
+      existingReportError: existingReportError?.message ?? null,
+    });
 
     if (existingReportError) {
       return NextResponse.json(
@@ -153,7 +181,6 @@ export async function POST(req: Request) {
     };
 
     if (checkoutTier === "report") {
-      // Avoid overwriting these if the same webhook is redelivered
       updatePayload.stripe_session_id =
         existingReport.stripe_session_id ?? session.id;
       updatePayload.stripe_payment_intent_id =
@@ -174,7 +201,6 @@ export async function POST(req: Request) {
         existingReport.stripe_session_id ?? session.id;
       updatePayload.stripe_payment_intent_id =
         existingReport.stripe_payment_intent_id ?? paymentIntentId;
-
       updatePayload.hpi_unlocked = true;
       updatePayload.hpi_paid_at = existingHpiPaidAt ?? nowIso;
       updatePayload.hpi_stripe_session_id =
@@ -182,6 +208,12 @@ export async function POST(req: Request) {
       updatePayload.hpi_stripe_payment_intent_id =
         existingReport.hpi_stripe_payment_intent_id ?? paymentIntentId;
     }
+
+    console.log("Updating report with payload", {
+      reportId,
+      checkoutTier,
+      updatePayload,
+    });
 
     const { data, error } = await supabaseAdmin
       .from("reports")
@@ -198,6 +230,12 @@ export async function POST(req: Request) {
         `
       )
       .single();
+
+    console.log("Webhook update result", {
+      reportId,
+      error: error?.message ?? null,
+      updated: !!data,
+    });
 
     if (error) {
       return NextResponse.json(
@@ -225,6 +263,7 @@ export async function POST(req: Request) {
       hpi_paid_at: data.hpi_paid_at ?? null,
     });
   } catch (err: any) {
+    console.error("Webhook handler error", err);
     return NextResponse.json(
       { error: `Webhook handler error: ${err.message}` },
       { status: 500 }
