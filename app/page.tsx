@@ -11,7 +11,7 @@ export default function HomePage() {
           />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,10,10,0.42)_0%,rgba(10,10,10,0.16)_35%,rgba(10,10,10,0.28)_100%)]" />
 
-          <div className="relative mx-auto flex min-h-[470px] max-w-7xl flex-col items-center justify-center px-4 py-12 text-center sm:min-h-[520px] sm:py-14 lg:min-h-[560px]">
+          <div className="relative mx-auto flex min-h-[380px] max-w-7xl flex-col items-center justify-center px-4 py-10 text-center sm:min-h-[420px] sm:py-12 lg:min-h-[460px]">
             <h1 className="max-w-5xl text-4xl font-extrabold tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)] sm:text-5xl lg:text-6xl">
               Know the Risks Before You Buy a Used Car
             </h1>
