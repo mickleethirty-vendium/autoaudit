@@ -1,514 +1,408 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 
-type Fuel = "petrol" | "diesel" | "hybrid" | "ev";
-type Transmission = "" | "manual" | "automatic" | "cvt" | "dct";
-type TimingType = "belt" | "chain" | "unknown";
+type LookupVehicle = {
+  registration: string;
+  make?: string;
+  model?: string;
+  year?: string | number;
+  colour?: string;
+  fuelType?: string;
+  bodyType?: string;
+  engineSize?: string | number;
+};
 
-// Keep this list reasonably broad for UK market.
-const MAKE_OPTIONS = [
-  "Abarth",
-  "Alfa Romeo",
-  "Aston Martin",
-  "Audi",
-  "Bentley",
-  "BMW",
-  "Bugatti",
-  "Citroen",
-  "Cupra",
-  "Dacia",
-  "DS",
-  "Ferrari",
-  "Fiat",
-  "Ford",
-  "Honda",
-  "Hyundai",
-  "Jaguar",
-  "Jeep",
-  "Kia",
-  "Lamborghini",
-  "Land Rover",
-  "Lexus",
-  "Lotus",
-  "Maserati",
-  "Mazda",
-  "McLaren",
-  "Mercedes-Benz",
-  "MG",
-  "MINI",
-  "Mitsubishi",
-  "Nissan",
-  "Peugeot",
-  "Polestar",
-  "Porsche",
-  "Renault",
-  "Rolls-Royce",
-  "SEAT",
-  "Skoda",
-  "Smart",
-  "Subaru",
-  "Suzuki",
-  "Tesla",
-  "Toyota",
-  "Vauxhall",
-  "Volkswagen",
-  "Volvo",
-  "Other",
-];
-
-function mapDvlaFuelToFuel(dvlaFuel: string | null): Fuel {
-  const f = (dvlaFuel ?? "").toLowerCase();
-  if (f.includes("diesel")) return "diesel";
-  if (f.includes("electric")) return "ev";
-  if (f.includes("hybrid")) return "hybrid";
-  return "petrol";
-}
-
-function cleanRegistration(reg: string): string {
-  return reg.replace(/\s/g, "").toUpperCase();
-}
-
-function normalizeMake(input: string): string {
-  const v = input.trim();
-  if (!v) return "";
-  const lower = v.toLowerCase();
-  if (lower === "vw") return "Volkswagen";
-  if (lower === "merc" || lower === "mercedes") return "Mercedes-Benz";
-  if (lower === "landrover") return "Land Rover";
-  if (lower === "range rover") return "Land Rover";
-  if (lower === "mini") return "MINI";
-  if (lower === "rolls royce") return "Rolls-Royce";
-  return v;
-}
-
-function inputClass(hasError = false) {
-  return [
-    "w-full rounded-xl border px-4 py-3 text-slate-900 outline-none transition",
-    hasError
-      ? "border-[var(--aa-red)] focus:border-[var(--aa-red)]"
-      : "border-[var(--aa-silver)] focus:border-slate-400",
-  ].join(" ");
+function normaliseRegistration(value: string) {
+  return value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().trim();
 }
 
 export default function CheckForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const autoLookupDoneRef = useRef(false);
-  const mileageRef = useRef<HTMLInputElement | null>(null);
 
-  const [mode, setMode] = useState<"reg" | "manual">("reg");
+  const initialReg = useMemo(() => {
+    return normaliseRegistration(searchParams.get("registration") || "");
+  }, [searchParams]);
 
-  const [registration, setRegistration] = useState<string>("");
-  const [lookupBusy, setLookupBusy] = useState(false);
+  const [registration, setRegistration] = useState(initialReg);
+  const [lookupLoading, setLookupLoading] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
-  const [lookupResult, setLookupResult] = useState<any | null>(null);
+  const [vehicle, setVehicle] = useState<LookupVehicle | null>(null);
 
-  const [make, setMake] = useState<string>("");
-  const [year, setYear] = useState<number>(2016);
-  const [mileage, setMileage] = useState<number | "">("");
-  const [fuel, setFuel] = useState<Fuel>("petrol");
-  const [transmission, setTransmission] = useState<Transmission>("");
-  const [timingType, setTimingType] = useState<TimingType>("unknown");
-  const [askingPrice, setAskingPrice] = useState<number | "">("");
+  const [mileage, setMileage] = useState("");
+  const [gearbox, setGearbox] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const hasAutoLookupRef = useRef(false);
 
-  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+  useEffect(() => {
+    if (!initialReg) return;
+    setRegistration(initialReg);
+  }, [initialReg]);
 
-  async function lookupReg(regOverride?: string) {
-    const trimmed = (regOverride ?? registration).trim();
-    if (trimmed.length < 5) return;
+  async function lookupVehicle(reg: string) {
+    const cleaned = normaliseRegistration(reg);
 
-    setLookupBusy(true);
+    if (!cleaned) {
+      setLookupError("Enter a valid registration.");
+      return;
+    }
+
+    setLookupLoading(true);
     setLookupError(null);
-    setLookupResult(null);
+    setVehicle(null);
 
     try {
-      const res = await fetch("/api/lookup-reg", {
+      const response = await fetch(
+        `/api/vehicle-lookup?registration=${encodeURIComponent(cleaned)}`,
+        {
+          method: "GET",
+          cache: "no-store",
+        }
+      );
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(
+          data?.error || "We couldn’t find vehicle details for that registration."
+        );
+      }
+
+      setVehicle({
+        registration: cleaned,
+        make: data?.make,
+        model: data?.model,
+        year: data?.year,
+        colour: data?.colour,
+        fuelType: data?.fuelType,
+        bodyType: data?.bodyType,
+        engineSize: data?.engineSize,
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Something went wrong while looking up that registration.";
+
+      setLookupError(message);
+    } finally {
+      setLookupLoading(false);
+    }
+  }
+
+  async function handleLookupSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await lookupVehicle(registration);
+  }
+
+  async function handleContinue(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!vehicle) {
+      setLookupError("Vehicle details are missing.");
+      return;
+    }
+
+    if (!mileage.trim()) {
+      setLookupError("Please enter the vehicle mileage.");
+      return;
+    }
+
+    if (!gearbox) {
+      setLookupError("Please select the gearbox type.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setLookupError(null);
+
+    try {
+      const response = await fetch("/api/check", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ registration: trimmed }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          mode: "registration",
+          registration: vehicle.registration,
+          vehicle,
+          mileage: Number(mileage.replace(/,/g, "")),
+          gearbox,
+        }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error ?? "Lookup failed");
+      const data = await response.json().catch(() => null);
 
-      setLookupResult(data);
+      if (!response.ok) {
+        throw new Error(
+          data?.error || "We couldn’t build the preview right now."
+        );
+      }
 
-      if (data?.yearOfManufacture) setYear(Number(data.yearOfManufacture));
-      if (data?.fuelType) setFuel(mapDvlaFuelToFuel(data.fuelType));
-      if (data?.make) setMake(normalizeMake(String(data.make)));
+      if (!data?.id) {
+        throw new Error("Preview ID was not returned.");
+      }
 
-      setMileage("");
-      setTransmission("");
+      router.push(`/preview/${data.id}`);
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Something went wrong while creating your preview.";
 
-      setTimeout(() => {
-        mileageRef.current?.focus();
-      }, 0);
-    } catch (e: any) {
-      setLookupError(e?.message ?? "Lookup failed");
-    } finally {
-      setLookupBusy(false);
+      setLookupError(message);
+      setIsSubmitting(false);
     }
   }
 
   useEffect(() => {
-    const regFromUrl = searchParams.get("registration");
-    const cleaned = regFromUrl ? cleanRegistration(regFromUrl) : "";
+    if (!initialReg) return;
+    if (hasAutoLookupRef.current) return;
 
-    if (!cleaned || cleaned.length < 5) return;
-    if (autoLookupDoneRef.current) return;
-
-    setMode("reg");
-    setRegistration(cleaned);
-    autoLookupDoneRef.current = true;
-
-    void lookupReg(cleaned);
-  }, [searchParams]);
-
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setAttemptedSubmit(true);
-    setBusy(true);
-    setError(null);
-
-    try {
-      const makeNormalized = normalizeMake(make);
-
-      if (mode === "manual" && makeNormalized.trim() === "") {
-        throw new Error(
-          "Please select the vehicle make (e.g. Ford, BMW, Toyota)."
-        );
-      }
-
-      if (mileage === "" || !Number.isFinite(Number(mileage))) {
-        throw new Error("Please enter the current mileage.");
-      }
-
-      if (transmission === "") {
-        throw new Error("Please select the transmission type.");
-      }
-
-      const regToStore =
-        mode === "reg" && registration.trim()
-          ? cleanRegistration(registration.trim())
-          : null;
-
-      const makeToStore = makeNormalized.trim() ? makeNormalized.trim() : null;
-
-      const res = await fetch("/api/create-report", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          registration: regToStore,
-          make: makeToStore,
-          year,
-          mileage: Number(mileage),
-          fuel,
-          transmission,
-          timing_type: timingType,
-          asking_price: askingPrice === "" ? null : askingPrice,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error ?? "Failed to create report");
-
-      window.location.href = `/preview/${data.report_id}`;
-    } catch (err: any) {
-      setError(err?.message ?? "Something went wrong");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  function handleRegistrationKeyDown(
-    e: React.KeyboardEvent<HTMLInputElement>
-  ) {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      if (!lookupBusy && registration.trim().length >= 5) {
-        void lookupReg();
-      }
-    }
-  }
-
-  const makeRequiredOk = mode === "manual" ? make.trim() !== "" : true;
-  const mileageRequiredOk = mileage !== "";
-  const transmissionRequiredOk = transmission !== "";
-  const canSubmit =
-    !busy && mileageRequiredOk && transmissionRequiredOk && makeRequiredOk;
-
-  const showMakeError =
-    attemptedSubmit && mode === "manual" && make.trim() === "";
-  const showMileageError = attemptedSubmit && mileage === "";
-  const showTransmissionError = attemptedSubmit && transmission === "";
+    hasAutoLookupRef.current = true;
+    void lookupVehicle(initialReg);
+  }, [initialReg]);
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="mx-auto grid max-w-lg gap-6 rounded-2xl border border-[var(--aa-silver)] bg-white p-6 shadow-sm"
-    >
-      <div>
-        <div className="mb-2 text-sm font-semibold text-slate-900">
-          Choose how you want to start
+    <section className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="overflow-hidden rounded-3xl border border-white/10 bg-slate-950 text-white shadow-2xl">
+        <div className="border-b border-white/10 bg-white/[0.03] px-6 py-5 sm:px-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-300">
+            Registration check
+          </p>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
+            Check a vehicle before you buy
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm text-slate-300 sm:text-base">
+            We’ll identify the vehicle from its registration, then ask for a
+            couple of extra details to improve the estimate.
+          </p>
         </div>
 
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={() => setMode("reg")}
-            className={[
-              "rounded-xl border px-4 py-2 text-sm font-semibold transition",
-              mode === "reg"
-                ? "border-black bg-black text-white"
-                : "border-[var(--aa-silver)] bg-white text-slate-700 hover:bg-slate-50",
-            ].join(" ")}
-          >
-            Use registration
-          </button>
+        <div className="px-6 py-6 sm:px-8 sm:py-8">
+          {!vehicle ? (
+            <form onSubmit={handleLookupSubmit} className="space-y-5">
+              <div>
+                <label
+                  htmlFor="registration"
+                  className="mb-2 block text-sm font-medium text-slate-200"
+                >
+                  Vehicle registration
+                </label>
 
-          <button
-            type="button"
-            onClick={() => setMode("manual")}
-            className={[
-              "rounded-xl border px-4 py-2 text-sm font-semibold transition",
-              mode === "manual"
-                ? "border-black bg-black text-white"
-                : "border-[var(--aa-silver)] bg-white text-slate-700 hover:bg-slate-50",
-            ].join(" ")}
-          >
-            Manual entry
-          </button>
-        </div>
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <input
+                    id="registration"
+                    name="registration"
+                    type="text"
+                    inputMode="text"
+                    autoCapitalize="characters"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    maxLength={8}
+                    value={registration}
+                    onChange={(e) => {
+                      setRegistration(normaliseRegistration(e.target.value));
+                      if (lookupError) setLookupError(null);
+                    }}
+                    disabled={lookupLoading}
+                    placeholder="AB12CDE"
+                    className="h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-lg font-semibold tracking-[0.18em] text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400 focus:bg-white/[0.07]"
+                  />
 
-        <div className="mt-2 text-xs text-slate-600">
-          Registration lookup is the fastest route if you have the number plate.
-        </div>
-      </div>
+                  <button
+                    type="submit"
+                    disabled={lookupLoading}
+                    className="inline-flex h-14 items-center justify-center rounded-2xl bg-sky-500 px-6 text-sm font-semibold text-slate-950 transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-70 sm:min-w-[180px]"
+                  >
+                    {lookupLoading ? "Looking up…" : "Find vehicle"}
+                  </button>
+                </div>
 
-      {mode === "reg" && (
-        <div>
-          <label className="mb-2 block text-sm font-semibold text-slate-900">
-            Registration (number plate)
-          </label>
+                <div className="mt-3">
+                  <Link
+                    href="/manual-check"
+                    className="text-sm font-medium text-sky-300 transition hover:text-sky-200 hover:underline"
+                  >
+                    Or check manually
+                  </Link>
+                </div>
+              </div>
 
-          <div className="flex gap-3">
-            <input
-              className={inputClass(false)}
-              value={registration}
-              onChange={(e) => setRegistration(e.target.value)}
-              onKeyDown={handleRegistrationKeyDown}
-              placeholder="e.g. AB12CDE"
-              autoCapitalize="characters"
-              autoCorrect="off"
-              spellCheck={false}
-            />
+              {lookupError ? (
+                <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                  {lookupError}
+                </div>
+              ) : null}
 
-            <button
-              type="button"
-              onClick={() => void lookupReg()}
-              disabled={lookupBusy || registration.trim().length < 5}
-              className="rounded-xl bg-[var(--aa-red)] px-6 py-3 font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
-            >
-              {lookupBusy ? "Looking up..." : "Lookup"}
-            </button>
-          </div>
-
-          {lookupError ? (
-            <div className="mt-2 text-sm text-[var(--aa-red)]">
-              {lookupError}
-            </div>
-          ) : null}
-
-          {lookupResult ? (
-            <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
-              Vehicle details found. Check the fields below, then enter mileage
-              and transmission to continue.
-            </div>
+              {lookupLoading ? (
+                <div className="rounded-2xl border border-sky-400/20 bg-sky-400/10 p-5">
+                  <p className="text-sm font-semibold text-sky-100">
+                    Looking up vehicle details…
+                  </p>
+                  <p className="mt-1 text-sm text-sky-50/80">
+                    We’re checking the registration and preparing the next step.
+                  </p>
+                </div>
+              ) : null}
+            </form>
           ) : (
-            <div className="mt-2 text-xs text-slate-500">
-              Press Enter or click Lookup to pull in available vehicle details.
+            <div className="space-y-6">
+              <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-300">
+                  Vehicle identified
+                </p>
+
+                <div className="mt-3 grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <p className="text-sm text-slate-400">Registration</p>
+                    <p className="text-lg font-semibold text-white">
+                      {vehicle.registration}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-slate-400">Vehicle</p>
+                    <p className="text-lg font-semibold text-white">
+                      {[vehicle.make, vehicle.model].filter(Boolean).join(" ") ||
+                        "Vehicle found"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-slate-400">Year</p>
+                    <p className="text-base font-medium text-white">
+                      {vehicle.year || "—"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-slate-400">Fuel type</p>
+                    <p className="text-base font-medium text-white">
+                      {vehicle.fuelType || "—"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-slate-400">Body type</p>
+                    <p className="text-base font-medium text-white">
+                      {vehicle.bodyType || "—"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-slate-400">Colour</p>
+                    <p className="text-base font-medium text-white">
+                      {vehicle.colour || "—"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <form onSubmit={handleContinue} className="space-y-5">
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div>
+                    <label
+                      htmlFor="mileage"
+                      className="mb-2 block text-sm font-medium text-slate-200"
+                    >
+                      Current mileage
+                    </label>
+                    <input
+                      id="mileage"
+                      name="mileage"
+                      type="text"
+                      inputMode="numeric"
+                      value={mileage}
+                      onChange={(e) => {
+                        setMileage(e.target.value.replace(/[^\d,]/g, ""));
+                        if (lookupError) setLookupError(null);
+                      }}
+                      placeholder="e.g. 62,000"
+                      disabled={isSubmitting}
+                      className="h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-base font-medium text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="gearbox"
+                      className="mb-2 block text-sm font-medium text-slate-200"
+                    >
+                      Gearbox type
+                    </label>
+                    <select
+                      id="gearbox"
+                      name="gearbox"
+                      value={gearbox}
+                      onChange={(e) => {
+                        setGearbox(e.target.value);
+                        if (lookupError) setLookupError(null);
+                      }}
+                      disabled={isSubmitting}
+                      className="h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-base font-medium text-white outline-none transition focus:border-sky-400"
+                    >
+                      <option value="" className="bg-slate-950 text-slate-300">
+                        Select gearbox
+                      </option>
+                      <option value="manual" className="bg-slate-950 text-white">
+                        Manual
+                      </option>
+                      <option value="automatic" className="bg-slate-950 text-white">
+                        Automatic
+                      </option>
+                      <option value="cvt" className="bg-slate-950 text-white">
+                        CVT
+                      </option>
+                      <option
+                        value="semi-automatic"
+                        className="bg-slate-950 text-white"
+                      >
+                        Semi-automatic
+                      </option>
+                      <option value="unknown" className="bg-slate-950 text-white">
+                        I’m not sure
+                      </option>
+                    </select>
+                  </div>
+                </div>
+
+                {lookupError ? (
+                  <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                    {lookupError}
+                  </div>
+                ) : null}
+
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="inline-flex h-14 items-center justify-center rounded-2xl bg-sky-500 px-6 text-sm font-semibold text-slate-950 transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {isSubmitting ? "Building preview…" : "Continue to free preview"}
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={() => {
+                      setVehicle(null);
+                      setLookupError(null);
+                    }}
+                    className="inline-flex h-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-6 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    Change registration
+                  </button>
+                </div>
+              </form>
             </div>
           )}
         </div>
-      )}
-
-      <div>
-        <label className="mb-2 block text-sm font-semibold text-slate-900">
-          Make{" "}
-          {mode === "manual" ? (
-            <span className="text-[var(--aa-red)]">*</span>
-          ) : null}
-        </label>
-
-        <input
-          list="make-list"
-          className={inputClass(showMakeError)}
-          value={make}
-          onChange={(e) => setMake(e.target.value)}
-          onBlur={() => setMake(normalizeMake(make))}
-          placeholder="Start typing… (e.g. Ford)"
-          required={mode === "manual"}
-        />
-
-        <datalist id="make-list">
-          {MAKE_OPTIONS.map((m) => (
-            <option key={m} value={m} />
-          ))}
-        </datalist>
-
-        {showMakeError ? (
-          <div className="mt-2 text-xs text-[var(--aa-red)]">
-            Please enter the vehicle make.
-          </div>
-        ) : null}
       </div>
-
-      <div>
-        <label className="mb-2 block text-sm font-semibold text-slate-900">
-          Year
-        </label>
-        <input
-          className={inputClass(false)}
-          type="number"
-          value={year}
-          min={1990}
-          max={new Date().getFullYear()}
-          onChange={(e) => {
-            const next = parseInt(e.target.value || "0", 10);
-            setYear(Number.isFinite(next) ? next : new Date().getFullYear());
-          }}
-          required
-        />
-      </div>
-
-      <div>
-        <label className="mb-2 block text-sm font-semibold text-slate-900">
-          Mileage <span className="text-[var(--aa-red)]">*</span>
-        </label>
-        <input
-          ref={mileageRef}
-          className={inputClass(showMileageError)}
-          type="number"
-          value={mileage}
-          min={0}
-          onChange={(e) =>
-            setMileage(
-              e.target.value === "" ? "" : parseInt(e.target.value, 10)
-            )
-          }
-          placeholder="Enter current mileage"
-          required
-        />
-
-        {showMileageError ? (
-          <div className="mt-2 text-xs text-[var(--aa-red)]">
-            Please enter the current mileage.
-          </div>
-        ) : null}
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <div>
-          <label className="mb-2 block text-sm font-semibold text-slate-900">
-            Fuel
-          </label>
-          <select
-            className={inputClass(false)}
-            value={fuel}
-            onChange={(e) => setFuel(e.target.value as Fuel)}
-          >
-            <option value="petrol">Petrol</option>
-            <option value="diesel">Diesel</option>
-            <option value="hybrid">Hybrid</option>
-            <option value="ev">EV</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm font-semibold text-slate-900">
-            Transmission <span className="text-[var(--aa-red)]">*</span>
-          </label>
-          <select
-            className={inputClass(showTransmissionError)}
-            value={transmission}
-            onChange={(e) => setTransmission(e.target.value as Transmission)}
-            required
-          >
-            <option value="">Please select transmission</option>
-            <option value="manual">Manual</option>
-            <option value="automatic">Automatic</option>
-            <option value="cvt">CVT</option>
-            <option value="dct">DCT</option>
-          </select>
-
-          {showTransmissionError ? (
-            <div className="mt-2 text-xs text-[var(--aa-red)]">
-              Please select the transmission type.
-            </div>
-          ) : null}
-        </div>
-      </div>
-
-      <div>
-        <label className="mb-2 block text-sm font-semibold text-slate-900">
-          Timing type (if known)
-        </label>
-        <select
-          className={inputClass(false)}
-          value={timingType}
-          onChange={(e) => setTimingType(e.target.value as TimingType)}
-        >
-          <option value="unknown">Unknown</option>
-          <option value="belt">Belt</option>
-          <option value="chain">Chain</option>
-        </select>
-      </div>
-
-      <div>
-        <label className="mb-2 block text-sm font-semibold text-slate-900">
-          Asking price (optional)
-        </label>
-        <input
-          className={inputClass(false)}
-          type="number"
-          value={askingPrice}
-          min={0}
-          onChange={(e) =>
-            setAskingPrice(
-              e.target.value === "" ? "" : parseInt(e.target.value, 10)
-            )
-          }
-          placeholder="e.g. 8995"
-        />
-      </div>
-
-      {error ? (
-        <div className="rounded-xl border border-[var(--aa-red)]/20 bg-[var(--aa-red)]/5 px-4 py-3 text-sm text-[var(--aa-red)]">
-          {error}
-        </div>
-      ) : null}
-
-      <button
-        type="submit"
-        disabled={!canSubmit}
-        className="w-full rounded-xl bg-[var(--aa-red)] py-3 font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
-      >
-        {busy ? "Generating snapshot..." : "Generate free snapshot"}
-      </button>
-
-      <div className="rounded-xl border border-[var(--aa-silver)] bg-slate-50/70 p-4 text-sm text-slate-700">
-        <div className="font-semibold text-black">What you’ll see next</div>
-        <div className="mt-2 grid gap-1">
-          <div>• Estimated near-term repair exposure</div>
-          <div>• Risk indicators and confidence score</div>
-          <div>• MoT-backed warning signals</div>
-          <div>• Option to unlock the full report if needed</div>
-        </div>
-      </div>
-    </form>
+    </section>
   );
 }

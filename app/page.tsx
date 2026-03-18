@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import ShieldIcon from "@/app/components/ShieldIcon";
 
 export default function HomePage() {
@@ -60,6 +61,15 @@ export default function HomePage() {
                   Check My Car
                 </button>
               </form>
+
+              <div className="mt-3 text-center sm:text-left">
+                <Link
+                  href="/manual-check"
+                  className="text-sm font-medium text-[var(--aa-red)] transition hover:text-[var(--aa-red-strong)] hover:underline"
+                >
+                  Or check manually
+                </Link>
+              </div>
             </div>
           </div>
         </section>
