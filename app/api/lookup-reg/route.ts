@@ -13,6 +13,46 @@ function isLikelyUkRegistration(value: string) {
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => null);
+
+    const isManual = body?.manual === true;
+
+    if (isManual) {
+      const vehicle = body?.vehicle;
+
+      if (!vehicle?.make || !vehicle?.model || !vehicle?.year) {
+        return NextResponse.json(
+          { error: "Missing vehicle details" },
+          { status: 400 }
+        );
+      }
+
+      return NextResponse.json({
+        manual: true,
+        registration: null,
+        make: typeof vehicle.make === "string" ? vehicle.make.trim() : null,
+        model: typeof vehicle.model === "string" ? vehicle.model.trim() : null,
+        year:
+          typeof vehicle.year === "string" || typeof vehicle.year === "number"
+            ? vehicle.year
+            : null,
+        colour:
+          typeof vehicle.colour === "string" ? vehicle.colour.trim() : null,
+        fuelType:
+          typeof vehicle.fuelType === "string"
+            ? vehicle.fuelType.trim()
+            : null,
+        bodyType:
+          typeof vehicle.bodyType === "string"
+            ? vehicle.bodyType.trim()
+            : null,
+        engineSize:
+          typeof vehicle.engineSize === "string" ||
+          typeof vehicle.engineSize === "number"
+            ? vehicle.engineSize
+            : null,
+      });
+    }
+
     const registrationRaw = body?.registration;
 
     if (!registrationRaw) {
@@ -88,16 +128,19 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({
+      manual: false,
       registration: cleanReg,
       make: typeof data?.make === "string" ? data.make : null,
-      yearOfManufacture:
+      model: null,
+      year:
         typeof data?.yearOfManufacture === "number"
           ? data.yearOfManufacture
           : null,
       fuelType: typeof data?.fuelType === "string" ? data.fuelType : null,
-      engineCapacity:
+      engineSize:
         typeof data?.engineCapacity === "number" ? data.engineCapacity : null,
       colour: typeof data?.colour === "string" ? data.colour : null,
+      bodyType: typeof data?.wheelplan === "string" ? data.wheelplan : null,
       motStatus: typeof data?.motStatus === "string" ? data.motStatus : null,
       taxStatus: typeof data?.taxStatus === "string" ? data.taxStatus : null,
     });

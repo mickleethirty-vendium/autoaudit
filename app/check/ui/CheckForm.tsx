@@ -6,17 +6,48 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 type LookupVehicle = {
   registration: string;
-  make?: string;
-  model?: string;
-  year?: string | number;
-  colour?: string;
-  fuelType?: string;
-  bodyType?: string;
-  engineSize?: string | number;
+  make?: string | null;
+  model?: string | null;
+  year?: string | number | null;
+  colour?: string | null;
+  fuelType?: string | null;
+  bodyType?: string | null;
+  engineSize?: string | number | null;
+  motStatus?: string | null;
+  taxStatus?: string | null;
 };
 
 function normaliseRegistration(value: string) {
   return value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().trim();
+}
+
+function normaliseFuel(
+  value?: string | null
+): "petrol" | "diesel" | "hybrid" | "ev" | null {
+  if (!value) return null;
+
+  const v = value.trim().toLowerCase();
+
+  if (v.includes("petrol")) return "petrol";
+  if (v.includes("diesel")) return "diesel";
+  if (v.includes("hybrid")) return "hybrid";
+  if (v.includes("electric") || v === "ev") return "ev";
+
+  return null;
+}
+
+function normaliseTransmission(
+  value: string
+): "manual" | "automatic" | "cvt" | "dct" | null {
+  const v = value.trim().toLowerCase();
+
+  if (v === "manual") return "manual";
+  if (v === "automatic") return "automatic";
+  if (v === "cvt") return "cvt";
+  if (v === "semi-automatic") return "dct";
+  if (v === "dct") return "dct";
+
+  return null;
 }
 
 export default function CheckForm() {
@@ -34,6 +65,7 @@ export default function CheckForm() {
 
   const [mileage, setMileage] = useState("");
   const [gearbox, setGearbox] = useState("");
+  const [continueError, setContinueError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const hasAutoLookupRef = useRef(false);
@@ -53,16 +85,19 @@ export default function CheckForm() {
 
     setLookupLoading(true);
     setLookupError(null);
+    setContinueError(null);
     setVehicle(null);
 
     try {
-      const response = await fetch(
-        `/api/vehicle-lookup?registration=${encodeURIComponent(cleaned)}`,
-        {
-          method: "GET",
-          cache: "no-store",
-        }
-      );
+      const response = await fetch("/api/lookup-reg", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          registration: cleaned,
+        }),
+      });
 
       const data = await response.json().catch(() => null);
 
@@ -73,14 +108,17 @@ export default function CheckForm() {
       }
 
       setVehicle({
-        registration: cleaned,
-        make: data?.make,
-        model: data?.model,
-        year: data?.year,
-        colour: data?.colour,
-        fuelType: data?.fuelType,
-        bodyType: data?.bodyType,
-        engineSize: data?.engineSize,
+        registration:
+          typeof data?.registration === "string" ? data.registration : cleaned,
+        make: data?.make ?? null,
+        model: data?.model ?? null,
+        year: data?.year ?? data?.yearOfManufacture ?? null,
+        colour: data?.colour ?? null,
+        fuelType: data?.fuelType ?? null,
+        bodyType: data?.bodyType ?? null,
+        engineSize: data?.engineSize ?? data?.engineCapacity ?? null,
+        motStatus: data?.motStatus ?? null,
+        taxStatus: data?.taxStatus ?? null,
       });
     } catch (err) {
       const message =
@@ -103,60 +141,89 @@ export default function CheckForm() {
     event.preventDefault();
 
     if (!vehicle) {
-      setLookupError("Vehicle details are missing.");
+      setContinueError("Vehicle details are missing.");
+      return;
+    }
+
+    const year = Number(vehicle.year);
+    if (!Number.isFinite(year)) {
+      setContinueError(
+        "We couldn’t determine the vehicle year from the registration lookup."
+      );
       return;
     }
 
     if (!mileage.trim()) {
-      setLookupError("Please enter the vehicle mileage.");
+      setContinueError("Please enter the vehicle mileage.");
       return;
     }
 
-    if (!gearbox) {
-      setLookupError("Please select the gearbox type.");
+    const parsedMileage = Number(mileage.replace(/,/g, ""));
+    if (!Number.isFinite(parsedMileage) || parsedMileage < 0) {
+      setContinueError("Please enter a valid mileage.");
+      return;
+    }
+
+    const fuel = normaliseFuel(vehicle.fuelType);
+    if (!fuel) {
+      setContinueError("We couldn’t match the fuel type for this vehicle.");
+      return;
+    }
+
+    const transmission = normaliseTransmission(gearbox);
+    if (!transmission) {
+      setContinueError("Please select a supported gearbox type.");
       return;
     }
 
     setIsSubmitting(true);
-    setLookupError(null);
+    setContinueError(null);
 
     try {
-      const response = await fetch("/api/check", {
+      const response = await fetch("/api/create-report", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          mode: "registration",
           registration: vehicle.registration,
-          vehicle,
-          mileage: Number(mileage.replace(/,/g, "")),
-          gearbox,
+          make: vehicle.make ?? undefined,
+          year,
+          mileage: parsedMileage,
+          fuel,
+          transmission,
+          timing_type: "unknown",
         }),
       });
 
       const data = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(
-          data?.error || "We couldn’t build the preview right now."
-        );
+        throw new Error(data?.error || "We couldn’t build the preview right now.");
       }
 
-      if (!data?.id) {
+      if (!data?.report_id) {
         throw new Error("Preview ID was not returned.");
       }
 
-      router.push(`/preview/${data.id}`);
+      router.push(`/preview/${data.report_id}`);
     } catch (err) {
       const message =
         err instanceof Error
           ? err.message
           : "Something went wrong while creating your preview.";
 
-      setLookupError(message);
+      setContinueError(message);
       setIsSubmitting(false);
     }
+  }
+
+  function resetVehicleStep() {
+    setVehicle(null);
+    setLookupError(null);
+    setContinueError(null);
+    setMileage("");
+    setGearbox("");
   }
 
   useEffect(() => {
@@ -269,7 +336,7 @@ export default function CheckForm() {
                     <p className="text-sm text-slate-400">Vehicle</p>
                     <p className="text-lg font-semibold text-white">
                       {[vehicle.make, vehicle.model].filter(Boolean).join(" ") ||
-                        "Vehicle found"}
+                        (vehicle.make ?? "Vehicle found")}
                     </p>
                   </div>
 
@@ -300,6 +367,20 @@ export default function CheckForm() {
                       {vehicle.colour || "—"}
                     </p>
                   </div>
+
+                  <div>
+                    <p className="text-sm text-slate-400">MoT status</p>
+                    <p className="text-base font-medium text-white">
+                      {vehicle.motStatus || "—"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-slate-400">Tax status</p>
+                    <p className="text-base font-medium text-white">
+                      {vehicle.taxStatus || "—"}
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -320,7 +401,7 @@ export default function CheckForm() {
                       value={mileage}
                       onChange={(e) => {
                         setMileage(e.target.value.replace(/[^\d,]/g, ""));
-                        if (lookupError) setLookupError(null);
+                        if (continueError) setContinueError(null);
                       }}
                       placeholder="e.g. 62,000"
                       disabled={isSubmitting}
@@ -341,7 +422,7 @@ export default function CheckForm() {
                       value={gearbox}
                       onChange={(e) => {
                         setGearbox(e.target.value);
-                        if (lookupError) setLookupError(null);
+                        if (continueError) setContinueError(null);
                       }}
                       disabled={isSubmitting}
                       className="h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-base font-medium text-white outline-none transition focus:border-sky-400"
@@ -364,16 +445,13 @@ export default function CheckForm() {
                       >
                         Semi-automatic
                       </option>
-                      <option value="unknown" className="bg-slate-950 text-white">
-                        I’m not sure
-                      </option>
                     </select>
                   </div>
                 </div>
 
-                {lookupError ? (
+                {continueError ? (
                   <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-                    {lookupError}
+                    {continueError}
                   </div>
                 ) : null}
 
@@ -388,11 +466,8 @@ export default function CheckForm() {
 
                   <button
                     type="button"
+                    onClick={resetVehicleStep}
                     disabled={isSubmitting}
-                    onClick={() => {
-                      setVehicle(null);
-                      setLookupError(null);
-                    }}
                     className="inline-flex h-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-6 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     Change registration

@@ -4,29 +4,54 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+type FuelOption = "petrol" | "diesel" | "hybrid" | "ev" | "";
+type GearboxOption = "manual" | "automatic" | "cvt" | "dct" | "";
+
 export default function ManualCheckPage() {
   const router = useRouter();
 
   const [make, setMake] = useState("");
   const [model, setModel] = useState("");
   const [year, setYear] = useState("");
-  const [fuelType, setFuelType] = useState("");
+  const [fuelType, setFuelType] = useState<FuelOption>("");
   const [bodyType, setBodyType] = useState("");
   const [mileage, setMileage] = useState("");
-  const [gearbox, setGearbox] = useState("");
+  const [gearbox, setGearbox] = useState<GearboxOption>("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!make.trim() || !model.trim() || !year.trim()) {
-      setError("Please enter the make, model, and year.");
+    if (!make.trim()) {
+      setError("Please enter the vehicle make.");
+      return;
+    }
+
+    if (!year.trim()) {
+      setError("Please enter the vehicle year.");
+      return;
+    }
+
+    const parsedYear = Number(year);
+    if (!Number.isFinite(parsedYear)) {
+      setError("Please enter a valid year.");
+      return;
+    }
+
+    if (!fuelType) {
+      setError("Please select the fuel type.");
       return;
     }
 
     if (!mileage.trim()) {
       setError("Please enter the vehicle mileage.");
+      return;
+    }
+
+    const parsedMileage = Number(mileage.replace(/,/g, ""));
+    if (!Number.isFinite(parsedMileage) || parsedMileage < 0) {
+      setError("Please enter a valid mileage.");
       return;
     }
 
@@ -39,22 +64,18 @@ export default function ManualCheckPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/check", {
+      const response = await fetch("/api/create-report", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          mode: "manual",
-          vehicle: {
-            make: make.trim(),
-            model: model.trim(),
-            year: year.trim(),
-            fuelType: fuelType || undefined,
-            bodyType: bodyType || undefined,
-          },
-          mileage: Number(mileage.replace(/,/g, "")),
-          gearbox,
+          make: make.trim(),
+          year: parsedYear,
+          mileage: parsedMileage,
+          fuel: fuelType,
+          transmission: gearbox,
+          timing_type: "unknown",
         }),
       });
 
@@ -66,11 +87,11 @@ export default function ManualCheckPage() {
         );
       }
 
-      if (!data?.id) {
+      if (!data?.report_id) {
         throw new Error("Preview ID was not returned.");
       }
 
-      router.push(`/preview/${data.id}`);
+      router.push(`/preview/${data.report_id}`);
     } catch (err) {
       const message =
         err instanceof Error
@@ -157,7 +178,7 @@ export default function ManualCheckPage() {
                 <select
                   value={fuelType}
                   onChange={(e) => {
-                    setFuelType(e.target.value);
+                    setFuelType(e.target.value as FuelOption);
                     if (error) setError(null);
                   }}
                   className="h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-base font-medium text-white outline-none transition focus:border-sky-400"
@@ -174,14 +195,8 @@ export default function ManualCheckPage() {
                   <option value="hybrid" className="bg-slate-950 text-white">
                     Hybrid
                   </option>
-                  <option value="plug-in hybrid" className="bg-slate-950 text-white">
-                    Plug-in hybrid
-                  </option>
-                  <option value="electric" className="bg-slate-950 text-white">
+                  <option value="ev" className="bg-slate-950 text-white">
                     Electric
-                  </option>
-                  <option value="other" className="bg-slate-950 text-white">
-                    Other
                   </option>
                 </select>
               </div>
@@ -226,7 +241,7 @@ export default function ManualCheckPage() {
                 <select
                   value={gearbox}
                   onChange={(e) => {
-                    setGearbox(e.target.value);
+                    setGearbox(e.target.value as GearboxOption);
                     if (error) setError(null);
                   }}
                   className="h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-base font-medium text-white outline-none transition focus:border-sky-400"
@@ -243,11 +258,8 @@ export default function ManualCheckPage() {
                   <option value="cvt" className="bg-slate-950 text-white">
                     CVT
                   </option>
-                  <option value="semi-automatic" className="bg-slate-950 text-white">
-                    Semi-automatic
-                  </option>
-                  <option value="unknown" className="bg-slate-950 text-white">
-                    I’m not sure
+                  <option value="dct" className="bg-slate-950 text-white">
+                    Semi-automatic / DCT
                   </option>
                 </select>
               </div>
