@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import ShieldIcon from "@/app/components/ShieldIcon";
 
 type FuelOption = "petrol" | "diesel" | "hybrid" | "ev" | "";
 type GearboxOption = "manual" | "automatic" | "cvt" | "dct" | "";
@@ -104,192 +105,267 @@ export default function ManualCheckPage() {
   }
 
   return (
-    <section className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="overflow-hidden rounded-3xl border border-white/10 bg-slate-950 text-white shadow-2xl">
-        <div className="border-b border-white/10 bg-white/[0.03] px-6 py-5 sm:px-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-300">
-            Manual check
-          </p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
-            Enter the vehicle details manually
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm text-slate-300 sm:text-base">
-            Use this if you do not want to search by registration or if the
-            lookup is unavailable.
-          </p>
-        </div>
+    <div className="min-h-screen bg-[var(--aa-bg)]">
+      <main>
+        <section className="relative overflow-hidden bg-[var(--aa-black)]">
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: "url('/hero-car-road.png')" }}
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,10,10,0.42)_0%,rgba(10,10,10,0.16)_35%,rgba(10,10,10,0.28)_100%)]" />
 
-        <div className="px-6 py-6 sm:px-8 sm:py-8">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="grid gap-5 sm:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-200">
-                  Make
-                </label>
-                <input
-                  type="text"
-                  value={make}
-                  onChange={(e) => {
-                    setMake(e.target.value);
-                    if (error) setError(null);
-                  }}
-                  placeholder="e.g. Ford"
-                  className="h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-base font-medium text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
-                />
-              </div>
+          <div className="relative mx-auto flex min-h-[380px] max-w-7xl flex-col items-center justify-center px-4 py-10 text-center sm:min-h-[420px] sm:py-12 lg:min-h-[460px]">
+            <h1 className="max-w-5xl text-4xl font-extrabold tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)] sm:text-5xl lg:text-6xl">
+              Check a Used Car Manually
+            </h1>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-200">
-                  Model
-                </label>
-                <input
-                  type="text"
-                  value={model}
-                  onChange={(e) => {
-                    setModel(e.target.value);
-                    if (error) setError(null);
-                  }}
-                  placeholder="e.g. Focus"
-                  className="h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-base font-medium text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
-                />
-              </div>
+            <p className="mt-4 max-w-3xl text-lg leading-8 text-white/92 drop-shadow-[0_2px_8px_rgba(0,0,0,0.25)] sm:text-2xl">
+              Enter the key details yourself and generate a free snapshot
+            </p>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-200">
-                  Year
-                </label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={year}
-                  onChange={(e) => {
-                    setYear(e.target.value.replace(/[^\d]/g, ""));
-                    if (error) setError(null);
-                  }}
-                  placeholder="e.g. 2018"
-                  className="h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-base font-medium text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
-                />
-              </div>
+            <div className="mt-8 w-full max-w-4xl rounded-2xl border border-white/20 bg-white/92 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.20)] backdrop-blur">
+              <form onSubmit={handleSubmit} className="space-y-4 text-left">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-slate-800">
+                      Make
+                    </label>
+                    <input
+                      type="text"
+                      value={make}
+                      onChange={(e) => {
+                        setMake(e.target.value);
+                        if (error) setError(null);
+                      }}
+                      placeholder="e.g. Ford"
+                      disabled={isSubmitting}
+                      className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)]"
+                    />
+                  </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-200">
-                  Fuel type
-                </label>
-                <select
-                  value={fuelType}
-                  onChange={(e) => {
-                    setFuelType(e.target.value as FuelOption);
-                    if (error) setError(null);
-                  }}
-                  className="h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-base font-medium text-white outline-none transition focus:border-sky-400"
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-slate-800">
+                      Model
+                    </label>
+                    <input
+                      type="text"
+                      value={model}
+                      onChange={(e) => {
+                        setModel(e.target.value);
+                        if (error) setError(null);
+                      }}
+                      placeholder="e.g. Focus"
+                      disabled={isSubmitting}
+                      className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-slate-800">
+                      Year
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={year}
+                      onChange={(e) => {
+                        setYear(e.target.value.replace(/[^\d]/g, ""));
+                        if (error) setError(null);
+                      }}
+                      placeholder="e.g. 2018"
+                      disabled={isSubmitting}
+                      className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-slate-800">
+                      Fuel type
+                    </label>
+                    <select
+                      value={fuelType}
+                      onChange={(e) => {
+                        setFuelType(e.target.value as FuelOption);
+                        if (error) setError(null);
+                      }}
+                      disabled={isSubmitting}
+                      className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-900 focus:border-[var(--aa-red)]"
+                    >
+                      <option value="">Select fuel type</option>
+                      <option value="petrol">Petrol</option>
+                      <option value="diesel">Diesel</option>
+                      <option value="hybrid">Hybrid</option>
+                      <option value="ev">Electric</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-slate-800">
+                      Body type
+                    </label>
+                    <input
+                      type="text"
+                      value={bodyType}
+                      onChange={(e) => {
+                        setBodyType(e.target.value);
+                        if (error) setError(null);
+                      }}
+                      placeholder="e.g. Hatchback"
+                      disabled={isSubmitting}
+                      className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-slate-800">
+                      Current mileage
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={mileage}
+                      onChange={(e) => {
+                        setMileage(e.target.value.replace(/[^\d,]/g, ""));
+                        if (error) setError(null);
+                      }}
+                      placeholder="e.g. 62,000"
+                      disabled={isSubmitting}
+                      className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)]"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="mb-2 block text-sm font-semibold text-slate-800">
+                      Gearbox type
+                    </label>
+                    <select
+                      value={gearbox}
+                      onChange={(e) => {
+                        setGearbox(e.target.value as GearboxOption);
+                        if (error) setError(null);
+                      }}
+                      disabled={isSubmitting}
+                      className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-900 focus:border-[var(--aa-red)]"
+                    >
+                      <option value="">Select gearbox</option>
+                      <option value="manual">Manual</option>
+                      <option value="automatic">Automatic</option>
+                      <option value="cvt">CVT</option>
+                      <option value="dct">Semi-automatic / DCT</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="inline-flex h-14 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-8 text-lg font-bold text-white transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:opacity-50"
+                  >
+                    {isSubmitting ? "Building preview…" : "Continue to Free Preview"}
+                  </button>
+
+                  <Link
+                    href="/"
+                    className="inline-flex h-14 items-center justify-center rounded-xl border border-slate-300 bg-white px-6 text-base font-semibold text-slate-800 transition hover:bg-slate-50"
+                  >
+                    Back to registration check
+                  </Link>
+                </div>
+              </form>
+
+              <div className="mt-3 text-center sm:text-left">
+                <Link
+                  href="/"
+                  className="text-sm font-medium text-[var(--aa-red)] transition hover:text-[var(--aa-red-strong)] hover:underline"
                 >
-                  <option value="" className="bg-slate-950 text-slate-300">
-                    Select fuel type
-                  </option>
-                  <option value="petrol" className="bg-slate-950 text-white">
-                    Petrol
-                  </option>
-                  <option value="diesel" className="bg-slate-950 text-white">
-                    Diesel
-                  </option>
-                  <option value="hybrid" className="bg-slate-950 text-white">
-                    Hybrid
-                  </option>
-                  <option value="ev" className="bg-slate-950 text-white">
-                    Electric
-                  </option>
-                </select>
+                  Or check by registration
+                </Link>
               </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-200">
-                  Body type
-                </label>
-                <input
-                  type="text"
-                  value={bodyType}
-                  onChange={(e) => {
-                    setBodyType(e.target.value);
-                    if (error) setError(null);
-                  }}
-                  placeholder="e.g. Hatchback"
-                  className="h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-base font-medium text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
-                />
+              {error ? (
+                <div className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {error}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </section>
+
+        <section className="-mt-1 border-t border-[var(--aa-silver)] bg-white">
+          <div className="mx-auto max-w-7xl px-4 py-6 sm:py-8">
+            <div className="grid gap-6 md:grid-cols-3 md:gap-8">
+              <div className="flex items-start justify-center gap-4 text-center md:text-left">
+                <ShieldIcon className="mt-1 h-12 w-12 shrink-0" />
+                <div>
+                  <div className="text-2xl font-extrabold tracking-tight text-[var(--aa-black)] sm:text-3xl">
+                    Fast Results
+                  </div>
+                  <div className="mt-1 text-xl font-medium text-slate-700 sm:mt-2 sm:text-2xl">
+                    Repair Estimates
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-200">
-                  Mileage
-                </label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={mileage}
-                  onChange={(e) => {
-                    setMileage(e.target.value.replace(/[^\d,]/g, ""));
-                    if (error) setError(null);
-                  }}
-                  placeholder="e.g. 62,000"
-                  className="h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-base font-medium text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
-                />
+              <div className="flex items-start justify-center gap-4 border-y border-[var(--aa-silver)] py-6 text-center md:border-x md:border-y-0 md:py-0 md:text-left">
+                <ShieldIcon className="mt-1 h-12 w-12 shrink-0" />
+                <div>
+                  <div className="text-2xl font-extrabold tracking-tight text-[var(--aa-black)] sm:text-3xl">
+                    UK-Specific
+                  </div>
+                  <div className="mt-1 text-xl font-medium text-slate-700 sm:mt-2 sm:text-2xl">
+                    MoT Insights
+                  </div>
+                </div>
               </div>
 
-              <div className="sm:col-span-2">
-                <label className="mb-2 block text-sm font-medium text-slate-200">
-                  Gearbox type
-                </label>
-                <select
-                  value={gearbox}
-                  onChange={(e) => {
-                    setGearbox(e.target.value as GearboxOption);
-                    if (error) setError(null);
-                  }}
-                  className="h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-base font-medium text-white outline-none transition focus:border-sky-400"
-                >
-                  <option value="" className="bg-slate-950 text-slate-300">
-                    Select gearbox
-                  </option>
-                  <option value="manual" className="bg-slate-950 text-white">
-                    Manual
-                  </option>
-                  <option value="automatic" className="bg-slate-950 text-white">
-                    Automatic
-                  </option>
-                  <option value="cvt" className="bg-slate-950 text-white">
-                    CVT
-                  </option>
-                  <option value="dct" className="bg-slate-950 text-white">
-                    Semi-automatic / DCT
-                  </option>
-                </select>
+              <div className="flex items-start justify-center gap-4 text-center md:text-left">
+                <ShieldIcon className="mt-1 h-12 w-12 shrink-0" />
+                <div>
+                  <div className="text-2xl font-extrabold tracking-tight text-[var(--aa-black)] sm:text-3xl">
+                    Trusted Reports
+                  </div>
+                  <div className="mt-1 text-xl font-medium text-slate-700 sm:mt-2 sm:text-2xl">
+                    History Checks
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
+        </section>
 
-            {error ? (
-              <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-                {error}
+        <section id="pricing" className="bg-[var(--aa-bg)]">
+          <div className="mx-auto max-w-7xl px-4 py-12">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="rounded-2xl border border-[var(--aa-silver)] bg-white p-6 shadow-sm">
+                <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                  Core Report
+                </div>
+                <div className="mt-2 text-4xl font-extrabold tracking-tight text-black">
+                  £4.99
+                </div>
+                <div className="mt-2 text-sm text-slate-700">
+                  Detailed findings, repair exposure, seller questions and MoT
+                  analysis.
+                </div>
               </div>
-            ) : null}
 
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="inline-flex h-14 items-center justify-center rounded-2xl bg-sky-500 px-6 text-sm font-semibold text-slate-950 transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {isSubmitting ? "Building preview…" : "Continue to free preview"}
-              </button>
-
-              <Link
-                href="/"
-                className="inline-flex h-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-6 text-sm font-semibold text-white transition hover:bg-white/10"
-              >
-                Back to registration check
-              </Link>
+              <div className="rounded-2xl border border-[var(--aa-red)]/20 bg-[var(--aa-red)]/5 p-6 shadow-sm">
+                <div className="text-sm font-semibold uppercase tracking-wide text-[var(--aa-red)]">
+                  Full Bundle
+                </div>
+                <div className="mt-2 text-4xl font-extrabold tracking-tight text-black">
+                  £9.99
+                </div>
+                <div className="mt-2 text-sm text-slate-700">
+                  Core report plus HPI-style finance, write-off, stolen, mileage
+                  and keeper checks.
+                </div>
+              </div>
             </div>
-          </form>
-        </div>
-      </div>
-    </section>
+          </div>
+        </section>
+      </main>
+    </div>
   );
 }
