@@ -49,8 +49,12 @@ function getMotSummary(motPayload: any) {
     latestResult: null as string | null,
     latestDate: null as string | null,
     latestExpiry: null as string | null,
+    latestAdvisoryCount: 0,
     recentAdvisoryCount: 0,
     recentFailureCount: 0,
+    totalPassCount: 0,
+    totalFailCount: 0,
+    totalAdvisoryCount: 0,
     repeatAdvisories: [] as string[],
     corrosionFlag: false,
     brakeFlag: false,
@@ -65,6 +69,7 @@ function getMotSummary(motPayload: any) {
   const tests: any[] = Array.isArray(motPayload?.motTests)
     ? motPayload.motTests
     : [];
+
   if (!tests.length) {
     return {
       ...empty,
@@ -75,8 +80,12 @@ function getMotSummary(motPayload: any) {
   const latest = tests[0];
   const recentTests = tests.slice(0, 3);
 
+  let latestAdvisoryCount = 0;
   let recentAdvisoryCount = 0;
   let recentFailureCount = 0;
+  let totalPassCount = 0;
+  let totalFailCount = 0;
+  let totalAdvisoryCount = 0;
   let corrosionFlag = false;
   let brakeFlag = false;
   let tyreFlag = false;
@@ -84,25 +93,34 @@ function getMotSummary(motPayload: any) {
 
   const advisoryCounter = new Map<string, number>();
 
-  for (const test of recentTests) {
+  for (const [index, test] of tests.entries()) {
     const result = String(test?.testResult ?? "").toUpperCase();
-    if (result === "FAILED" || result === "FAIL") {
-      recentFailureCount += 1;
-    }
-
     const defects = Array.isArray(test?.defects) ? test.defects : [];
+
+    const isPass =
+      result === "PASSED" || result === "PASS";
+    const isFail =
+      result === "FAILED" || result === "FAIL";
+
+    if (isPass) totalPassCount += 1;
+    if (isFail) totalFailCount += 1;
+
+    let advisoryCountThisTest = 0;
+    let failLikeCountThisTest = 0;
+
     for (const defect of defects) {
       const type = String(defect?.type ?? "").toUpperCase();
       const text = normaliseText(String(defect?.text ?? ""));
       if (!text) continue;
 
       if (type === "ADVISORY" || type === "MINOR") {
-        recentAdvisoryCount += 1;
+        advisoryCountThisTest += 1;
+        totalAdvisoryCount += 1;
         advisoryCounter.set(text, (advisoryCounter.get(text) ?? 0) + 1);
       }
 
       if (type === "FAIL" || type === "MAJOR" || type === "DANGEROUS") {
-        recentFailureCount += 1;
+        failLikeCountThisTest += 1;
       }
 
       if (
@@ -130,6 +148,17 @@ function getMotSummary(motPayload: any) {
         suspensionFlag = true;
       }
     }
+
+    if (index === 0) {
+      latestAdvisoryCount = advisoryCountThisTest;
+    }
+
+    if (index < 3) {
+      recentAdvisoryCount += advisoryCountThisTest;
+      if (isFail || failLikeCountThisTest > 0) {
+        recentFailureCount += 1;
+      }
+    }
   }
 
   const repeatAdvisories = Array.from(advisoryCounter.entries())
@@ -150,8 +179,12 @@ function getMotSummary(motPayload: any) {
     latestResult: String(latest?.testResult ?? "Unknown"),
     latestDate: latest?.completedDate ?? null,
     latestExpiry: latest?.expiryDate ?? null,
+    latestAdvisoryCount,
     recentAdvisoryCount,
     recentFailureCount,
+    totalPassCount,
+    totalFailCount,
+    totalAdvisoryCount,
     repeatAdvisories,
     corrosionFlag,
     brakeFlag,
@@ -354,8 +387,9 @@ export default async function Page({
 
             <div className="mt-6 w-full max-w-sm rounded-2xl border border-white/30 bg-white/70 p-4 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur lg:mr-4">
               <div className="text-sm font-semibold text-black">
-                MoT credibility
+                {mot.available ? mot.credibilityTitle : "MoT credibility"}
               </div>
+
               <div className="mt-2 text-sm text-slate-700">
                 {mot.available
                   ? mot.credibilityText
@@ -363,13 +397,53 @@ export default async function Page({
               </div>
 
               {mot.available ? (
-                <div className="mt-3 text-xs text-slate-600">
-                  Latest test:{" "}
-                  <span className="font-semibold text-slate-800">
-                    {mot.latestResult ? titleCase(mot.latestResult) : "—"}
-                  </span>
-                  {mot.latestDate ? <> · {formatDate(mot.latestDate)}</> : null}
-                </div>
+                <>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-800">
+                      Latest: {mot.latestResult ? titleCase(mot.latestResult) : "—"}
+                    </span>
+
+                    <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-800">
+                      Latest advisories: {mot.latestAdvisoryCount}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 text-xs text-slate-600">
+                    Latest test date:{" "}
+                    <span className="font-semibold text-slate-800">
+                      {formatDate(mot.latestDate)}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-3 gap-2">
+                    <div className="rounded-xl border border-white/50 bg-white/80 p-3 text-center">
+                      <div className="text-lg font-extrabold text-black">
+                        {mot.totalPassCount}
+                      </div>
+                      <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                        Passes
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-white/50 bg-white/80 p-3 text-center">
+                      <div className="text-lg font-extrabold text-black">
+                        {mot.totalFailCount}
+                      </div>
+                      <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                        Fails
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-white/50 bg-white/80 p-3 text-center">
+                      <div className="text-lg font-extrabold text-black">
+                        {mot.totalAdvisoryCount}
+                      </div>
+                      <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                        Advisories
+                      </div>
+                    </div>
+                  </div>
+                </>
               ) : null}
             </div>
           </div>

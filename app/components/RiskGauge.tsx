@@ -7,21 +7,36 @@ function normaliseRiskLevel(value?: string | null): RiskLevel {
   return "low";
 }
 
-function scoreFromRiskLevel(
-  riskLevel?: string | null,
-  exposureHigh?: number | null
-) {
-  const level = normaliseRiskLevel(riskLevel);
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
 
-  if (typeof exposureHigh === "number") {
-    if (exposureHigh >= 1500) return 82;
-    if (exposureHigh >= 700) return 58;
-    return 28;
+function baseScoreFromRiskLevel(level: RiskLevel) {
+  if (level === "high") return 76;
+  if (level === "medium") return 54;
+  return 30;
+}
+
+function exposureAdjustment(exposureHigh?: number | null) {
+  if (typeof exposureHigh !== "number" || !Number.isFinite(exposureHigh)) {
+    return 0;
   }
 
-  if (level === "high") return 82;
-  if (level === "medium") return 58;
-  return 28;
+  if (exposureHigh >= 2000) return 14;
+  if (exposureHigh >= 1500) return 10;
+  if (exposureHigh >= 1000) return 6;
+  if (exposureHigh >= 700) return 3;
+  if (exposureHigh >= 400) return 0;
+  if (exposureHigh >= 200) return -2;
+  return -4;
+}
+
+function scoreFromInputs(riskLevel?: string | null, exposureHigh?: number | null) {
+  const level = normaliseRiskLevel(riskLevel);
+  const base = baseScoreFromRiskLevel(level);
+  const adjusted = base + exposureAdjustment(exposureHigh);
+
+  return clamp(adjusted, 18, 92);
 }
 
 function tone(level: RiskLevel) {
@@ -31,6 +46,7 @@ function tone(level: RiskLevel) {
       text: "text-[var(--aa-red)]",
       sub: "Higher risk",
       track: "stroke-red-100",
+      dot: "bg-[var(--aa-red)]",
     };
   }
 
@@ -40,6 +56,7 @@ function tone(level: RiskLevel) {
       text: "text-amber-600",
       sub: "Moderate risk",
       track: "stroke-amber-100",
+      dot: "bg-amber-500",
     };
   }
 
@@ -48,6 +65,7 @@ function tone(level: RiskLevel) {
     text: "text-emerald-600",
     sub: "Lower risk",
     track: "stroke-emerald-100",
+    dot: "bg-emerald-500",
   };
 }
 
@@ -59,7 +77,7 @@ export default function RiskGauge({
   exposureHigh?: number | null;
 }) {
   const level = normaliseRiskLevel(riskLevel);
-  const score = scoreFromRiskLevel(riskLevel, exposureHigh);
+  const score = scoreFromInputs(riskLevel, exposureHigh);
   const palette = tone(level);
 
   const radius = 52;
@@ -95,7 +113,9 @@ export default function RiskGauge({
         </svg>
 
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <div className={`text-3xl font-extrabold tracking-tight sm:text-4xl ${palette.text}`}>
+          <div
+            className={`text-3xl font-extrabold tracking-tight sm:text-4xl ${palette.text}`}
+          >
             {score}%
           </div>
           <div className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -104,8 +124,11 @@ export default function RiskGauge({
         </div>
       </div>
 
-      <div className={`mt-3 text-sm font-semibold ${palette.text}`}>
-        {palette.sub}
+      <div className="mt-3 flex items-center gap-2">
+        <span className={`h-2.5 w-2.5 rounded-full ${palette.dot}`} />
+        <div className={`text-sm font-semibold ${palette.text}`}>
+          {palette.sub}
+        </div>
       </div>
     </div>
   );
