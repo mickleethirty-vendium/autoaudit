@@ -8,7 +8,6 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { mustGetEnv } from "@/lib/env";
 import { buildUkvdHpiSummary, fetchUkvdHpiByVrm } from "@/lib/hpi";
 import ExposureBar from "@/app/components/ExposureBar";
-import ReportClient from "./ReportClient";
 
 const stripe = new Stripe(mustGetEnv("STRIPE_SECRET_KEY"), {
   apiVersion: "2024-06-20",
@@ -25,6 +24,22 @@ function formatDate(value?: string | null) {
     month: "short",
     year: "numeric",
   });
+}
+
+function money(value?: number | null) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return "—";
+  return new Intl.NumberFormat("en-GB", {
+    style: "currency",
+    currency: "GBP",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function titleCase(s: string) {
+  return s
+    .split(" ")
+    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
+    .join(" ");
 }
 
 function isExpired(value?: string | null) {
@@ -70,8 +85,7 @@ function getSnapshotVerdict(
 ) {
   if (exposureHigh === null) {
     return {
-      badgeClass:
-        "border-slate-300 bg-slate-50 text-slate-700",
+      badgeClass: "border-slate-300 bg-slate-50 text-slate-700",
       badgeLabel: "Snapshot ready",
       title: "Used car risk snapshot",
       description:
@@ -81,8 +95,7 @@ function getSnapshotVerdict(
 
   if (exposureHigh >= 2500) {
     return {
-      badgeClass:
-        "border-red-200 bg-red-50 text-red-700",
+      badgeClass: "border-red-200 bg-red-50 text-red-700",
       badgeLabel: "Higher repair exposure",
       title: "This vehicle may carry meaningful near-term repair risk",
       description:
@@ -92,8 +105,7 @@ function getSnapshotVerdict(
 
   if (exposureHigh >= 1000) {
     return {
-      badgeClass:
-        "border-amber-200 bg-amber-50 text-amber-700",
+      badgeClass: "border-amber-200 bg-amber-50 text-amber-700",
       badgeLabel: "Moderate repair exposure",
       title: "There are some signs worth checking before you buy",
       description:
@@ -102,13 +114,145 @@ function getSnapshotVerdict(
   }
 
   return {
-    badgeClass:
-      "border-emerald-200 bg-emerald-50 text-emerald-700",
+    badgeClass: "border-emerald-200 bg-emerald-50 text-emerald-700",
     badgeLabel: "Lower repair exposure",
     title: "This vehicle looks less exposed, but hidden issues can still matter",
     description:
       "The initial signals look lighter, but the full report helps rule out expensive surprises and history issues.",
   };
+}
+
+function getMotPanelSummary(motPayload: any) {
+  const empty = {
+    available: false,
+    latestResult: null as string | null,
+    latestDate: null as string | null,
+    latestAdvisoryCount: 0,
+    passCount: 0,
+    failCount: 0,
+    advisoryCount: 0,
+    repeatAdvisoryCount: 0,
+  };
+
+  if (!motPayload || motPayload?._error) return empty;
+
+  const tests: any[] = Array.isArray(motPayload?.motTests)
+    ? motPayload.motTests
+    : [];
+
+  if (!tests.length) {
+    return {
+      ...empty,
+      available: true,
+    };
+  }
+
+  const advisoryCounter = new Map<string, number>();
+  let passCount = 0;
+  let failCount = 0;
+  let advisoryCount = 0;
+  let latestAdvisoryCount = 0;
+
+  tests.forEach((test, index) => {
+    const result = String(test?.testResult ?? "").toUpperCase();
+    const defects = Array.isArray(test?.defects) ? test.defects : [];
+
+    if (result === "PASSED" || result === "PASS") passCount += 1;
+    if (result === "FAILED" || result === "FAIL") failCount += 1;
+
+    let advisoryCountThisTest = 0;
+
+    for (const defect of defects) {
+      const type = String(defect?.type ?? "").toUpperCase();
+      const text = String(defect?.text ?? "").trim().toLowerCase();
+
+      if (type === "ADVISORY" || type === "MINOR") {
+        advisoryCount += 1;
+        advisoryCountThisTest += 1;
+        if (text) {
+          advisoryCounter.set(text, (advisoryCounter.get(text) ?? 0) + 1);
+        }
+      }
+    }
+
+    if (index === 0) {
+      latestAdvisoryCount = advisoryCountThisTest;
+    }
+  });
+
+  const repeatAdvisoryCount = Array.from(advisoryCounter.values()).filter(
+    (count) => count > 1
+  ).length;
+
+  const latest = tests[0];
+
+  return {
+    available: true,
+    latestResult: String(latest?.testResult ?? "Unknown"),
+    latestDate: latest?.completedDate ?? null,
+    latestAdvisoryCount,
+    passCount,
+    failCount,
+    advisoryCount,
+    repeatAdvisoryCount,
+  };
+}
+
+function getHpiChecks(summary: any) {
+  if (!summary || typeof summary !== "object") return [];
+
+  const candidates = [
+    { label: "Finance", keys: ["finance", "has_finance", "outstanding_finance"] },
+    { label: "Write-off", keys: ["writeOff", "write_off", "insurance_write_off"] },
+    { label: "Stolen", keys: ["stolen", "is_stolen"] },
+    { label: "Mileage", keys: ["mileageAnomaly", "mileage_anomaly"] },
+    { label: "Keepers", keys: ["keeperHistory", "keeper_history", "keepers"] },
+    { label: "Plate changes", keys: ["plateChanges", "plate_changes"] },
+  ];
+
+  return candidates
+    .map((item) => {
+      const foundKey = item.keys.find((key) => key in summary);
+      if (!foundKey) return null;
+      return {
+        label: item.label,
+        value: summary[foundKey],
+      };
+    })
+    .filter(Boolean) as { label: string; value: any }[];
+}
+
+function renderHpiValue(value: any) {
+  if (typeof value === "boolean") {
+    return value ? "Flag found" : "No issue shown";
+  }
+  if (typeof value === "number") {
+    return String(value);
+  }
+  if (typeof value === "string" && value.trim()) {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value.length ? `${value.length} record(s)` : "None shown";
+  }
+  if (value && typeof value === "object") {
+    if (typeof value.status === "string") return value.status;
+    if (typeof value.result === "string") return value.result;
+    if (typeof value.value === "string") return value.value;
+    return "Available";
+  }
+  return "Unavailable";
+}
+
+function itemTone(item: any) {
+  const high = Number(item?.cost_high ?? 0);
+  if (high >= 1000) {
+    return "border-red-200 bg-red-50/60";
+  }
+  if (high >= 400) {
+    return "border-amber-200 bg-amber-50/60";
+  }
+  return "border-slate-200 bg-white";
 }
 
 export default async function Page({
@@ -367,6 +511,7 @@ export default async function Page({
     justUnlockedTier === "report_plus_hpi";
 
   const motPayload: any = data.mot_payload ?? null;
+  const motPanel = getMotPanelSummary(motPayload);
 
   let hpiPayload: any = hpiUnlocked ? data.hpi_payload ?? null : null;
   let hpiSummary: any = hpiUnlocked ? data.hpi_summary ?? null : null;
@@ -444,9 +589,23 @@ export default async function Page({
   const registerUrl = `/auth?mode=signup&next=${authReturnUrl}&claim_report=${claimReportId}`;
   const loginUrl = `/auth?mode=login&next=${authReturnUrl}&claim_report=${claimReportId}`;
 
+  const motRiskItems = fullItems.filter((item: any) => {
+    const category = String(item?.category ?? "").toLowerCase();
+    const itemId = String(item?.item_id ?? "").toLowerCase();
+    return category.includes("mot") || itemId.startsWith("mot_");
+  });
+
+  const serviceRiskItems = fullItems.filter((item: any) => {
+    const category = String(item?.category ?? "").toLowerCase();
+    const itemId = String(item?.item_id ?? "").toLowerCase();
+    return !(category.includes("mot") || itemId.startsWith("mot_"));
+  });
+
+  const hpiChecks = getHpiChecks(hpiSummary);
+
   if (isPaid) {
     return (
-      <div className="mx-auto w-full max-w-5xl px-4 py-6">
+      <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:py-8">
         <div className="mb-6 hidden border-b border-slate-300 pb-3 print:block">
           <div className="text-lg font-bold text-slate-950">
             AutoAudit Vehicle Report
@@ -461,36 +620,6 @@ export default async function Page({
               {year ? <> · {year}</> : null}
             </div>
           ) : null}
-        </div>
-
-        <div className="mb-6 rounded-2xl border border-black bg-white px-5 py-4 shadow-[0_10px_30px_rgba(0,0,0,0.06)]">
-          <div className="mb-2 inline-flex items-center rounded-full border border-red-200 bg-red-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-red-700">
-            AutoAudit report
-          </div>
-
-          {reg ? (
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-950">
-              {reg}
-              {make ? (
-                <span className="ml-2 font-medium text-slate-500">
-                  · {make}
-                </span>
-              ) : null}
-            </h1>
-          ) : (
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-950">
-              AutoAudit Report
-            </h1>
-          )}
-
-          <div className="mt-2 text-sm text-slate-600">
-            {year ? `${year} · ` : ""}
-            {fuel ? `${fuel} · ` : ""}
-            {transmission ? `${transmission} · ` : ""}
-            {typeof mileage === "number"
-              ? `${mileage.toLocaleString()} miles`
-              : ""}
-          </div>
         </div>
 
         {justUnlockedReport || justUnlockedHpi ? (
@@ -508,7 +637,194 @@ export default async function Page({
           </div>
         ) : null}
 
-        <div className="mb-6 rounded-2xl border border-red-200 bg-red-50/50 p-4">
+        <div className="rounded-3xl border border-[var(--aa-silver)] bg-white p-6 shadow-sm">
+          <div className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-700">
+            Paid report
+          </div>
+
+          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">
+            Full Vehicle Report for {reg ?? "this vehicle"}
+          </h1>
+
+          <div className="mt-2 text-sm text-slate-600">
+            {make ? `${make} · ` : ""}
+            {year ? `${year} · ` : ""}
+            {fuel ? `${fuel} · ` : ""}
+            {transmission ? `${transmission} · ` : ""}
+            {typeof mileage === "number"
+              ? `${mileage.toLocaleString()} miles`
+              : ""}
+          </div>
+
+          {fullSummary?.headline ? (
+            <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-700 sm:text-base">
+              {fullSummary.headline}
+              {fullSummary?.summary_text ? ` ${fullSummary.summary_text}` : ""}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="mt-6 grid gap-4 lg:grid-cols-3">
+          <div className="rounded-2xl border border-[var(--aa-silver)] bg-white p-5 shadow-sm">
+            <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+              Service Risk
+            </div>
+
+            <div className="mt-4">
+              {exposureLow !== null && exposureHigh !== null ? (
+                <ExposureBar low={exposureLow} high={exposureHigh} />
+              ) : (
+                <div className="text-sm text-slate-600">
+                  Exposure estimate unavailable.
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Confidence
+                </div>
+                <div className="mt-1 text-sm font-semibold text-slate-950">
+                  {confidenceDisplay ?? "Unavailable"}
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Negotiation guide
+                </div>
+                <div className="mt-1 text-sm font-semibold text-slate-950">
+                  {money(negotiationSuggested)}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-[var(--aa-silver)] bg-white p-5 shadow-sm">
+            <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+              MoT History
+            </div>
+
+            {motPanel.available ? (
+              <>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <span className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-800">
+                    Latest: {motPanel.latestResult ? titleCase(motPanel.latestResult) : "—"}
+                  </span>
+                  <span className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-800">
+                    Latest advisories: {motPanel.latestAdvisoryCount}
+                  </span>
+                </div>
+
+                <div className="mt-3 text-sm text-slate-600">
+                  Latest test date:{" "}
+                  <span className="font-semibold text-slate-900">
+                    {formatDate(motPanel.latestDate) ?? "—"}
+                  </span>
+                </div>
+
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <div className="text-lg font-extrabold text-slate-950">
+                      {motPanel.passCount}
+                    </div>
+                    <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Passes
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <div className="text-lg font-extrabold text-slate-950">
+                      {motPanel.failCount}
+                    </div>
+                    <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Fails
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <div className="text-lg font-extrabold text-slate-950">
+                      {motPanel.advisoryCount}
+                    </div>
+                    <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Advisories
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <div className="text-lg font-extrabold text-slate-950">
+                      {motPanel.repeatAdvisoryCount}
+                    </div>
+                    <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Repeat patterns
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="mt-4 text-sm text-slate-600">
+                MoT history was not available for this vehicle.
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-2xl border border-[var(--aa-silver)] bg-white p-5 shadow-sm">
+            <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+              HPI Check
+            </div>
+
+            {!hpiUnlocked ? (
+              <>
+                <div className="mt-4 rounded-xl border border-red-200 bg-red-50/60 p-4">
+                  <div className="text-base font-semibold text-slate-950">
+                    Upgrade to add vehicle history
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-slate-700">
+                    Add finance markers, write-off records, stolen checks,
+                    mileage anomalies, keeper history and plate changes.
+                  </p>
+                  <div className="mt-4">
+                    <a href={hpiUpgradeCheckoutUrl} className="btn-primary">
+                      Add HPI check · {hpiUpgradePriceLabel}
+                    </a>
+                  </div>
+                </div>
+              </>
+            ) : hpiStatus === "error" ? (
+              <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-slate-700">
+                We unlocked the HPI section, but there was a temporary issue
+                loading the latest history response.
+              </div>
+            ) : (
+              <>
+                <div className="mt-4 grid gap-3">
+                  {hpiChecks.length ? (
+                    hpiChecks.map((item) => (
+                      <div
+                        key={item.label}
+                        className="rounded-xl border border-slate-200 bg-slate-50 p-3"
+                      >
+                        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          {item.label}
+                        </div>
+                        <div className="mt-1 text-sm font-semibold text-slate-950">
+                          {renderHpiValue(item.value)}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                      HPI summary available.
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-red-200 bg-red-50/50 p-4 print:hidden">
           <div className="text-sm font-semibold text-slate-950">
             Save access to this report
           </div>
@@ -533,7 +849,7 @@ export default async function Page({
           </div>
 
           {!ownerUserId ? (
-            <div className="mt-4 flex flex-wrap gap-3 print:hidden">
+            <div className="mt-4 flex flex-wrap gap-3">
               <Link href={registerUrl} className="btn-primary">
                 Create account to save report
               </Link>
@@ -543,57 +859,213 @@ export default async function Page({
               </Link>
             </div>
           ) : user?.id === ownerUserId ? (
-            <div className="mt-4 inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-800 print:hidden">
+            <div className="mt-4 inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-800">
               This report is linked to your account
             </div>
           ) : null}
         </div>
 
-        {!hpiUnlocked ? (
-          <div className="mb-6 rounded-2xl border border-black bg-white p-5 shadow-sm print:hidden">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div>
-                <div className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-700">
-                  Optional upgrade
-                </div>
+        <div className="mt-8">
+          <h2 className="text-2xl font-extrabold tracking-tight text-slate-950">
+            Specific Risks
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-slate-700">
+            These are the service exposure items and MoT-derived risks identified
+            for this vehicle.
+          </p>
+        </div>
 
-                <h2 className="mt-3 text-xl font-extrabold tracking-tight text-slate-950">
-                  Add vehicle history & provenance check · {hpiUpgradePriceLabel}
-                </h2>
-
-                <p className="mt-2 text-sm leading-6 text-slate-700">
-                  Upgrade this report to include HPI-style history data such as
-                  finance markers, insurance write-off records, stolen markers,
-                  mileage anomalies, keeper history and plate changes.
-                </p>
-              </div>
-
-              <div className="flex-shrink-0">
-                <a href={hpiUpgradeCheckoutUrl} className="btn-primary">
-                  Add history check · {hpiUpgradePriceLabel}
-                </a>
+        <div className="mt-5 space-y-8">
+          <section>
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <h3 className="text-lg font-bold text-slate-950">
+                Service exposure items
+              </h3>
+              <div className="text-sm text-slate-600">
+                {serviceRiskItems.length} item
+                {serviceRiskItems.length === 1 ? "" : "s"}
               </div>
             </div>
-          </div>
-        ) : null}
 
-        <ReportClient
-          summary={fullSummary}
-          items={fullItems}
-          negotiationSuggested={negotiationSuggested}
-          justUnlocked={justUnlockedReport}
-          reportUrl={reportUrl}
-          previewUrl={previewUrl}
-          motPayload={motPayload}
-          hpiPayload={hpiPayload}
-          hpiSummary={hpiSummary}
-          hpiStatus={hpiStatus}
-          hpiUnlocked={hpiUnlocked}
-          hpiUpgradeUrl={hpiUpgradeCheckoutUrl}
-          hpiUpgradePriceLabel={hpiUpgradePriceLabel}
-          expiresAt={expiresAt}
-          expiresAtLabel={expiresAtLabel}
-        />
+            {serviceRiskItems.length ? (
+              <div className="grid gap-4 lg:grid-cols-2">
+                {serviceRiskItems.map((item: any, index: number) => (
+                  <div
+                    key={`${item?.item_id ?? "service"}-${index}`}
+                    className={`rounded-2xl border p-5 shadow-sm ${itemTone(item)}`}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <div className="text-lg font-bold tracking-tight text-slate-950">
+                          {item?.label ?? "Flagged item"}
+                        </div>
+                        <div className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          {String(item?.category ?? "service").replace(/_/g, " ")}
+                        </div>
+                      </div>
+
+                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-right">
+                        <div className="text-sm font-semibold text-slate-950">
+                          {money(Number(item?.cost_low ?? 0))} –{" "}
+                          {money(Number(item?.cost_high ?? 0))}
+                        </div>
+                        <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                          likely exposure
+                        </div>
+                      </div>
+                    </div>
+
+                    {item?.why_flagged ? (
+                      <p className="mt-4 text-sm leading-6 text-slate-700">
+                        <span className="font-semibold text-slate-950">
+                          Why flagged:
+                        </span>{" "}
+                        {item.why_flagged}
+                      </p>
+                    ) : null}
+
+                    {item?.why_it_matters ? (
+                      <p className="mt-3 text-sm leading-6 text-slate-700">
+                        <span className="font-semibold text-slate-950">
+                          Why it matters:
+                        </span>{" "}
+                        {item.why_it_matters}
+                      </p>
+                    ) : null}
+
+                    {Array.isArray(item?.questions_to_ask) &&
+                    item.questions_to_ask.length ? (
+                      <div className="mt-4">
+                        <div className="text-sm font-semibold text-slate-950">
+                          Questions to ask
+                        </div>
+                        <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
+                          {item.questions_to_ask.map((q: string, i: number) => (
+                            <li key={i}>• {q}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+
+                    {Array.isArray(item?.red_flags) && item.red_flags.length ? (
+                      <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3">
+                        <div className="text-sm font-semibold text-slate-950">
+                          Red flags
+                        </div>
+                        <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
+                          {item.red_flags.map((rf: string, i: number) => (
+                            <li key={i}>• {rf}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-700">
+                No service exposure items were listed in this report.
+              </div>
+            )}
+          </section>
+
+          <section>
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <h3 className="text-lg font-bold text-slate-950">
+                MoT advisory and history risks
+              </h3>
+              <div className="text-sm text-slate-600">
+                {motRiskItems.length} item{motRiskItems.length === 1 ? "" : "s"}
+              </div>
+            </div>
+
+            {motRiskItems.length ? (
+              <div className="grid gap-4 lg:grid-cols-2">
+                {motRiskItems.map((item: any, index: number) => (
+                  <div
+                    key={`${item?.item_id ?? "mot"}-${index}`}
+                    className={`rounded-2xl border p-5 shadow-sm ${itemTone(item)}`}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <div className="text-lg font-bold tracking-tight text-slate-950">
+                          {item?.label ?? "MoT history item"}
+                        </div>
+                        <div className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          MoT-derived risk
+                        </div>
+                      </div>
+
+                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-right">
+                        <div className="text-sm font-semibold text-slate-950">
+                          {money(Number(item?.cost_low ?? 0))} –{" "}
+                          {money(Number(item?.cost_high ?? 0))}
+                        </div>
+                        <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                          likely exposure
+                        </div>
+                      </div>
+                    </div>
+
+                    {item?.why_flagged ? (
+                      <p className="mt-4 text-sm leading-6 text-slate-700">
+                        <span className="font-semibold text-slate-950">
+                          Why flagged:
+                        </span>{" "}
+                        {item.why_flagged}
+                      </p>
+                    ) : null}
+
+                    {item?.why_it_matters ? (
+                      <p className="mt-3 text-sm leading-6 text-slate-700">
+                        <span className="font-semibold text-slate-950">
+                          Why it matters:
+                        </span>{" "}
+                        {item.why_it_matters}
+                      </p>
+                    ) : null}
+
+                    {Array.isArray(item?.questions_to_ask) &&
+                    item.questions_to_ask.length ? (
+                      <div className="mt-4">
+                        <div className="text-sm font-semibold text-slate-950">
+                          Questions to ask
+                        </div>
+                        <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
+                          {item.questions_to_ask.map((q: string, i: number) => (
+                            <li key={i}>• {q}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+
+                    {Array.isArray(item?.red_flags) && item.red_flags.length ? (
+                      <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3">
+                        <div className="text-sm font-semibold text-slate-950">
+                          Red flags
+                        </div>
+                        <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
+                          {item.red_flags.map((rf: string, i: number) => (
+                            <li key={i}>• {rf}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-700">
+                No MoT advisory pattern risks were listed in this report.
+              </div>
+            )}
+          </section>
+        </div>
+
+        <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-600">
+          AutoAudit provides guidance only and is not a substitute for a
+          mechanical inspection.
+        </div>
       </div>
     );
   }
