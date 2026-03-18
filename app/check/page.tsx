@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import CheckForm from "./ui/CheckForm";
 
 export default function CheckPage() {
@@ -94,7 +95,15 @@ export default function CheckPage() {
             </p>
           </div>
 
-          <CheckForm />
+          <Suspense
+            fallback={
+              <div className="rounded-xl border border-[var(--aa-silver)] bg-slate-50 p-4 text-sm text-slate-600">
+                Loading vehicle check…
+              </div>
+            }
+          >
+            <CheckForm />
+          </Suspense>
 
           <div className="mt-5 rounded-xl border border-[#b91c1c]/20 bg-[#b91c1c]/5 p-4 text-sm text-slate-700">
             <div className="font-semibold text-black">
