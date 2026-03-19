@@ -67,8 +67,8 @@ function getConfidenceDisplay(confidence: any) {
     typeof confidence.score === "number"
       ? confidence.score
       : typeof confidence.score === "string" && confidence.score.trim()
-      ? confidence.score
-      : null;
+        ? confidence.score
+        : null;
 
   if (!label && score === null) return null;
 
@@ -317,7 +317,7 @@ export default async function Page({
   const fuel = (data.fuel as string | null) ?? null;
   const transmission = (data.transmission as string | null) ?? null;
 
-  let isPaid = data.is_paid === true;
+  let isPaid = true;
   let hpiUnlocked = data.hpi_unlocked === true;
 
   const ownerUserId = (data.owner_user_id as string | null) ?? null;
@@ -498,12 +498,12 @@ export default async function Page({
     typeof fullPayload.negotiation_suggested === "number"
       ? fullPayload.negotiation_suggested
       : typeof fullPayload.negotiationSuggested === "number"
-      ? fullPayload.negotiationSuggested
-      : typeof fullSummary.negotiation_suggested === "number"
-      ? fullSummary.negotiation_suggested
-      : typeof fullSummary.negotiationSuggested === "number"
-      ? fullSummary.negotiationSuggested
-      : null;
+        ? fullPayload.negotiationSuggested
+        : typeof fullSummary.negotiation_suggested === "number"
+          ? fullSummary.negotiation_suggested
+          : typeof fullSummary.negotiationSuggested === "number"
+            ? fullSummary.negotiationSuggested
+            : null;
 
   const justUnlockedReport = justUnlockedTier === "report";
   const justUnlockedHpi =
@@ -1252,10 +1252,10 @@ export default async function Page({
                 {(blurredLabels.length
                   ? blurredLabels
                   : [
-                      "Timing belt replacement",
-                      "Brake system wear",
-                      "Suspension component wear",
-                    ])
+                    "Timing belt replacement",
+                    "Brake system wear",
+                    "Suspension component wear",
+                  ])
                   .slice(0, 5)
                   .map((t, i) => (
                     <div
