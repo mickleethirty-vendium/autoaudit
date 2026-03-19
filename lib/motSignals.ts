@@ -22,6 +22,7 @@ export type MotSignals = {
   repeatAdvisories: string[];
   repeatAdvisoryDetails: MotRepeatAdvisory[];
   repeatAdvisoryPatternLabels: string[];
+  repeatAdvisoryCategories: string[];
   corrosionFlag: boolean;
   brakeFlag: boolean;
   tyreFlag: boolean;
@@ -46,21 +47,54 @@ function extractMileageValues(tests: any[]): number[] {
 function classifyAdvisoryPattern(
   text: string
 ): { patternType: MotPatternType; patternLabel: string } {
-  if (includesAny(text, ["corrosion", "corroded", "excessively corroded"])) {
+  if (
+    includesAny(text, [
+      "corrosion",
+      "corroded",
+      "excessively corroded",
+      "rust",
+      "rusted",
+      "subframe corroded",
+      "chassis corroded",
+    ])
+  ) {
     return {
       patternType: "corrosion",
       patternLabel: "Corrosion",
     };
   }
 
-  if (includesAny(text, ["brake", "disc", "pad", "drum", "handbrake"])) {
+  if (
+    includesAny(text, [
+      "brake",
+      "brakes",
+      "disc",
+      "discs",
+      "pad",
+      "pads",
+      "drum",
+      "handbrake",
+      "caliper",
+      "brake pipe",
+      "brake hose",
+    ])
+  ) {
     return {
       patternType: "brakes",
       patternLabel: "Brakes",
     };
   }
 
-  if (includesAny(text, ["tyre", "tire", "tread"])) {
+  if (
+    includesAny(text, [
+      "tyre",
+      "tyres",
+      "tire",
+      "tires",
+      "tread",
+      "sidewall",
+    ])
+  ) {
     return {
       patternType: "tyres",
       patternLabel: "Tyres",
@@ -75,6 +109,10 @@ function classifyAdvisoryPattern(
       "strut",
       "arm",
       "bush",
+      "bushes",
+      "anti-roll bar",
+      "drop link",
+      "wishbone",
     ])
   ) {
     return {
@@ -83,7 +121,15 @@ function classifyAdvisoryPattern(
     };
   }
 
-  if (includesAny(text, ["steering", "track rod", "rack", "column"])) {
+  if (
+    includesAny(text, [
+      "steering",
+      "track rod",
+      "rack",
+      "column",
+      "power steering",
+    ])
+  ) {
     return {
       patternType: "steering",
       patternLabel: "Steering",
@@ -98,6 +144,7 @@ function classifyAdvisoryPattern(
       "smoke",
       "catalytic",
       "lambda",
+      "egr",
     ])
   ) {
     return {
@@ -115,6 +162,8 @@ function classifyAdvisoryPattern(
       "indicator",
       "rear light",
       "number plate light",
+      "bulb",
+      "fog light",
     ])
   ) {
     return {
@@ -137,6 +186,7 @@ export function extractMotSignals(motPayload: any): MotSignals {
     repeatAdvisories: [],
     repeatAdvisoryDetails: [],
     repeatAdvisoryPatternLabels: [],
+    repeatAdvisoryCategories: [],
     corrosionFlag: false,
     brakeFlag: false,
     tyreFlag: false,
@@ -164,6 +214,7 @@ export function extractMotSignals(motPayload: any): MotSignals {
 
   for (const test of recentTests) {
     const result = String(test?.testResult ?? "").toUpperCase();
+
     if (result === "FAILED" || result === "FAIL") {
       recentFailureCount += 1;
     }
@@ -180,21 +231,28 @@ export function extractMotSignals(motPayload: any): MotSignals {
         advisoryCounter.set(text, (advisoryCounter.get(text) ?? 0) + 1);
       }
 
-      if (type === "FAIL" || type === "MAJOR" || type === "DANGEROUS") {
-        recentFailureCount += 1;
-      }
-
       if (
         includesAny(text, ["corrosion", "corroded", "excessively corroded"])
       ) {
         corrosionFlag = true;
       }
 
-      if (includesAny(text, ["brake", "disc", "pad", "drum", "handbrake"])) {
+      if (
+        includesAny(text, [
+          "brake",
+          "disc",
+          "pad",
+          "drum",
+          "handbrake",
+          "caliper",
+          "brake pipe",
+          "brake hose",
+        ])
+      ) {
         brakeFlag = true;
       }
 
-      if (includesAny(text, ["tyre", "tire", "tread"])) {
+      if (includesAny(text, ["tyre", "tire", "tread", "sidewall"])) {
         tyreFlag = true;
       }
 
@@ -207,6 +265,9 @@ export function extractMotSignals(motPayload: any): MotSignals {
           "arm",
           "bush",
           "steering",
+          "track rod",
+          "wishbone",
+          "drop link",
         ])
       ) {
         suspensionFlag = true;
@@ -225,6 +286,10 @@ export function extractMotSignals(motPayload: any): MotSignals {
         patternType: classified.patternType,
         patternLabel: classified.patternLabel,
       };
+    })
+    .sort((a, b) => {
+      if (b.count !== a.count) return b.count - a.count;
+      return a.patternLabel.localeCompare(b.patternLabel);
     });
 
   const repeatAdvisories = repeatAdvisoryDetails.map((item) => item.text);
@@ -232,6 +297,9 @@ export function extractMotSignals(motPayload: any): MotSignals {
   const repeatAdvisoryPatternLabels = Array.from(
     new Set(repeatAdvisoryDetails.map((item) => item.patternLabel))
   );
+
+  // Compatibility alias for engine/report code
+  const repeatAdvisoryCategories = repeatAdvisoryPatternLabels;
 
   // Tests come newest first. Mileage should generally go down as you go through older tests.
   const mileages = extractMileageValues(tests);
@@ -251,6 +319,7 @@ export function extractMotSignals(motPayload: any): MotSignals {
     repeatAdvisories,
     repeatAdvisoryDetails,
     repeatAdvisoryPatternLabels,
+    repeatAdvisoryCategories,
     corrosionFlag,
     brakeFlag,
     tyreFlag,

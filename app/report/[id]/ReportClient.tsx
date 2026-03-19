@@ -21,6 +21,13 @@ type HpiCheck = {
   value: any;
 };
 
+type MotRepeatAdvisoryDetail = {
+  text?: string;
+  count?: number;
+  patternType?: string;
+  patternLabel?: string;
+};
+
 function money(value?: number | null) {
   if (typeof value !== "number" || !Number.isFinite(value)) return "—";
   return new Intl.NumberFormat("en-GB", {
@@ -61,6 +68,52 @@ function itemTone(item: RiskItem, addressed: boolean) {
     return "border-amber-200 bg-amber-50/60";
   }
   return "border-slate-200 bg-white";
+}
+
+function getRepeatPatternLabels(fullSummary: any): string[] {
+  const raw =
+    fullSummary?.mot_summary?.repeat_advisory_categories ??
+    fullSummary?.mot_summary?.repeat_advisory_pattern_labels ??
+    [];
+
+  if (!Array.isArray(raw)) return [];
+
+  return raw.filter((value: unknown) => typeof value === "string" && value.trim());
+}
+
+function getRepeatPatternDetails(fullSummary: any): MotRepeatAdvisoryDetail[] {
+  const raw =
+    fullSummary?.mot_summary?.repeat_advisory_details ??
+    fullSummary?.mot_summary?.repeat_advisory_detail ??
+    [];
+
+  if (!Array.isArray(raw)) return [];
+
+  return raw.filter(
+    (item: unknown) => item && typeof item === "object"
+  ) as MotRepeatAdvisoryDetail[];
+}
+
+function renderHpiDisplayValue(value: any) {
+  if (typeof value === "boolean") {
+    return value ? "Flag found" : "No issue shown";
+  }
+  if (typeof value === "number") {
+    return String(value);
+  }
+  if (typeof value === "string" && value.trim()) {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value.length ? `${value.length} record(s)` : "None shown";
+  }
+  if (value && typeof value === "object") {
+    if (typeof value.status === "string") return value.status;
+    if (typeof value.result === "string") return value.result;
+    if (typeof value.value === "string") return value.value;
+    return "Available";
+  }
+  return "Unavailable";
 }
 
 export default function ReportClient({
@@ -130,6 +183,16 @@ export default function ReportClient({
   const allItems = useMemo(
     () => [...serviceRiskItems, ...motRiskItems],
     [serviceRiskItems, motRiskItems]
+  );
+
+  const repeatPatternLabels = useMemo(
+    () => getRepeatPatternLabels(fullSummary),
+    [fullSummary]
+  );
+
+  const repeatPatternDetails = useMemo(
+    () => getRepeatPatternDetails(fullSummary),
+    [fullSummary]
   );
 
   const [addressedIds, setAddressedIds] = useState<Record<string, boolean>>({});
@@ -380,6 +443,47 @@ export default function ReportClient({
                       </div>
                     </div>
                   </div>
+
+                  {repeatPatternLabels.length ? (
+                    <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50/70 p-4">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-amber-800">
+                        Repeated pattern categories
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {repeatPatternLabels.map((label) => (
+                          <span
+                            key={label}
+                            className="inline-flex items-center rounded-full border border-amber-200 bg-white px-3 py-1 text-xs font-semibold text-amber-900"
+                          >
+                            {label}
+                          </span>
+                        ))}
+                      </div>
+
+                      {repeatPatternDetails.length ? (
+                        <div className="mt-4 space-y-2">
+                          {repeatPatternDetails.slice(0, 4).map((detail, index) => (
+                            <div
+                              key={`${detail.text ?? "detail"}-${index}`}
+                              className="rounded-lg border border-amber-100 bg-white px-3 py-3"
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="text-sm font-medium text-slate-900">
+                                  {detail.patternLabel ?? "Pattern"}
+                                </div>
+                                <div className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                                  Seen {detail.count ?? 0} times
+                                </div>
+                              </div>
+                              <div className="mt-2 text-sm leading-6 text-slate-700">
+                                {detail.text ?? "Repeated advisory wording detected."}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </>
               ) : (
                 <div className="mt-4 text-sm text-slate-600">
@@ -425,7 +529,7 @@ export default function ReportClient({
                           {item.label}
                         </div>
                         <div className="mt-1 text-sm font-semibold text-slate-950">
-                          {String(item.value)}
+                          {renderHpiDisplayValue(item.value)}
                         </div>
                       </div>
                     ))
@@ -641,6 +745,11 @@ export default function ReportClient({
               {motRiskItems.map((item, index) => {
                 const key = getItemKey(item, serviceRiskItems.length + index);
                 const addressed = !!addressedIds[key];
+                const isRepeatPatternItem =
+                  item.item_id === "mot_repeat_advisories" ||
+                  String(item.label ?? "")
+                    .toLowerCase()
+                    .includes("recurring advisory pattern");
 
                 return (
                   <div
@@ -706,6 +815,47 @@ export default function ReportClient({
                         </span>{" "}
                         {item.why_flagged}
                       </p>
+                    ) : null}
+
+                    {isRepeatPatternItem && repeatPatternLabels.length ? (
+                      <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50/70 p-4">
+                        <div className="text-sm font-semibold text-slate-950">
+                          Pattern categories identified
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {repeatPatternLabels.map((label) => (
+                            <span
+                              key={label}
+                              className="inline-flex items-center rounded-full border border-amber-200 bg-white px-3 py-1 text-xs font-semibold text-amber-900"
+                            >
+                              {label}
+                            </span>
+                          ))}
+                        </div>
+
+                        {repeatPatternDetails.length ? (
+                          <div className="mt-4 space-y-2">
+                            {repeatPatternDetails.map((detail, detailIndex) => (
+                              <div
+                                key={`${detail.text ?? "repeat"}-${detailIndex}`}
+                                className="rounded-lg border border-amber-100 bg-white px-3 py-3"
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="text-sm font-semibold text-slate-950">
+                                    {detail.patternLabel ?? "Pattern"}
+                                  </div>
+                                  <div className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                                    Seen {detail.count ?? 0} times
+                                  </div>
+                                </div>
+                                <div className="mt-2 text-sm leading-6 text-slate-700">
+                                  {detail.text ?? "Repeated advisory wording detected."}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
                     ) : null}
 
                     {item?.why_it_matters ? (
