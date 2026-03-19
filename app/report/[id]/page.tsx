@@ -1,4 +1,5 @@
 export const dynamic = "force-dynamic";
+const REPORT_PAGE_DEBUG_MARKER = "NEW-REPORT-LAYOUT-V1";
 
 import Link from "next/link";
 import Stripe from "stripe";
@@ -643,7 +644,7 @@ export default async function Page({
           </div>
 
           <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">
-            Full Vehicle Report for {reg ?? "this vehicle"}
+          Full Vehicle Report for {reg ?? "this vehicle"} · {REPORT_PAGE_DEBUG_MARKER}
           </h1>
 
           <div className="mt-2 text-sm text-slate-600">
