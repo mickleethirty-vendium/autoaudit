@@ -1,8 +1,27 @@
+export type MotPatternType =
+  | "brakes"
+  | "suspension"
+  | "tyres"
+  | "corrosion"
+  | "steering"
+  | "emissions"
+  | "lighting"
+  | "general";
+
+export type MotRepeatAdvisory = {
+  text: string;
+  count: number;
+  patternType: MotPatternType;
+  patternLabel: string;
+};
+
 export type MotSignals = {
   hasRecentFailures: boolean;
   recentFailureCount: number;
   recentAdvisoryCount: number;
   repeatAdvisories: string[];
+  repeatAdvisoryDetails: MotRepeatAdvisory[];
+  repeatAdvisoryPatternLabels: string[];
   corrosionFlag: boolean;
   brakeFlag: boolean;
   tyreFlag: boolean;
@@ -24,12 +43,100 @@ function extractMileageValues(tests: any[]): number[] {
     .filter((n) => Number.isFinite(n));
 }
 
+function classifyAdvisoryPattern(
+  text: string
+): { patternType: MotPatternType; patternLabel: string } {
+  if (includesAny(text, ["corrosion", "corroded", "excessively corroded"])) {
+    return {
+      patternType: "corrosion",
+      patternLabel: "Corrosion",
+    };
+  }
+
+  if (includesAny(text, ["brake", "disc", "pad", "drum", "handbrake"])) {
+    return {
+      patternType: "brakes",
+      patternLabel: "Brakes",
+    };
+  }
+
+  if (includesAny(text, ["tyre", "tire", "tread"])) {
+    return {
+      patternType: "tyres",
+      patternLabel: "Tyres",
+    };
+  }
+
+  if (
+    includesAny(text, [
+      "suspension",
+      "shock",
+      "spring",
+      "strut",
+      "arm",
+      "bush",
+    ])
+  ) {
+    return {
+      patternType: "suspension",
+      patternLabel: "Suspension",
+    };
+  }
+
+  if (includesAny(text, ["steering", "track rod", "rack", "column"])) {
+    return {
+      patternType: "steering",
+      patternLabel: "Steering",
+    };
+  }
+
+  if (
+    includesAny(text, [
+      "emissions",
+      "exhaust",
+      "dpf",
+      "smoke",
+      "catalytic",
+      "lambda",
+    ])
+  ) {
+    return {
+      patternType: "emissions",
+      patternLabel: "Emissions",
+    };
+  }
+
+  if (
+    includesAny(text, [
+      "lamp",
+      "light",
+      "headlamp",
+      "headlight",
+      "indicator",
+      "rear light",
+      "number plate light",
+    ])
+  ) {
+    return {
+      patternType: "lighting",
+      patternLabel: "Lighting",
+    };
+  }
+
+  return {
+    patternType: "general",
+    patternLabel: "General wear / other",
+  };
+}
+
 export function extractMotSignals(motPayload: any): MotSignals {
   const empty: MotSignals = {
     hasRecentFailures: false,
     recentFailureCount: 0,
     recentAdvisoryCount: 0,
     repeatAdvisories: [],
+    repeatAdvisoryDetails: [],
+    repeatAdvisoryPatternLabels: [],
     corrosionFlag: false,
     brakeFlag: false,
     tyreFlag: false,
@@ -39,7 +146,9 @@ export function extractMotSignals(motPayload: any): MotSignals {
 
   if (!motPayload || motPayload?._error) return empty;
 
-  const tests: any[] = Array.isArray(motPayload?.motTests) ? motPayload.motTests : [];
+  const tests: any[] = Array.isArray(motPayload?.motTests)
+    ? motPayload.motTests
+    : [];
   if (!tests.length) return empty;
 
   const advisoryCounter = new Map<string, number>();
@@ -75,7 +184,9 @@ export function extractMotSignals(motPayload: any): MotSignals {
         recentFailureCount += 1;
       }
 
-      if (includesAny(text, ["corrosion", "corroded", "excessively corroded"])) {
+      if (
+        includesAny(text, ["corrosion", "corroded", "excessively corroded"])
+      ) {
         corrosionFlag = true;
       }
 
@@ -103,9 +214,24 @@ export function extractMotSignals(motPayload: any): MotSignals {
     }
   }
 
-  const repeatAdvisories = Array.from(advisoryCounter.entries())
+  const repeatAdvisoryDetails = Array.from(advisoryCounter.entries())
     .filter(([, count]) => count > 1)
-    .map(([text]) => text);
+    .map(([text, count]) => {
+      const classified = classifyAdvisoryPattern(text);
+
+      return {
+        text,
+        count,
+        patternType: classified.patternType,
+        patternLabel: classified.patternLabel,
+      };
+    });
+
+  const repeatAdvisories = repeatAdvisoryDetails.map((item) => item.text);
+
+  const repeatAdvisoryPatternLabels = Array.from(
+    new Set(repeatAdvisoryDetails.map((item) => item.patternLabel))
+  );
 
   // Tests come newest first. Mileage should generally go down as you go through older tests.
   const mileages = extractMileageValues(tests);
@@ -123,6 +249,8 @@ export function extractMotSignals(motPayload: any): MotSignals {
     recentFailureCount,
     recentAdvisoryCount,
     repeatAdvisories,
+    repeatAdvisoryDetails,
+    repeatAdvisoryPatternLabels,
     corrosionFlag,
     brakeFlag,
     tyreFlag,

@@ -63,61 +63,65 @@ function titleCase(s: string) {
     .join(" ");
 }
 
-/**
- * Brand calibration (simple v1).
- */
-function brandMultiplier(make?: string | null): number {
-  const m = normMake(make);
-  if (!m) return 1.0;
+function formatCategoryList(values: string[]) {
+  if (!values.length) return "";
+  if (values.length === 1) return values[0];
+  if (values.length === 2) return `${values[0]} and ${values[1]}`;
+  return `${values.slice(0, -1).join(", ")}, and ${values[values.length - 1]}`;
+}
 
-  const budget = new Set(["dacia", "skoda", "seat", "kia", "hyundai", "suzuki"]);
-  if (budget.has(m)) return 0.9;
+function normaliseRepeatCategoryLabel(value: string) {
+  const v = value.trim().toLowerCase();
+  if (!v) return null;
 
-  const mainstream = new Set([
-    "ford",
-    "vauxhall",
-    "opel",
-    "volkswagen",
-    "vw",
-    "toyota",
-    "honda",
-    "nissan",
-    "mazda",
-    "renault",
-    "peugeot",
-    "citroen",
-    "fiat",
-    "mini",
-    "mg",
-  ]);
-  if (mainstream.has(m)) return 1.0;
+  const map: Record<string, string> = {
+    brake: "brakes",
+    brakes: "brakes",
+    braking: "brakes",
+    suspension: "suspension",
+    steering: "steering",
+    tyre: "tyres",
+    tyres: "tyres",
+    tire: "tyres",
+    tires: "tyres",
+    corrosion: "corrosion",
+    structure: "corrosion",
+    exhaust: "exhaust",
+    emissions: "emissions",
+    engine: "engine",
+    drivetrain: "drivetrain",
+    lighting: "lighting",
+    electrical: "electrical",
+    body: "body",
+  };
 
-  const premium = new Set([
-    "bmw",
-    "audi",
-    "mercedes",
-    "mercedes-benz",
-    "lexus",
-    "volvo",
-    "jaguar",
-    "alfa romeo",
-  ]);
-  if (premium.has(m)) return 1.25;
+  return map[v] ?? titleCase(v);
+}
 
-  const high = new Set([
-    "porsche",
-    "land rover",
-    "range rover",
-    "maserati",
-    "ferrari",
-    "lamborghini",
-    "bentley",
-    "aston martin",
-    "mclaren",
-  ]);
-  if (high.has(m)) return 1.6;
+function getRepeatAdvisoryCategoryLabels(mot?: MotSignals | null): string[] {
+  if (!mot) return [];
 
-  return 1.1;
+  const rawCandidates: unknown[] = [];
+
+  const anyMot = mot as any;
+
+  if (Array.isArray(anyMot.repeatAdvisoryCategories)) {
+    rawCandidates.push(...anyMot.repeatAdvisoryCategories);
+  }
+
+  if (Array.isArray(anyMot.repeatAdvisoryGroups)) {
+    rawCandidates.push(...anyMot.repeatAdvisoryGroups);
+  }
+
+  if (Array.isArray(anyMot.repeatAdvisoryLabels)) {
+    rawCandidates.push(...anyMot.repeatAdvisoryLabels);
+  }
+
+  const normalised = rawCandidates
+    .map((value) => (typeof value === "string" ? normaliseRepeatCategoryLabel(value) : null))
+    .filter(Boolean) as string[];
+
+  return Array.from(new Set(normalised));
 }
 
 function macroBucketForCategory(category: string): { key: string; label: string } {
@@ -304,6 +308,7 @@ export function generateReport(input: EngineInput) {
   const timingType: TimingType = input.timing_type ?? "unknown";
   const makeMult = brandMultiplier(input.make);
   const mot = input.motSignals ?? null;
+  const repeatAdvisoryCategoryLabels = getRepeatAdvisoryCategoryLabels(mot);
 
   const items: ReportItem[] = [];
 
@@ -465,8 +470,17 @@ export function generateReport(input: EngineInput) {
   if (mot?.repeatAdvisories?.length) {
     const baseLow = 80;
     const baseHigh = 220;
+
+    const categoryText = repeatAdvisoryCategoryLabels.length
+      ? ` Repeat patterns appear in ${formatCategoryList(repeatAdvisoryCategoryLabels)}.`
+      : "";
+
     items.push({
-      label: "Recurring advisory pattern detected",
+      label: repeatAdvisoryCategoryLabels.length
+        ? `Recurring advisory pattern detected (${formatCategoryList(
+            repeatAdvisoryCategoryLabels
+          )})`
+        : "Recurring advisory pattern detected",
       status: "repeat_advisory_pattern",
       item_id: "mot_repeat_advisories",
       category: "general_maintenance_risk",
@@ -477,14 +491,22 @@ export function generateReport(input: EngineInput) {
       cost_high: roundMoney(baseHigh * makeMult),
       why_flagged: `MoT history shows ${mot.repeatAdvisories.length} recurring advisory pattern${
         mot.repeatAdvisories.length === 1 ? "" : "s"
-      }.`,
+      }.${categoryText}`,
       why_it_matters:
         "Recurring advisories can suggest the same underlying issue has persisted over multiple test cycles.",
-      questions_to_ask: [
-        "Which advisory items have appeared more than once?",
-        "Were the recurring advisory items properly repaired after previous MoTs?",
-        "Do you have invoices for work relating to those repeated advisories?",
-      ],
+      questions_to_ask: repeatAdvisoryCategoryLabels.length
+        ? [
+            `Can you explain the repeated ${formatCategoryList(
+              repeatAdvisoryCategoryLabels
+            )} advisories?`,
+            "Were the recurring advisory items properly repaired after previous MoTs?",
+            "Do you have invoices for work relating to those repeated advisories?",
+          ]
+        : [
+            "Which advisory items have appeared more than once?",
+            "Were the recurring advisory items properly repaired after previous MoTs?",
+            "Do you have invoices for work relating to those repeated advisories?",
+          ],
     });
   }
 
@@ -715,6 +737,7 @@ export function generateReport(input: EngineInput) {
             recent_failure_count: mot.recentFailureCount,
             recent_advisory_count: mot.recentAdvisoryCount,
             repeat_advisory_count: mot.repeatAdvisories.length,
+            repeat_advisory_categories: repeatAdvisoryCategoryLabels,
             corrosion_flag: mot.corrosionFlag,
             brake_flag: mot.brakeFlag,
             tyre_flag: mot.tyreFlag,
