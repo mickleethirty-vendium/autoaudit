@@ -640,37 +640,45 @@ export default async function Page({
           </div>
         ) : null}
 
-        <div className="rounded-[2rem] border border-[var(--aa-silver)] bg-white shadow-sm">
-          <div className="border-b border-[var(--aa-silver)] px-6 py-6 sm:px-8">
-            <div className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-700">
-              Paid report
+        <div className="relative overflow-hidden rounded-[2rem] border border-[var(--aa-silver)] bg-[var(--aa-black)] shadow-[0_18px_60px_rgba(15,23,42,0.14)]">
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: "url('/hero-car-road.png')" }}
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.95)_0%,rgba(255,255,255,0.93)_42%,rgba(255,255,255,0.28)_72%,rgba(255,255,255,0.10)_100%)]" />
+
+          <div className="relative px-5 py-6 sm:px-8 sm:py-8">
+            <div className="max-w-3xl">
+              <div className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-700 shadow-sm">
+                Paid report
+              </div>
+
+              <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-black sm:text-4xl">
+                Full Vehicle Report for {reg ?? "this vehicle"}
+              </h1>
+
+              <div className="mt-2 text-sm text-slate-600">
+                {make ? `${make} · ` : ""}
+                {year ? `${year} · ` : ""}
+                {fuel ? `${fuel} · ` : ""}
+                {transmission ? `${transmission} · ` : ""}
+                {typeof mileage === "number"
+                  ? `${mileage.toLocaleString()} miles`
+                  : ""}
+              </div>
+
+              {fullSummary?.headline ? (
+                <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-700 sm:text-base">
+                  {fullSummary.headline}
+                  {fullSummary?.summary_text
+                    ? ` ${fullSummary.summary_text}`
+                    : ""}
+                </p>
+              ) : null}
             </div>
 
-            <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">
-              Full Vehicle Report for {reg ?? "this vehicle"}
-            </h1>
-
-            <div className="mt-2 text-sm text-slate-600">
-              {make ? `${make} · ` : ""}
-              {year ? `${year} · ` : ""}
-              {fuel ? `${fuel} · ` : ""}
-              {transmission ? `${transmission} · ` : ""}
-              {typeof mileage === "number"
-                ? `${mileage.toLocaleString()} miles`
-                : ""}
-            </div>
-
-            {fullSummary?.headline ? (
-              <p className="mt-4 max-w-4xl text-sm leading-6 text-slate-700 sm:text-base">
-                {fullSummary.headline}
-                {fullSummary?.summary_text ? ` ${fullSummary.summary_text}` : ""}
-              </p>
-            ) : null}
-          </div>
-
-          <div className="px-6 py-6 sm:px-8 sm:py-8">
-            <div className="grid gap-4 xl:grid-cols-3">
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="mt-8 grid gap-4 xl:grid-cols-3">
+              <div className="rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur">
                 <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                   Service Risk
                 </div>
@@ -686,7 +694,7 @@ export default async function Page({
                 </div>
 
                 <div className="mt-4 grid gap-3">
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                  <div className="rounded-xl border border-slate-200 bg-white p-3">
                     <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                       Confidence
                     </div>
@@ -695,7 +703,7 @@ export default async function Page({
                     </div>
                   </div>
 
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                  <div className="rounded-xl border border-slate-200 bg-white p-3">
                     <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                       Negotiation guide
                     </div>
@@ -704,7 +712,7 @@ export default async function Page({
                     </div>
                   </div>
 
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                  <div className="rounded-xl border border-slate-200 bg-white p-3">
                     <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                       Estimated exposure
                     </div>
@@ -715,7 +723,7 @@ export default async function Page({
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur">
                 <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                   MoT History
                 </div>
@@ -723,14 +731,14 @@ export default async function Page({
                 {motPanel.available ? (
                   <>
                     <div className="mt-4 flex flex-wrap gap-2">
-                      <span className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-800">
+                      <span className="inline-flex items-center rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-800">
                         Latest:{" "}
                         {motPanel.latestResult
                           ? titleCase(motPanel.latestResult)
                           : "—"}
                       </span>
 
-                      <span className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-800">
+                      <span className="inline-flex items-center rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-800">
                         Latest advisories: {motPanel.latestAdvisoryCount}
                       </span>
                     </div>
@@ -743,7 +751,7 @@ export default async function Page({
                     </div>
 
                     <div className="mt-4 grid grid-cols-2 gap-3">
-                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <div className="rounded-xl border border-slate-200 bg-white p-3">
                         <div className="text-lg font-extrabold text-slate-950">
                           {motPanel.passCount}
                         </div>
@@ -752,7 +760,7 @@ export default async function Page({
                         </div>
                       </div>
 
-                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <div className="rounded-xl border border-slate-200 bg-white p-3">
                         <div className="text-lg font-extrabold text-slate-950">
                           {motPanel.failCount}
                         </div>
@@ -761,7 +769,7 @@ export default async function Page({
                         </div>
                       </div>
 
-                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <div className="rounded-xl border border-slate-200 bg-white p-3">
                         <div className="text-lg font-extrabold text-slate-950">
                           {motPanel.advisoryCount}
                         </div>
@@ -770,7 +778,7 @@ export default async function Page({
                         </div>
                       </div>
 
-                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <div className="rounded-xl border border-slate-200 bg-white p-3">
                         <div className="text-lg font-extrabold text-slate-950">
                           {motPanel.repeatAdvisoryCount}
                         </div>
@@ -787,13 +795,13 @@ export default async function Page({
                 )}
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur">
                 <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                   HPI Check
                 </div>
 
                 {!hpiUnlocked ? (
-                  <div className="mt-4 rounded-xl border border-red-200 bg-red-50/60 p-4">
+                  <div className="mt-4 rounded-xl border border-[var(--aa-red)]/20 bg-[var(--aa-red)]/5 p-4">
                     <div className="text-base font-semibold text-slate-950">
                       Upgrade to add vehicle history
                     </div>
@@ -818,7 +826,7 @@ export default async function Page({
                       hpiChecks.map((item) => (
                         <div
                           key={item.label}
-                          className="rounded-xl border border-slate-200 bg-slate-50 p-3"
+                          className="rounded-xl border border-slate-200 bg-white p-3"
                         >
                           <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                             {item.label}
@@ -829,7 +837,7 @@ export default async function Page({
                         </div>
                       ))
                     ) : (
-                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                      <div className="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-700">
                         HPI summary available.
                       </div>
                     )}
@@ -837,261 +845,260 @@ export default async function Page({
                 )}
               </div>
             </div>
-
-            <div className="mt-6 rounded-2xl border border-red-200 bg-red-50/50 p-4 print:hidden">
-              <div className="text-sm font-semibold text-slate-950">
-                Save access to this report
-              </div>
-
-              <div className="mt-1 text-sm text-slate-700">
-                Create an account after purchase to keep access to this report
-                for 30 days
-                {expiresAtLabel ? (
-                  <>
-                    {" "}
-                    — until{" "}
-                    <span className="font-semibold">{expiresAtLabel}</span>
-                  </>
-                ) : (
-                  <> from the date of payment</>
-                )}
-                .
-              </div>
-
-              <div className="mt-2 text-sm text-slate-700">
-                If you do not register or download your report, you may not be
-                able to access it again after that 30-day period has ended.
-              </div>
-
-              {!ownerUserId ? (
-                <div className="mt-4 flex flex-wrap gap-3">
-                  <Link href={registerUrl} className="btn-primary">
-                    Create account to save report
-                  </Link>
-
-                  <Link href={loginUrl} className="btn-outline">
-                    Log in to save report
-                  </Link>
-                </div>
-              ) : user?.id === ownerUserId ? (
-                <div className="mt-4 inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-800">
-                  This report is linked to your account
-                </div>
-              ) : null}
-            </div>
-
-            <div className="mt-8">
-              <h2 className="text-2xl font-extrabold tracking-tight text-slate-950">
-                Specific Risks
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-slate-700">
-                These are the service exposure items and MoT advisory pattern
-                risks identified for this vehicle.
-              </p>
-            </div>
-
-            <div className="mt-5 space-y-8">
-              <section>
-                <div className="mb-4 flex items-center justify-between gap-4">
-                  <h3 className="text-lg font-bold text-slate-950">
-                    Service exposure items
-                  </h3>
-                  <div className="text-sm text-slate-600">
-                    {serviceRiskItems.length} item
-                    {serviceRiskItems.length === 1 ? "" : "s"}
-                  </div>
-                </div>
-
-                {serviceRiskItems.length ? (
-                  <div className="grid gap-4 lg:grid-cols-2">
-                    {serviceRiskItems.map((item: any, index: number) => (
-                      <div
-                        key={`${item?.item_id ?? "service"}-${index}`}
-                        className={`rounded-2xl border p-5 shadow-sm ${itemTone(item)}`}
-                      >
-                        <div className="flex items-start justify-between gap-4">
-                          <div>
-                            <div className="text-lg font-bold tracking-tight text-slate-950">
-                              {item?.label ?? "Flagged item"}
-                            </div>
-                            <div className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                              {String(item?.category ?? "service").replace(
-                                /_/g,
-                                " "
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-right">
-                            <div className="text-sm font-semibold text-slate-950">
-                              {money(Number(item?.cost_low ?? 0))} –{" "}
-                              {money(Number(item?.cost_high ?? 0))}
-                            </div>
-                            <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                              likely exposure
-                            </div>
-                          </div>
-                        </div>
-
-                        {item?.why_flagged ? (
-                          <p className="mt-4 text-sm leading-6 text-slate-700">
-                            <span className="font-semibold text-slate-950">
-                              Why flagged:
-                            </span>{" "}
-                            {item.why_flagged}
-                          </p>
-                        ) : null}
-
-                        {item?.why_it_matters ? (
-                          <p className="mt-3 text-sm leading-6 text-slate-700">
-                            <span className="font-semibold text-slate-950">
-                              Why it matters:
-                            </span>{" "}
-                            {item.why_it_matters}
-                          </p>
-                        ) : null}
-
-                        {Array.isArray(item?.questions_to_ask) &&
-                        item.questions_to_ask.length ? (
-                          <div className="mt-4">
-                            <div className="text-sm font-semibold text-slate-950">
-                              Questions to ask
-                            </div>
-                            <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
-                              {item.questions_to_ask.map(
-                                (q: string, i: number) => (
-                                  <li key={i}>• {q}</li>
-                                )
-                              )}
-                            </ul>
-                          </div>
-                        ) : null}
-
-                        {Array.isArray(item?.red_flags) &&
-                        item.red_flags.length ? (
-                          <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3">
-                            <div className="text-sm font-semibold text-slate-950">
-                              Red flags
-                            </div>
-                            <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
-                              {item.red_flags.map((rf: string, i: number) => (
-                                <li key={i}>• {rf}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        ) : null}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-700">
-                    No service exposure items were listed in this report.
-                  </div>
-                )}
-              </section>
-
-              <section>
-                <div className="mb-4 flex items-center justify-between gap-4">
-                  <h3 className="text-lg font-bold text-slate-950">
-                    MoT advisory and history risks
-                  </h3>
-                  <div className="text-sm text-slate-600">
-                    {motRiskItems.length} item
-                    {motRiskItems.length === 1 ? "" : "s"}
-                  </div>
-                </div>
-
-                {motRiskItems.length ? (
-                  <div className="grid gap-4 lg:grid-cols-2">
-                    {motRiskItems.map((item: any, index: number) => (
-                      <div
-                        key={`${item?.item_id ?? "mot"}-${index}`}
-                        className={`rounded-2xl border p-5 shadow-sm ${itemTone(item)}`}
-                      >
-                        <div className="flex items-start justify-between gap-4">
-                          <div>
-                            <div className="text-lg font-bold tracking-tight text-slate-950">
-                              {item?.label ?? "MoT history item"}
-                            </div>
-                            <div className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                              MoT-derived risk
-                            </div>
-                          </div>
-
-                          <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-right">
-                            <div className="text-sm font-semibold text-slate-950">
-                              {money(Number(item?.cost_low ?? 0))} –{" "}
-                              {money(Number(item?.cost_high ?? 0))}
-                            </div>
-                            <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                              likely exposure
-                            </div>
-                          </div>
-                        </div>
-
-                        {item?.why_flagged ? (
-                          <p className="mt-4 text-sm leading-6 text-slate-700">
-                            <span className="font-semibold text-slate-950">
-                              Why flagged:
-                            </span>{" "}
-                            {item.why_flagged}
-                          </p>
-                        ) : null}
-
-                        {item?.why_it_matters ? (
-                          <p className="mt-3 text-sm leading-6 text-slate-700">
-                            <span className="font-semibold text-slate-950">
-                              Why it matters:
-                            </span>{" "}
-                            {item.why_it_matters}
-                          </p>
-                        ) : null}
-
-                        {Array.isArray(item?.questions_to_ask) &&
-                        item.questions_to_ask.length ? (
-                          <div className="mt-4">
-                            <div className="text-sm font-semibold text-slate-950">
-                              Questions to ask
-                            </div>
-                            <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
-                              {item.questions_to_ask.map(
-                                (q: string, i: number) => (
-                                  <li key={i}>• {q}</li>
-                                )
-                              )}
-                            </ul>
-                          </div>
-                        ) : null}
-
-                        {Array.isArray(item?.red_flags) &&
-                        item.red_flags.length ? (
-                          <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3">
-                            <div className="text-sm font-semibold text-slate-950">
-                              Red flags
-                            </div>
-                            <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
-                              {item.red_flags.map((rf: string, i: number) => (
-                                <li key={i}>• {rf}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        ) : null}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-700">
-                    No MoT advisory pattern risks were listed in this report.
-                  </div>
-                )}
-              </section>
-            </div>
-
-            <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-600">
-              AutoAudit provides guidance only and is not a substitute for a
-              mechanical inspection.
-            </div>
           </div>
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-red-200 bg-red-50/50 p-4 print:hidden">
+          <div className="text-sm font-semibold text-slate-950">
+            Save access to this report
+          </div>
+
+          <div className="mt-1 text-sm text-slate-700">
+            Create an account after purchase to keep access to this report
+            for 30 days
+            {expiresAtLabel ? (
+              <>
+                {" "}
+                — until <span className="font-semibold">{expiresAtLabel}</span>
+              </>
+            ) : (
+              <> from the date of payment</>
+            )}
+            .
+          </div>
+
+          <div className="mt-2 text-sm text-slate-700">
+            If you do not register or download your report, you may not be
+            able to access it again after that 30-day period has ended.
+          </div>
+
+          {!ownerUserId ? (
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Link href={registerUrl} className="btn-primary">
+                Create account to save report
+              </Link>
+
+              <Link href={loginUrl} className="btn-outline">
+                Log in to save report
+              </Link>
+            </div>
+          ) : user?.id === ownerUserId ? (
+            <div className="mt-4 inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-800">
+              This report is linked to your account
+            </div>
+          ) : null}
+        </div>
+
+        <div className="mt-8">
+          <h2 className="text-2xl font-extrabold tracking-tight text-slate-950">
+            Specific Risks
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-slate-700">
+            These are the service exposure items and MoT advisory pattern
+            risks identified for this vehicle.
+          </p>
+        </div>
+
+        <div className="mt-5 space-y-8">
+          <section>
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <h3 className="text-lg font-bold text-slate-950">
+                Service exposure items
+              </h3>
+              <div className="text-sm text-slate-600">
+                {serviceRiskItems.length} item
+                {serviceRiskItems.length === 1 ? "" : "s"}
+              </div>
+            </div>
+
+            {serviceRiskItems.length ? (
+              <div className="grid gap-4 lg:grid-cols-2">
+                {serviceRiskItems.map((item: any, index: number) => (
+                  <div
+                    key={`${item?.item_id ?? "service"}-${index}`}
+                    className={`rounded-2xl border p-5 shadow-sm ${itemTone(item)}`}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <div className="text-lg font-bold tracking-tight text-slate-950">
+                          {item?.label ?? "Flagged item"}
+                        </div>
+                        <div className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          {String(item?.category ?? "service").replace(
+                            /_/g,
+                            " "
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-right">
+                        <div className="text-sm font-semibold text-slate-950">
+                          {money(Number(item?.cost_low ?? 0))} –{" "}
+                          {money(Number(item?.cost_high ?? 0))}
+                        </div>
+                        <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                          likely exposure
+                        </div>
+                      </div>
+                    </div>
+
+                    {item?.why_flagged ? (
+                      <p className="mt-4 text-sm leading-6 text-slate-700">
+                        <span className="font-semibold text-slate-950">
+                          Why flagged:
+                        </span>{" "}
+                        {item.why_flagged}
+                      </p>
+                    ) : null}
+
+                    {item?.why_it_matters ? (
+                      <p className="mt-3 text-sm leading-6 text-slate-700">
+                        <span className="font-semibold text-slate-950">
+                          Why it matters:
+                        </span>{" "}
+                        {item.why_it_matters}
+                      </p>
+                    ) : null}
+
+                    {Array.isArray(item?.questions_to_ask) &&
+                    item.questions_to_ask.length ? (
+                      <div className="mt-4">
+                        <div className="text-sm font-semibold text-slate-950">
+                          Questions to ask
+                        </div>
+                        <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
+                          {item.questions_to_ask.map(
+                            (q: string, i: number) => (
+                              <li key={i}>• {q}</li>
+                            )
+                          )}
+                        </ul>
+                      </div>
+                    ) : null}
+
+                    {Array.isArray(item?.red_flags) &&
+                    item.red_flags.length ? (
+                      <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3">
+                        <div className="text-sm font-semibold text-slate-950">
+                          Red flags
+                        </div>
+                        <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
+                          {item.red_flags.map((rf: string, i: number) => (
+                            <li key={i}>• {rf}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-700">
+                No service exposure items were listed in this report.
+              </div>
+            )}
+          </section>
+
+          <section>
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <h3 className="text-lg font-bold text-slate-950">
+                MoT advisory and history risks
+              </h3>
+              <div className="text-sm text-slate-600">
+                {motRiskItems.length} item
+                {motRiskItems.length === 1 ? "" : "s"}
+              </div>
+            </div>
+
+            {motRiskItems.length ? (
+              <div className="grid gap-4 lg:grid-cols-2">
+                {motRiskItems.map((item: any, index: number) => (
+                  <div
+                    key={`${item?.item_id ?? "mot"}-${index}`}
+                    className={`rounded-2xl border p-5 shadow-sm ${itemTone(item)}`}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <div className="text-lg font-bold tracking-tight text-slate-950">
+                          {item?.label ?? "MoT history item"}
+                        </div>
+                        <div className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          MoT-derived risk
+                        </div>
+                      </div>
+
+                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-right">
+                        <div className="text-sm font-semibold text-slate-950">
+                          {money(Number(item?.cost_low ?? 0))} –{" "}
+                          {money(Number(item?.cost_high ?? 0))}
+                        </div>
+                        <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                          likely exposure
+                        </div>
+                      </div>
+                    </div>
+
+                    {item?.why_flagged ? (
+                      <p className="mt-4 text-sm leading-6 text-slate-700">
+                        <span className="font-semibold text-slate-950">
+                          Why flagged:
+                        </span>{" "}
+                        {item.why_flagged}
+                      </p>
+                    ) : null}
+
+                    {item?.why_it_matters ? (
+                      <p className="mt-3 text-sm leading-6 text-slate-700">
+                        <span className="font-semibold text-slate-950">
+                          Why it matters:
+                        </span>{" "}
+                        {item.why_it_matters}
+                      </p>
+                    ) : null}
+
+                    {Array.isArray(item?.questions_to_ask) &&
+                    item.questions_to_ask.length ? (
+                      <div className="mt-4">
+                        <div className="text-sm font-semibold text-slate-950">
+                          Questions to ask
+                        </div>
+                        <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
+                          {item.questions_to_ask.map(
+                            (q: string, i: number) => (
+                              <li key={i}>• {q}</li>
+                            )
+                          )}
+                        </ul>
+                      </div>
+                    ) : null}
+
+                    {Array.isArray(item?.red_flags) &&
+                    item.red_flags.length ? (
+                      <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3">
+                        <div className="text-sm font-semibold text-slate-950">
+                          Red flags
+                        </div>
+                        <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
+                          {item.red_flags.map((rf: string, i: number) => (
+                            <li key={i}>• {rf}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-700">
+                No MoT advisory pattern risks were listed in this report.
+              </div>
+            )}
+          </section>
+        </div>
+
+        <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-600">
+          AutoAudit provides guidance only and is not a substitute for a
+          mechanical inspection.
         </div>
       </div>
     );
