@@ -63,6 +63,67 @@ function titleCase(s: string) {
     .join(" ");
 }
 
+function brandMultiplier(make?: string | null): number {
+  const m = normMake(make);
+  if (!m) return 1.0;
+
+  const budget = new Set([
+    "dacia",
+    "skoda",
+    "seat",
+    "kia",
+    "hyundai",
+    "suzuki",
+  ]);
+  if (budget.has(m)) return 0.9;
+
+  const mainstream = new Set([
+    "ford",
+    "vauxhall",
+    "opel",
+    "volkswagen",
+    "vw",
+    "toyota",
+    "honda",
+    "nissan",
+    "mazda",
+    "renault",
+    "peugeot",
+    "citroen",
+    "fiat",
+    "mini",
+    "mg",
+  ]);
+  if (mainstream.has(m)) return 1.0;
+
+  const premium = new Set([
+    "bmw",
+    "audi",
+    "mercedes",
+    "mercedes-benz",
+    "lexus",
+    "volvo",
+    "jaguar",
+    "alfa romeo",
+  ]);
+  if (premium.has(m)) return 1.25;
+
+  const high = new Set([
+    "porsche",
+    "land rover",
+    "range rover",
+    "maserati",
+    "ferrari",
+    "lamborghini",
+    "bentley",
+    "aston martin",
+    "mclaren",
+  ]);
+  if (high.has(m)) return 1.6;
+
+  return 1.1;
+}
+
 function formatCategoryList(values: string[]) {
   if (!values.length) return "";
   if (values.length === 1) return values[0];
@@ -102,7 +163,6 @@ function getRepeatAdvisoryCategoryLabels(mot?: MotSignals | null): string[] {
   if (!mot) return [];
 
   const rawCandidates: unknown[] = [];
-
   const anyMot = mot as any;
 
   if (Array.isArray(anyMot.repeatAdvisoryCategories)) {
@@ -118,7 +178,9 @@ function getRepeatAdvisoryCategoryLabels(mot?: MotSignals | null): string[] {
   }
 
   const normalised = rawCandidates
-    .map((value) => (typeof value === "string" ? normaliseRepeatCategoryLabel(value) : null))
+    .map((value) =>
+      typeof value === "string" ? normaliseRepeatCategoryLabel(value) : null
+    )
     .filter(Boolean) as string[];
 
   return Array.from(new Set(normalised));
@@ -139,7 +201,9 @@ function macroBucketForCategory(category: string): { key: string; label: string 
   if (["electrical", "electronics"].includes(c)) {
     return { key: "electronics", label: "Electrical & Electronics" };
   }
-  if (["service", "general_maintenance_risk", "fluids", "filters"].includes(c)) {
+  if (
+    ["service", "general_maintenance_risk", "fluids", "filters"].includes(c)
+  ) {
     return { key: "routine_service", label: "Routine Service" };
   }
   if (["mot", "mot_history"].includes(c)) {
@@ -181,7 +245,10 @@ function confidenceScore(input: EngineInput, items: ReportItem[]) {
     reasons.push("Make provided, improving cost calibration.");
   }
 
-  if (!input.transmission || String(input.transmission).toLowerCase().includes("select")) {
+  if (
+    !input.transmission ||
+    String(input.transmission).toLowerCase().includes("select")
+  ) {
     score -= 8;
     reasons.push("Transmission not confirmed.");
   } else {
@@ -285,7 +352,8 @@ function buildSummaryText(
   mot?: MotSignals | null
 ) {
   const motContext =
-    mot && (mot.hasRecentFailures || mot.repeatAdvisories?.length || mot.corrosionFlag)
+    mot &&
+    (mot.hasRecentFailures || mot.repeatAdvisories?.length || mot.corrosionFlag)
       ? " MoT history also adds useful warning signals."
       : "";
 
@@ -311,8 +379,6 @@ export function generateReport(input: EngineInput) {
   const repeatAdvisoryCategoryLabels = getRepeatAdvisoryCategoryLabels(mot);
 
   const items: ReportItem[] = [];
-
-  // ---- Base rules ----
 
   if (timingType !== "chain") {
     const due = age >= 5 || mileage >= 60000;
@@ -406,7 +472,8 @@ export function generateReport(input: EngineInput) {
       multiplier: 0.5,
       cost_low: roundMoney(baseLow * makeMult * 0.5),
       cost_high: roundMoney(baseHigh * makeMult * 0.5),
-      why_flagged: "Mileage is 70k+ and brake wear items may be due soon or need verification.",
+      why_flagged:
+        "Mileage is 70k+ and brake wear items may be due soon or need verification.",
       why_it_matters:
         "Brakes are common wear items. If replacement is close, this becomes a real negotiation point.",
       questions_to_ask: [
@@ -429,14 +496,15 @@ export function generateReport(input: EngineInput) {
       multiplier: 0.5,
       cost_low: roundMoney(baseLow * makeMult * 0.5),
       cost_high: roundMoney(baseHigh * makeMult * 0.5),
-      why_flagged: "Mileage is 80k+ and suspension wear risk increases at this level.",
+      why_flagged:
+        "Mileage is 80k+ and suspension wear risk increases at this level.",
       why_it_matters:
         "Suspension wear becomes more common at higher mileage and can lead to advisory or failure costs.",
-      questions_to_ask: ["Any MoT advisories for suspension or steering components?"],
+      questions_to_ask: [
+        "Any MoT advisories for suspension or steering components?",
+      ],
     });
   }
-
-  // ---- MoT-derived rules ----
 
   if (mot?.hasRecentFailures) {
     const baseLow = 150;
@@ -472,7 +540,9 @@ export function generateReport(input: EngineInput) {
     const baseHigh = 220;
 
     const categoryText = repeatAdvisoryCategoryLabels.length
-      ? ` Repeat patterns appear in ${formatCategoryList(repeatAdvisoryCategoryLabels)}.`
+      ? ` Repeat patterns appear in ${formatCategoryList(
+          repeatAdvisoryCategoryLabels
+        )}.`
       : "";
 
     items.push({
@@ -551,7 +621,8 @@ export function generateReport(input: EngineInput) {
       multiplier: 0.8,
       cost_low: roundMoney(baseLow * makeMult * 0.8),
       cost_high: roundMoney(baseHigh * makeMult * 0.8),
-      why_flagged: "MoT history contains brake-related advisory or failure wording.",
+      why_flagged:
+        "MoT history contains brake-related advisory or failure wording.",
       why_it_matters:
         "Brake-related history can mean either imminent consumable costs or unresolved braking issues.",
       questions_to_ask: [
@@ -597,7 +668,8 @@ export function generateReport(input: EngineInput) {
       multiplier: 0.9,
       cost_low: roundMoney(baseLow * makeMult * 0.9),
       cost_high: roundMoney(baseHigh * makeMult * 0.9),
-      why_flagged: "MoT history contains suspension or steering-related wording.",
+      why_flagged:
+        "MoT history contains suspension or steering-related wording.",
       why_it_matters:
         "Recurring suspension or steering advisories can point to worn components and more near-term spend.",
       questions_to_ask: [
@@ -633,8 +705,6 @@ export function generateReport(input: EngineInput) {
       ],
     });
   }
-
-  // ---- Totals / summary ----
 
   const exposure_low = roundMoney(
     items.reduce((sum, it) => sum + (it.cost_low ?? 0), 0)
@@ -687,9 +757,12 @@ export function generateReport(input: EngineInput) {
   );
 
   const headline = buildHeadline(risk_level, exposure_high, mot);
-  const summary_text = buildSummaryText(risk_level, exposure_low, exposure_high, mot);
-
-  // ---- Preview bucket aggregation ----
+  const summary_text = buildSummaryText(
+    risk_level,
+    exposure_low,
+    exposure_high,
+    mot
+  );
 
   const bucketMap = new Map<string, Bucket>();
 
@@ -752,8 +825,7 @@ export function generateReport(input: EngineInput) {
       script: `Based on the vehicle’s age, mileage and available history, I’d need to budget roughly £${negotiation_suggested} for likely near-term maintenance unless there’s documented proof these items were recently done. I’d be more comfortable proceeding at around £X.`,
     },
     disclaimer: {
-      text:
-        "AutoAudit provides cost guidance based on typical UK maintenance intervals, available history signals and independent garage pricing. It is not a mechanical inspection and does not diagnose faults or guarantee required repairs.",
+      text: "AutoAudit provides cost guidance based on typical UK maintenance intervals, available history signals and independent garage pricing. It is not a mechanical inspection and does not diagnose faults or guarantee required repairs.",
     },
   };
 
