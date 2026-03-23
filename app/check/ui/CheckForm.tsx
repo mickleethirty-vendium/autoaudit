@@ -273,6 +273,10 @@ export default function CheckForm() {
         </div>
 
         <div className="px-6 py-6 sm:px-8 sm:py-8">
+          <div className="mb-5 rounded-2xl border border-yellow-300 bg-yellow-100 px-4 py-3 text-sm font-bold text-black">
+            DEBUG CHECKFORM LIVE · Asking price field should appear after vehicle lookup
+          </div>
+
           {!vehicle ? (
             <form onSubmit={handleLookupSubmit} className="space-y-5">
               <div>
@@ -406,86 +410,15 @@ export default function CheckForm() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-sky-400/20 bg-sky-400/10 p-4">
-                <div className="text-sm font-semibold text-sky-100">
-                  Final details for a more useful snapshot
-                </div>
-                <div className="mt-1 text-sm text-sky-50/80">
-                  Add mileage, asking price and gearbox so we can estimate repair
-                  exposure and compare the car with typical market value.
-                </div>
-              </div>
-
               <form onSubmit={handleContinue} className="space-y-5">
-                <div className="grid gap-5">
-                  <div className="grid gap-5 sm:grid-cols-2">
-                    <div>
-                      <label
-                        htmlFor="mileage"
-                        className="mb-2 block text-sm font-medium text-slate-200"
-                      >
-                        Current mileage
-                      </label>
-                      <input
-                        id="mileage"
-                        name="mileage"
-                        type="text"
-                        inputMode="numeric"
-                        value={mileage}
-                        onChange={(e) => {
-                          setMileage(e.target.value.replace(/[^\d,]/g, ""));
-                          if (continueError) setContinueError(null);
-                        }}
-                        placeholder="e.g. 62,000"
-                        disabled={isSubmitting}
-                        className="h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-base font-medium text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="gearbox"
-                        className="mb-2 block text-sm font-medium text-slate-200"
-                      >
-                        Gearbox type
-                      </label>
-                      <select
-                        id="gearbox"
-                        name="gearbox"
-                        value={gearbox}
-                        onChange={(e) => {
-                          setGearbox(e.target.value);
-                          if (continueError) setContinueError(null);
-                        }}
-                        disabled={isSubmitting}
-                        className="h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-base font-medium text-white outline-none transition focus:border-sky-400"
-                      >
-                        <option value="" className="bg-slate-950 text-slate-300">
-                          Select gearbox
-                        </option>
-                        <option value="manual" className="bg-slate-950 text-white">
-                          Manual
-                        </option>
-                        <option value="automatic" className="bg-slate-950 text-white">
-                          Automatic
-                        </option>
-                        <option value="cvt" className="bg-slate-950 text-white">
-                          CVT
-                        </option>
-                        <option
-                          value="semi-automatic"
-                          className="bg-slate-950 text-white"
-                        >
-                          Semi-automatic
-                        </option>
-                      </select>
-                    </div>
+                <div className="rounded-2xl border-2 border-sky-400 bg-sky-400/10 p-4">
+                  <div className="text-sm font-bold uppercase tracking-wide text-sky-100">
+                    Asking price for market comparison
                   </div>
-
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                  <div className="mt-3">
                     <label
                       htmlFor="askingPrice"
-                      className="mb-2 block text-sm font-medium text-slate-200"
+                      className="mb-2 block text-sm font-medium text-slate-100"
                     >
                       Asking price
                     </label>
@@ -501,12 +434,76 @@ export default function CheckForm() {
                       }}
                       placeholder="Optional, e.g. 7,495"
                       disabled={isSubmitting}
-                      className="h-14 w-full rounded-2xl border border-sky-400/30 bg-white/5 px-4 text-base font-medium text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
+                      className="h-14 w-full rounded-2xl border border-sky-300 bg-white/10 px-4 text-base font-medium text-white outline-none transition placeholder:text-slate-300 focus:border-sky-200"
                     />
-                    <p className="mt-2 text-xs text-slate-400">
-                      Optional, but recommended. We’ll use this to show whether the
-                      car looks above market, fair value, or below market.
+                    <p className="mt-2 text-xs text-slate-200">
+                      Optional, but recommended. We use this to show whether the car
+                      looks above market, fair value, or below market.
                     </p>
+                  </div>
+                </div>
+
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div>
+                    <label
+                      htmlFor="mileage"
+                      className="mb-2 block text-sm font-medium text-slate-200"
+                    >
+                      Current mileage
+                    </label>
+                    <input
+                      id="mileage"
+                      name="mileage"
+                      type="text"
+                      inputMode="numeric"
+                      value={mileage}
+                      onChange={(e) => {
+                        setMileage(e.target.value.replace(/[^\d,]/g, ""));
+                        if (continueError) setContinueError(null);
+                      }}
+                      placeholder="e.g. 62,000"
+                      disabled={isSubmitting}
+                      className="h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-base font-medium text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="gearbox"
+                      className="mb-2 block text-sm font-medium text-slate-200"
+                    >
+                      Gearbox type
+                    </label>
+                    <select
+                      id="gearbox"
+                      name="gearbox"
+                      value={gearbox}
+                      onChange={(e) => {
+                        setGearbox(e.target.value);
+                        if (continueError) setContinueError(null);
+                      }}
+                      disabled={isSubmitting}
+                      className="h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-base font-medium text-white outline-none transition focus:border-sky-400"
+                    >
+                      <option value="" className="bg-slate-950 text-slate-300">
+                        Select gearbox
+                      </option>
+                      <option value="manual" className="bg-slate-950 text-white">
+                        Manual
+                      </option>
+                      <option value="automatic" className="bg-slate-950 text-white">
+                        Automatic
+                      </option>
+                      <option value="cvt" className="bg-slate-950 text-white">
+                        CVT
+                      </option>
+                      <option
+                        value="semi-automatic"
+                        className="bg-slate-950 text-white"
+                      >
+                        Semi-automatic
+                      </option>
+                    </select>
                   </div>
                 </div>
 
