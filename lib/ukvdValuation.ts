@@ -1,16 +1,12 @@
-// lib/ukvdValuation.ts
-
 import { mustGetEnv } from "@/lib/env";
 
-function cleanRegistration(reg: string): string {
+function cleanRegistration(reg: string) {
   return reg.replace(/\s/g, "").toUpperCase();
 }
 
 function getErrorMessage(payload: any) {
   return (
-    payload?.Response?.StatusMessage ||
     payload?.ResponseInformation?.StatusMessage ||
-    payload?.Response?.StatusInformation?.Lookup?.StatusMessage ||
     payload?.ResponseInformation?.Message ||
     payload?.Message ||
     payload?.error ||
@@ -19,72 +15,46 @@ function getErrorMessage(payload: any) {
   );
 }
 
-function pickNumber(...values: unknown[]): number | null {
-  for (const value of values) {
-    if (typeof value === "number" && Number.isFinite(value)) {
-      return value;
-    }
+function getResultsNode(payload: any) {
+  return (
+    payload?.Results ||
+    payload?.results ||
+    payload?.Data?.Results ||
+    payload?.data?.Results ||
+    null
+  );
+}
 
-    if (typeof value === "string") {
-      const cleaned = value.replace(/[^\d.-]/g, "").trim();
-      if (!cleaned) continue;
-
-      const parsed = Number(cleaned);
-      if (Number.isFinite(parsed)) {
-        return parsed;
-      }
-    }
+function parseNumber(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string") {
+    const cleaned = value.replace(/[^0-9.-]/g, "").trim();
+    if (!cleaned) return null;
+    const parsed = Number(cleaned);
+    return Number.isFinite(parsed) ? parsed : null;
   }
-
   return null;
 }
 
-function objectValues(value: unknown): any[] {
-  if (!value || typeof value !== "object") return [];
-  return Object.values(value as Record<string, unknown>);
-}
-
-function nestedCandidates(root: any): any[] {
-  const out: any[] = [];
-  const seen = new Set<any>();
-
-  function push(value: any) {
-    if (!value || typeof value !== "object") return;
-    if (seen.has(value)) return;
-    seen.add(value);
-    out.push(value);
+function firstNumber(...values: unknown[]) {
+  for (const value of values) {
+    const parsed = parseNumber(value);
+    if (parsed !== null) return parsed;
   }
-
-  push(root);
-  push(root?.Response);
-  push(root?.Response?.DataItems);
-  push(root?.Response?.DataItems?.Valuation);
-  push(root?.Response?.DataItems?.ValuationData);
-  push(root?.Response?.DataItems?.UkvdValuation);
-  push(root?.Response?.DataItems?.VehicleValuation);
-  push(root?.Response?.DataItems?.CurrentValuation);
-  push(root?.Results);
-  push(root?.Results?.Valuation);
-  push(root?.Results?.ValuationData);
-
-  for (const value of objectValues(root?.Response?.DataItems)) push(value);
-  for (const value of objectValues(root?.Results)) push(value);
-
-  return out;
+  return null;
 }
 
 export type UkvdValuationSummary = {
-  source: "ukvd";
-  below: number | null;
-  low: number | null;
-  average: number | null;
-  median: number | null;
-  high: number | null;
-  above: number | null;
-  retail: number | null;
-  private: number | null;
-  trade: number | null;
-  raw: any;
+  available: boolean;
+  source: string;
+  tradeLow: number | null;
+  tradeAverage: number | null;
+  tradeHigh: number | null;
+  retailLow: number | null;
+  retailAverage: number | null;
+  retailHigh: number | null;
+  mileage: number | null;
+  valuationDate: string | null;
 };
 
 export async function fetchUkvdValuationByVrm(registration: string) {
@@ -96,7 +66,7 @@ export async function fetchUkvdValuationByVrm(registration: string) {
   const vrm = cleanRegistration(registration);
 
   if (!vrm) {
-    throw new Error("UKVD valuation failed: missing registration");
+    throw new Error("UKVD valuation lookup failed: missing registration");
   }
 
   const url = new URL("/r2/lookup", baseUrl);
@@ -133,131 +103,114 @@ export async function fetchUkvdValuationByVrm(registration: string) {
     throw new Error(`UKVD valuation HTTP ${res.status}: ${getErrorMessage(json)}`);
   }
 
-  const responseStatus =
-    json?.Response?.StatusCode ??
-    json?.ResponseInformation?.StatusCode ??
-    json?.Response?.StatusInformation?.Lookup?.StatusCode;
-
-  const responseMessage =
-    json?.Response?.StatusMessage ??
-    json?.ResponseInformation?.StatusMessage ??
-    json?.Response?.StatusInformation?.Lookup?.StatusMessage;
+  const responseInfo = json?.ResponseInformation ?? {};
+  const results = getResultsNode(json);
 
   const topLevelSuccess =
-    responseStatus === 200 ||
-    responseStatus === "200" ||
-    responseStatus === "Success" ||
-    responseMessage === "Success";
+    responseInfo?.IsSuccessStatusCode === true ||
+    responseInfo?.StatusCode === 200 ||
+    responseInfo?.StatusCode === "200" ||
+    responseInfo?.StatusCode === "Success" ||
+    responseInfo?.StatusMessage === "Success";
 
-  const candidates = nestedCandidates(json);
+  const hasResultsObject =
+    !!results && typeof results === "object" && Object.keys(results).length > 0;
 
-  const summary = buildUkvdValuationSummaryFromPayload(json);
-
-  const hasValuationData =
-    summary.average !== null ||
-    summary.median !== null ||
-    summary.low !== null ||
-    summary.high !== null ||
-    summary.below !== null ||
-    summary.above !== null ||
-    summary.private !== null ||
-    summary.retail !== null ||
-    summary.trade !== null;
-
-  if (!topLevelSuccess && !hasValuationData && candidates.length === 0) {
-    throw new Error(`UKVD valuation failed: ${getErrorMessage(json)}`);
+  if (!topLevelSuccess && !hasResultsObject) {
+    throw new Error(`UKVD valuation lookup failed: ${getErrorMessage(json)}`);
   }
 
-  if (!hasValuationData) {
-    throw new Error(
-      `UKVD valuation returned no usable pricing data: ${getErrorMessage(json)}`
-    );
+  if (!json?.Results && results) {
+    return {
+      ...json,
+      Results: results,
+    };
   }
 
   return json;
 }
 
-export function buildUkvdValuationSummaryFromPayload(
-  payload: any
-): UkvdValuationSummary {
-  const candidates = nestedCandidates(payload);
+export function buildUkvdValuationSummary(payload: any): UkvdValuationSummary {
+  const results = getResultsNode(payload) ?? {};
 
-  const below = pickNumber(
-    ...candidates.map((node) => node?.Below),
-    ...candidates.map((node) => node?.BelowMarket),
-    ...candidates.map((node) => node?.BelowAverage),
-    ...candidates.map((node) => node?.PriceBand1),
-    ...candidates.map((node) => node?.Band1),
-    ...candidates.map((node) => node?.VeryLow)
+  const valuation =
+    results?.ValuationDetails ||
+    results?.Valuation ||
+    results?.VehicleValuation ||
+    results?.GlassValuation ||
+    results?.CapValuation ||
+    results;
+
+  const tradeLow = firstNumber(
+    valuation?.TradeLow,
+    valuation?.Below,
+    valuation?.CleanLow,
+    valuation?.PartExchangeLow
   );
 
-  const low = pickNumber(
-    ...candidates.map((node) => node?.Low),
-    ...candidates.map((node) => node?.Lower),
-    ...candidates.map((node) => node?.LowerPrice),
-    ...candidates.map((node) => node?.Clean),
-    ...candidates.map((node) => node?.PriceBand2),
-    ...candidates.map((node) => node?.Band2)
+  const tradeAverage = firstNumber(
+    valuation?.TradeAverage,
+    valuation?.Trade,
+    valuation?.Clean,
+    valuation?.PartExchange
   );
 
-  const average = pickNumber(
-    ...candidates.map((node) => node?.Average),
-    ...candidates.map((node) => node?.Avg),
-    ...candidates.map((node) => node?.CurrentValue),
-    ...candidates.map((node) => node?.MarketValue),
-    ...candidates.map((node) => node?.Valuation),
-    ...candidates.map((node) => node?.PriceBand3),
-    ...candidates.map((node) => node?.Band3)
+  const tradeHigh = firstNumber(
+    valuation?.TradeHigh,
+    valuation?.Above,
+    valuation?.CleanHigh,
+    valuation?.PartExchangeHigh
   );
 
-  const median = pickNumber(
-    ...candidates.map((node) => node?.Median),
-    ...candidates.map((node) => node?.Mid),
-    average
+  const retailLow = firstNumber(
+    valuation?.RetailLow,
+    valuation?.RetailBelow,
+    valuation?.ForecourtLow
   );
 
-  const high = pickNumber(
-    ...candidates.map((node) => node?.High),
-    ...candidates.map((node) => node?.Higher),
-    ...candidates.map((node) => node?.Retail),
-    ...candidates.map((node) => node?.PriceBand4),
-    ...candidates.map((node) => node?.Band4)
+  const retailAverage = firstNumber(
+    valuation?.RetailAverage,
+    valuation?.Retail,
+    valuation?.Forecourt,
+    valuation?.DealerRetail
   );
 
-  const above = pickNumber(
-    ...candidates.map((node) => node?.Above),
-    ...candidates.map((node) => node?.AboveMarket),
-    ...candidates.map((node) => node?.PriceBand5),
-    ...candidates.map((node) => node?.Band5),
-    ...candidates.map((node) => node?.VeryHigh)
+  const retailHigh = firstNumber(
+    valuation?.RetailHigh,
+    valuation?.RetailAbove,
+    valuation?.ForecourtHigh
   );
 
-  const retail = pickNumber(
-    ...candidates.map((node) => node?.Retail),
-    ...candidates.map((node) => node?.RetailValue)
+  const mileage = firstNumber(
+    valuation?.Mileage,
+    valuation?.ValuationMileage,
+    results?.Mileage
   );
 
-  const privateValue = pickNumber(
-    ...candidates.map((node) => node?.Private),
-    ...candidates.map((node) => node?.PrivateValue)
-  );
+  const valuationDate =
+    valuation?.ValuationDate ||
+    valuation?.Date ||
+    results?.ValuationDate ||
+    null;
 
-  const trade = pickNumber(
-    ...candidates.map((node) => node?.Trade),
-    ...candidates.map((node) => node?.TradeValue)
-  );
+  const available =
+    tradeLow !== null ||
+    tradeAverage !== null ||
+    tradeHigh !== null ||
+    retailLow !== null ||
+    retailAverage !== null ||
+    retailHigh !== null;
 
   return {
+    available,
     source: "ukvd",
-    below,
-    low,
-    average,
-    median,
-    high,
-    above,
-    retail,
-    private: privateValue,
-    trade,
-    raw: payload,
+    tradeLow,
+    tradeAverage,
+    tradeHigh,
+    retailLow,
+    retailAverage,
+    retailHigh,
+    mileage,
+    valuationDate,
   };
 }

@@ -103,7 +103,8 @@ function getSnapshotVerdict(
     title: "This vehicle looks less exposed, but hidden issues can still matter",
     description:
       "The initial signals look lighter, but the full report helps rule out expensive surprises and history issues.",
-  };
+    };
+  }
 }
 
 function getMotPanelSummary(motPayload: any) {
@@ -623,6 +624,16 @@ export default async function Page({
   const marketSummaryText: string | null =
     typeof marketValue?.summary === "string" ? marketValue.summary : null;
 
+  const valuationDate: string | null =
+    typeof marketValue?.valuation_date === "string"
+      ? marketValue.valuation_date
+      : null;
+
+  const valuationMileage: number | null =
+    typeof marketValue?.valuation_mileage === "number"
+      ? marketValue.valuation_mileage
+      : null;
+
   if (isPaid) {
     return (
       <ReportClient
@@ -652,6 +663,8 @@ export default async function Page({
         expiresAtLabel={expiresAtLabel}
         serviceRiskItems={serviceRiskItems}
         motRiskItems={motRiskItems}
+        askingPrice={askingPrice}
+        marketValue={marketValue}
       />
     );
   }
@@ -796,6 +809,16 @@ export default async function Page({
                       </div>
                     </div>
                   </div>
+
+                  {(valuationDate || valuationMileage !== null) && (
+                    <div className="mt-3 text-xs text-slate-500">
+                      {valuationDate ? `Valuation date: ${formatDate(valuationDate)}` : ""}
+                      {valuationDate && valuationMileage !== null ? " · " : ""}
+                      {valuationMileage !== null
+                        ? `Valuation mileage: ${valuationMileage.toLocaleString()}`
+                        : ""}
+                    </div>
+                  )}
 
                   {marketDelta !== null ? (
                     <div className="mt-3 text-sm text-slate-700">

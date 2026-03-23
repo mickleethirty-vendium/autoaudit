@@ -192,6 +192,8 @@ export default function ReportClient({
   expiresAtLabel,
   serviceRiskItems,
   motRiskItems,
+  askingPrice,
+  marketValue,
 }: {
   reg: string | null;
   make: string | null;
@@ -228,6 +230,8 @@ export default function ReportClient({
   expiresAtLabel: string | null;
   serviceRiskItems: RiskItem[];
   motRiskItems: RiskItem[];
+  askingPrice: number | null;
+  marketValue: any;
 }) {
   const allItems = useMemo(
     () => [...serviceRiskItems, ...motRiskItems],
@@ -249,18 +253,6 @@ export default function ReportClient({
     [confidenceDisplay]
   );
 
-  const marketValue = useMemo(() => {
-    return fullSummary?.market_value && typeof fullSummary.market_value === "object"
-      ? fullSummary.market_value
-      : null;
-  }, [fullSummary]);
-
-  const askingPrice = useMemo(() => {
-    return typeof fullSummary?.asking_price === "number"
-      ? fullSummary.asking_price
-      : null;
-  }, [fullSummary]);
-
   const marketLow =
     typeof marketValue?.low === "number" ? marketValue.low : null;
   const marketHigh =
@@ -275,6 +267,14 @@ export default function ReportClient({
     typeof marketValue?.position === "string" ? marketValue.position : null;
   const marketSummaryText =
     typeof marketValue?.summary === "string" ? marketValue.summary : null;
+  const valuationDate =
+    typeof marketValue?.valuation_date === "string"
+      ? marketValue.valuation_date
+      : null;
+  const valuationMileage =
+    typeof marketValue?.valuation_mileage === "number"
+      ? marketValue.valuation_mileage
+      : null;
 
   const [addressedIds, setAddressedIds] = useState<Record<string, boolean>>({});
 
@@ -408,7 +408,7 @@ export default function ReportClient({
           <div className="mt-1 text-sm text-emerald-900/80">
             {justUnlockedHpi
               ? "Your report now includes the HPI-style history panel."
-              : "You now have service risk, detailed findings and MoT analysis."}
+              : "You now have service risk, detailed findings, pricing context and MoT analysis."}
           </div>
         </div>
       ) : null}
@@ -590,6 +590,21 @@ export default function ReportClient({
                       </div>
                     </div>
                   </div>
+
+                  {(valuationDate || valuationMileage !== null) && (
+                    <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Valuation basis
+                      </div>
+                      <div className="mt-1 text-sm font-semibold text-slate-950">
+                        {valuationDate ? formatDate(valuationDate) : "—"}
+                        {valuationDate && valuationMileage !== null ? " · " : ""}
+                        {valuationMileage !== null
+                          ? `${valuationMileage.toLocaleString()} miles`
+                          : ""}
+                      </div>
+                    </div>
+                  )}
 
                   {marketDelta !== null ? (
                     <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3">

@@ -315,6 +315,16 @@ export default async function Page({
   const marketSummaryText: string | null =
     typeof marketValue?.summary === "string" ? marketValue.summary : null;
 
+  const valuationDate: string | null =
+    typeof marketValue?.valuation_date === "string"
+      ? marketValue.valuation_date
+      : null;
+
+  const valuationMileage: number | null =
+    typeof marketValue?.valuation_mileage === "number"
+      ? marketValue.valuation_mileage
+      : null;
+
   const reportCheckoutUrl = `/api/checkout?report_id=${data.id}&tier=report`;
   const reportPlusHpiCheckoutUrl = `/api/checkout?report_id=${data.id}&tier=report_plus_hpi`;
 
@@ -416,6 +426,16 @@ export default async function Page({
                       </div>
                     </div>
                   </div>
+
+                  {(valuationDate || valuationMileage !== null) && (
+                    <div className="mt-3 text-xs text-slate-500">
+                      {valuationDate ? `Valuation date: ${formatDate(valuationDate)}` : ""}
+                      {valuationDate && valuationMileage !== null ? " · " : ""}
+                      {valuationMileage !== null
+                        ? `Valuation mileage: ${valuationMileage.toLocaleString()}`
+                        : ""}
+                    </div>
+                  )}
 
                   {marketDelta !== null ? (
                     <div className="mt-3 text-sm text-slate-700">

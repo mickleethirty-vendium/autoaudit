@@ -7,17 +7,16 @@ type Transmission = string;
 type TimingType = "belt" | "chain" | "unknown";
 
 export type MarketValueInput = {
+  available?: boolean;
   source?: string | null;
-  below?: number | null;
-  low?: number | null;
-  average?: number | null;
-  median?: number | null;
-  high?: number | null;
-  above?: number | null;
-  retail?: number | null;
-  private?: number | null;
-  trade?: number | null;
-  raw?: any;
+  tradeLow?: number | null;
+  tradeAverage?: number | null;
+  tradeHigh?: number | null;
+  retailLow?: number | null;
+  retailAverage?: number | null;
+  retailHigh?: number | null;
+  mileage?: number | null;
+  valuationDate?: string | null;
 };
 
 export type EngineInput = {
@@ -71,6 +70,8 @@ type MarketValueSummary = {
   delta_percent: number | null;
   position: ValuePosition;
   summary: string | null;
+  valuation_date: string | null;
+  valuation_mileage: number | null;
 };
 
 function clamp(n: number, lo: number, hi: number) {
@@ -309,7 +310,7 @@ function confidenceScore(input: EngineInput, items: ReportItem[]) {
     reasons.push("Recent MoT failures strengthen the estimate.");
   }
 
-  if (input.marketValue) {
+  if (input.marketValue?.available) {
     score += 4;
     reasons.push("Market valuation data included.");
   }
@@ -366,6 +367,8 @@ function pickMarketBenchmark(marketValue?: MarketValueInput | null): {
   low: number | null;
   high: number | null;
   source: string | null;
+  valuationDate: string | null;
+  valuationMileage: number | null;
 } {
   if (!marketValue) {
     return {
@@ -374,15 +377,16 @@ function pickMarketBenchmark(marketValue?: MarketValueInput | null): {
       low: null,
       high: null,
       source: null,
+      valuationDate: null,
+      valuationMileage: null,
     };
   }
 
   const valueCandidates: Array<{ label: string; value: number | null | undefined }> = [
-    { label: "average", value: marketValue.average },
-    { label: "median", value: marketValue.median },
-    { label: "private", value: marketValue.private },
-    { label: "retail", value: marketValue.retail },
-    { label: "trade", value: marketValue.trade },
+    { label: "retail average", value: marketValue.retailAverage },
+    { label: "retail high", value: marketValue.retailHigh },
+    { label: "trade average", value: marketValue.tradeAverage },
+    { label: "trade high", value: marketValue.tradeHigh },
   ];
 
   const chosen = valueCandidates.find(
@@ -391,14 +395,14 @@ function pickMarketBenchmark(marketValue?: MarketValueInput | null): {
   );
 
   const lowerCandidates = [
-    marketValue.low,
-    marketValue.below,
+    marketValue.retailLow,
+    marketValue.tradeLow,
     chosen?.value ?? null,
   ].filter((value): value is number => typeof value === "number" && Number.isFinite(value));
 
   const upperCandidates = [
-    marketValue.high,
-    marketValue.above,
+    marketValue.retailHigh,
+    marketValue.tradeHigh,
     chosen?.value ?? null,
   ].filter((value): value is number => typeof value === "number" && Number.isFinite(value));
 
@@ -411,6 +415,11 @@ function pickMarketBenchmark(marketValue?: MarketValueInput | null): {
     low: lowerCandidates.length ? roundMoney(Math.min(...lowerCandidates)) : null,
     high: upperCandidates.length ? roundMoney(Math.max(...upperCandidates)) : null,
     source: marketValue.source ? String(marketValue.source) : null,
+    valuationDate: marketValue.valuationDate ?? null,
+    valuationMileage:
+      typeof marketValue.mileage === "number" && Number.isFinite(marketValue.mileage)
+        ? roundMoney(marketValue.mileage)
+        : null,
   };
 }
 
@@ -441,6 +450,8 @@ function buildMarketValueSummary(
       delta_percent: null,
       position: "unknown",
       summary: null,
+      valuation_date: benchmark.valuationDate,
+      valuation_mileage: benchmark.valuationMileage,
     };
   }
 
@@ -486,6 +497,8 @@ function buildMarketValueSummary(
     delta_percent: deltaPercent,
     position,
     summary,
+    valuation_date: benchmark.valuationDate,
+    valuation_mileage: benchmark.valuationMileage,
   };
 }
 

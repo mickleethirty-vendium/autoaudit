@@ -4,9 +4,9 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { fetchDvsaMotHistory } from "@/lib/dvsaMot";
 import { extractMotSignals } from "@/lib/motSignals";
 import {
-  buildUkvdValuationSummaryFromPayload,
+  buildUkvdValuationSummary,
   fetchUkvdValuationByVrm,
-} from "@/lib/ukvdValuation";
+} from "@/lib/ukvdvaluation";
 
 export const runtime = "nodejs";
 
@@ -114,13 +114,12 @@ export async function POST(req: Request) {
 
     const motSignals = mot_payload ? extractMotSignals(mot_payload) : null;
 
-    let marketValue: ReturnType<typeof buildUkvdValuationSummaryFromPayload> | null =
-      null;
+    let marketValue: ReturnType<typeof buildUkvdValuationSummary> | null = null;
 
     if (registration) {
       try {
         const valuationPayload = await fetchUkvdValuationByVrm(registration);
-        marketValue = buildUkvdValuationSummaryFromPayload(valuationPayload);
+        marketValue = buildUkvdValuationSummary(valuationPayload);
       } catch (error) {
         console.error("UKVD valuation lookup failed", {
           registration,
@@ -158,7 +157,6 @@ export async function POST(req: Request) {
         full_payload: full,
         is_paid: false,
 
-        // Ensure every new check starts with a fresh HPI state
         hpi_checked: false,
         hpi_checked_at: null,
         hpi_status: null,
