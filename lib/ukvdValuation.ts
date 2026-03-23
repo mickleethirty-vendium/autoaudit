@@ -162,105 +162,99 @@ export function buildUkvdValuationSummary(payload: any): UkvdValuationSummary {
     results?.CapValuation ||
     results;
 
-  const tradeLow = firstNumber(
-    valuation?.TradeLow,
-    valuation?.Below,
-    valuation?.CleanLow,
-    valuation?.PartExchangeLow
-  );
+  const figures = valuation?.ValuationFigures ?? valuation ?? {};
 
-  const tradeAverage = firstNumber(
-    valuation?.TradeAverage,
-    valuation?.Trade,
-    valuation?.Clean,
-    valuation?.PartExchange
-  );
-
-  const tradeHigh = firstNumber(
-    valuation?.TradeHigh,
-    valuation?.Above,
-    valuation?.CleanHigh,
-    valuation?.PartExchangeHigh
-  );
-
-  const retailLow = firstNumber(
-    valuation?.RetailLow,
-    valuation?.RetailBelow,
-    valuation?.ForecourtLow
-  );
-
-  const retailAverage = firstNumber(
-    valuation?.RetailAverage,
-    valuation?.Retail,
-    valuation?.Forecourt,
-    valuation?.DealerRetail
-  );
-
-  const retailHigh = firstNumber(
-    valuation?.RetailHigh,
-    valuation?.RetailAbove,
-    valuation?.ForecourtHigh
+  const retail = firstNumber(
+    figures?.DealerForecourt,
+    figures?.TradeRetail
   );
 
   const privateValue = firstNumber(
-    valuation?.Private,
-    valuation?.PrivateSale,
-    valuation?.PrivateAverage
+    figures?.PrivateAverage,
+    figures?.PrivateClean
+  );
+
+  const trade = firstNumber(
+    figures?.TradeAverage,
+    figures?.PartExchange,
+    figures?.Auction
+  );
+
+  const retailLow = firstNumber(
+    figures?.TradeRetail,
+    figures?.PrivateClean
+  );
+
+  const retailAverage = firstNumber(
+    figures?.DealerForecourt,
+    figures?.TradeRetail
+  );
+
+  const retailHigh = firstNumber(
+    figures?.OnTheRoad,
+    figures?.DealerForecourt
+  );
+
+  const tradeLow = firstNumber(
+    figures?.TradePoor,
+    figures?.Auction
+  );
+
+  const tradeAverage = firstNumber(
+    figures?.TradeAverage,
+    figures?.PartExchange
+  );
+
+  const tradeHigh = firstNumber(
+    figures?.PartExchange,
+    figures?.PrivateClean
   );
 
   const below = firstNumber(
-    valuation?.Below,
+    figures?.TradePoor,
     tradeLow,
     retailLow
   );
 
   const low = firstNumber(
-    valuation?.Low,
-    retailLow,
-    tradeLow
+    figures?.Auction,
+    tradeLow,
+    retailLow
   );
 
   const average = firstNumber(
-    valuation?.Average,
+    figures?.PrivateAverage,
+    figures?.TradeRetail,
+    figures?.DealerForecourt,
     retailAverage,
-    tradeAverage,
-    privateValue
+    tradeAverage
   );
 
   const median = firstNumber(
-    valuation?.Median,
+    figures?.PrivateAverage,
     average
   );
 
   const high = firstNumber(
-    valuation?.High,
-    retailHigh,
-    tradeHigh
-  );
-
-  const above = firstNumber(
-    valuation?.Above,
-    tradeHigh,
+    figures?.DealerForecourt,
+    figures?.OnTheRoad,
     retailHigh
   );
 
-  const retail = firstNumber(
-    valuation?.Retail,
-    retailAverage
-  );
-
-  const trade = firstNumber(
-    valuation?.Trade,
-    tradeAverage
+  const above = firstNumber(
+    figures?.OnTheRoad,
+    retailHigh
   );
 
   const mileage = firstNumber(
-    valuation?.Mileage,
     valuation?.ValuationMileage,
+    valuation?.Mileage,
     results?.Mileage
   );
 
   const valuationDate =
+    valuation?.ValuationTime ||
+    valuation?.GeneratedAt ||
     valuation?.ValuationDate ||
     valuation?.Date ||
     results?.ValuationDate ||
