@@ -9,6 +9,13 @@ function cleanRegistration(reg: string) {
   return reg.replace(/\s/g, "").toUpperCase();
 }
 
+function formatRegistrationInput(value: string) {
+  const cleaned = value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+
+  if (cleaned.length <= 4) return cleaned;
+  return `${cleaned.slice(0, 4)} ${cleaned.slice(4, 7)}`;
+}
+
 export default function HomePage() {
   const router = useRouter();
 
@@ -28,19 +35,15 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-[var(--aa-bg)]">
       <main>
-        {/* HERO (rounded now) */}
         <section className="mx-auto mt-4 max-w-7xl px-4">
           <div className="relative overflow-hidden rounded-3xl bg-[var(--aa-black)]">
-            {/* Background image */}
             <div
               className="absolute inset-0 bg-cover bg-center"
               style={{ backgroundImage: "url('/hero-car-road.png')" }}
             />
 
-            {/* Gradient overlay */}
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,10,10,0.42)_0%,rgba(10,10,10,0.16)_35%,rgba(10,10,10,0.28)_100%)]" />
 
-            {/* Content */}
             <div className="relative mx-auto flex min-h-[380px] max-w-7xl flex-col items-center justify-center px-4 py-10 text-center sm:min-h-[420px] sm:py-12 lg:min-h-[460px]">
               <h1 className="max-w-5xl text-4xl font-extrabold tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)] sm:text-5xl lg:text-6xl">
                 Know the Risks Before You Buy a Used Car
@@ -60,7 +63,7 @@ export default function HomePage() {
                     name="registration"
                     value={registration}
                     onChange={(e) =>
-                      setRegistration(e.target.value.toUpperCase())
+                      setRegistration(formatRegistrationInput(e.target.value))
                     }
                     placeholder="ENTER REGISTRATION"
                     autoCapitalize="characters"
@@ -92,7 +95,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* FEATURES */}
         <section className="mt-6 border-t border-[var(--aa-silver)] bg-white">
           <div className="mx-auto max-w-7xl px-4 py-6 sm:py-8">
             <div className="grid gap-6 md:grid-cols-3 md:gap-8">
@@ -135,7 +137,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* PRICING */}
         <section id="pricing" className="bg-[var(--aa-bg)]">
           <div className="mx-auto max-w-7xl px-4 py-12">
             <div className="grid gap-4 md:grid-cols-2">
