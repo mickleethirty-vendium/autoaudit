@@ -122,7 +122,18 @@ export async function POST(req: Request) {
           registration,
           mileage
         );
+
+        console.log(
+          "UKVD valuation payload:",
+          JSON.stringify(valuationPayload, null, 2)
+        );
+
         marketValue = buildUkvdValuationSummary(valuationPayload);
+
+        console.log(
+          "UKVD valuation summary:",
+          JSON.stringify(marketValue, null, 2)
+        );
       } catch (error) {
         console.error("UKVD valuation lookup failed", {
           registration,
