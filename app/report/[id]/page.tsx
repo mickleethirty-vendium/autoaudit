@@ -16,6 +16,18 @@ const stripe = new Stripe(mustGetEnv("STRIPE_SECRET_KEY"), {
 
 type CheckoutTier = "report" | "hpi_upgrade" | "report_plus_hpi";
 
+function money(n: number) {
+  try {
+    return new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: "GBP",
+      maximumFractionDigits: 0,
+    }).format(n);
+  } catch {
+    return `£${Math.round(n)}`;
+  }
+}
+
 function formatDate(value?: string | null) {
   if (!value) return null;
   const d = new Date(value);
@@ -211,6 +223,26 @@ function parseCheckoutTier(value?: string | null): CheckoutTier {
   if (value === "hpi_upgrade") return "hpi_upgrade";
   if (value === "report_plus_hpi") return "report_plus_hpi";
   return "report";
+}
+
+function valuePillStyles(position?: string | null) {
+  if (position === "good") {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  }
+  if (position === "high") {
+    return "border-red-200 bg-red-50 text-red-700";
+  }
+  if (position === "fair") {
+    return "border-amber-200 bg-amber-50 text-amber-700";
+  }
+  return "border-slate-300 bg-slate-50 text-slate-700";
+}
+
+function valuePillLabel(position?: string | null) {
+  if (position === "good") return "Below market";
+  if (position === "high") return "Above market";
+  if (position === "fair") return "Fair value";
+  return "Value insight pending";
 }
 
 export default async function Page({
@@ -556,6 +588,41 @@ export default async function Page({
 
   const hpiChecks = getHpiChecks(hpiSummary);
 
+  const marketValue: any =
+    (fullSummary?.market_value && typeof fullSummary.market_value === "object"
+      ? fullSummary.market_value
+      : null) ??
+    (previewSummary?.market_value && typeof previewSummary.market_value === "object"
+      ? previewSummary.market_value
+      : null);
+
+  const askingPrice: number | null =
+    typeof fullSummary?.asking_price === "number"
+      ? fullSummary.asking_price
+      : typeof previewSummary?.asking_price === "number"
+        ? previewSummary.asking_price
+        : null;
+
+  const marketLow: number | null =
+    typeof marketValue?.low === "number" ? marketValue.low : null;
+
+  const marketHigh: number | null =
+    typeof marketValue?.high === "number" ? marketValue.high : null;
+
+  const marketBenchmark: number | null =
+    typeof marketValue?.benchmark_value === "number"
+      ? marketValue.benchmark_value
+      : null;
+
+  const marketDelta: number | null =
+    typeof marketValue?.delta === "number" ? marketValue.delta : null;
+
+  const marketPosition: string | null =
+    typeof marketValue?.position === "string" ? marketValue.position : null;
+
+  const marketSummaryText: string | null =
+    typeof marketValue?.summary === "string" ? marketValue.summary : null;
+
   if (isPaid) {
     return (
       <ReportClient
@@ -676,6 +743,71 @@ export default async function Page({
                   Best with service history + latest MoT
                 </span>
               </div>
+
+              {askingPrice !== null || marketLow !== null || marketHigh !== null ? (
+                <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-semibold text-slate-950">
+                        Price position
+                      </div>
+                      <div className="mt-1 text-sm text-slate-600">
+                        {marketSummaryText ||
+                          "We’ve compared the asking price with typical market value."}
+                      </div>
+                    </div>
+
+                    <div
+                      className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${valuePillStyles(
+                        marketPosition
+                      )}`}
+                    >
+                      {valuePillLabel(marketPosition)}
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-xl border border-white bg-white p-3">
+                      <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                        Asking price
+                      </div>
+                      <div className="mt-1 text-lg font-extrabold text-slate-950">
+                        {askingPrice !== null ? money(askingPrice) : "—"}
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-white bg-white p-3">
+                      <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                        Typical value
+                      </div>
+                      <div className="mt-1 text-lg font-extrabold text-slate-950">
+                        {marketBenchmark !== null ? money(marketBenchmark) : "—"}
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-white bg-white p-3">
+                      <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                        Market range
+                      </div>
+                      <div className="mt-1 text-lg font-extrabold text-slate-950">
+                        {marketLow !== null && marketHigh !== null
+                          ? `${money(marketLow)} – ${money(marketHigh)}`
+                          : "—"}
+                      </div>
+                    </div>
+                  </div>
+
+                  {marketDelta !== null ? (
+                    <div className="mt-3 text-sm text-slate-700">
+                      Difference vs typical value:{" "}
+                      <span className="font-semibold text-slate-950">
+                        {marketDelta > 0 ? "+" : ""}
+                        {money(marketDelta)}
+                      </span>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
 
             <div className="rounded-2xl border border-black bg-slate-950 p-5 text-white shadow-sm">
@@ -689,7 +821,8 @@ export default async function Page({
 
               <p className="mt-2 text-sm leading-6 text-slate-300">
                 Unlock the full report to see detailed findings, MoT advisory
-                analysis, negotiation guidance and seller red flags.
+                analysis, negotiation guidance, value context and seller red
+                flags.
               </p>
 
               <div className="mt-5 space-y-3">
@@ -709,8 +842,9 @@ export default async function Page({
               </div>
 
               <div className="mt-4 text-xs leading-5 text-slate-400">
-                Core report includes service risk, detailed findings and MoT
-                analysis. Full bundle adds vehicle history & provenance checks.
+                Core report includes service risk, detailed findings, MoT
+                analysis and pricing context. Full bundle adds vehicle history &
+                provenance checks.
               </div>
             </div>
           </div>
@@ -794,6 +928,7 @@ export default async function Page({
                 <div>✔ Seller questions and red flags</div>
                 <div>✔ Negotiation strategy</div>
                 <div>✔ MoT advisory analysis</div>
+                <div>✔ Price and value context</div>
               </div>
 
               <div className="mt-5">
@@ -841,7 +976,7 @@ export default async function Page({
               </div>
               <div className="mt-2 text-sm text-slate-700">
                 Service risk, detailed findings, seller questions, negotiation
-                guidance and MoT analysis.
+                guidance, pricing context and MoT analysis.
               </div>
               <div className="mt-4">
                 <a href={reportCheckoutUrl} className="btn-primary">

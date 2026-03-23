@@ -145,6 +145,26 @@ function confidenceLabelFromScore(score: number) {
   return "Low";
 }
 
+function valuePillStyles(position?: string | null) {
+  if (position === "good") {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  }
+  if (position === "high") {
+    return "border-red-200 bg-red-50 text-red-700";
+  }
+  if (position === "fair") {
+    return "border-amber-200 bg-amber-50 text-amber-700";
+  }
+  return "border-slate-300 bg-slate-50 text-slate-700";
+}
+
+function valuePillLabel(position?: string | null) {
+  if (position === "good") return "Below market";
+  if (position === "high") return "Above market";
+  if (position === "fair") return "Fair value";
+  return "Value insight pending";
+}
+
 export default function ReportClient({
   reg,
   make,
@@ -228,6 +248,33 @@ export default function ReportClient({
     () => parseConfidenceDisplay(confidenceDisplay),
     [confidenceDisplay]
   );
+
+  const marketValue = useMemo(() => {
+    return fullSummary?.market_value && typeof fullSummary.market_value === "object"
+      ? fullSummary.market_value
+      : null;
+  }, [fullSummary]);
+
+  const askingPrice = useMemo(() => {
+    return typeof fullSummary?.asking_price === "number"
+      ? fullSummary.asking_price
+      : null;
+  }, [fullSummary]);
+
+  const marketLow =
+    typeof marketValue?.low === "number" ? marketValue.low : null;
+  const marketHigh =
+    typeof marketValue?.high === "number" ? marketValue.high : null;
+  const marketBenchmark =
+    typeof marketValue?.benchmark_value === "number"
+      ? marketValue.benchmark_value
+      : null;
+  const marketDelta =
+    typeof marketValue?.delta === "number" ? marketValue.delta : null;
+  const marketPosition =
+    typeof marketValue?.position === "string" ? marketValue.position : null;
+  const marketSummaryText =
+    typeof marketValue?.summary === "string" ? marketValue.summary : null;
 
   const [addressedIds, setAddressedIds] = useState<Record<string, boolean>>({});
 
@@ -493,6 +540,78 @@ export default function ReportClient({
 
             <div className="rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur">
               <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                Price Position
+              </div>
+
+              {askingPrice !== null || marketLow !== null || marketHigh !== null ? (
+                <>
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                    <div className="text-sm text-slate-700">
+                      {marketSummaryText ||
+                        "We’ve compared the asking price with typical market value."}
+                    </div>
+
+                    <div
+                      className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${valuePillStyles(
+                        marketPosition
+                      )}`}
+                    >
+                      {valuePillLabel(marketPosition)}
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <div className="rounded-xl border border-slate-200 bg-white p-3">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Asking price
+                      </div>
+                      <div className="mt-1 text-lg font-extrabold text-slate-950">
+                        {money(askingPrice)}
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-slate-200 bg-white p-3">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Typical value
+                      </div>
+                      <div className="mt-1 text-lg font-extrabold text-slate-950">
+                        {money(marketBenchmark)}
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-slate-200 bg-white p-3">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Market range
+                      </div>
+                      <div className="mt-1 text-lg font-extrabold text-slate-950">
+                        {marketLow !== null && marketHigh !== null
+                          ? `${money(marketLow)} – ${money(marketHigh)}`
+                          : "—"}
+                      </div>
+                    </div>
+                  </div>
+
+                  {marketDelta !== null ? (
+                    <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Difference vs typical value
+                      </div>
+                      <div className="mt-1 text-sm font-semibold text-slate-950">
+                        {marketDelta > 0 ? "+" : ""}
+                        {money(marketDelta)}
+                      </div>
+                    </div>
+                  ) : null}
+                </>
+              ) : (
+                <div className="mt-4 text-sm text-slate-600">
+                  Value comparison was not available for this report.
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur">
+              <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                 MoT History
               </div>
 
@@ -603,6 +722,10 @@ export default function ReportClient({
                 </div>
               )}
             </div>
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-3">
+            <div className="xl:col-span-2" />
 
             <div className="rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur">
               <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">

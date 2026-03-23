@@ -50,6 +50,16 @@ function normaliseTransmission(
   return null;
 }
 
+function parseOptionalPrice(value: string): number | null {
+  const cleaned = value.replace(/[^\d.]/g, "").trim();
+  if (!cleaned) return null;
+
+  const parsed = Number(cleaned);
+  if (!Number.isFinite(parsed) || parsed < 0) return null;
+
+  return parsed;
+}
+
 export default function CheckForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -64,6 +74,7 @@ export default function CheckForm() {
   const [vehicle, setVehicle] = useState<LookupVehicle | null>(null);
 
   const [mileage, setMileage] = useState("");
+  const [askingPrice, setAskingPrice] = useState("");
   const [gearbox, setGearbox] = useState("");
   const [continueError, setContinueError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -164,6 +175,15 @@ export default function CheckForm() {
       return;
     }
 
+    const parsedAskingPrice = parseOptionalPrice(askingPrice);
+    if (
+      askingPrice.trim() &&
+      (parsedAskingPrice === null || parsedAskingPrice > 1000000)
+    ) {
+      setContinueError("Please enter a valid asking price.");
+      return;
+    }
+
     const fuel = normaliseFuel(vehicle.fuelType);
     if (!fuel) {
       setContinueError("We couldn’t match the fuel type for this vehicle.");
@@ -190,6 +210,7 @@ export default function CheckForm() {
           make: vehicle.make ?? undefined,
           year,
           mileage: parsedMileage,
+          asking_price: parsedAskingPrice,
           fuel,
           transmission,
           timing_type: "unknown",
@@ -223,6 +244,7 @@ export default function CheckForm() {
     setLookupError(null);
     setContinueError(null);
     setMileage("");
+    setAskingPrice("");
     setGearbox("");
   }
 
@@ -246,7 +268,7 @@ export default function CheckForm() {
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-slate-300 sm:text-base">
             We’ll identify the vehicle from its registration, then ask for a
-            couple of extra details to improve the estimate.
+            few extra details to improve the estimate.
           </p>
         </div>
 
@@ -410,6 +432,32 @@ export default function CheckForm() {
                   </div>
 
                   <div>
+                    <label
+                      htmlFor="askingPrice"
+                      className="mb-2 block text-sm font-medium text-slate-200"
+                    >
+                      Asking price
+                    </label>
+                    <input
+                      id="askingPrice"
+                      name="askingPrice"
+                      type="text"
+                      inputMode="decimal"
+                      value={askingPrice}
+                      onChange={(e) => {
+                        setAskingPrice(e.target.value.replace(/[^\d,.]/g, ""));
+                        if (continueError) setContinueError(null);
+                      }}
+                      placeholder="Optional, e.g. 7,495"
+                      disabled={isSubmitting}
+                      className="h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-base font-medium text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
+                    />
+                    <p className="mt-2 text-xs text-slate-400">
+                      Optional for now. We’ll use this for value comparison.
+                    </p>
+                  </div>
+
+                  <div className="sm:col-span-2">
                     <label
                       htmlFor="gearbox"
                       className="mb-2 block text-sm font-medium text-slate-200"

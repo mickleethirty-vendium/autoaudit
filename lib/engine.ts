@@ -6,6 +6,20 @@ type Fuel = string;
 type Transmission = string;
 type TimingType = "belt" | "chain" | "unknown";
 
+export type MarketValueInput = {
+  source?: string | null;
+  below?: number | null;
+  low?: number | null;
+  average?: number | null;
+  median?: number | null;
+  high?: number | null;
+  above?: number | null;
+  retail?: number | null;
+  private?: number | null;
+  trade?: number | null;
+  raw?: any;
+};
+
 export type EngineInput = {
   year: number;
   mileage: number;
@@ -17,6 +31,7 @@ export type EngineInput = {
   registration?: string | null;
   mot_present?: boolean;
   motSignals?: MotSignals | null;
+  marketValue?: MarketValueInput | null;
 };
 
 type ReportItem = {
@@ -41,6 +56,21 @@ type Bucket = {
   exposure_low: number;
   exposure_high: number;
   item_count: number;
+};
+
+type ValuePosition = "good" | "fair" | "high" | "unknown";
+
+type MarketValueSummary = {
+  source: string | null;
+  asking_price: number | null;
+  benchmark_label: string | null;
+  benchmark_value: number | null;
+  low: number | null;
+  high: number | null;
+  delta: number | null;
+  delta_percent: number | null;
+  position: ValuePosition;
+  summary: string | null;
 };
 
 function clamp(n: number, lo: number, hi: number) {
@@ -279,6 +309,11 @@ function confidenceScore(input: EngineInput, items: ReportItem[]) {
     reasons.push("Recent MoT failures strengthen the estimate.");
   }
 
+  if (input.marketValue) {
+    score += 4;
+    reasons.push("Market valuation data included.");
+  }
+
   if (items.length >= 3) {
     score += 2;
     reasons.push("Multiple risk items identified.");
@@ -325,11 +360,145 @@ function shortDriverReason(item: ReportItem) {
   return item.why_flagged;
 }
 
+function pickMarketBenchmark(marketValue?: MarketValueInput | null): {
+  label: string | null;
+  value: number | null;
+  low: number | null;
+  high: number | null;
+  source: string | null;
+} {
+  if (!marketValue) {
+    return {
+      label: null,
+      value: null,
+      low: null,
+      high: null,
+      source: null,
+    };
+  }
+
+  const valueCandidates: Array<{ label: string; value: number | null | undefined }> = [
+    { label: "average", value: marketValue.average },
+    { label: "median", value: marketValue.median },
+    { label: "private", value: marketValue.private },
+    { label: "retail", value: marketValue.retail },
+    { label: "trade", value: marketValue.trade },
+  ];
+
+  const chosen = valueCandidates.find(
+    (candidate) =>
+      typeof candidate.value === "number" && Number.isFinite(candidate.value)
+  );
+
+  const lowerCandidates = [
+    marketValue.low,
+    marketValue.below,
+    chosen?.value ?? null,
+  ].filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+
+  const upperCandidates = [
+    marketValue.high,
+    marketValue.above,
+    chosen?.value ?? null,
+  ].filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+
+  return {
+    label: chosen?.label ?? null,
+    value:
+      typeof chosen?.value === "number" && Number.isFinite(chosen.value)
+        ? roundMoney(chosen.value)
+        : null,
+    low: lowerCandidates.length ? roundMoney(Math.min(...lowerCandidates)) : null,
+    high: upperCandidates.length ? roundMoney(Math.max(...upperCandidates)) : null,
+    source: marketValue.source ? String(marketValue.source) : null,
+  };
+}
+
+function buildMarketValueSummary(
+  askingPrice: number | null | undefined,
+  marketValue?: MarketValueInput | null
+): MarketValueSummary | null {
+  const asking =
+    typeof askingPrice === "number" && Number.isFinite(askingPrice)
+      ? roundMoney(askingPrice)
+      : null;
+
+  const benchmark = pickMarketBenchmark(marketValue);
+
+  if (!asking && !benchmark.value && !benchmark.low && !benchmark.high) {
+    return null;
+  }
+
+  if (!asking || !benchmark.value) {
+    return {
+      source: benchmark.source,
+      asking_price: asking,
+      benchmark_label: benchmark.label,
+      benchmark_value: benchmark.value,
+      low: benchmark.low,
+      high: benchmark.high,
+      delta: null,
+      delta_percent: null,
+      position: "unknown",
+      summary: null,
+    };
+  }
+
+  const delta = roundMoney(asking - benchmark.value);
+  const deltaPercent =
+    benchmark.value > 0
+      ? Math.round(((asking - benchmark.value) / benchmark.value) * 1000) / 10
+      : null;
+
+  let position: ValuePosition = "fair";
+
+  if (benchmark.high !== null && asking > benchmark.high) {
+    position = "high";
+  } else if (benchmark.low !== null && asking < benchmark.low) {
+    position = "good";
+  } else if (deltaPercent !== null) {
+    if (deltaPercent >= 10) position = "high";
+    else if (deltaPercent <= -10) position = "good";
+    else position = "fair";
+  }
+
+  let summary: string;
+  if (position === "high") {
+    summary = `The asking price looks above typical market value by about £${Math.abs(
+      delta
+    )}.`;
+  } else if (position === "good") {
+    summary = `The asking price looks below typical market value by about £${Math.abs(
+      delta
+    )}.`;
+  } else {
+    summary = "The asking price looks broadly in line with typical market value.";
+  }
+
+  return {
+    source: benchmark.source,
+    asking_price: asking,
+    benchmark_label: benchmark.label,
+    benchmark_value: benchmark.value,
+    low: benchmark.low,
+    high: benchmark.high,
+    delta,
+    delta_percent: deltaPercent,
+    position,
+    summary,
+  };
+}
+
 function buildHeadline(
   risk_level: "low" | "medium" | "high",
   exposure_high: number,
-  mot?: MotSignals | null
+  mot?: MotSignals | null,
+  marketSummary?: MarketValueSummary | null
 ) {
+  if (marketSummary?.position === "high" && risk_level !== "low") {
+    return "This vehicle may be both pricey and exposed to near-term costs.";
+  }
+
   if (
     risk_level === "high" ||
     mot?.corrosionFlag ||
@@ -349,7 +518,8 @@ function buildSummaryText(
   risk_level: "low" | "medium" | "high",
   exposure_low: number,
   exposure_high: number,
-  mot?: MotSignals | null
+  mot?: MotSignals | null,
+  marketSummary?: MarketValueSummary | null
 ) {
   const motContext =
     mot &&
@@ -357,15 +527,17 @@ function buildSummaryText(
       ? " MoT history also adds useful warning signals."
       : "";
 
+  const priceContext = marketSummary?.summary ? ` ${marketSummary.summary}` : "";
+
   if (risk_level === "high") {
-    return `Estimated near-term repair exposure is around £${exposure_low}–£${exposure_high}.${motContext} This is the kind of profile worth checking carefully before agreeing a price.`;
+    return `Estimated near-term repair exposure is around £${exposure_low}–£${exposure_high}.${motContext}${priceContext} This is the kind of profile worth checking carefully before agreeing a price.`;
   }
 
   if (risk_level === "medium") {
-    return `Estimated near-term repair exposure is around £${exposure_low}–£${exposure_high}.${motContext} There is enough here to justify a closer look at the detailed findings.`;
+    return `Estimated near-term repair exposure is around £${exposure_low}–£${exposure_high}.${motContext}${priceContext} There is enough here to justify a closer look at the detailed findings.`;
   }
 
-  return `Estimated near-term repair exposure is around £${exposure_low}–£${exposure_high}.${motContext} The profile looks lighter, but further detail may still help avoid surprises.`;
+  return `Estimated near-term repair exposure is around £${exposure_low}–£${exposure_high}.${motContext}${priceContext} The profile looks lighter, but further detail may still help avoid surprises.`;
 }
 
 export function generateReport(input: EngineInput) {
@@ -748,6 +920,11 @@ export function generateReport(input: EngineInput) {
     25000
   );
 
+  const marketSummary = buildMarketValueSummary(
+    input.asking_price,
+    input.marketValue
+  );
+
   const confidence = confidenceScore(
     {
       ...input,
@@ -756,12 +933,13 @@ export function generateReport(input: EngineInput) {
     items
   );
 
-  const headline = buildHeadline(risk_level, exposure_high, mot);
+  const headline = buildHeadline(risk_level, exposure_high, mot, marketSummary);
   const summary_text = buildSummaryText(
     risk_level,
     exposure_low,
     exposure_high,
-    mot
+    mot,
+    marketSummary
   );
 
   const bucketMap = new Map<string, Bucket>();
@@ -805,6 +983,11 @@ export function generateReport(input: EngineInput) {
       primary_drivers,
       negotiation_suggested,
       confidence,
+      asking_price:
+        typeof input.asking_price === "number" && Number.isFinite(input.asking_price)
+          ? roundMoney(input.asking_price)
+          : null,
+      market_value: marketSummary,
       mot_summary: mot
         ? {
             recent_failure_count: mot.recentFailureCount,
@@ -821,7 +1004,7 @@ export function generateReport(input: EngineInput) {
     },
     negotiation: {
       suggested_reduction: negotiation_suggested,
-      tip: "Use the suggested reduction as a starting point, then adjust for service history and any proof of recent work.",
+      tip: "Use the suggested reduction as a starting point, then adjust for service history, market value, and any proof of recent work.",
       script: `Based on the vehicle’s age, mileage and available history, I’d need to budget roughly £${negotiation_suggested} for likely near-term maintenance unless there’s documented proof these items were recently done. I’d be more comfortable proceeding at around £X.`,
     },
     disclaimer: {
@@ -840,6 +1023,11 @@ export function generateReport(input: EngineInput) {
       primary_drivers,
       negotiation_suggested,
       confidence,
+      asking_price:
+        typeof input.asking_price === "number" && Number.isFinite(input.asking_price)
+          ? roundMoney(input.asking_price)
+          : null,
+      market_value: marketSummary,
     },
     buckets,
     teaser: {

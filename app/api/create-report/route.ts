@@ -3,6 +3,10 @@ import { generateReport } from "@/lib/engine";
 import { supabaseAdmin } from "@/lib/supabase";
 import { fetchDvsaMotHistory } from "@/lib/dvsaMot";
 import { extractMotSignals } from "@/lib/motSignals";
+import {
+  buildUkvdValuationSummaryFromPayload,
+  fetchUkvdValuationByVrm,
+} from "@/lib/ukvdValuation";
 
 export const runtime = "nodejs";
 
@@ -88,7 +92,9 @@ export async function POST(req: Request) {
 
     if (
       asking_price !== null &&
-      (!Number.isFinite(asking_price) || asking_price < 0 || asking_price > 1000000)
+      (!Number.isFinite(asking_price) ||
+        asking_price < 0 ||
+        asking_price > 1000000)
     ) {
       return NextResponse.json(
         { error: "Invalid asking price" },
@@ -108,6 +114,21 @@ export async function POST(req: Request) {
 
     const motSignals = mot_payload ? extractMotSignals(mot_payload) : null;
 
+    let marketValue: ReturnType<typeof buildUkvdValuationSummaryFromPayload> | null =
+      null;
+
+    if (registration) {
+      try {
+        const valuationPayload = await fetchUkvdValuationByVrm(registration);
+        marketValue = buildUkvdValuationSummaryFromPayload(valuationPayload);
+      } catch (error) {
+        console.error("UKVD valuation lookup failed", {
+          registration,
+          error: error instanceof Error ? error.message : error,
+        });
+      }
+    }
+
     const { preview, full } = generateReport({
       year,
       mileage,
@@ -116,7 +137,9 @@ export async function POST(req: Request) {
       timing_type,
       asking_price,
       make,
+      registration,
       motSignals,
+      marketValue,
     });
 
     const { data, error } = await supabaseAdmin
