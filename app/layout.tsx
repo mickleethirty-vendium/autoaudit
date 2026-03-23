@@ -14,11 +14,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-[var(--aa-bg)] text-slate-900 antialiased">
-        {/* SaaS Header */}
         <header className="sticky top-0 z-50 border-b border-[var(--aa-silver)] bg-white/80 backdrop-blur-xl backdrop-saturate-150 shadow-[0_2px_10px_rgba(0,0,0,0.04)]">
           <div className="mx-auto w-full max-w-6xl px-4">
             <div className="flex items-center justify-between py-3">
-              {/* Left: Brand */}
               <div className="flex items-center gap-4">
                 <Link href="/" className="flex items-center group">
                   <img
@@ -42,7 +40,6 @@ export default function RootLayout({
                 </div>
               </div>
 
-              {/* Right: Nav */}
               <nav className="hidden sm:flex items-center gap-2">
                 <Link
                   href="/how-it-works"
@@ -64,13 +61,6 @@ export default function RootLayout({
                 >
                   Log In
                 </Link>
-
-                <Link
-                  href="/check"
-                  className="ml-2 inline-flex items-center justify-center rounded-xl border border-[#b91c1c] bg-[#b91c1c] px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#991b1b] hover:shadow-md active:scale-[0.98]"
-                >
-                  Start a check
-                </Link>
               </nav>
             </div>
 
@@ -82,19 +72,11 @@ export default function RootLayout({
                 >
                   Log In
                 </Link>
-
-                <Link
-                  href="/check"
-                  className="inline-flex items-center rounded-full border border-[#b91c1c] bg-[#b91c1c] px-3 py-1 text-xs font-semibold text-white shadow-sm"
-                >
-                  Start a check
-                </Link>
               </div>
             </div>
           </div>
         </header>
 
-        {/* Page content */}
         <main className="mx-auto w-full max-w-6xl px-4 pt-6 pb-16">
           {children}
         </main>

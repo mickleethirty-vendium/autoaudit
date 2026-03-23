@@ -68,13 +68,18 @@ export default function CheckForm() {
     return normaliseRegistration(searchParams.get("registration") || "");
   }, [searchParams]);
 
+  const initialAskingPrice = useMemo(() => {
+    const raw = searchParams.get("asking_price") || "";
+    return raw.replace(/[^\d,.]/g, "");
+  }, [searchParams]);
+
   const [registration, setRegistration] = useState(initialReg);
   const [lookupLoading, setLookupLoading] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [vehicle, setVehicle] = useState<LookupVehicle | null>(null);
 
   const [mileage, setMileage] = useState("");
-  const [askingPrice, setAskingPrice] = useState("");
+  const [askingPrice, setAskingPrice] = useState(initialAskingPrice);
   const [gearbox, setGearbox] = useState("");
   const [continueError, setContinueError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -85,6 +90,10 @@ export default function CheckForm() {
     if (!initialReg) return;
     setRegistration(initialReg);
   }, [initialReg]);
+
+  useEffect(() => {
+    setAskingPrice(initialAskingPrice);
+  }, [initialAskingPrice]);
 
   async function lookupVehicle(reg: string) {
     const cleaned = normaliseRegistration(reg);
@@ -244,7 +253,6 @@ export default function CheckForm() {
     setLookupError(null);
     setContinueError(null);
     setMileage("");
-    setAskingPrice("");
     setGearbox("");
   }
 
@@ -273,10 +281,6 @@ export default function CheckForm() {
         </div>
 
         <div className="px-6 py-6 sm:px-8 sm:py-8">
-          <div className="mb-5 rounded-2xl border border-yellow-300 bg-yellow-100 px-4 py-3 text-sm font-bold text-black">
-            DEBUG CHECKFORM LIVE · Asking price field should appear after vehicle lookup
-          </div>
-
           {!vehicle ? (
             <form onSubmit={handleLookupSubmit} className="space-y-5">
               <div>
@@ -411,9 +415,13 @@ export default function CheckForm() {
               </div>
 
               <form onSubmit={handleContinue} className="space-y-5">
-                <div className="rounded-2xl border-2 border-sky-400 bg-sky-400/10 p-4">
-                  <div className="text-sm font-bold uppercase tracking-wide text-sky-100">
-                    Asking price for market comparison
+                <div className="rounded-2xl border border-sky-400/20 bg-sky-400/10 p-4">
+                  <div className="text-sm font-semibold text-sky-100">
+                    Price check
+                  </div>
+                  <div className="mt-1 text-sm text-sky-50/80">
+                    We’ll use the asking price to compare this car with typical
+                    market value.
                   </div>
                   <div className="mt-3">
                     <label
@@ -434,11 +442,10 @@ export default function CheckForm() {
                       }}
                       placeholder="Optional, e.g. 7,495"
                       disabled={isSubmitting}
-                      className="h-14 w-full rounded-2xl border border-sky-300 bg-white/10 px-4 text-base font-medium text-white outline-none transition placeholder:text-slate-300 focus:border-sky-200"
+                      className="h-14 w-full rounded-2xl border border-sky-300/40 bg-white/10 px-4 text-base font-medium text-white outline-none transition placeholder:text-slate-300 focus:border-sky-200"
                     />
                     <p className="mt-2 text-xs text-slate-200">
-                      Optional, but recommended. We use this to show whether the car
-                      looks above market, fair value, or below market.
+                      Optional, but recommended.
                     </p>
                   </div>
                 </div>

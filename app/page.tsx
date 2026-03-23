@@ -22,6 +22,16 @@ function cleanRegistration(reg: string) {
   return reg.replace(/\s/g, "").toUpperCase();
 }
 
+function parseOptionalPrice(value: string): number | null {
+  const cleaned = value.replace(/[^\d.]/g, "").trim();
+  if (!cleaned) return null;
+
+  const parsed = Number(cleaned);
+  if (!Number.isFinite(parsed) || parsed < 0) return null;
+
+  return parsed;
+}
+
 function normaliseFuel(
   value?: string | null
 ): "petrol" | "diesel" | "hybrid" | "ev" | null {
@@ -55,6 +65,7 @@ export default function HomePage() {
   const router = useRouter();
 
   const [registration, setRegistration] = useState("");
+  const [askingPrice, setAskingPrice] = useState("");
   const [vehicle, setVehicle] = useState<LookupVehicle | null>(null);
   const [mileage, setMileage] = useState("");
   const [gearbox, setGearbox] = useState("");
@@ -68,6 +79,15 @@ export default function HomePage() {
 
     const cleaned = cleanRegistration(registration.trim());
     if (!cleaned) return;
+
+    const parsedAskingPrice = parseOptionalPrice(askingPrice);
+    if (
+      askingPrice.trim() &&
+      (parsedAskingPrice === null || parsedAskingPrice > 1000000)
+    ) {
+      setError("Please enter a valid asking price.");
+      return;
+    }
 
     setLookupLoading(true);
     setError(null);
@@ -142,6 +162,15 @@ export default function HomePage() {
       return;
     }
 
+    const parsedAskingPrice = parseOptionalPrice(askingPrice);
+    if (
+      askingPrice.trim() &&
+      (parsedAskingPrice === null || parsedAskingPrice > 1000000)
+    ) {
+      setError("Please enter a valid asking price.");
+      return;
+    }
+
     const fuel = normaliseFuel(vehicle.fuelType);
     if (!fuel) {
       setError("We couldn’t match the fuel type for this vehicle.");
@@ -168,6 +197,7 @@ export default function HomePage() {
           make: vehicle.make ?? undefined,
           year,
           mileage: parsedMileage,
+          asking_price: parsedAskingPrice,
           fuel,
           transmission,
           timing_type: "unknown",
@@ -224,33 +254,50 @@ export default function HomePage() {
 
             <div className="mt-8 w-full max-w-3xl rounded-2xl border border-white/20 bg-white/92 p-3 shadow-[0_20px_60px_rgba(0,0,0,0.20)] backdrop-blur">
               {!vehicle ? (
-                <form
-                  onSubmit={handleLookupSubmit}
-                  className="flex flex-col gap-3 sm:flex-row"
-                >
-                  <input
-                    type="text"
-                    name="registration"
-                    value={registration}
-                    onChange={(e) => {
-                      setRegistration(e.target.value);
-                      if (error) setError(null);
-                    }}
-                    placeholder="Enter Registration"
-                    autoCapitalize="characters"
-                    autoCorrect="off"
-                    spellCheck={false}
-                    disabled={lookupLoading}
-                    className="h-14 flex-1 rounded-xl border border-slate-200 bg-white px-5 text-lg font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)] sm:h-16 sm:text-xl"
-                  />
+                <form onSubmit={handleLookupSubmit} className="space-y-3">
+                  <div className="grid gap-3 sm:grid-cols-[1.2fr_1fr]">
+                    <input
+                      type="text"
+                      name="registration"
+                      value={registration}
+                      onChange={(e) => {
+                        setRegistration(e.target.value);
+                        if (error) setError(null);
+                      }}
+                      placeholder="Enter Registration"
+                      autoCapitalize="characters"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      disabled={lookupLoading}
+                      className="h-14 rounded-xl border border-slate-200 bg-white px-5 text-lg font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)] sm:h-16 sm:text-xl"
+                    />
+
+                    <input
+                      type="text"
+                      name="askingPrice"
+                      value={askingPrice}
+                      onChange={(e) => {
+                        setAskingPrice(e.target.value.replace(/[^\d,.]/g, ""));
+                        if (error) setError(null);
+                      }}
+                      placeholder="Asking Price (optional)"
+                      inputMode="decimal"
+                      disabled={lookupLoading}
+                      className="h-14 rounded-xl border border-slate-200 bg-white px-5 text-lg font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)] sm:h-16"
+                    />
+                  </div>
 
                   <button
                     type="submit"
                     disabled={!registration.trim() || lookupLoading}
-                    className="inline-flex h-14 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-8 text-lg font-bold text-white transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:opacity-50 sm:h-16 sm:text-xl"
+                    className="inline-flex h-14 w-full items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-8 text-lg font-bold text-white transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:opacity-50 sm:h-16 sm:text-xl"
                   >
                     {lookupLoading ? "Looking up…" : "Check My Car"}
                   </button>
+
+                  <div className="text-center text-xs text-slate-600 sm:text-sm">
+                    Add the asking price now to compare this car against typical market value.
+                  </div>
                 </form>
               ) : (
                 <form onSubmit={handleCreatePreview} className="space-y-4 text-left">
@@ -274,6 +321,34 @@ export default function HomePage() {
                       {vehicle.fuelType ? <span>{vehicle.fuelType}</span> : null}
                       {vehicle.colour ? <span>{vehicle.colour}</span> : null}
                       {vehicle.motStatus ? <span>MoT: {vehicle.motStatus}</span> : null}
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-[var(--aa-red)]/15 bg-[var(--aa-red)]/5 p-4">
+                    <div className="text-sm font-semibold text-slate-900">
+                      Price check
+                    </div>
+                    <p className="mt-1 text-sm text-slate-700">
+                      We’ll use this to show whether the car looks above market, fair
+                      value, or below market.
+                    </p>
+
+                    <div className="mt-3">
+                      <label className="mb-2 block text-sm font-semibold text-slate-800">
+                        Asking price
+                      </label>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={askingPrice}
+                        onChange={(e) => {
+                          setAskingPrice(e.target.value.replace(/[^\d,.]/g, ""));
+                          if (error) setError(null);
+                        }}
+                        placeholder="e.g. 7,495"
+                        disabled={createLoading}
+                        className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)]"
+                      />
                     </div>
                   </div>
 
