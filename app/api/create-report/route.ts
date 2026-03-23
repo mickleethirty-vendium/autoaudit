@@ -4,9 +4,9 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { fetchDvsaMotHistory } from "@/lib/dvsaMot";
 import { extractMotSignals } from "@/lib/motSignals";
 import {
-  buildUkvdValuationSummary,
+  buildUkvdValuationSummaryFromPayload,
   fetchUkvdValuationByVrm,
-} from "@/lib/ukvdvaluation";
+} from "@/lib/ukvdValuation";
 
 export const runtime = "nodejs";
 
@@ -114,12 +114,13 @@ export async function POST(req: Request) {
 
     const motSignals = mot_payload ? extractMotSignals(mot_payload) : null;
 
-    let marketValue: ReturnType<typeof buildUkvdValuationSummary> | null = null;
+    let marketValue: ReturnType<typeof buildUkvdValuationSummaryFromPayload> | null =
+      null;
 
     if (registration) {
       try {
         const valuationPayload = await fetchUkvdValuationByVrm(registration);
-        marketValue = buildUkvdValuationSummary(valuationPayload);
+        marketValue = buildUkvdValuationSummaryFromPayload(valuationPayload);
       } catch (error) {
         console.error("UKVD valuation lookup failed", {
           registration,
