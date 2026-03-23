@@ -27,12 +27,14 @@ function getResultsNode(payload: any) {
 
 function parseNumber(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return value;
+
   if (typeof value === "string") {
     const cleaned = value.replace(/[^0-9.-]/g, "").trim();
     if (!cleaned) return null;
     const parsed = Number(cleaned);
     return Number.isFinite(parsed) ? parsed : null;
   }
+
   return null;
 }
 
@@ -47,17 +49,30 @@ function firstNumber(...values: unknown[]) {
 export type UkvdValuationSummary = {
   available: boolean;
   source: string;
-  tradeLow: number | null;
-  tradeAverage: number | null;
-  tradeHigh: number | null;
+  below: number | null;
+  low: number | null;
+  average: number | null;
+  median: number | null;
+  high: number | null;
+  above: number | null;
+  retail: number | null;
+  private: number | null;
+  trade: number | null;
   retailLow: number | null;
   retailAverage: number | null;
   retailHigh: number | null;
+  tradeLow: number | null;
+  tradeAverage: number | null;
+  tradeHigh: number | null;
   mileage: number | null;
   valuationDate: string | null;
+  raw?: any;
 };
 
-export async function fetchUkvdValuationByVrm(registration: string) {
+export async function fetchUkvdValuationByVrm(
+  registration: string,
+  mileage?: number | null
+) {
   const apiKey = mustGetEnv("UKVD_API_KEY");
   const packageName = mustGetEnv("UKVD_VALUATION_PACKAGE_NAME");
   const baseUrl =
@@ -73,6 +88,10 @@ export async function fetchUkvdValuationByVrm(registration: string) {
   url.searchParams.set("ApiKey", apiKey);
   url.searchParams.set("PackageName", packageName);
   url.searchParams.set("Vrm", vrm);
+
+  if (typeof mileage === "number" && Number.isFinite(mileage) && mileage >= 0) {
+    url.searchParams.set("Mileage", String(Math.round(mileage)));
+  }
 
   let res: Response;
 
@@ -100,7 +119,9 @@ export async function fetchUkvdValuationByVrm(registration: string) {
   }
 
   if (!res.ok) {
-    throw new Error(`UKVD valuation HTTP ${res.status}: ${getErrorMessage(json)}`);
+    throw new Error(
+      `UKVD valuation HTTP ${res.status}: ${getErrorMessage(json)}`
+    );
   }
 
   const responseInfo = json?.ResponseInformation ?? {};
@@ -181,6 +202,58 @@ export function buildUkvdValuationSummary(payload: any): UkvdValuationSummary {
     valuation?.ForecourtHigh
   );
 
+  const privateValue = firstNumber(
+    valuation?.Private,
+    valuation?.PrivateSale,
+    valuation?.PrivateAverage
+  );
+
+  const below = firstNumber(
+    valuation?.Below,
+    tradeLow,
+    retailLow
+  );
+
+  const low = firstNumber(
+    valuation?.Low,
+    retailLow,
+    tradeLow
+  );
+
+  const average = firstNumber(
+    valuation?.Average,
+    retailAverage,
+    tradeAverage,
+    privateValue
+  );
+
+  const median = firstNumber(
+    valuation?.Median,
+    average
+  );
+
+  const high = firstNumber(
+    valuation?.High,
+    retailHigh,
+    tradeHigh
+  );
+
+  const above = firstNumber(
+    valuation?.Above,
+    tradeHigh,
+    retailHigh
+  );
+
+  const retail = firstNumber(
+    valuation?.Retail,
+    retailAverage
+  );
+
+  const trade = firstNumber(
+    valuation?.Trade,
+    tradeAverage
+  );
+
   const mileage = firstNumber(
     valuation?.Mileage,
     valuation?.ValuationMileage,
@@ -194,23 +267,42 @@ export function buildUkvdValuationSummary(payload: any): UkvdValuationSummary {
     null;
 
   const available =
-    tradeLow !== null ||
-    tradeAverage !== null ||
-    tradeHigh !== null ||
+    below !== null ||
+    low !== null ||
+    average !== null ||
+    median !== null ||
+    high !== null ||
+    above !== null ||
+    retail !== null ||
+    privateValue !== null ||
+    trade !== null ||
     retailLow !== null ||
     retailAverage !== null ||
-    retailHigh !== null;
+    retailHigh !== null ||
+    tradeLow !== null ||
+    tradeAverage !== null ||
+    tradeHigh !== null;
 
   return {
     available,
     source: "ukvd",
-    tradeLow,
-    tradeAverage,
-    tradeHigh,
+    below,
+    low,
+    average,
+    median,
+    high,
+    above,
+    retail,
+    private: privateValue,
+    trade,
     retailLow,
     retailAverage,
     retailHigh,
+    tradeLow,
+    tradeAverage,
+    tradeHigh,
     mileage,
     valuationDate,
+    raw: valuation,
   };
 }

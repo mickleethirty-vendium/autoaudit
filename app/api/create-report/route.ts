@@ -118,11 +118,15 @@ export async function POST(req: Request) {
 
     if (registration) {
       try {
-        const valuationPayload = await fetchUkvdValuationByVrm(registration);
+        const valuationPayload = await fetchUkvdValuationByVrm(
+          registration,
+          mileage
+        );
         marketValue = buildUkvdValuationSummary(valuationPayload);
       } catch (error) {
         console.error("UKVD valuation lookup failed", {
           registration,
+          mileage,
           error: error instanceof Error ? error.message : error,
         });
       }
