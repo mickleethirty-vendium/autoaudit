@@ -59,13 +59,15 @@ export default function HomePage() {
                     type="text"
                     name="registration"
                     value={registration}
-                    onChange={(e) => setRegistration(e.target.value)}
-                    placeholder="Enter Registration"
+                    onChange={(e) =>
+                      setRegistration(e.target.value.toUpperCase())
+                    }
+                    placeholder="ENTER REGISTRATION"
                     autoCapitalize="characters"
                     autoCorrect="off"
                     spellCheck={false}
                     disabled={loading}
-                    className="h-14 flex-1 rounded-xl border border-slate-200 bg-white px-5 text-lg font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)] sm:h-16 sm:text-xl"
+                    className="h-14 flex-1 rounded-xl border border-slate-200 bg-white px-5 text-lg font-medium uppercase tracking-[0.12em] text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)] sm:h-16 sm:text-xl"
                   />
 
                   <button
