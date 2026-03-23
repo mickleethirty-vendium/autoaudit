@@ -55,6 +55,10 @@ function formatDate(value?: string | null) {
   });
 }
 
+function clamp(n: number, lo: number, hi: number) {
+  return Math.max(lo, Math.min(hi, n));
+}
+
 function itemTone(item: RiskItem, addressed: boolean) {
   if (addressed) {
     return "border-emerald-200 bg-emerald-50/70";
@@ -78,7 +82,9 @@ function getRepeatPatternLabels(fullSummary: any): string[] {
 
   if (!Array.isArray(raw)) return [];
 
-  return raw.filter((value: unknown) => typeof value === "string" && value.trim());
+  return raw.filter(
+    (value: unknown) => typeof value === "string" && value.trim()
+  );
 }
 
 function getRepeatPatternDetails(fullSummary: any): MotRepeatAdvisoryDetail[] {
@@ -114,6 +120,29 @@ function renderHpiDisplayValue(value: any) {
     return "Available";
   }
   return "Unavailable";
+}
+
+function parseConfidenceDisplay(confidenceDisplay: string | null) {
+  if (!confidenceDisplay) {
+    return {
+      score: null as number | null,
+      label: null as string | null,
+    };
+  }
+
+  const scoreMatch = confidenceDisplay.match(/(\d{1,3})\s*\/\s*100/);
+  const labelMatch = confidenceDisplay.match(/^(High|Medium|Low)/i);
+
+  return {
+    score: scoreMatch ? Number(scoreMatch[1]) : null,
+    label: labelMatch ? titleCase(labelMatch[1].toLowerCase()) : null,
+  };
+}
+
+function confidenceLabelFromScore(score: number) {
+  if (score >= 80) return "High";
+  if (score >= 60) return "Medium";
+  return "Low";
 }
 
 export default function ReportClient({
@@ -195,6 +224,11 @@ export default function ReportClient({
     [fullSummary]
   );
 
+  const parsedConfidence = useMemo(
+    () => parseConfidenceDisplay(confidenceDisplay),
+    [confidenceDisplay]
+  );
+
   const [addressedIds, setAddressedIds] = useState<Record<string, boolean>>({});
 
   function getItemKey(item: RiskItem, index: number) {
@@ -223,14 +257,74 @@ export default function ReportClient({
         ? Math.max(0, baseExposureHigh - highReduction)
         : null;
 
+    const addressedCount = Object.values(addressedIds).filter(Boolean).length;
+
+    const adjustedMidpoint =
+      adjustedLow !== null && adjustedHigh !== null
+        ? (adjustedLow + adjustedHigh) / 2
+        : null;
+
+    const adjustedNegotiation =
+      adjustedMidpoint !== null
+        ? clamp(Math.round(adjustedMidpoint * 0.65), 0, 25000)
+        : negotiationSuggested;
+
+    const negotiationReduction =
+      typeof negotiationSuggested === "number" &&
+      typeof adjustedNegotiation === "number"
+        ? Math.max(0, negotiationSuggested - adjustedNegotiation)
+        : null;
+
+    let adjustedConfidenceScore = parsedConfidence.score;
+
+    if (parsedConfidence.score !== null) {
+      const exposureReductionRatio =
+        typeof baseExposureHigh === "number" && baseExposureHigh > 0
+          ? highReduction / baseExposureHigh
+          : 0;
+
+      const confidenceLift = Math.round(
+        addressedCount * 2 + Math.min(8, exposureReductionRatio * 12)
+      );
+
+      adjustedConfidenceScore = clamp(
+        parsedConfidence.score + confidenceLift,
+        30,
+        95
+      );
+    }
+
+    const adjustedConfidenceLabel =
+      adjustedConfidenceScore !== null
+        ? confidenceLabelFromScore(adjustedConfidenceScore)
+        : parsedConfidence.label;
+
+    const adjustedConfidenceDisplay =
+      adjustedConfidenceScore !== null
+        ? `${adjustedConfidenceLabel} (${adjustedConfidenceScore}/100)`
+        : confidenceDisplay;
+
     return {
       adjustedLow,
       adjustedHigh,
-      addressedCount: Object.values(addressedIds).filter(Boolean).length,
+      addressedCount,
       lowReduction,
       highReduction,
+      adjustedNegotiation,
+      negotiationReduction,
+      adjustedConfidenceScore,
+      adjustedConfidenceDisplay,
     };
-  }, [allItems, addressedIds, baseExposureLow, baseExposureHigh]);
+  }, [
+    allItems,
+    addressedIds,
+    baseExposureLow,
+    baseExposureHigh,
+    negotiationSuggested,
+    parsedConfidence.score,
+    parsedConfidence.label,
+    confidenceDisplay,
+  ]);
 
   function toggleAddressed(key: string) {
     setAddressedIds((prev) => ({
@@ -340,8 +434,13 @@ export default function ReportClient({
                     Confidence
                   </div>
                   <div className="mt-1 text-sm font-semibold text-slate-950">
-                    {confidenceDisplay ?? "Unavailable"}
+                    {adjustedTotals.adjustedConfidenceDisplay ?? "Unavailable"}
                   </div>
+                  {adjustedTotals.addressedCount > 0 && confidenceDisplay ? (
+                    <div className="mt-1 text-xs text-slate-500">
+                      Original: {confidenceDisplay}
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="rounded-xl border border-slate-200 bg-white p-3">
@@ -349,8 +448,21 @@ export default function ReportClient({
                     Negotiation guide
                   </div>
                   <div className="mt-1 text-sm font-semibold text-slate-950">
-                    {money(negotiationSuggested)}
+                    {money(adjustedTotals.adjustedNegotiation)}
                   </div>
+                  {adjustedTotals.addressedCount > 0 &&
+                  typeof negotiationSuggested === "number" ? (
+                    <>
+                      <div className="mt-1 text-xs text-slate-500">
+                        Original: {money(negotiationSuggested)}
+                      </div>
+                      {adjustedTotals.negotiationReduction !== null ? (
+                        <div className="mt-1 text-xs font-medium text-emerald-700">
+                          Reduced by {money(adjustedTotals.negotiationReduction)}
+                        </div>
+                      ) : null}
+                    </>
+                  ) : null}
                 </div>
 
                 <div className="rounded-xl border border-slate-200 bg-white p-3">
