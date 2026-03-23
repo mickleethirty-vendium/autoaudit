@@ -265,284 +265,214 @@ export default function CheckForm() {
   }, [initialReg]);
 
   return (
-    <section className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="overflow-hidden rounded-3xl border border-white/10 bg-slate-950 text-white shadow-2xl">
-        <div className="border-b border-white/10 bg-white/[0.03] px-6 py-5 sm:px-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-300">
-            Registration check
-          </p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
-            Check a vehicle before you buy
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm text-slate-300 sm:text-base">
-            We’ll identify the vehicle from its registration, then ask for a
-            few extra details to improve the estimate.
-          </p>
-        </div>
+    <div className="w-full">
+      {!vehicle ? (
+        <form onSubmit={handleLookupSubmit} className="space-y-4 text-left">
+          <div>
+            <label
+              htmlFor="registration"
+              className="mb-2 block text-sm font-semibold text-slate-800"
+            >
+              Vehicle registration
+            </label>
 
-        <div className="px-6 py-6 sm:px-8 sm:py-8">
-          {!vehicle ? (
-            <form onSubmit={handleLookupSubmit} className="space-y-5">
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <input
+                id="registration"
+                name="registration"
+                type="text"
+                inputMode="text"
+                autoCapitalize="characters"
+                autoCorrect="off"
+                spellCheck={false}
+                maxLength={8}
+                value={registration}
+                onChange={(e) => {
+                  setRegistration(normaliseRegistration(e.target.value));
+                  if (lookupError) setLookupError(null);
+                }}
+                disabled={lookupLoading}
+                placeholder="AB12CDE"
+                className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-lg font-semibold tracking-[0.18em] text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[var(--aa-red)]"
+              />
+
+              <button
+                type="submit"
+                disabled={lookupLoading}
+                className="inline-flex h-14 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-6 text-sm font-semibold text-white transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:cursor-not-allowed disabled:opacity-70 sm:min-w-[180px]"
+              >
+                {lookupLoading ? "Looking up…" : "Find vehicle"}
+              </button>
+            </div>
+
+            <div className="mt-3">
+              <Link
+                href="/manual-check"
+                className="text-sm font-medium text-[var(--aa-red)] transition hover:text-[var(--aa-red-strong)] hover:underline"
+              >
+                Or check manually
+              </Link>
+            </div>
+          </div>
+
+          {lookupError ? (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {lookupError}
+            </div>
+          ) : null}
+
+          {lookupLoading ? (
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-semibold text-slate-900">
+                Looking up vehicle details…
+              </p>
+              <p className="mt-1 text-sm text-slate-600">
+                We’re checking the registration and preparing the next step.
+              </p>
+            </div>
+          ) : null}
+        </form>
+      ) : (
+        <div className="space-y-5 text-left">
+          <div className="rounded-xl border border-slate-200 bg-white p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--aa-red)]">
+              Vehicle identified
+            </p>
+
+            <div className="mt-2 text-xl font-bold text-slate-900">
+              {vehicle.registration}
+              {vehicle.make ? (
+                <span className="ml-2 font-medium text-slate-600">
+                  · {vehicle.make}
+                  {vehicle.model ? ` ${vehicle.model}` : ""}
+                </span>
+              ) : null}
+            </div>
+
+            <div className="mt-2 grid gap-x-4 gap-y-2 text-sm text-slate-600 sm:grid-cols-2">
+              <div>{vehicle.year || "—"}</div>
+              <div>{vehicle.fuelType || "—"}</div>
+              <div>{vehicle.bodyType || "—"}</div>
+              <div>{vehicle.colour || "—"}</div>
+              <div>MoT: {vehicle.motStatus || "—"}</div>
+              <div>Tax: {vehicle.taxStatus || "—"}</div>
+            </div>
+          </div>
+
+          <form onSubmit={handleContinue} className="space-y-5">
+            <div className="rounded-xl border border-[var(--aa-red)]/15 bg-[var(--aa-red)]/5 p-4">
+              <div className="text-sm font-semibold text-slate-900">
+                Price check
+              </div>
+              <div className="mt-1 text-sm text-slate-700">
+                We’ll use the asking price to compare this car with typical market
+                value.
+              </div>
+              <div className="mt-3">
+                <label
+                  htmlFor="askingPrice"
+                  className="mb-2 block text-sm font-semibold text-slate-800"
+                >
+                  Asking price
+                </label>
+                <input
+                  id="askingPrice"
+                  name="askingPrice"
+                  type="text"
+                  inputMode="decimal"
+                  value={askingPrice}
+                  onChange={(e) => {
+                    setAskingPrice(e.target.value.replace(/[^\d,.]/g, ""));
+                    if (continueError) setContinueError(null);
+                  }}
+                  placeholder="Optional, e.g. 7,495"
+                  disabled={isSubmitting}
+                  className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[var(--aa-red)]"
+                />
+                <p className="mt-2 text-xs text-slate-600">
+                  Optional, but recommended.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label
-                  htmlFor="registration"
-                  className="mb-2 block text-sm font-medium text-slate-200"
+                  htmlFor="mileage"
+                  className="mb-2 block text-sm font-semibold text-slate-800"
                 >
-                  Vehicle registration
+                  Current mileage
                 </label>
-
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <input
-                    id="registration"
-                    name="registration"
-                    type="text"
-                    inputMode="text"
-                    autoCapitalize="characters"
-                    autoCorrect="off"
-                    spellCheck={false}
-                    maxLength={8}
-                    value={registration}
-                    onChange={(e) => {
-                      setRegistration(normaliseRegistration(e.target.value));
-                      if (lookupError) setLookupError(null);
-                    }}
-                    disabled={lookupLoading}
-                    placeholder="AB12CDE"
-                    className="h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-lg font-semibold tracking-[0.18em] text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400 focus:bg-white/[0.07]"
-                  />
-
-                  <button
-                    type="submit"
-                    disabled={lookupLoading}
-                    className="inline-flex h-14 items-center justify-center rounded-2xl bg-sky-500 px-6 text-sm font-semibold text-slate-950 transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-70 sm:min-w-[180px]"
-                  >
-                    {lookupLoading ? "Looking up…" : "Find vehicle"}
-                  </button>
-                </div>
-
-                <div className="mt-3">
-                  <Link
-                    href="/manual-check"
-                    className="text-sm font-medium text-sky-300 transition hover:text-sky-200 hover:underline"
-                  >
-                    Or check manually
-                  </Link>
-                </div>
+                <input
+                  id="mileage"
+                  name="mileage"
+                  type="text"
+                  inputMode="numeric"
+                  value={mileage}
+                  onChange={(e) => {
+                    setMileage(e.target.value.replace(/[^\d,]/g, ""));
+                    if (continueError) setContinueError(null);
+                  }}
+                  placeholder="e.g. 62,000"
+                  disabled={isSubmitting}
+                  className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[var(--aa-red)]"
+                />
               </div>
 
-              {lookupError ? (
-                <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-                  {lookupError}
-                </div>
-              ) : null}
-
-              {lookupLoading ? (
-                <div className="rounded-2xl border border-sky-400/20 bg-sky-400/10 p-5">
-                  <p className="text-sm font-semibold text-sky-100">
-                    Looking up vehicle details…
-                  </p>
-                  <p className="mt-1 text-sm text-sky-50/80">
-                    We’re checking the registration and preparing the next step.
-                  </p>
-                </div>
-              ) : null}
-            </form>
-          ) : (
-            <div className="space-y-6">
-              <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-300">
-                  Vehicle identified
-                </p>
-
-                <div className="mt-3 grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <p className="text-sm text-slate-400">Registration</p>
-                    <p className="text-lg font-semibold text-white">
-                      {vehicle.registration}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-slate-400">Vehicle</p>
-                    <p className="text-lg font-semibold text-white">
-                      {[vehicle.make, vehicle.model].filter(Boolean).join(" ") ||
-                        (vehicle.make ?? "Vehicle found")}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-slate-400">Year</p>
-                    <p className="text-base font-medium text-white">
-                      {vehicle.year || "—"}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-slate-400">Fuel type</p>
-                    <p className="text-base font-medium text-white">
-                      {vehicle.fuelType || "—"}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-slate-400">Body type</p>
-                    <p className="text-base font-medium text-white">
-                      {vehicle.bodyType || "—"}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-slate-400">Colour</p>
-                    <p className="text-base font-medium text-white">
-                      {vehicle.colour || "—"}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-slate-400">MoT status</p>
-                    <p className="text-base font-medium text-white">
-                      {vehicle.motStatus || "—"}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-slate-400">Tax status</p>
-                    <p className="text-base font-medium text-white">
-                      {vehicle.taxStatus || "—"}
-                    </p>
-                  </div>
-                </div>
+              <div>
+                <label
+                  htmlFor="gearbox"
+                  className="mb-2 block text-sm font-semibold text-slate-800"
+                >
+                  Gearbox type
+                </label>
+                <select
+                  id="gearbox"
+                  name="gearbox"
+                  value={gearbox}
+                  onChange={(e) => {
+                    setGearbox(e.target.value);
+                    if (continueError) setContinueError(null);
+                  }}
+                  disabled={isSubmitting}
+                  className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-900 outline-none transition focus:border-[var(--aa-red)]"
+                >
+                  <option value="">Select gearbox</option>
+                  <option value="manual">Manual</option>
+                  <option value="automatic">Automatic</option>
+                  <option value="cvt">CVT</option>
+                  <option value="semi-automatic">Semi-automatic</option>
+                </select>
               </div>
-
-              <form onSubmit={handleContinue} className="space-y-5">
-                <div className="rounded-2xl border border-sky-400/20 bg-sky-400/10 p-4">
-                  <div className="text-sm font-semibold text-sky-100">
-                    Price check
-                  </div>
-                  <div className="mt-1 text-sm text-sky-50/80">
-                    We’ll use the asking price to compare this car with typical
-                    market value.
-                  </div>
-                  <div className="mt-3">
-                    <label
-                      htmlFor="askingPrice"
-                      className="mb-2 block text-sm font-medium text-slate-100"
-                    >
-                      Asking price
-                    </label>
-                    <input
-                      id="askingPrice"
-                      name="askingPrice"
-                      type="text"
-                      inputMode="decimal"
-                      value={askingPrice}
-                      onChange={(e) => {
-                        setAskingPrice(e.target.value.replace(/[^\d,.]/g, ""));
-                        if (continueError) setContinueError(null);
-                      }}
-                      placeholder="Optional, e.g. 7,495"
-                      disabled={isSubmitting}
-                      className="h-14 w-full rounded-2xl border border-sky-300/40 bg-white/10 px-4 text-base font-medium text-white outline-none transition placeholder:text-slate-300 focus:border-sky-200"
-                    />
-                    <p className="mt-2 text-xs text-slate-200">
-                      Optional, but recommended.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <div>
-                    <label
-                      htmlFor="mileage"
-                      className="mb-2 block text-sm font-medium text-slate-200"
-                    >
-                      Current mileage
-                    </label>
-                    <input
-                      id="mileage"
-                      name="mileage"
-                      type="text"
-                      inputMode="numeric"
-                      value={mileage}
-                      onChange={(e) => {
-                        setMileage(e.target.value.replace(/[^\d,]/g, ""));
-                        if (continueError) setContinueError(null);
-                      }}
-                      placeholder="e.g. 62,000"
-                      disabled={isSubmitting}
-                      className="h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-base font-medium text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="gearbox"
-                      className="mb-2 block text-sm font-medium text-slate-200"
-                    >
-                      Gearbox type
-                    </label>
-                    <select
-                      id="gearbox"
-                      name="gearbox"
-                      value={gearbox}
-                      onChange={(e) => {
-                        setGearbox(e.target.value);
-                        if (continueError) setContinueError(null);
-                      }}
-                      disabled={isSubmitting}
-                      className="h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-base font-medium text-white outline-none transition focus:border-sky-400"
-                    >
-                      <option value="" className="bg-slate-950 text-slate-300">
-                        Select gearbox
-                      </option>
-                      <option value="manual" className="bg-slate-950 text-white">
-                        Manual
-                      </option>
-                      <option value="automatic" className="bg-slate-950 text-white">
-                        Automatic
-                      </option>
-                      <option value="cvt" className="bg-slate-950 text-white">
-                        CVT
-                      </option>
-                      <option
-                        value="semi-automatic"
-                        className="bg-slate-950 text-white"
-                      >
-                        Semi-automatic
-                      </option>
-                    </select>
-                  </div>
-                </div>
-
-                {continueError ? (
-                  <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-                    {continueError}
-                  </div>
-                ) : null}
-
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="inline-flex h-14 items-center justify-center rounded-2xl bg-sky-500 px-6 text-sm font-semibold text-slate-950 transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-70"
-                  >
-                    {isSubmitting ? "Building preview…" : "Continue to free preview"}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={resetVehicleStep}
-                    disabled={isSubmitting}
-                    className="inline-flex h-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-6 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-70"
-                  >
-                    Change registration
-                  </button>
-                </div>
-              </form>
             </div>
-          )}
+
+            {continueError ? (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {continueError}
+              </div>
+            ) : null}
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="inline-flex h-14 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-6 text-sm font-semibold text-white transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {isSubmitting ? "Building preview…" : "Continue to free preview"}
+              </button>
+
+              <button
+                type="button"
+                onClick={resetVehicleStep}
+                disabled={isSubmitting}
+                className="inline-flex h-14 items-center justify-center rounded-xl border border-slate-300 bg-white px-6 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                Change registration
+              </button>
+            </div>
+          </form>
         </div>
-      </div>
-    </section>
+      )}
+    </div>
   );
 }
