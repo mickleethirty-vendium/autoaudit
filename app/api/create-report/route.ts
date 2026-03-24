@@ -152,71 +152,73 @@ function parseVehicleIdentity(value: unknown): VehicleIdentityInput | null {
 function parseKnownModelIssues(value: unknown): KnownModelIssueInput[] {
   if (!Array.isArray(value)) return [];
 
-  return value
-    .map((rawItem) => {
-      if (!rawItem || typeof rawItem !== "object") return null;
+  const parsed = value.map((rawItem): KnownModelIssueInput | null => {
+    if (!rawItem || typeof rawItem !== "object") return null;
 
-      const item = rawItem as Record<string, unknown>;
+    const item = rawItem as Record<string, unknown>;
 
-      const issue_code = normalizeOptionalString(item.issue_code);
-      const label = normalizeOptionalString(item.label);
-      const category = normalizeOptionalString(item.category);
-      const cost_low = parseOptionalNumber(item.cost_low);
-      const cost_high = parseOptionalNumber(item.cost_high);
-      const why_flagged = normalizeOptionalString(item.why_flagged);
-      const match_confidence = parseMatchConfidence(item.match_confidence);
-      const match_basis = parseMatchBasis(item.match_basis);
+    const issue_code = normalizeOptionalString(item.issue_code);
+    const label = normalizeOptionalString(item.label);
+    const category = normalizeOptionalString(item.category);
+    const cost_low = parseOptionalNumber(item.cost_low);
+    const cost_high = parseOptionalNumber(item.cost_high);
+    const why_flagged = normalizeOptionalString(item.why_flagged);
+    const match_confidence = parseMatchConfidence(item.match_confidence);
+    const match_basis = parseMatchBasis(item.match_basis);
 
-      if (
-        !issue_code ||
-        !label ||
-        !category ||
-        cost_low === null ||
-        cost_high === null ||
-        !why_flagged ||
-        !match_confidence ||
-        !match_basis
-      ) {
-        return null;
-      }
+    if (
+      !issue_code ||
+      !label ||
+      !category ||
+      cost_low === null ||
+      cost_high === null ||
+      !why_flagged ||
+      !match_confidence ||
+      !match_basis
+    ) {
+      return null;
+    }
 
-      const severity =
-        item.severity === "low" ||
-        item.severity === "medium" ||
-        item.severity === "high"
-          ? item.severity
-          : undefined;
+    const severity =
+      item.severity === "low" ||
+      item.severity === "medium" ||
+      item.severity === "high"
+        ? item.severity
+        : undefined;
 
-      const probability_score = parseOptionalNumber(item.probability_score);
+    const probability_score = parseOptionalNumber(item.probability_score);
 
-      return {
-        issue_code,
-        label,
-        category,
-        severity,
-        cost_low,
-        cost_high,
-        why_flagged,
-        why_it_matters: normalizeOptionalString(item.why_it_matters) ?? undefined,
-        questions_to_ask: Array.isArray(item.questions_to_ask)
-          ? item.questions_to_ask.filter(
-              (q): q is string => typeof q === "string" && q.trim().length > 0
-            )
+    return {
+      issue_code,
+      label,
+      category,
+      severity,
+      cost_low,
+      cost_high,
+      why_flagged,
+      why_it_matters: normalizeOptionalString(item.why_it_matters) ?? undefined,
+      questions_to_ask: Array.isArray(item.questions_to_ask)
+        ? item.questions_to_ask.filter(
+            (q): q is string => typeof q === "string" && q.trim().length > 0
+          )
+        : undefined,
+      red_flags: Array.isArray(item.red_flags)
+        ? item.red_flags.filter(
+            (q): q is string => typeof q === "string" && q.trim().length > 0
+          )
+        : undefined,
+      match_confidence,
+      match_basis,
+      probability_score:
+        probability_score !== null
+          ? Math.max(0, Math.min(1, probability_score))
           : undefined,
-        red_flags: Array.isArray(item.red_flags)
-          ? item.red_flags.filter(
-              (q): q is string => typeof q === "string" && q.trim().length > 0
-            )
-          : undefined,
-        match_confidence,
-        match_basis,
-        probability_score:
-          probability_score !== null
-            ? Math.max(0, Math.min(1, probability_score))
-            : undefined,
-      } satisfies KnownModelIssueInput;
-    })
-    .filter((item): item is KnownModelIssueInput => !!item);
+    };
+  });
+
+  return parsed.filter(
+    (item): item is KnownModelIssueInput => item !== null
+  );
 }
 
 export async function POST(req: Request) {
