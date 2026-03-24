@@ -304,7 +304,7 @@ export async function POST(req: Request) {
     const matchedCommonFailures =
       requestVehicleIdentity || requestKnownModelIssues.length
         ? null
-        : matchKnownModelIssues({
+        : await matchKnownModelIssues({
             registration,
             make,
             model: normalizeOptionalString(body.model),

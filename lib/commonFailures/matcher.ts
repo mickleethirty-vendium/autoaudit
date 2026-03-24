@@ -1,8 +1,8 @@
-import { vehicleFailureMap } from "./vehicleFailureMap";
 import {
   MatchResult,
   MatcherInput,
   ScoredVehicleFailureMatch,
+  VehicleFailureMapEntry,
 } from "./types";
 import { scoreVehicleFailureMatches } from "./scorer";
 import {
@@ -10,6 +10,17 @@ import {
   dedupeKnownModelIssues,
   mapScoredMatchToKnownIssues,
 } from "./mapper";
+
+let vehicleFailureMapCache: VehicleFailureMapEntry[] | null = null;
+
+async function getVehicleFailureMap(): Promise<VehicleFailureMapEntry[]> {
+  if (!vehicleFailureMapCache) {
+    const mod = await import("./vehicleFailureMap");
+    vehicleFailureMapCache = mod.vehicleFailureMap;
+  }
+
+  return vehicleFailureMapCache;
+}
 
 function cleanText(value?: string | null) {
   if (!value) return null;
@@ -54,7 +65,7 @@ function normModel(value?: string | null) {
   const cleaned = cleanText(value);
   if (!cleaned) return null;
 
-  let model = stripCommonTrimWords(cleaned);
+  const model = stripCommonTrimWords(cleaned);
 
   const exactMap: Record<string, string> = {
     "1 series": "1 series",
@@ -221,7 +232,9 @@ function chooseBestMatch(
   return matches[0];
 }
 
-export function matchKnownModelIssues(input: MatcherInput): MatchResult {
+export async function matchKnownModelIssues(
+  input: MatcherInput
+): Promise<MatchResult> {
   const normalisedInput = normaliseMatcherInput(input);
 
   if (!normalisedInput.make || !normalisedInput.model) {
@@ -230,6 +243,8 @@ export function matchKnownModelIssues(input: MatcherInput): MatchResult {
       knownModelIssues: [],
     };
   }
+
+  const vehicleFailureMap = await getVehicleFailureMap();
 
   const scoredMatches = scoreVehicleFailureMatches(
     normalisedInput,
