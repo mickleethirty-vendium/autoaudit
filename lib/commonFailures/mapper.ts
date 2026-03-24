@@ -37,8 +37,8 @@ export function buildVehicleIdentityFromMatch(
 export function mapScoredMatchToKnownIssues(
   match: ScoredVehicleFailureMatch
 ): KnownModelIssue[] {
-  return match.entry.failure_codes
-    .map((failureCode) => {
+  const parsed = match.entry.failure_codes.map(
+    (failureCode): KnownModelIssue | null => {
       const pattern = failureLibrary[failureCode];
       if (!pattern) return null;
 
@@ -63,9 +63,11 @@ export function mapScoredMatchToKnownIssues(
         match_confidence: match.match_confidence,
         match_basis: match.match_basis,
         probability_score: match.probability_score,
-      } satisfies KnownModelIssue;
-    })
-    .filter((issue): issue is KnownModelIssue => !!issue);
+      };
+    }
+  );
+
+  return parsed.filter((issue): issue is KnownModelIssue => issue !== null);
 }
 
 export function dedupeKnownModelIssues(
