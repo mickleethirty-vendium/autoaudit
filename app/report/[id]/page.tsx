@@ -103,7 +103,6 @@ function getSnapshotVerdict(
     title: "This vehicle looks less exposed, but hidden issues can still matter",
     description:
       "The initial signals look lighter, but the full report helps rule out expensive surprises and history issues.",
-    };
   };
 }
 
