@@ -60,6 +60,31 @@ function parseOptionalPrice(value: string): number | null {
   return parsed;
 }
 
+function normaliseEngineSize(value?: string | number | null): string | null {
+  if (value === null || value === undefined || value === "") return null;
+
+  if (typeof value === "number" && Number.isFinite(value)) {
+    if (value >= 100) {
+      return (value / 1000).toFixed(1);
+    }
+    return value.toFixed(1);
+  }
+
+  if (typeof value !== "string") return null;
+
+  const trimmed = value.trim().toLowerCase();
+  if (!trimmed) return null;
+
+  const numeric = Number(trimmed.replace(/[^\d.]/g, ""));
+  if (!Number.isFinite(numeric)) return trimmed;
+
+  if (numeric >= 100) {
+    return (numeric / 1000).toFixed(1);
+  }
+
+  return numeric.toFixed(1);
+}
+
 export default function CheckForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -205,6 +230,8 @@ export default function CheckForm() {
       return;
     }
 
+    const engineSize = normaliseEngineSize(vehicle.engineSize);
+
     setIsSubmitting(true);
     setContinueError(null);
 
@@ -217,12 +244,22 @@ export default function CheckForm() {
         body: JSON.stringify({
           registration: vehicle.registration,
           make: vehicle.make ?? undefined,
+          model: vehicle.model ?? undefined,
           year,
           mileage: parsedMileage,
           asking_price: parsedAskingPrice,
           fuel,
           transmission,
+          engine_size: engineSize ?? undefined,
           timing_type: "unknown",
+          vehicleIdentity: {
+            make: vehicle.make ?? undefined,
+            model: vehicle.model ?? undefined,
+            engine_size: engineSize ?? undefined,
+            fuel,
+            transmission,
+            year,
+          },
         }),
       });
 

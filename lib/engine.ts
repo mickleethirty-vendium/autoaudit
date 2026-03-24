@@ -19,6 +19,45 @@ export type MarketValueInput = {
   valuationDate?: string | null;
 };
 
+export type MatchConfidence = "high" | "medium" | "low";
+
+export type MatchBasis =
+  | "exact_derivative"
+  | "engine_family"
+  | "model_generation"
+  | "make_model_only";
+
+export type VehicleIdentityInput = {
+  make?: string | null;
+  model?: string | null;
+  derivative?: string | null;
+  generation?: string | null;
+  engine?: string | null;
+  engine_family?: string | null;
+  engine_code?: string | null;
+  engine_size?: string | null;
+  power?: string | null;
+  fuel?: string | null;
+  transmission?: string | null;
+  year?: number | null;
+};
+
+export type KnownModelIssueInput = {
+  issue_code: string;
+  label: string;
+  category: string;
+  severity?: "low" | "medium" | "high";
+  cost_low: number;
+  cost_high: number;
+  why_flagged: string;
+  why_it_matters?: string;
+  questions_to_ask?: string[];
+  red_flags?: string[];
+  match_confidence: MatchConfidence;
+  match_basis: MatchBasis;
+  probability_score?: number;
+};
+
 export type EngineInput = {
   year: number;
   mileage: number;
@@ -31,6 +70,8 @@ export type EngineInput = {
   mot_present?: boolean;
   motSignals?: MotSignals | null;
   marketValue?: MarketValueInput | null;
+  vehicleIdentity?: VehicleIdentityInput | null;
+  knownModelIssues?: KnownModelIssueInput[];
 };
 
 type ReportItem = {
@@ -244,7 +285,34 @@ function macroBucketForCategory(category: string): { key: string; label: string 
   return { key: "other", label: "Other Checks" };
 }
 
-function confidenceScore(input: EngineInput, items: ReportItem[]) {
+function knownIssueConfidenceWeight(confidence: MatchConfidence): number {
+  if (confidence === "high") return 0.65;
+  if (confidence === "medium") return 0.45;
+  return 0.25;
+}
+
+function knownIssueBasisWeight(basis: MatchBasis): number {
+  if (basis === "exact_derivative") return 1.0;
+  if (basis === "engine_family") return 0.9;
+  if (basis === "model_generation") return 0.75;
+  return 0.6;
+}
+
+function knownIssueWeight(issue: KnownModelIssueInput): number {
+  const confidenceWeight = knownIssueConfidenceWeight(issue.match_confidence);
+  const basisWeight = knownIssueBasisWeight(issue.match_basis);
+  const probabilityWeight = clamp(issue.probability_score ?? 0.5, 0.2, 1);
+
+  return (
+    Math.round(confidenceWeight * basisWeight * probabilityWeight * 100) / 100
+  );
+}
+
+function confidenceScore(
+  input: EngineInput,
+  items: ReportItem[],
+  knownIssues: KnownModelIssueInput[] = []
+) {
   let score = 74;
   const reasons: string[] = [];
 
@@ -317,10 +385,25 @@ function confidenceScore(input: EngineInput, items: ReportItem[]) {
 
   if (items.length >= 3) {
     score += 2;
-    reasons.push("Multiple risk items identified.");
+    reasons.push("Multiple observed risk items identified.");
   } else if (items.length <= 1) {
     score -= 5;
-    reasons.push("Few detected items, so the estimate has less signal.");
+    reasons.push("Few detected observed items, so the estimate has less signal.");
+  }
+
+  if (knownIssues.length) {
+    const hasHigh = knownIssues.some((i) => i.match_confidence === "high");
+    const hasMedium = knownIssues.some((i) => i.match_confidence === "medium");
+
+    if (hasHigh) {
+      score += 4;
+      reasons.push("Known model issues matched at high confidence.");
+    } else if (hasMedium) {
+      score += 2;
+      reasons.push("Known model issues matched at medium confidence.");
+    } else {
+      reasons.push("Known model issues matched only at lower confidence.");
+    }
   }
 
   score = clamp(score, 30, 95);
@@ -382,7 +465,10 @@ function pickMarketBenchmark(marketValue?: MarketValueInput | null): {
     };
   }
 
-  const valueCandidates: Array<{ label: string; value: number | null | undefined }> = [
+  const valueCandidates: Array<{
+    label: string;
+    value: number | null | undefined;
+  }> = [
     { label: "retail average", value: marketValue.retailAverage },
     { label: "retail high", value: marketValue.retailHigh },
     { label: "trade average", value: marketValue.tradeAverage },
@@ -398,13 +484,19 @@ function pickMarketBenchmark(marketValue?: MarketValueInput | null): {
     marketValue.retailLow,
     marketValue.tradeLow,
     chosen?.value ?? null,
-  ].filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+  ].filter(
+    (value): value is number =>
+      typeof value === "number" && Number.isFinite(value)
+  );
 
   const upperCandidates = [
     marketValue.retailHigh,
     marketValue.tradeHigh,
     chosen?.value ?? null,
-  ].filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+  ].filter(
+    (value): value is number =>
+      typeof value === "number" && Number.isFinite(value)
+  );
 
   return {
     label: chosen?.label ?? null,
@@ -417,7 +509,8 @@ function pickMarketBenchmark(marketValue?: MarketValueInput | null): {
     source: marketValue.source ? String(marketValue.source) : null,
     valuationDate: marketValue.valuationDate ?? null,
     valuationMileage:
-      typeof marketValue.mileage === "number" && Number.isFinite(marketValue.mileage)
+      typeof marketValue.mileage === "number" &&
+      Number.isFinite(marketValue.mileage)
         ? roundMoney(marketValue.mileage)
         : null,
   };
@@ -562,6 +655,7 @@ export function generateReport(input: EngineInput) {
   const makeMult = brandMultiplier(input.make);
   const mot = input.motSignals ?? null;
   const repeatAdvisoryCategoryLabels = getRepeatAdvisoryCategoryLabels(mot);
+  const knownIssues = input.knownModelIssues ?? [];
 
   const items: ReportItem[] = [];
 
@@ -891,11 +985,32 @@ export function generateReport(input: EngineInput) {
     });
   }
 
-  const exposure_low = roundMoney(
+  const observed_exposure_low = roundMoney(
     items.reduce((sum, it) => sum + (it.cost_low ?? 0), 0)
   );
-  const exposure_high = roundMoney(
+  const observed_exposure_high = roundMoney(
     items.reduce((sum, it) => sum + (it.cost_high ?? 0), 0)
+  );
+
+  const known_issue_exposure_low = roundMoney(
+    knownIssues.reduce((sum, issue) => {
+      const weight = knownIssueWeight(issue);
+      return sum + (issue.cost_low ?? 0) * weight;
+    }, 0)
+  );
+
+  const known_issue_exposure_high = roundMoney(
+    knownIssues.reduce((sum, issue) => {
+      const weight = knownIssueWeight(issue);
+      return sum + (issue.cost_high ?? 0) * weight;
+    }, 0)
+  );
+
+  const exposure_low = roundMoney(
+    observed_exposure_low + known_issue_exposure_low
+  );
+  const exposure_high = roundMoney(
+    observed_exposure_high + known_issue_exposure_high
   );
 
   let risk_level: "low" | "medium" | "high" =
@@ -914,12 +1029,27 @@ export function generateReport(input: EngineInput) {
     risk_level = "high";
   }
 
-  const primary_drivers = [...items]
-    .sort((a, b) => (b.cost_high ?? 0) - (a.cost_high ?? 0))
+  const weightedKnownIssueDrivers = knownIssues.map((issue) => {
+    const weight = knownIssueWeight(issue);
+    return {
+      label: issue.label,
+      weighted_cost_high: roundMoney((issue.cost_high ?? 0) * weight),
+      reason_short: issue.why_flagged,
+    };
+  });
+
+  const observedDrivers = items.map((it) => ({
+    label: it.label,
+    weighted_cost_high: it.cost_high ?? 0,
+    reason_short: shortDriverReason(it),
+  }));
+
+  const primary_drivers = [...observedDrivers, ...weightedKnownIssueDrivers]
+    .sort((a, b) => b.weighted_cost_high - a.weighted_cost_high)
     .slice(0, 3)
     .map((it) => ({
       label: it.label,
-      reason_short: shortDriverReason(it),
+      reason_short: it.reason_short,
     }));
 
   const midpointExposure = (exposure_low + exposure_high) / 2;
@@ -943,7 +1073,8 @@ export function generateReport(input: EngineInput) {
       ...input,
       mot_present: input.mot_present || !!mot,
     },
-    items
+    items,
+    knownIssues
   );
 
   const headline = buildHeadline(risk_level, exposure_high, mot, marketSummary);
@@ -984,8 +1115,24 @@ export function generateReport(input: EngineInput) {
     .slice(0, 5)
     .map((it) => it.label);
 
+  const knownIssuesTeaserLabels = [...knownIssues]
+    .sort((a, b) => {
+      const aWeighted = (a.cost_high ?? 0) * knownIssueWeight(a);
+      const bWeighted = (b.cost_high ?? 0) * knownIssueWeight(b);
+      return bWeighted - aWeighted;
+    })
+    .slice(0, 3)
+    .map((it) => it.label);
+
   const full = {
     items,
+    known_model_issues: {
+      matched_vehicle: input.vehicleIdentity ?? null,
+      count: knownIssues.length,
+      exposure_low: known_issue_exposure_low,
+      exposure_high: known_issue_exposure_high,
+      items: knownIssues,
+    },
     summary: {
       headline,
       summary_text,
@@ -993,11 +1140,16 @@ export function generateReport(input: EngineInput) {
       risk: risk_level,
       exposure_low,
       exposure_high,
+      observed_exposure_low,
+      observed_exposure_high,
+      known_issue_exposure_low,
+      known_issue_exposure_high,
       primary_drivers,
       negotiation_suggested,
       confidence,
       asking_price:
-        typeof input.asking_price === "number" && Number.isFinite(input.asking_price)
+        typeof input.asking_price === "number" &&
+        Number.isFinite(input.asking_price)
           ? roundMoney(input.asking_price)
           : null,
       market_value: marketSummary,
@@ -1018,10 +1170,10 @@ export function generateReport(input: EngineInput) {
     negotiation: {
       suggested_reduction: negotiation_suggested,
       tip: "Use the suggested reduction as a starting point, then adjust for service history, market value, and any proof of recent work.",
-      script: `Based on the vehicle’s age, mileage and available history, I’d need to budget roughly £${negotiation_suggested} for likely near-term maintenance unless there’s documented proof these items were recently done. I’d be more comfortable proceeding at around £X.`,
+      script: `Based on the vehicle’s age, mileage, available history and model-specific risk areas, I’d need to budget roughly £${negotiation_suggested} for likely near-term maintenance unless there’s documented proof these items have already been addressed. I’d be more comfortable proceeding at around £X.`,
     },
     disclaimer: {
-      text: "AutoAudit provides cost guidance based on typical UK maintenance intervals, available history signals and independent garage pricing. It is not a mechanical inspection and does not diagnose faults or guarantee required repairs.",
+      text: "AutoAudit provides cost guidance based on typical UK maintenance intervals, available history signals, model-specific risk patterns and independent garage pricing. It is not a mechanical inspection and does not diagnose faults or guarantee required repairs.",
     },
   };
 
@@ -1033,19 +1185,33 @@ export function generateReport(input: EngineInput) {
       risk: risk_level,
       exposure_low,
       exposure_high,
+      observed_exposure_low,
+      observed_exposure_high,
+      known_issue_exposure_low,
+      known_issue_exposure_high,
       primary_drivers,
       negotiation_suggested,
       confidence,
       asking_price:
-        typeof input.asking_price === "number" && Number.isFinite(input.asking_price)
+        typeof input.asking_price === "number" &&
+        Number.isFinite(input.asking_price)
           ? roundMoney(input.asking_price)
           : null,
       market_value: marketSummary,
+      known_model_issues_teaser:
+        knownIssues.length > 0
+          ? {
+              count: knownIssues.length,
+              top_labels: knownIssuesTeaserLabels,
+              message:
+                "This vehicle type is associated with model-specific issues worth checking, even where they do not appear in the MoT history.",
+            }
+          : null,
     },
     buckets,
     teaser: {
-      hidden_count: items.length,
-      blurred_labels: teaser_labels,
+      hidden_count: items.length + knownIssues.length,
+      blurred_labels: [...teaser_labels, ...knownIssuesTeaserLabels].slice(0, 5),
     },
   };
 

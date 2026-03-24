@@ -16,6 +16,18 @@ type RiskItem = {
   red_flags?: string[];
 };
 
+type KnownModelIssue = RiskItem & {
+  issue_code?: string;
+  severity?: "low" | "medium" | "high";
+  match_confidence?: "high" | "medium" | "low";
+  match_basis?:
+    | "exact_derivative"
+    | "engine_family"
+    | "model_generation"
+    | "make_model_only";
+  probability_score?: number;
+};
+
 type HpiCheck = {
   label: string;
   value: any;
@@ -165,6 +177,29 @@ function valuePillLabel(position?: string | null) {
   return "Value insight pending";
 }
 
+function matchConfidencePill(confidence?: string | null) {
+  if (confidence === "high") {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  }
+  if (confidence === "medium") {
+    return "border-amber-200 bg-amber-50 text-amber-700";
+  }
+  return "border-slate-200 bg-slate-50 text-slate-700";
+}
+
+function matchConfidenceLabel(confidence?: string | null) {
+  if (!confidence) return "Confidence not stated";
+  return `${titleCase(confidence)} confidence`;
+}
+
+function matchBasisLabel(basis?: string | null) {
+  if (!basis) return "General vehicle match";
+  if (basis === "exact_derivative") return "Exact derivative match";
+  if (basis === "engine_family") return "Engine family match";
+  if (basis === "model_generation") return "Model generation match";
+  return "Make / model match";
+}
+
 export default function ReportClient({
   reg,
   make,
@@ -233,9 +268,17 @@ export default function ReportClient({
   askingPrice: number | null;
   marketValue: any;
 }) {
+  const knownModelIssues = useMemo<KnownModelIssue[]>(
+    () =>
+      Array.isArray(fullSummary?.known_model_issues?.items)
+        ? fullSummary.known_model_issues.items
+        : [],
+    [fullSummary]
+  );
+
   const allItems = useMemo(
-    () => [...serviceRiskItems, ...motRiskItems],
-    [serviceRiskItems, motRiskItems]
+    () => [...serviceRiskItems, ...motRiskItems, ...knownModelIssues],
+    [serviceRiskItems, motRiskItems, knownModelIssues]
   );
 
   const repeatPatternLabels = useMemo(
@@ -274,6 +317,16 @@ export default function ReportClient({
   const valuationMileage =
     typeof marketValue?.valuation_mileage === "number"
       ? marketValue.valuation_mileage
+      : null;
+
+  const knownModelIssueExposureLow =
+    typeof fullSummary?.known_model_issues?.exposure_low === "number"
+      ? fullSummary.known_model_issues.exposure_low
+      : null;
+
+  const knownModelIssueExposureHigh =
+    typeof fullSummary?.known_model_issues?.exposure_high === "number"
+      ? fullSummary.known_model_issues.exposure_high
       : null;
 
   const [addressedIds, setAddressedIds] = useState<Record<string, boolean>>({});
@@ -1150,6 +1203,179 @@ export default function ReportClient({
           ) : (
             <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-700">
               No MoT advisory pattern risks were listed in this report.
+            </div>
+          )}
+        </section>
+
+        <section>
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <h3 className="text-lg font-bold text-slate-950">
+              Known model issues
+            </h3>
+            <div className="text-sm text-slate-600">
+              {knownModelIssues.length} item
+              {knownModelIssues.length === 1 ? "" : "s"}
+            </div>
+          </div>
+
+          {knownModelIssues.length ? (
+            <>
+              <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700">
+                These are model-specific risks associated with this vehicle type,
+                engine family or drivetrain. They do not necessarily mean the
+                issue is present on this car, but they are worth checking before
+                purchase.
+                {knownModelIssueExposureLow !== null &&
+                knownModelIssueExposureHigh !== null ? (
+                  <div className="mt-2 font-semibold text-slate-950">
+                    Weighted exposure included above:{" "}
+                    {money(knownModelIssueExposureLow)} –{" "}
+                    {money(knownModelIssueExposureHigh)}
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="grid gap-4 lg:grid-cols-2">
+                {knownModelIssues.map((item, index) => {
+                  const key = getItemKey(
+                    item,
+                    serviceRiskItems.length + motRiskItems.length + index
+                  );
+                  const addressed = !!addressedIds[key];
+
+                  return (
+                    <div
+                      key={`${item?.issue_code ?? item?.item_id ?? "known"}-${index}`}
+                      className={`rounded-2xl border p-5 shadow-sm transition ${itemTone(
+                        item,
+                        addressed
+                      )}`}
+                    >
+                      <div className="mb-4 flex items-start justify-between gap-4">
+                        <div>
+                          <div
+                            className={`text-lg font-bold tracking-tight ${
+                              addressed ? "text-emerald-900" : "text-slate-950"
+                            }`}
+                          >
+                            {item?.label ?? "Known issue"}
+                          </div>
+
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-700">
+                              {String(item?.category ?? "known issue").replace(
+                                /_/g,
+                                " "
+                              )}
+                            </span>
+
+                            <span
+                              className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${matchConfidencePill(
+                                item.match_confidence
+                              )}`}
+                            >
+                              {matchConfidenceLabel(item.match_confidence)}
+                            </span>
+
+                            <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                              {matchBasisLabel(item.match_basis)}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-right">
+                          <div className="text-sm font-semibold text-slate-950">
+                            {money(Number(item?.cost_low ?? 0))} –{" "}
+                            {money(Number(item?.cost_high ?? 0))}
+                          </div>
+                          <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                            indicative cost range
+                          </div>
+                        </div>
+                      </div>
+
+                      <label className="mb-4 flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white/80 px-3 py-3">
+                        <input
+                          type="checkbox"
+                          checked={addressed}
+                          onChange={() => toggleAddressed(key)}
+                          className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                        />
+                        <div>
+                          <div className="text-sm font-semibold text-slate-950">
+                            Mark as addressed by seller
+                          </div>
+                          <div className="text-xs text-slate-600">
+                            Tick this if the seller has proof this known issue
+                            has already been repaired, prevented or checked.
+                          </div>
+                        </div>
+                      </label>
+
+                      {addressed ? (
+                        <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
+                          This item has been excluded from the live exposure total.
+                        </div>
+                      ) : null}
+
+                      {item?.why_flagged ? (
+                        <p className="mt-4 text-sm leading-6 text-slate-700">
+                          <span className="font-semibold text-slate-950">
+                            Why flagged:
+                          </span>{" "}
+                          {item.why_flagged}
+                        </p>
+                      ) : null}
+
+                      {item?.why_it_matters ? (
+                        <p className="mt-3 text-sm leading-6 text-slate-700">
+                          <span className="font-semibold text-slate-950">
+                            Why it matters:
+                          </span>{" "}
+                          {item.why_it_matters}
+                        </p>
+                      ) : null}
+
+                      {typeof item?.probability_score === "number" ? (
+                        <div className="mt-3 text-xs font-medium text-slate-600">
+                          Relevance score: {Math.round(item.probability_score * 100)}%
+                        </div>
+                      ) : null}
+
+                      {Array.isArray(item?.questions_to_ask) &&
+                      item.questions_to_ask.length ? (
+                        <div className="mt-4">
+                          <div className="text-sm font-semibold text-slate-950">
+                            Questions to ask
+                          </div>
+                          <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
+                            {item.questions_to_ask.map((q: string, i: number) => (
+                              <li key={i}>• {q}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null}
+
+                      {Array.isArray(item?.red_flags) && item.red_flags.length ? (
+                        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3">
+                          <div className="text-sm font-semibold text-slate-950">
+                            Red flags
+                          </div>
+                          <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
+                            {item.red_flags.map((rf: string, i: number) => (
+                              <li key={i}>• {rf}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-700">
+              No model-specific issues were listed in this report.
             </div>
           )}
         </section>

@@ -103,6 +103,7 @@ function getSnapshotVerdict(
     title: "This vehicle looks less exposed, but hidden issues can still matter",
     description:
       "The initial signals look lighter, but the full report helps rule out expensive surprises and history issues.",
+    };
   };
 }
 
@@ -454,19 +455,46 @@ export default async function Page({
       ? teaser.hidden_count
       : blurredLabels.length;
 
-  const exposureLow: number | null =
+  const previewExposureLow: number | null =
     typeof previewSummary.exposure_low === "number"
       ? previewSummary.exposure_low
       : null;
 
-  const exposureHigh: number | null =
+  const previewExposureHigh: number | null =
     typeof previewSummary.exposure_high === "number"
       ? previewSummary.exposure_high
       : null;
 
   const confidence: any = previewSummary.confidence ?? null;
   const confidenceDisplay = getConfidenceDisplay(confidence);
-  const snapshotVerdict = getSnapshotVerdict(exposureLow, exposureHigh);
+  const snapshotVerdict = getSnapshotVerdict(
+    previewExposureLow,
+    previewExposureHigh
+  );
+
+  const previewKnownModelIssuesTeaser =
+    previewSummary?.known_model_issues_teaser &&
+    typeof previewSummary.known_model_issues_teaser === "object"
+      ? previewSummary.known_model_issues_teaser
+      : null;
+
+  const previewKnownModelIssueLabels: string[] = Array.isArray(
+    previewKnownModelIssuesTeaser?.top_labels
+  )
+    ? previewKnownModelIssuesTeaser.top_labels.filter(
+        (value: unknown) => typeof value === "string" && value.trim()
+      )
+    : [];
+
+  const previewKnownModelIssueCount: number | null =
+    typeof previewKnownModelIssuesTeaser?.count === "number"
+      ? previewKnownModelIssuesTeaser.count
+      : null;
+
+  const previewKnownModelIssueMessage: string | null =
+    typeof previewKnownModelIssuesTeaser?.message === "string"
+      ? previewKnownModelIssuesTeaser.message
+      : null;
 
   const reportCheckoutUrl = `/api/checkout?report_id=${data.id}&tier=report`;
   const hpiUpgradeCheckoutUrl = `/api/checkout?report_id=${data.id}&tier=hpi_upgrade`;
@@ -481,6 +509,16 @@ export default async function Page({
   const fullItems: any[] = Array.isArray(fullPayload.items)
     ? fullPayload.items
     : [];
+
+  const paidExposureLow: number | null =
+    typeof fullSummary.exposure_low === "number"
+      ? fullSummary.exposure_low
+      : previewExposureLow;
+
+  const paidExposureHigh: number | null =
+    typeof fullSummary.exposure_high === "number"
+      ? fullSummary.exposure_high
+      : previewExposureHigh;
 
   const negotiationSuggested: number | null =
     typeof fullPayload.negotiation_suggested === "number"
@@ -644,8 +682,8 @@ export default async function Page({
         transmission={transmission}
         fullSummary={fullSummary}
         confidenceDisplay={confidenceDisplay}
-        baseExposureLow={exposureLow}
-        baseExposureHigh={exposureHigh}
+        baseExposureLow={paidExposureLow}
+        baseExposureHigh={paidExposureHigh}
         negotiationSuggested={negotiationSuggested}
         motPanel={motPanel}
         hpiUnlocked={hpiUnlocked}
@@ -734,8 +772,8 @@ export default async function Page({
               </div>
 
               <div className="mt-4">
-                {exposureLow !== null && exposureHigh !== null ? (
-                  <ExposureBar low={exposureLow} high={exposureHigh} />
+                {previewExposureLow !== null && previewExposureHigh !== null ? (
+                  <ExposureBar low={previewExposureLow} high={previewExposureHigh} />
                 ) : (
                   <div className="mt-2 text-sm text-slate-700">
                     Exposure estimate unavailable.
@@ -830,6 +868,39 @@ export default async function Page({
                   ) : null}
                 </div>
               ) : null}
+
+              {previewKnownModelIssuesTeaser ? (
+                <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="text-sm font-semibold text-slate-950">
+                    Known model issues
+                  </div>
+                  <div className="mt-1 text-sm text-slate-700">
+                    {previewKnownModelIssueMessage ||
+                      "This vehicle type is associated with model-specific issues worth checking."}
+                  </div>
+
+                  {previewKnownModelIssueCount !== null ? (
+                    <div className="mt-2 text-xs font-medium text-slate-600">
+                      {previewKnownModelIssueCount} model-specific issue
+                      {previewKnownModelIssueCount === 1 ? "" : "s"} detected in
+                      the full report
+                    </div>
+                  ) : null}
+
+                  {previewKnownModelIssueLabels.length ? (
+                    <div className="mt-3 space-y-2">
+                      {previewKnownModelIssueLabels.map((label, index) => (
+                        <div
+                          key={`${label}-${index}`}
+                          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800"
+                        >
+                          <span className="select-none blur-sm">{label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
 
             <div className="rounded-2xl border border-black bg-slate-950 p-5 text-white shadow-sm">
@@ -865,8 +936,8 @@ export default async function Page({
 
               <div className="mt-4 text-xs leading-5 text-slate-400">
                 Core report includes service risk, detailed findings, MoT
-                analysis and pricing context. Full bundle adds vehicle history &
-                provenance checks.
+                analysis, pricing context and known model issues. Full bundle
+                adds vehicle history & provenance checks.
               </div>
             </div>
           </div>
@@ -951,6 +1022,7 @@ export default async function Page({
                 <div>✔ Negotiation strategy</div>
                 <div>✔ MoT advisory analysis</div>
                 <div>✔ Price and value context</div>
+                <div>✔ Known model issues</div>
               </div>
 
               <div className="mt-5">
@@ -998,7 +1070,7 @@ export default async function Page({
               </div>
               <div className="mt-2 text-sm text-slate-700">
                 Service risk, detailed findings, seller questions, negotiation
-                guidance, pricing context and MoT analysis.
+                guidance, pricing context, MoT analysis and known model issues.
               </div>
               <div className="mt-4">
                 <a href={reportCheckoutUrl} className="btn-primary">

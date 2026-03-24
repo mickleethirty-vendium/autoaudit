@@ -3,6 +3,7 @@ import { generateReport } from "@/lib/engine";
 import { supabaseAdmin } from "@/lib/supabase";
 import { fetchDvsaMotHistory } from "@/lib/dvsaMot";
 import { extractMotSignals } from "@/lib/motSignals";
+import { matchKnownModelIssues } from "@/lib/commonFailures";
 import {
   buildUkvdValuationSummary,
   fetchUkvdValuationByVrm,
@@ -14,6 +15,44 @@ type Fuel = "petrol" | "diesel" | "hybrid" | "ev";
 type Transmission = "manual" | "automatic" | "cvt" | "dct";
 type TimingType = "belt" | "chain" | "unknown";
 
+type MatchConfidence = "high" | "medium" | "low";
+type MatchBasis =
+  | "exact_derivative"
+  | "engine_family"
+  | "model_generation"
+  | "make_model_only";
+
+type VehicleIdentityInput = {
+  make?: string | null;
+  model?: string | null;
+  derivative?: string | null;
+  generation?: string | null;
+  engine?: string | null;
+  engine_family?: string | null;
+  engine_code?: string | null;
+  engine_size?: string | null;
+  power?: string | null;
+  fuel?: string | null;
+  transmission?: string | null;
+  year?: number | null;
+};
+
+type KnownModelIssueInput = {
+  issue_code: string;
+  label: string;
+  category: string;
+  severity?: "low" | "medium" | "high";
+  cost_low: number;
+  cost_high: number;
+  why_flagged: string;
+  why_it_matters?: string;
+  questions_to_ask?: string[];
+  red_flags?: string[];
+  match_confidence: MatchConfidence;
+  match_basis: MatchBasis;
+  probability_score?: number;
+};
+
 const VALID_FUELS: Fuel[] = ["petrol", "diesel", "hybrid", "ev"];
 const VALID_TRANSMISSIONS: Transmission[] = [
   "manual",
@@ -22,6 +61,14 @@ const VALID_TRANSMISSIONS: Transmission[] = [
   "dct",
 ];
 const VALID_TIMING_TYPES: TimingType[] = ["belt", "chain", "unknown"];
+
+const VALID_MATCH_CONFIDENCES: MatchConfidence[] = ["high", "medium", "low"];
+const VALID_MATCH_BASES: MatchBasis[] = [
+  "exact_derivative",
+  "engine_family",
+  "model_generation",
+  "make_model_only",
+];
 
 function cleanRegistration(reg: string): string {
   return reg.replace(/\s/g, "").toUpperCase();
@@ -53,6 +100,123 @@ function parseOptionalNumber(value: unknown): number | null {
   if (value === null || value === undefined || value === "") return null;
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
+}
+
+function parseOptionalYear(value: unknown): number | null {
+  const n = parseOptionalNumber(value);
+  if (n === null) return null;
+  const rounded = Math.round(n);
+  if (rounded < 1900 || rounded > new Date().getFullYear() + 1) return null;
+  return rounded;
+}
+
+function parseMatchConfidence(value: unknown): MatchConfidence | null {
+  return VALID_MATCH_CONFIDENCES.includes(value as MatchConfidence)
+    ? (value as MatchConfidence)
+    : null;
+}
+
+function parseMatchBasis(value: unknown): MatchBasis | null {
+  return VALID_MATCH_BASES.includes(value as MatchBasis)
+    ? (value as MatchBasis)
+    : null;
+}
+
+function parseVehicleIdentity(value: unknown): VehicleIdentityInput | null {
+  if (!value || typeof value !== "object") return null;
+
+  const raw = value as Record<string, unknown>;
+
+  const vehicleIdentity: VehicleIdentityInput = {
+    make: normalizeOptionalString(raw.make),
+    model: normalizeOptionalString(raw.model),
+    derivative: normalizeOptionalString(raw.derivative),
+    generation: normalizeOptionalString(raw.generation),
+    engine: normalizeOptionalString(raw.engine),
+    engine_family: normalizeOptionalString(raw.engine_family),
+    engine_code: normalizeOptionalString(raw.engine_code),
+    engine_size: normalizeOptionalString(raw.engine_size),
+    power: normalizeOptionalString(raw.power),
+    fuel: normalizeOptionalString(raw.fuel),
+    transmission: normalizeOptionalString(raw.transmission),
+    year: parseOptionalYear(raw.year),
+  };
+
+  const hasAnyValue = Object.values(vehicleIdentity).some(
+    (v) => v !== null && v !== undefined
+  );
+
+  return hasAnyValue ? vehicleIdentity : null;
+}
+
+function parseKnownModelIssues(value: unknown): KnownModelIssueInput[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((rawItem) => {
+      if (!rawItem || typeof rawItem !== "object") return null;
+
+      const item = rawItem as Record<string, unknown>;
+
+      const issue_code = normalizeOptionalString(item.issue_code);
+      const label = normalizeOptionalString(item.label);
+      const category = normalizeOptionalString(item.category);
+      const cost_low = parseOptionalNumber(item.cost_low);
+      const cost_high = parseOptionalNumber(item.cost_high);
+      const why_flagged = normalizeOptionalString(item.why_flagged);
+      const match_confidence = parseMatchConfidence(item.match_confidence);
+      const match_basis = parseMatchBasis(item.match_basis);
+
+      if (
+        !issue_code ||
+        !label ||
+        !category ||
+        cost_low === null ||
+        cost_high === null ||
+        !why_flagged ||
+        !match_confidence ||
+        !match_basis
+      ) {
+        return null;
+      }
+
+      const severity =
+        item.severity === "low" ||
+        item.severity === "medium" ||
+        item.severity === "high"
+          ? item.severity
+          : undefined;
+
+      const probability_score = parseOptionalNumber(item.probability_score);
+
+      return {
+        issue_code,
+        label,
+        category,
+        severity,
+        cost_low,
+        cost_high,
+        why_flagged,
+        why_it_matters: normalizeOptionalString(item.why_it_matters) ?? undefined,
+        questions_to_ask: Array.isArray(item.questions_to_ask)
+          ? item.questions_to_ask.filter(
+              (q): q is string => typeof q === "string" && q.trim().length > 0
+            )
+          : undefined,
+        red_flags: Array.isArray(item.red_flags)
+          ? item.red_flags.filter(
+              (q): q is string => typeof q === "string" && q.trim().length > 0
+            )
+          : undefined,
+        match_confidence,
+        match_basis,
+        probability_score:
+          probability_score !== null
+            ? Math.max(0, Math.min(1, probability_score))
+            : undefined,
+      } satisfies KnownModelIssueInput;
+    })
+    .filter((item): item is KnownModelIssueInput => !!item);
 }
 
 export async function POST(req: Request) {
@@ -108,6 +272,9 @@ export async function POST(req: Request) {
 
     const make = normalizeOptionalString(body.make);
 
+    const requestVehicleIdentity = parseVehicleIdentity(body.vehicleIdentity);
+    const requestKnownModelIssues = parseKnownModelIssues(body.knownModelIssues);
+
     const mot_payload = registration
       ? await fetchDvsaMotHistory(registration)
       : null;
@@ -132,6 +299,34 @@ export async function POST(req: Request) {
       }
     }
 
+    const matchedCommonFailures =
+      requestVehicleIdentity || requestKnownModelIssues.length
+        ? null
+        : matchKnownModelIssues({
+            registration,
+            make,
+            model: normalizeOptionalString(body.model),
+            derivative: normalizeOptionalString(body.derivative),
+            generation: normalizeOptionalString(body.generation),
+            engine: normalizeOptionalString(body.engine),
+            engine_family: normalizeOptionalString(body.engine_family),
+            engine_code: normalizeOptionalString(body.engine_code),
+            engine_size: normalizeOptionalString(body.engine_size),
+            power: normalizeOptionalString(body.power),
+            fuel,
+            transmission,
+            year,
+            mileage,
+          });
+
+    const vehicleIdentity =
+      requestVehicleIdentity ?? matchedCommonFailures?.vehicleIdentity ?? null;
+
+    const knownModelIssues =
+      requestKnownModelIssues.length > 0
+        ? requestKnownModelIssues
+        : matchedCommonFailures?.knownModelIssues ?? [];
+
     const { preview, full } = generateReport({
       year,
       mileage,
@@ -143,6 +338,8 @@ export async function POST(req: Request) {
       registration,
       motSignals,
       marketValue,
+      vehicleIdentity,
+      knownModelIssues,
     });
 
     const { data, error } = await supabaseAdmin
