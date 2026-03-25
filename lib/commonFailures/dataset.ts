@@ -1,19 +1,20 @@
 import rawDataset from "@/data/commonFailures.json";
+import { VehicleFailureMapEntry, VehicleFailureMapIssue } from "./types";
 
-export type CommonFailureIssue = {
-  code: string;
-  title: string;
-  severity: "low" | "medium" | "high";
-  repairCostMin: number;
-  repairCostMax: number;
-  warningSigns: string[];
-  questionsToAskSeller: string[];
+type RawCommonFailureIssue = {
+  code?: string;
+  title?: string;
+  severity?: "low" | "medium" | "high";
+  repairCostMin?: number;
+  repairCostMax?: number;
+  warningSigns?: string[];
+  questionsToAskSeller?: string[];
 };
 
-export type CommonFailureRecord = {
-  id: string;
-  make: string;
-  model: string;
+type RawCommonFailureRecord = {
+  id?: string;
+  make?: string;
+  model?: string;
   generation?: string | null;
   yearStart?: number | null;
   yearEnd?: number | null;
@@ -22,7 +23,7 @@ export type CommonFailureRecord = {
   engineSize?: string | null;
   fuel?: string | null;
   transmission?: string | null;
-  issues: CommonFailureIssue[];
+  issues?: RawCommonFailureIssue[];
 };
 
 function cleanText(value?: string | null) {
@@ -149,24 +150,51 @@ function normaliseEngineSize(value?: string | null) {
   return cleaned;
 }
 
-const dataset = rawDataset as unknown as CommonFailureRecord[];
+function normaliseIssue(
+  issue: RawCommonFailureIssue,
+  recordIndex: number,
+  issueIndex: number
+): VehicleFailureMapIssue {
+  return {
+    code: cleanText(issue.code) ?? `issue-${recordIndex + 1}-${issueIndex + 1}`,
+    title: issue.title?.trim() || "Known common fault",
+    severity: issue.severity ?? "medium",
+    repairCostMin:
+      typeof issue.repairCostMin === "number" ? issue.repairCostMin : 0,
+    repairCostMax:
+      typeof issue.repairCostMax === "number" ? issue.repairCostMax : 0,
+    warningSigns: Array.isArray(issue.warningSigns) ? issue.warningSigns : [],
+    questionsToAskSeller: Array.isArray(issue.questionsToAskSeller)
+      ? issue.questionsToAskSeller
+      : [],
+  };
+}
 
-export const commonFailureDataset: CommonFailureRecord[] = dataset.map(
+const raw = rawDataset as unknown as RawCommonFailureRecord[];
+
+export const commonFailureDataset: VehicleFailureMapEntry[] = raw.map(
   (record, index) => ({
-    ...record,
     id: record.id ?? `cf-${index + 1}`,
     make: normaliseMake(record.make) ?? "",
     model: normaliseModel(record.model) ?? "",
+    derivative: null,
     generation: cleanText(record.generation),
-    yearStart:
-      typeof record.yearStart === "number" ? Math.round(record.yearStart) : null,
-    yearEnd:
-      typeof record.yearEnd === "number" ? Math.round(record.yearEnd) : null,
-    engineFamily: normaliseEngineFamily(record.engineFamily),
-    engineCode: cleanText(record.engineCode),
-    engineSize: normaliseEngineSize(record.engineSize),
+    engine: null,
+    engine_family: normaliseEngineFamily(record.engineFamily),
+    engine_code: cleanText(record.engineCode),
+    engine_size: normaliseEngineSize(record.engineSize),
+    power: null,
     fuel: normaliseFuel(record.fuel),
     transmission: normaliseTransmission(record.transmission),
-    issues: Array.isArray(record.issues) ? record.issues : [],
+    year_from:
+      typeof record.yearStart === "number" ? Math.round(record.yearStart) : null,
+    year_to:
+      typeof record.yearEnd === "number" ? Math.round(record.yearEnd) : null,
+    issues: Array.isArray(record.issues)
+      ? record.issues.map((issue, issueIndex) =>
+          normaliseIssue(issue, index, issueIndex)
+        )
+      : [],
+    failure_codes: [],
   })
 );
