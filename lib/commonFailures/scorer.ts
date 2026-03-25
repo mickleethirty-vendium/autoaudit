@@ -51,6 +51,10 @@ function engineSizeMatches(a?: string | null, b?: string | null) {
   return includesLoose(a, b) || numericEngineSizeMatches(a, b);
 }
 
+function hasEngineSize(value?: string | null) {
+  return parseEngineSize(value) !== null;
+}
+
 function yearMatches(
   year: number | null | undefined,
   entry: VehicleFailureMapEntry
@@ -71,7 +75,8 @@ function getMatchBasis(
 
   if (
     entry.engine_family &&
-    includesLoose(input.engine_family, entry.engine_family)
+    (includesLoose(input.engine_family, entry.engine_family) ||
+      includesLoose(input.engine, entry.engine_family))
   ) {
     return "engine_family";
   }
@@ -84,21 +89,6 @@ function getMatchBasis(
     includesLoose(input.make, entry.make) &&
     includesLoose(input.model, entry.model)
   ) {
-    if (
-      entry.engine_family &&
-      (includesLoose(input.engine_family, entry.engine_family) ||
-        includesLoose(input.engine, entry.engine_family))
-    ) {
-      return "engine_family";
-    }
-
-    if (
-      entry.generation &&
-      includesLoose(input.generation, entry.generation)
-    ) {
-      return "model_generation";
-    }
-
     if (
       entry.engine &&
       includesLoose(input.engine, entry.engine)
@@ -158,6 +148,17 @@ export function scoreVehicleFailureMatch(
     return null;
   }
 
+  if (
+    entry.transmission &&
+    input.transmission &&
+    !includesLoose(input.transmission, entry.transmission)
+  ) {
+    return null;
+  }
+
+  const inputHasEngineSize = hasEngineSize(input.engine_size);
+  const entryHasEngineSize = hasEngineSize(entry.engine_size);
+
   const reasons: string[] = [];
   let score = 45;
 
@@ -170,7 +171,8 @@ export function scoreVehicleFailureMatch(
 
   if (
     entry.engine_family &&
-    includesLoose(input.engine_family, entry.engine_family)
+    (includesLoose(input.engine_family, entry.engine_family) ||
+      includesLoose(input.engine, entry.engine_family))
   ) {
     score += 24;
     reasons.push("Engine family matched.");
@@ -189,9 +191,17 @@ export function scoreVehicleFailureMatch(
     reasons.push("Engine code matched.");
   }
 
-  if (entry.engine_size && engineSizeMatches(input.engine_size, entry.engine_size)) {
-    score += 16;
-    reasons.push("Engine size matched.");
+  if (entryHasEngineSize && inputHasEngineSize) {
+    if (engineSizeMatches(input.engine_size, entry.engine_size)) {
+      score += 16;
+      reasons.push("Engine size matched.");
+    } else {
+      score -= 10;
+      reasons.push("Engine size differs from mapped pattern.");
+    }
+  } else if (entryHasEngineSize && !inputHasEngineSize) {
+    score += 4;
+    reasons.push("Engine size not provided, so broad fallback scoring used.");
   }
 
   if (entry.generation && includesLoose(input.generation, entry.generation)) {
@@ -211,6 +221,7 @@ export function scoreVehicleFailureMatch(
 
   if (
     entry.transmission &&
+    input.transmission &&
     includesLoose(input.transmission, entry.transmission)
   ) {
     score += 8;
@@ -229,11 +240,22 @@ export function scoreVehicleFailureMatch(
   if (
     !entry.engine &&
     !entry.engine_family &&
-    entry.engine_size &&
+    entryHasEngineSize &&
+    inputHasEngineSize &&
     engineSizeMatches(input.engine_size, entry.engine_size)
   ) {
     score += 6;
     reasons.push("Broad engine-size fallback applied.");
+  }
+
+  if (
+    !entry.engine &&
+    !entry.engine_family &&
+    entryHasEngineSize &&
+    !inputHasEngineSize
+  ) {
+    score += 6;
+    reasons.push("Make/model/fuel/year fallback applied without engine-size input.");
   }
 
   if (
