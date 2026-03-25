@@ -8,6 +8,10 @@ import ShieldIcon from "@/app/components/ShieldIcon";
 type FuelOption = "petrol" | "diesel" | "hybrid" | "ev" | "";
 type GearboxOption = "manual" | "automatic" | "cvt" | "dct" | "";
 
+function normaliseEngineSize(value: string) {
+  return value.replace(/[^\d.]/g, "").trim();
+}
+
 export default function ManualCheckPage() {
   const router = useRouter();
 
@@ -16,6 +20,7 @@ export default function ManualCheckPage() {
   const [year, setYear] = useState("");
   const [fuelType, setFuelType] = useState<FuelOption>("");
   const [bodyType, setBodyType] = useState("");
+  const [engineSize, setEngineSize] = useState("");
   const [mileage, setMileage] = useState("");
   const [gearbox, setGearbox] = useState<GearboxOption>("");
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +31,11 @@ export default function ManualCheckPage() {
 
     if (!make.trim()) {
       setError("Please enter the vehicle make.");
+      return;
+    }
+
+    if (!model.trim()) {
+      setError("Please enter the vehicle model.");
       return;
     }
 
@@ -42,6 +52,17 @@ export default function ManualCheckPage() {
 
     if (!fuelType) {
       setError("Please select the fuel type.");
+      return;
+    }
+
+    if (!engineSize.trim()) {
+      setError("Please enter the engine size.");
+      return;
+    }
+
+    const parsedEngineSize = normaliseEngineSize(engineSize);
+    if (!parsedEngineSize) {
+      setError("Please enter a valid engine size.");
       return;
     }
 
@@ -72,9 +93,12 @@ export default function ManualCheckPage() {
         },
         body: JSON.stringify({
           make: make.trim(),
+          model: model.trim(),
           year: parsedYear,
-          mileage: parsedMileage,
           fuel: fuelType,
+          engine_size: parsedEngineSize,
+          body_type: bodyType.trim() || undefined,
+          mileage: parsedMileage,
           transmission: gearbox,
           timing_type: "unknown",
         }),
@@ -154,7 +178,7 @@ export default function ManualCheckPage() {
                         setModel(e.target.value);
                         if (error) setError(null);
                       }}
-                      placeholder="e.g. Focus"
+                      placeholder="e.g. Fiesta"
                       disabled={isSubmitting}
                       className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)]"
                     />
@@ -197,6 +221,27 @@ export default function ManualCheckPage() {
                       <option value="hybrid">Hybrid</option>
                       <option value="ev">Electric</option>
                     </select>
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-slate-800">
+                      Engine size
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={engineSize}
+                      onChange={(e) => {
+                        setEngineSize(normaliseEngineSize(e.target.value));
+                        if (error) setError(null);
+                      }}
+                      placeholder="e.g. 1.0 or 999"
+                      disabled={isSubmitting}
+                      className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)]"
+                    />
+                    <p className="mt-2 text-xs text-slate-600">
+                      Enter litres or cc. Both formats work.
+                    </p>
                   </div>
 
                   <div>

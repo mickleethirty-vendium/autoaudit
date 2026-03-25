@@ -17,6 +17,40 @@ function includesLoose(a?: string | null, b?: string | null) {
   return na === nb || na.includes(nb) || nb.includes(na);
 }
 
+function parseEngineSize(value?: string | null): number | null {
+  const v = norm(value);
+  if (!v) return null;
+
+  const numeric = v.replace(/[^\d.]/g, "");
+  if (!numeric) return null;
+
+  const parsed = Number(numeric);
+  if (!Number.isFinite(parsed)) return null;
+
+  if (parsed >= 700 && parsed <= 7000) {
+    return Math.round((parsed / 1000) * 10) / 10;
+  }
+
+  if (parsed > 0 && parsed < 10) {
+    return Math.round(parsed * 10) / 10;
+  }
+
+  return null;
+}
+
+function numericEngineSizeMatches(a?: string | null, b?: string | null) {
+  const pa = parseEngineSize(a);
+  const pb = parseEngineSize(b);
+
+  if (pa === null || pb === null) return false;
+
+  return Math.abs(pa - pb) <= 0.1;
+}
+
+function engineSizeMatches(a?: string | null, b?: string | null) {
+  return includesLoose(a, b) || numericEngineSizeMatches(a, b);
+}
+
 function yearMatches(
   year: number | null | undefined,
   entry: VehicleFailureMapEntry
@@ -31,10 +65,7 @@ function getMatchBasis(
   input: MatcherInput,
   entry: VehicleFailureMapEntry
 ): MatchBasis | null {
-  if (
-    entry.derivative &&
-    includesLoose(input.derivative, entry.derivative)
-  ) {
+  if (entry.derivative && includesLoose(input.derivative, entry.derivative)) {
     return "exact_derivative";
   }
 
@@ -45,10 +76,7 @@ function getMatchBasis(
     return "engine_family";
   }
 
-  if (
-    entry.generation &&
-    includesLoose(input.generation, entry.generation)
-  ) {
+  if (entry.generation && includesLoose(input.generation, entry.generation)) {
     return "model_generation";
   }
 
@@ -56,6 +84,35 @@ function getMatchBasis(
     includesLoose(input.make, entry.make) &&
     includesLoose(input.model, entry.model)
   ) {
+    if (
+      entry.engine_family &&
+      (includesLoose(input.engine_family, entry.engine_family) ||
+        includesLoose(input.engine, entry.engine_family))
+    ) {
+      return "engine_family";
+    }
+
+    if (
+      entry.generation &&
+      includesLoose(input.generation, entry.generation)
+    ) {
+      return "model_generation";
+    }
+
+    if (
+      entry.engine &&
+      includesLoose(input.engine, entry.engine)
+    ) {
+      return "model_generation";
+    }
+
+    if (
+      entry.engine_size &&
+      engineSizeMatches(input.engine_size, entry.engine_size)
+    ) {
+      return "model_generation";
+    }
+
     return "make_model_only";
   }
 
@@ -63,23 +120,20 @@ function getMatchBasis(
 }
 
 function getMatchConfidence(score: number): MatchConfidence {
-  if (score >= 85) return "high";
-  if (score >= 60) return "medium";
+  if (score >= 82) return "high";
+  if (score >= 55) return "medium";
   return "low";
 }
 
-function getProbabilityScore(
-  score: number,
-  basis: MatchBasis
-): number {
+function getProbabilityScore(score: number, basis: MatchBasis): number {
   const basisCap =
     basis === "exact_derivative"
       ? 0.95
       : basis === "engine_family"
-        ? 0.85
+        ? 0.88
         : basis === "model_generation"
-          ? 0.72
-          : 0.58;
+          ? 0.76
+          : 0.62;
 
   const scaled = score / 100;
   return Math.max(0.2, Math.min(basisCap, Math.round(scaled * 100) / 100));
@@ -100,13 +154,17 @@ export function scoreVehicleFailureMatch(
     return null;
   }
 
+  if (entry.fuel && input.fuel && !includesLoose(input.fuel, entry.fuel)) {
+    return null;
+  }
+
   const reasons: string[] = [];
-  let score = 35;
+  let score = 45;
 
   reasons.push("Make and model matched.");
 
   if (entry.derivative && includesLoose(input.derivative, entry.derivative)) {
-    score += 30;
+    score += 28;
     reasons.push("Derivative matched.");
   }
 
@@ -131,11 +189,8 @@ export function scoreVehicleFailureMatch(
     reasons.push("Engine code matched.");
   }
 
-  if (
-    entry.engine_size &&
-    includesLoose(input.engine_size, entry.engine_size)
-  ) {
-    score += 10;
+  if (entry.engine_size && engineSizeMatches(input.engine_size, entry.engine_size)) {
+    score += 16;
     reasons.push("Engine size matched.");
   }
 
@@ -150,7 +205,7 @@ export function scoreVehicleFailureMatch(
   }
 
   if (entry.fuel && includesLoose(input.fuel, entry.fuel)) {
-    score += 8;
+    score += 10;
     reasons.push("Fuel type matched.");
   }
 
@@ -158,16 +213,35 @@ export function scoreVehicleFailureMatch(
     entry.transmission &&
     includesLoose(input.transmission, entry.transmission)
   ) {
-    score += 10;
+    score += 8;
     reasons.push("Transmission matched.");
   }
 
   if (input.year && entry.year_from && entry.year_to) {
-    const withinRange = input.year >= entry.year_from && input.year <= entry.year_to;
+    const withinRange =
+      input.year >= entry.year_from && input.year <= entry.year_to;
     if (withinRange) {
-      score += 6;
+      score += 8;
       reasons.push("Year falls within mapped range.");
     }
+  }
+
+  if (
+    !entry.engine &&
+    !entry.engine_family &&
+    entry.engine_size &&
+    engineSizeMatches(input.engine_size, entry.engine_size)
+  ) {
+    score += 6;
+    reasons.push("Broad engine-size fallback applied.");
+  }
+
+  if (
+    entry.fuel &&
+    !entry.transmission &&
+    includesLoose(input.fuel, entry.fuel)
+  ) {
+    score += 2;
   }
 
   score = Math.max(0, Math.min(100, score));
