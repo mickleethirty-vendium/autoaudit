@@ -504,19 +504,20 @@ export default async function Page({
   const reportPlusHpiPriceLabel = "£9.99";
 
   const fullPayload: any = data.full_payload ?? {};
-  const fullSummary: any = fullPayload.summary ?? {};
+  const fullSummary: any = fullPayload;
+  const fullSummaryData: any = fullPayload.summary ?? {};
   const fullItems: any[] = Array.isArray(fullPayload.items)
     ? fullPayload.items
     : [];
 
   const paidExposureLow: number | null =
-    typeof fullSummary.exposure_low === "number"
-      ? fullSummary.exposure_low
+    typeof fullSummaryData.exposure_low === "number"
+      ? fullSummaryData.exposure_low
       : previewExposureLow;
 
   const paidExposureHigh: number | null =
-    typeof fullSummary.exposure_high === "number"
-      ? fullSummary.exposure_high
+    typeof fullSummaryData.exposure_high === "number"
+      ? fullSummaryData.exposure_high
       : previewExposureHigh;
 
   const negotiationSuggested: number | null =
@@ -524,10 +525,10 @@ export default async function Page({
       ? fullPayload.negotiation_suggested
       : typeof fullPayload.negotiationSuggested === "number"
         ? fullPayload.negotiationSuggested
-        : typeof fullSummary.negotiation_suggested === "number"
-          ? fullSummary.negotiation_suggested
-          : typeof fullSummary.negotiationSuggested === "number"
-            ? fullSummary.negotiationSuggested
+        : typeof fullSummaryData.negotiation_suggested === "number"
+          ? fullSummaryData.negotiation_suggested
+          : typeof fullSummaryData.negotiationSuggested === "number"
+            ? fullSummaryData.negotiationSuggested
             : null;
 
   const justUnlockedReport = justUnlockedTier === "report";
@@ -626,16 +627,17 @@ export default async function Page({
   const hpiChecks = getHpiChecks(hpiSummary);
 
   const marketValue: any =
-    (fullSummary?.market_value && typeof fullSummary.market_value === "object"
-      ? fullSummary.market_value
+    (fullSummaryData?.market_value &&
+    typeof fullSummaryData.market_value === "object"
+      ? fullSummaryData.market_value
       : null) ??
     (previewSummary?.market_value && typeof previewSummary.market_value === "object"
       ? previewSummary.market_value
       : null);
 
   const askingPrice: number | null =
-    typeof fullSummary?.asking_price === "number"
-      ? fullSummary.asking_price
+    typeof fullSummaryData?.asking_price === "number"
+      ? fullSummaryData.asking_price
       : typeof previewSummary?.asking_price === "number"
         ? previewSummary.asking_price
         : null;
