@@ -306,25 +306,35 @@ export async function POST(req: Request) {
 
     const motSignals = mot_payload ? extractMotSignals(mot_payload) : null;
 
+    const matcherInput = {
+      registration,
+      make: make ?? requestVehicleIdentity?.make ?? null,
+      model: model ?? requestVehicleIdentity?.model ?? null,
+      derivative: derivative ?? requestVehicleIdentity?.derivative ?? null,
+      generation: generation ?? requestVehicleIdentity?.generation ?? null,
+      engine:
+        engine ??
+        requestVehicleIdentity?.engine ??
+        requestVehicleIdentity?.engine_size ??
+        engine_size,
+      engine_family:
+        engine_family ?? requestVehicleIdentity?.engine_family ?? null,
+      engine_code: engine_code ?? requestVehicleIdentity?.engine_code ?? null,
+      engine_size: engine_size ?? requestVehicleIdentity?.engine_size ?? null,
+      power: power ?? requestVehicleIdentity?.power ?? null,
+      fuel: fuel ?? (requestVehicleIdentity?.fuel as Fuel | null) ?? null,
+      transmission:
+        transmission ??
+        (requestVehicleIdentity?.transmission as Transmission | null) ??
+        null,
+      year: year ?? requestVehicleIdentity?.year ?? null,
+      mileage,
+    };
+
     const matchedCommonFailures =
-      requestVehicleIdentity || requestKnownModelIssues.length
+      requestKnownModelIssues.length > 0
         ? null
-        : await matchKnownModelIssues({
-            registration,
-            make,
-            model,
-            derivative,
-            generation,
-            engine: engine ?? engine_size,
-            engine_family,
-            engine_code,
-            engine_size,
-            power,
-            fuel,
-            transmission,
-            year,
-            mileage,
-          });
+        : await matchKnownModelIssues(matcherInput);
 
     const vehicleIdentity =
       requestVehicleIdentity ?? matchedCommonFailures?.vehicleIdentity ?? null;
