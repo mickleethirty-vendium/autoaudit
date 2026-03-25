@@ -10,6 +10,58 @@ function isLikelyUkRegistration(value: string) {
   return /^[A-Z0-9]{2,8}$/.test(value);
 }
 
+function normalizeOptionalString(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
+}
+
+function normalizeEngineSize(value: unknown): string | number | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    if (value >= 100) {
+      return Number((value / 1000).toFixed(1));
+    }
+    return Number(value.toFixed(1));
+  }
+
+  if (typeof value !== "string") return null;
+
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  const numeric = Number(trimmed.replace(/[^\d.]/g, ""));
+  if (!Number.isFinite(numeric)) return trimmed;
+
+  if (numeric >= 100) {
+    return Number((numeric / 1000).toFixed(1));
+  }
+
+  return Number(numeric.toFixed(1));
+}
+
+function normalizeBodyType(value: unknown): string | null {
+  const raw = normalizeOptionalString(value);
+  if (!raw) return null;
+
+  const key = raw.toLowerCase();
+
+  const map: Record<string, string> = {
+    "2 axle rigid body": "Car",
+    "3 axle rigid body": "Car",
+    "4x2": "Car",
+    "saloon": "Saloon",
+    "estate": "Estate",
+    "hatchback": "Hatchback",
+    "convertible": "Convertible",
+    "coupe": "Coupe",
+    "mpv": "MPV",
+    "suv": "SUV",
+    "station wagon": "Estate",
+  };
+
+  return map[key] ?? raw;
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => null);
@@ -29,27 +81,16 @@ export async function POST(req: Request) {
       return NextResponse.json({
         manual: true,
         registration: null,
-        make: typeof vehicle.make === "string" ? vehicle.make.trim() : null,
-        model: typeof vehicle.model === "string" ? vehicle.model.trim() : null,
+        make: normalizeOptionalString(vehicle.make),
+        model: normalizeOptionalString(vehicle.model),
         year:
           typeof vehicle.year === "string" || typeof vehicle.year === "number"
             ? vehicle.year
             : null,
-        colour:
-          typeof vehicle.colour === "string" ? vehicle.colour.trim() : null,
-        fuelType:
-          typeof vehicle.fuelType === "string"
-            ? vehicle.fuelType.trim()
-            : null,
-        bodyType:
-          typeof vehicle.bodyType === "string"
-            ? vehicle.bodyType.trim()
-            : null,
-        engineSize:
-          typeof vehicle.engineSize === "string" ||
-          typeof vehicle.engineSize === "number"
-            ? vehicle.engineSize
-            : null,
+        colour: normalizeOptionalString(vehicle.colour),
+        fuelType: normalizeOptionalString(vehicle.fuelType),
+        bodyType: normalizeBodyType(vehicle.bodyType),
+        engineSize: normalizeEngineSize(vehicle.engineSize),
       });
     }
 
@@ -127,22 +168,30 @@ export async function POST(req: Request) {
       );
     }
 
+    const fallbackMake = normalizeOptionalString(body?.make);
+    const fallbackModel = normalizeOptionalString(body?.model);
+    const fallbackBodyType = normalizeOptionalString(body?.bodyType);
+    const fallbackEngineSize = normalizeEngineSize(body?.engineSize);
+
     return NextResponse.json({
       manual: false,
       registration: cleanReg,
-      make: typeof data?.make === "string" ? data.make : null,
-      model: null,
+      make: normalizeOptionalString(data?.make) ?? fallbackMake,
+      model: normalizeOptionalString(data?.model) ?? fallbackModel ?? null,
       year:
         typeof data?.yearOfManufacture === "number"
           ? data.yearOfManufacture
           : null,
-      fuelType: typeof data?.fuelType === "string" ? data.fuelType : null,
+      fuelType: normalizeOptionalString(data?.fuelType),
       engineSize:
-        typeof data?.engineCapacity === "number" ? data.engineCapacity : null,
-      colour: typeof data?.colour === "string" ? data.colour : null,
-      bodyType: typeof data?.wheelplan === "string" ? data.wheelplan : null,
-      motStatus: typeof data?.motStatus === "string" ? data.motStatus : null,
-      taxStatus: typeof data?.taxStatus === "string" ? data.taxStatus : null,
+        normalizeEngineSize(data?.engineCapacity) ?? fallbackEngineSize ?? null,
+      colour: normalizeOptionalString(data?.colour),
+      bodyType:
+        normalizeBodyType(data?.wheelplan) ??
+        normalizeBodyType(data?.bodyType) ??
+        fallbackBodyType,
+      motStatus: normalizeOptionalString(data?.motStatus),
+      taxStatus: normalizeOptionalString(data?.taxStatus),
     });
   } catch (err: any) {
     return NextResponse.json(

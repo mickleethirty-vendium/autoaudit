@@ -4,10 +4,6 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { fetchDvsaMotHistory } from "@/lib/dvsaMot";
 import { extractMotSignals } from "@/lib/motSignals";
 import { matchKnownModelIssues } from "@/lib/commonFailures";
-import {
-  buildUkvdValuationSummary,
-  fetchUkvdValuationByVrm,
-} from "@/lib/ukvdValuation";
 
 export const runtime = "nodejs";
 
@@ -221,6 +217,25 @@ function parseKnownModelIssues(value: unknown): KnownModelIssueInput[] {
   );
 }
 
+function buildMarketValueTeaser(askingPrice: number | null) {
+  return {
+    source: null,
+    asking_price: askingPrice,
+    benchmark_label: null,
+    benchmark_value: null,
+    low: null,
+    high: null,
+    delta: null,
+    delta_percent: null,
+    position: "unknown" as const,
+    summary:
+      "Market value comparison is available after purchase and will show how the asking price compares with typical market value.",
+    valuation_date: null,
+    valuation_mileage: null,
+    teaser_only: true,
+  };
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -273,6 +288,14 @@ export async function POST(req: Request) {
       : null;
 
     const make = normalizeOptionalString(body.make);
+    const model = normalizeOptionalString(body.model);
+    const derivative = normalizeOptionalString(body.derivative);
+    const generation = normalizeOptionalString(body.generation);
+    const engine = normalizeOptionalString(body.engine);
+    const engine_family = normalizeOptionalString(body.engine_family);
+    const engine_code = normalizeOptionalString(body.engine_code);
+    const engine_size = normalizeOptionalString(body.engine_size);
+    const power = normalizeOptionalString(body.power);
 
     const requestVehicleIdentity = parseVehicleIdentity(body.vehicleIdentity);
     const requestKnownModelIssues = parseKnownModelIssues(body.knownModelIssues);
@@ -283,38 +306,20 @@ export async function POST(req: Request) {
 
     const motSignals = mot_payload ? extractMotSignals(mot_payload) : null;
 
-    let marketValue: ReturnType<typeof buildUkvdValuationSummary> | null = null;
-
-    if (registration) {
-      try {
-        const valuationPayload = await fetchUkvdValuationByVrm(
-          registration,
-          mileage
-        );
-        marketValue = buildUkvdValuationSummary(valuationPayload);
-      } catch (error) {
-        console.error("UKVD valuation lookup failed", {
-          registration,
-          mileage,
-          error: error instanceof Error ? error.message : error,
-        });
-      }
-    }
-
     const matchedCommonFailures =
       requestVehicleIdentity || requestKnownModelIssues.length
         ? null
         : await matchKnownModelIssues({
             registration,
             make,
-            model: normalizeOptionalString(body.model),
-            derivative: normalizeOptionalString(body.derivative),
-            generation: normalizeOptionalString(body.generation),
-            engine: normalizeOptionalString(body.engine),
-            engine_family: normalizeOptionalString(body.engine_family),
-            engine_code: normalizeOptionalString(body.engine_code),
-            engine_size: normalizeOptionalString(body.engine_size),
-            power: normalizeOptionalString(body.power),
+            model,
+            derivative,
+            generation,
+            engine: engine ?? engine_size,
+            engine_family,
+            engine_code,
+            engine_size,
+            power,
             fuel,
             transmission,
             year,
@@ -339,10 +344,28 @@ export async function POST(req: Request) {
       make,
       registration,
       motSignals,
-      marketValue,
+      marketValue: null,
       vehicleIdentity,
       knownModelIssues,
     });
+
+    const marketValueTeaser = buildMarketValueTeaser(asking_price);
+
+    const previewWithTeasers = {
+      ...preview,
+      summary: {
+        ...(preview?.summary ?? {}),
+        market_value: marketValueTeaser,
+      },
+    };
+
+    const fullWithTeasers = {
+      ...full,
+      summary: {
+        ...(full?.summary ?? {}),
+        market_value: marketValueTeaser,
+      },
+    };
 
     const { data, error } = await supabaseAdmin
       .from("reports")
@@ -356,10 +379,9 @@ export async function POST(req: Request) {
         timing_type,
         asking_price,
         mot_payload,
-        preview_payload: preview,
-        full_payload: full,
+        preview_payload: previewWithTeasers,
+        full_payload: fullWithTeasers,
         is_paid: false,
-
         hpi_checked: false,
         hpi_checked_at: null,
         hpi_status: null,

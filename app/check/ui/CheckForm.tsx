@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { getModelsForMake, vehicleMakes } from "@/lib/vehicleOptions";
 
 type LookupVehicle = {
   registration: string;
@@ -19,6 +20,25 @@ type LookupVehicle = {
 
 function normaliseRegistration(value: string) {
   return value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().trim();
+}
+
+function cleanText(value?: string | null) {
+  if (!value) return "";
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[\/_,]+/g, " ")
+    .replace(/-/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function titleCase(value?: string | null) {
+  if (!value) return "—";
+  return value
+    .split(" ")
+    .map((word) => (word ? word[0].toUpperCase() + word.slice(1) : word))
+    .join(" ");
 }
 
 function normaliseFuel(
@@ -85,6 +105,67 @@ function normaliseEngineSize(value?: string | number | null): string | null {
   return numeric.toFixed(1);
 }
 
+function normaliseMakeForOptions(value?: string | null): string | null {
+  const cleaned = cleanText(value);
+  if (!cleaned) return null;
+
+  const aliasMap: Record<string, string> = {
+    vw: "volkswagen",
+    "mercedes benz": "mercedes",
+    mercedesbenz: "mercedes",
+    merc: "mercedes",
+  };
+
+  const candidate = aliasMap[cleaned] ?? cleaned;
+  return vehicleMakes.includes(candidate as (typeof vehicleMakes)[number])
+    ? candidate
+    : null;
+}
+
+function normaliseModelForOptions(
+  make?: string | null,
+  model?: string | null
+): string | null {
+  const normalisedMake = normaliseMakeForOptions(make);
+  const cleanedModel = cleanText(model);
+
+  if (!normalisedMake || !cleanedModel) return null;
+
+  const availableModels = getModelsForMake(normalisedMake);
+  if (!availableModels.length) return null;
+
+  const direct = availableModels.find(
+    (option) => cleanText(option) === cleanedModel
+  );
+  if (direct) return direct;
+
+  const loose = availableModels.find((option) => {
+    const normalisedOption = cleanText(option);
+    return (
+      normalisedOption === cleanedModel ||
+      normalisedOption.includes(cleanedModel) ||
+      cleanedModel.includes(normalisedOption)
+    );
+  });
+
+  if (loose) return loose;
+
+  const aliasMap: Record<string, string> = {
+    crv: "cr-v",
+    "cr v": "cr-v",
+    evoque: "evoque",
+    freelander2: "freelander",
+    "freelander 2": "freelander",
+  };
+
+  const aliased = aliasMap[cleanedModel];
+  if (aliased && availableModels.includes(aliased)) {
+    return aliased;
+  }
+
+  return null;
+}
+
 export default function CheckForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -106,10 +187,28 @@ export default function CheckForm() {
   const [mileage, setMileage] = useState("");
   const [askingPrice, setAskingPrice] = useState(initialAskingPrice);
   const [gearbox, setGearbox] = useState("");
+  const [selectedModel, setSelectedModel] = useState("");
   const [continueError, setContinueError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const hasAutoLookupRef = useRef(false);
+
+  const canonicalVehicleMake = useMemo(
+    () => normaliseMakeForOptions(vehicle?.make),
+    [vehicle?.make]
+  );
+
+  const availableModelsForVehicle = useMemo(
+    () => getModelsForMake(canonicalVehicleMake),
+    [canonicalVehicleMake]
+  );
+
+  const canonicalVehicleModel = useMemo(
+    () => normaliseModelForOptions(canonicalVehicleMake, vehicle?.model),
+    [canonicalVehicleMake, vehicle?.model]
+  );
+
+  const resolvedModel = selectedModel || canonicalVehicleModel || "";
 
   useEffect(() => {
     if (!initialReg) return;
@@ -119,6 +218,20 @@ export default function CheckForm() {
   useEffect(() => {
     setAskingPrice(initialAskingPrice);
   }, [initialAskingPrice]);
+
+  useEffect(() => {
+    if (!vehicle) {
+      setSelectedModel("");
+      return;
+    }
+
+    if (canonicalVehicleModel) {
+      setSelectedModel(canonicalVehicleModel);
+      return;
+    }
+
+    setSelectedModel("");
+  }, [vehicle, canonicalVehicleModel]);
 
   async function lookupVehicle(reg: string) {
     const cleaned = normaliseRegistration(reg);
@@ -132,6 +245,7 @@ export default function CheckForm() {
     setLookupError(null);
     setContinueError(null);
     setVehicle(null);
+    setSelectedModel("");
 
     try {
       const response = await fetch("/api/lookup-reg", {
@@ -152,11 +266,18 @@ export default function CheckForm() {
         );
       }
 
+      const rawMake = typeof data?.make === "string" ? data.make : null;
+      const rawModel = typeof data?.model === "string" ? data.model : null;
+
+      const mappedMake = normaliseMakeForOptions(rawMake) ?? rawMake;
+      const mappedModel =
+        normaliseModelForOptions(mappedMake, rawModel) ?? rawModel;
+
       setVehicle({
         registration:
           typeof data?.registration === "string" ? data.registration : cleaned,
-        make: data?.make ?? null,
-        model: data?.model ?? null,
+        make: mappedMake ?? null,
+        model: mappedModel ?? null,
         year: data?.year ?? data?.yearOfManufacture ?? null,
         colour: data?.colour ?? null,
         fuelType: data?.fuelType ?? null,
@@ -231,6 +352,13 @@ export default function CheckForm() {
     }
 
     const engineSize = normaliseEngineSize(vehicle.engineSize);
+    const canonicalMake = canonicalVehicleMake ?? vehicle.make ?? undefined;
+    const modelForPayload = resolvedModel || undefined;
+
+    if (canonicalVehicleMake && availableModelsForVehicle.length && !modelForPayload) {
+      setContinueError("Please confirm the vehicle model before continuing.");
+      return;
+    }
 
     setIsSubmitting(true);
     setContinueError(null);
@@ -243,8 +371,8 @@ export default function CheckForm() {
         },
         body: JSON.stringify({
           registration: vehicle.registration,
-          make: vehicle.make ?? undefined,
-          model: vehicle.model ?? undefined,
+          make: canonicalMake,
+          model: modelForPayload,
           year,
           mileage: parsedMileage,
           asking_price: parsedAskingPrice,
@@ -252,14 +380,6 @@ export default function CheckForm() {
           transmission,
           engine_size: engineSize ?? undefined,
           timing_type: "unknown",
-          vehicleIdentity: {
-            make: vehicle.make ?? undefined,
-            model: vehicle.model ?? undefined,
-            engine_size: engineSize ?? undefined,
-            fuel,
-            transmission,
-            year,
-          },
         }),
       });
 
@@ -291,6 +411,7 @@ export default function CheckForm() {
     setContinueError(null);
     setMileage("");
     setGearbox("");
+    setSelectedModel("");
   }
 
   useEffect(() => {
@@ -380,8 +501,8 @@ export default function CheckForm() {
               {vehicle.registration}
               {vehicle.make ? (
                 <span className="ml-2 font-medium text-slate-600">
-                  · {vehicle.make}
-                  {vehicle.model ? ` ${vehicle.model}` : ""}
+                  · {titleCase(vehicle.make)}
+                  {resolvedModel ? ` ${titleCase(resolvedModel)}` : ""}
                 </span>
               ) : null}
             </div>
@@ -391,10 +512,42 @@ export default function CheckForm() {
               <div>{vehicle.fuelType || "—"}</div>
               <div>{vehicle.bodyType || "—"}</div>
               <div>{vehicle.colour || "—"}</div>
+              <div>Engine: {normaliseEngineSize(vehicle.engineSize) ?? "—"}</div>
               <div>MoT: {vehicle.motStatus || "—"}</div>
               <div>Tax: {vehicle.taxStatus || "—"}</div>
             </div>
           </div>
+
+          {canonicalVehicleMake && availableModelsForVehicle.length ? (
+            <div className="rounded-xl border border-slate-200 bg-white p-4">
+              <label
+                htmlFor="vehicleModel"
+                className="mb-2 block text-sm font-semibold text-slate-800"
+              >
+                Confirm model
+              </label>
+              <select
+                id="vehicleModel"
+                value={selectedModel}
+                onChange={(e) => {
+                  setSelectedModel(e.target.value);
+                  if (continueError) setContinueError(null);
+                }}
+                disabled={isSubmitting}
+                className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-900 outline-none transition focus:border-[var(--aa-red)]"
+              >
+                <option value="">Select model</option>
+                {availableModelsForVehicle.map((option) => (
+                  <option key={option} value={option}>
+                    {titleCase(option)}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-2 text-xs text-slate-600">
+                This helps us match model-specific common failures more accurately.
+              </p>
+            </div>
+          ) : null}
 
           <form onSubmit={handleContinue} className="space-y-5">
             <div className="rounded-xl border border-[var(--aa-red)]/15 bg-[var(--aa-red)]/5 p-4">

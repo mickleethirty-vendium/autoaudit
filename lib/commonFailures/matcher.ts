@@ -201,16 +201,19 @@ function normTransmission(value?: string | null) {
 }
 
 function normaliseMatcherInput(input: MatcherInput): MatcherInput {
+  const normalisedEngineSize = normEngineSize(input.engine_size);
+  const normalisedEngine = normEngine(input.engine) ?? normalisedEngineSize;
+
   return {
     registration: input.registration ?? null,
     make: normMake(input.make),
     model: normModel(input.model),
     derivative: cleanText(input.derivative),
     generation: cleanText(input.generation),
-    engine: normEngine(input.engine),
+    engine: normalisedEngine,
     engine_family: normEngineFamily(input.engine_family),
     engine_code: cleanText(input.engine_code),
-    engine_size: normEngineSize(input.engine_size),
+    engine_size: normalisedEngineSize,
     power: cleanText(input.power),
     fuel: normFuel(input.fuel),
     transmission: normTransmission(input.transmission),
@@ -230,6 +233,23 @@ function chooseBestMatch(
 ): ScoredVehicleFailureMatch | null {
   if (!matches.length) return null;
   return matches[0];
+}
+
+function buildFallbackVehicleIdentity(input: MatcherInput) {
+  return {
+    make: input.make ?? null,
+    model: input.model ?? null,
+    derivative: input.derivative ?? null,
+    generation: input.generation ?? null,
+    engine: input.engine ?? null,
+    engine_family: input.engine_family ?? null,
+    engine_code: input.engine_code ?? null,
+    engine_size: input.engine_size ?? null,
+    power: input.power ?? null,
+    fuel: input.fuel ?? null,
+    transmission: input.transmission ?? null,
+    year: input.year ?? null,
+  };
 }
 
 export async function matchKnownModelIssues(
@@ -255,20 +275,7 @@ export async function matchKnownModelIssues(
 
   if (!bestMatch) {
     return {
-      vehicleIdentity: {
-        make: normalisedInput.make ?? null,
-        model: normalisedInput.model ?? null,
-        derivative: normalisedInput.derivative ?? null,
-        generation: normalisedInput.generation ?? null,
-        engine: normalisedInput.engine ?? null,
-        engine_family: normalisedInput.engine_family ?? null,
-        engine_code: normalisedInput.engine_code ?? null,
-        engine_size: normalisedInput.engine_size ?? null,
-        power: normalisedInput.power ?? null,
-        fuel: normalisedInput.fuel ?? null,
-        transmission: normalisedInput.transmission ?? null,
-        year: normalisedInput.year ?? null,
-      },
+      vehicleIdentity: buildFallbackVehicleIdentity(normalisedInput),
       knownModelIssues: [],
     };
   }

@@ -1,15 +1,27 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ShieldIcon from "@/app/components/ShieldIcon";
+import { getModelsForMake, vehicleMakes } from "@/lib/vehicleOptions";
 
 type FuelOption = "petrol" | "diesel" | "hybrid" | "ev" | "";
 type GearboxOption = "manual" | "automatic" | "cvt" | "dct" | "";
 
 function normaliseEngineSize(value: string) {
   return value.replace(/[^\d.]/g, "").trim();
+}
+
+function normaliseText(value: string) {
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function titleCase(value: string) {
+  return value
+    .split(" ")
+    .map((word) => (word ? word[0].toUpperCase() + word.slice(1) : word))
+    .join(" ");
 }
 
 export default function ManualCheckPage() {
@@ -26,16 +38,46 @@ export default function ManualCheckPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const normalisedMake = useMemo(() => normaliseText(make), [make]);
+  const availableModels = useMemo(
+    () => getModelsForMake(normalisedMake),
+    [normalisedMake]
+  );
+  const normalisedModel = useMemo(() => normaliseText(model), [model]);
+
+  const makeIsValid =
+    !normalisedMake ||
+    vehicleMakes.includes(normalisedMake as (typeof vehicleMakes)[number]);
+
+  const modelIsValid =
+    !normalisedModel || availableModels.includes(normalisedModel);
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!make.trim()) {
-      setError("Please enter the vehicle make.");
+    const cleanedMake = normaliseText(make);
+    const cleanedModel = normaliseText(model);
+    const cleanedBodyType = bodyType.trim();
+    const parsedEngineSize = normaliseEngineSize(engineSize);
+
+    if (!cleanedMake) {
+      setError("Please select the vehicle make.");
       return;
     }
 
-    if (!model.trim()) {
-      setError("Please enter the vehicle model.");
+    if (!vehicleMakes.includes(cleanedMake as (typeof vehicleMakes)[number])) {
+      setError("Please select a valid make from the list.");
+      return;
+    }
+
+    if (!cleanedModel) {
+      setError("Please select the vehicle model.");
+      return;
+    }
+
+    const modelsForMake = getModelsForMake(cleanedMake);
+    if (!modelsForMake.includes(cleanedModel)) {
+      setError("Please select a valid model for the chosen make.");
       return;
     }
 
@@ -45,7 +87,11 @@ export default function ManualCheckPage() {
     }
 
     const parsedYear = Number(year);
-    if (!Number.isFinite(parsedYear)) {
+    if (
+      !Number.isFinite(parsedYear) ||
+      parsedYear < 1990 ||
+      parsedYear > new Date().getFullYear()
+    ) {
       setError("Please enter a valid year.");
       return;
     }
@@ -55,12 +101,6 @@ export default function ManualCheckPage() {
       return;
     }
 
-    if (!engineSize.trim()) {
-      setError("Please enter the engine size.");
-      return;
-    }
-
-    const parsedEngineSize = normaliseEngineSize(engineSize);
     if (!parsedEngineSize) {
       setError("Please enter a valid engine size.");
       return;
@@ -92,12 +132,12 @@ export default function ManualCheckPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          make: make.trim(),
-          model: model.trim(),
+          make: cleanedMake,
+          model: cleanedModel,
           year: parsedYear,
           fuel: fuelType,
           engine_size: parsedEngineSize,
-          body_type: bodyType.trim() || undefined,
+          body_type: cleanedBodyType || undefined,
           mileage: parsedMileage,
           transmission: gearbox,
           timing_type: "unknown",
@@ -154,34 +194,58 @@ export default function ManualCheckPage() {
                     <label className="mb-2 block text-sm font-semibold text-slate-800">
                       Make
                     </label>
-                    <input
-                      type="text"
+                    <select
                       value={make}
                       onChange={(e) => {
-                        setMake(e.target.value);
+                        const nextMake = e.target.value;
+                        setMake(nextMake);
+                        setModel("");
                         if (error) setError(null);
                       }}
-                      placeholder="e.g. Ford"
                       disabled={isSubmitting}
-                      className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)]"
-                    />
+                      className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-900 focus:border-[var(--aa-red)]"
+                    >
+                      <option value="">Select make</option>
+                      {vehicleMakes.map((option) => (
+                        <option key={option} value={option}>
+                          {titleCase(option)}
+                        </option>
+                      ))}
+                    </select>
+                    {!makeIsValid ? (
+                      <p className="mt-2 text-xs text-red-600">
+                        Please choose a valid make from the list.
+                      </p>
+                    ) : null}
                   </div>
 
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-slate-800">
                       Model
                     </label>
-                    <input
-                      type="text"
+                    <select
                       value={model}
                       onChange={(e) => {
                         setModel(e.target.value);
                         if (error) setError(null);
                       }}
-                      placeholder="e.g. Fiesta"
-                      disabled={isSubmitting}
-                      className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)]"
-                    />
+                      disabled={isSubmitting || !normalisedMake}
+                      className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-900 focus:border-[var(--aa-red)] disabled:bg-slate-100 disabled:text-slate-500"
+                    >
+                      <option value="">
+                        {normalisedMake ? "Select model" : "Select make first"}
+                      </option>
+                      {availableModels.map((option) => (
+                        <option key={option} value={option}>
+                          {titleCase(option)}
+                        </option>
+                      ))}
+                    </select>
+                    {!modelIsValid ? (
+                      <p className="mt-2 text-xs text-red-600">
+                        Please choose a valid model for the selected make.
+                      </p>
+                    ) : null}
                   </div>
 
                   <div>
