@@ -56,25 +56,36 @@ export type FailurePattern = {
   red_flags?: string[];
 };
 
+export type VehicleFailureMapIssue = {
+  code: string;
+  title: string;
+  severity: FailureSeverity;
+  repairCostMin: number;
+  repairCostMax: number;
+  warningSigns?: string[];
+  questionsToAskSeller?: string[];
+};
+
 export type VehicleFailureMapEntry = {
   id: string;
   make: string;
   model: string;
 
-  derivative?: string;
-  generation?: string;
-  engine?: string;
-  engine_family?: string;
-  engine_code?: string;
-  engine_size?: string;
-  power?: string;
-  fuel?: string;
-  transmission?: string;
+  derivative?: string | null;
+  generation?: string | null;
+  engine?: string | null;
+  engine_family?: string | null;
+  engine_code?: string | null;
+  engine_size?: string | null;
+  power?: string | null;
+  fuel?: string | null;
+  transmission?: string | null;
 
-  year_from?: number;
-  year_to?: number;
+  year_from?: number | null;
+  year_to?: number | null;
 
-  failure_codes: string[];
+  issues?: VehicleFailureMapIssue[];
+  failure_codes?: string[];
 };
 
 export type KnownModelIssue = {

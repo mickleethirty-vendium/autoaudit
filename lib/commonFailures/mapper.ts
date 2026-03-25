@@ -1,5 +1,6 @@
 import { failureLibrary } from "./failureLibrary";
 import {
+  FailureCategory,
   KnownModelIssue,
   ScoredVehicleFailureMatch,
   VehicleIdentity,
@@ -9,6 +10,87 @@ function uniqueStrings(values: Array<string | undefined | null>) {
   return Array.from(
     new Set(values.filter((value): value is string => !!value && !!value.trim()))
   );
+}
+
+function inferCategoryFromIssue(
+  code?: string | null,
+  title?: string | null
+): FailureCategory {
+  const text = `${code ?? ""} ${title ?? ""}`.toLowerCase();
+
+  if (
+    text.includes("timing") ||
+    text.includes("chain") ||
+    text.includes("belt") ||
+    text.includes("camshaft")
+  ) {
+    return "timing";
+  }
+
+  if (text.includes("turbo") || text.includes("boost")) {
+    return "turbo";
+  }
+
+  if (
+    text.includes("coolant") ||
+    text.includes("water pump") ||
+    text.includes("thermostat") ||
+    text.includes("overheat")
+  ) {
+    return "cooling";
+  }
+
+  if (
+    text.includes("gearbox") ||
+    text.includes("dsg") ||
+    text.includes("dct") ||
+    text.includes("cvt") ||
+    text.includes("powershift") ||
+    text.includes("easytronic") ||
+    text.includes("transmission")
+  ) {
+    return "transmission";
+  }
+
+  if (
+    text.includes("dpf") ||
+    text.includes("egr") ||
+    text.includes("emission")
+  ) {
+    return "emissions";
+  }
+
+  if (
+    text.includes("injector") ||
+    text.includes("fuel") ||
+    text.includes("diesel smell")
+  ) {
+    return "fuel_system";
+  }
+
+  if (
+    text.includes("electrical") ||
+    text.includes("sensor") ||
+    text.includes("module") ||
+    text.includes("abs") ||
+    text.includes("esp")
+  ) {
+    return "electrical";
+  }
+
+  if (
+    text.includes("clutch") ||
+    text.includes("dmf") ||
+    text.includes("flywheel") ||
+    text.includes("drivetrain")
+  ) {
+    return "drivetrain";
+  }
+
+  if (text.includes("hybrid")) return "hybrid_system";
+  if (text.includes("ev") || text.includes("battery")) return "ev_system";
+
+  return "engine";
 }
 
 export function buildVehicleIdentityFromMatch(
@@ -37,7 +119,39 @@ export function buildVehicleIdentityFromMatch(
 export function mapScoredMatchToKnownIssues(
   match: ScoredVehicleFailureMatch
 ): KnownModelIssue[] {
-  const parsed = match.entry.failure_codes.map(
+  const directIssues = Array.isArray(match.entry.issues) ? match.entry.issues : [];
+
+  if (directIssues.length > 0) {
+    const parsedDirect = directIssues.map((issue): KnownModelIssue => {
+      const reasons = uniqueStrings([match.reasons.join(" "), issue.title]);
+
+      return {
+        issue_code: issue.code,
+        label: issue.title,
+        category: inferCategoryFromIssue(issue.code, issue.title),
+        severity: issue.severity,
+        cost_low: issue.repairCostMin,
+        cost_high: issue.repairCostMax,
+        why_flagged:
+          reasons[0] ??
+          "Matched against known model-specific issue patterns for this vehicle.",
+        why_it_matters: issue.title,
+        questions_to_ask: issue.questionsToAskSeller ?? [],
+        red_flags: issue.warningSigns ?? [],
+        match_confidence: match.match_confidence,
+        match_basis: match.match_basis,
+        probability_score: match.probability_score,
+      };
+    });
+
+    return parsedDirect;
+  }
+
+  const failureCodes = Array.isArray(match.entry.failure_codes)
+    ? match.entry.failure_codes
+    : [];
+
+  const parsedFromLibrary = failureCodes.map(
     (failureCode): KnownModelIssue | null => {
       const pattern = failureLibrary[failureCode];
       if (!pattern) return null;
@@ -67,7 +181,9 @@ export function mapScoredMatchToKnownIssues(
     }
   );
 
-  return parsed.filter((issue): issue is KnownModelIssue => issue !== null);
+  return parsedFromLibrary.filter(
+    (issue): issue is KnownModelIssue => issue !== null
+  );
 }
 
 export function dedupeKnownModelIssues(

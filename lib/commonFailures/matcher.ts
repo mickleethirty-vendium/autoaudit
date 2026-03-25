@@ -43,9 +43,9 @@ function normMake(value?: string | null) {
 
   const aliasMap: Record<string, string> = {
     vw: "volkswagen",
-    "mercedes benz": "mercedes",
-    mercedesbenz: "mercedes",
-    merc: "mercedes",
+    "mercedes benz": "mercedes-benz",
+    mercedesbenz: "mercedes-benz",
+    merc: "mercedes-benz",
     "range rover": "range rover",
   };
 
@@ -77,6 +77,8 @@ function normModel(value?: string | null) {
     "5 series": "5 series",
     "a class": "a class",
     "a class hatchback": "a class",
+    aclass: "a class",
+    "a-class": "a class",
     "c class": "c class",
     "c class saloon": "c class",
     "c class estate": "c class",
@@ -100,7 +102,7 @@ function normModel(value?: string | null) {
   if (model.includes("3 series")) return "3 series";
   if (model.includes("4 series")) return "4 series";
   if (model.includes("5 series")) return "5 series";
-  if (model.includes("a class")) return "a class";
+  if (model.includes("a class") || model.includes("aclass")) return "a class";
   if (model.includes("c class")) return "c class";
   if (model.includes("e class")) return "e class";
   if (model.includes("cr v") || model.includes("crv")) return "cr-v";
@@ -295,11 +297,13 @@ export async function matchKnownModelIssues(
     };
   }
 
-  const candidateIssues = scoredMatches.flatMap((match) =>
-    mapScoredMatchToKnownIssues(match)
-  );
+  const candidateIssues = scoredMatches
+    .slice(0, 5)
+    .flatMap((match) => mapScoredMatchToKnownIssues(match));
 
-  const dedupedIssues = dedupeKnownModelIssues(candidateIssues);
+  const dedupedIssues = dedupeKnownModelIssues(candidateIssues).filter(
+    (issue) => (issue.probability_score ?? 0) >= 0.45
+  );
 
   const vehicleIdentity = {
     ...(buildVehicleIdentityFromMatch(bestMatch) ?? {}),

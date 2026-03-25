@@ -81,7 +81,12 @@ function getMatchBasis(
     return "engine_family";
   }
 
-  if (entry.generation && includesLoose(input.generation, entry.generation)) {
+  if (
+    entry.generation &&
+    includesLoose(input.generation, entry.generation) &&
+    includesLoose(input.make, entry.make) &&
+    includesLoose(input.model, entry.model)
+  ) {
     return "model_generation";
   }
 
@@ -89,20 +94,6 @@ function getMatchBasis(
     includesLoose(input.make, entry.make) &&
     includesLoose(input.model, entry.model)
   ) {
-    if (
-      entry.engine &&
-      includesLoose(input.engine, entry.engine)
-    ) {
-      return "model_generation";
-    }
-
-    if (
-      entry.engine_size &&
-      engineSizeMatches(input.engine_size, entry.engine_size)
-    ) {
-      return "model_generation";
-    }
-
     return "make_model_only";
   }
 
@@ -127,6 +118,10 @@ function getProbabilityScore(score: number, basis: MatchBasis): number {
 
   const scaled = score / 100;
   return Math.max(0.2, Math.min(basisCap, Math.round(scaled * 100) / 100));
+}
+
+function isBroadEntry(entry: VehicleFailureMapEntry) {
+  return !entry.derivative && !entry.engine && !entry.engine_family;
 }
 
 export function scoreVehicleFailureMatch(
@@ -158,6 +153,7 @@ export function scoreVehicleFailureMatch(
 
   const inputHasEngineSize = hasEngineSize(input.engine_size);
   const entryHasEngineSize = hasEngineSize(entry.engine_size);
+  const broadEntry = isBroadEntry(entry);
 
   const reasons: string[] = [];
   let score = 45;
@@ -195,7 +191,7 @@ export function scoreVehicleFailureMatch(
     if (engineSizeMatches(input.engine_size, entry.engine_size)) {
       score += 16;
       reasons.push("Engine size matched.");
-    } else {
+    } else if (!broadEntry) {
       score -= 10;
       reasons.push("Engine size differs from mapped pattern.");
     }
@@ -217,6 +213,9 @@ export function scoreVehicleFailureMatch(
   if (entry.fuel && includesLoose(input.fuel, entry.fuel)) {
     score += 10;
     reasons.push("Fuel type matched.");
+  } else if (!entry.fuel && input.fuel) {
+    score += 2;
+    reasons.push("Broad fuel-agnostic pattern used.");
   }
 
   if (
@@ -226,6 +225,9 @@ export function scoreVehicleFailureMatch(
   ) {
     score += 8;
     reasons.push("Transmission matched.");
+  } else if (!entry.transmission && input.transmission) {
+    score += 2;
+    reasons.push("Broad transmission-agnostic pattern used.");
   }
 
   if (input.year && entry.year_from && entry.year_to) {
@@ -258,12 +260,24 @@ export function scoreVehicleFailureMatch(
     reasons.push("Make/model/fuel/year fallback applied without engine-size input.");
   }
 
+  if (broadEntry && input.year && (entry.year_from || entry.year_to)) {
+    score += 4;
+    reasons.push("Broad year-range pattern matched.");
+  }
+
+  if (broadEntry && input.fuel && entry.fuel && includesLoose(input.fuel, entry.fuel)) {
+    score += 4;
+    reasons.push("Broad fuel-specific pattern matched.");
+  }
+
   if (
-    entry.fuel &&
-    !entry.transmission &&
-    includesLoose(input.fuel, entry.fuel)
+    broadEntry &&
+    input.transmission &&
+    entry.transmission &&
+    includesLoose(input.transmission, entry.transmission)
   ) {
-    score += 2;
+    score += 4;
+    reasons.push("Broad transmission-specific pattern matched.");
   }
 
   score = Math.max(0, Math.min(100, score));
@@ -289,5 +303,6 @@ export function scoreVehicleFailureMatches(
   return entries
     .map((entry) => scoreVehicleFailureMatch(input, entry))
     .filter((match): match is ScoredVehicleFailureMatch => !!match)
+    .filter((match) => match.score >= 45)
     .sort((a, b) => b.score - a.score);
 }
