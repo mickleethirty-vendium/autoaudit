@@ -10,13 +10,14 @@ import {
   dedupeKnownModelIssues,
   mapScoredMatchToKnownIssues,
 } from "./mapper";
+import { commonFailureDataset } from "./dataset";
 
 let vehicleFailureMapCache: VehicleFailureMapEntry[] | null = null;
 
 async function getVehicleFailureMap(): Promise<VehicleFailureMapEntry[]> {
   if (!vehicleFailureMapCache) {
-    const mod = await import("./vehicleFailureMap");
-    vehicleFailureMapCache = mod.vehicleFailureMap;
+    vehicleFailureMapCache =
+      commonFailureDataset as unknown as VehicleFailureMapEntry[];
   }
 
   return vehicleFailureMapCache;
@@ -74,6 +75,8 @@ function normModel(value?: string | null) {
     "3 series": "3 series",
     "4 series": "4 series",
     "5 series": "5 series",
+    "a class": "a class",
+    "a class hatchback": "a class",
     "c class": "c class",
     "c class saloon": "c class",
     "c class estate": "c class",
@@ -86,6 +89,8 @@ function normModel(value?: string | null) {
     evoque: "evoque",
     "freelander 2": "freelander",
     freelander2: "freelander",
+    "mini hatch": "hatch",
+    cooper: "hatch",
   };
 
   if (exactMap[model]) return exactMap[model];
@@ -95,6 +100,7 @@ function normModel(value?: string | null) {
   if (model.includes("3 series")) return "3 series";
   if (model.includes("4 series")) return "4 series";
   if (model.includes("5 series")) return "5 series";
+  if (model.includes("a class")) return "a class";
   if (model.includes("c class")) return "c class";
   if (model.includes("e class")) return "e class";
   if (model.includes("cr v") || model.includes("crv")) return "cr-v";
@@ -109,18 +115,21 @@ function normModel(value?: string | null) {
   if (model.includes("a3")) return "a3";
   if (model.includes("a4")) return "a4";
   if (model.includes("astra")) return "astra";
+  if (model.includes("corsa")) return "corsa";
   if (model.includes("insignia")) return "insignia";
+  if (model.includes("208")) return "208";
   if (model.includes("308")) return "308";
   if (model.includes("c4")) return "c4";
   if (model.includes("mazda 3") || model === "3") return "3";
   if (model.includes("qashqai")) return "qashqai";
   if (model.includes("clio")) return "clio";
   if (model.includes("megane")) return "megane";
-  if (model.includes("cooper")) return "cooper";
+  if (model.includes("cooper") || model.includes("mini hatch")) return "hatch";
   if (model.includes("avensis")) return "avensis";
   if (model.includes("civic")) return "civic";
   if (model.includes("ix35")) return "ix35";
   if (model.includes("sportage")) return "sportage";
+  if (model.includes("yaris")) return "yaris";
 
   return model;
 }
@@ -143,6 +152,11 @@ function normEngineFamily(value?: string | null) {
 
   if (cleaned.includes("ecoboost")) return "ecoboost";
   if (cleaned.includes("n47")) return "n47";
+  if (cleaned.includes("ea888")) return "ea888";
+  if (cleaned.includes("ea189")) return "ea189";
+  if (cleaned.includes("om651")) return "om651";
+  if (cleaned.includes("puretech")) return "puretech";
+  if (cleaned.includes("prince")) return "prince";
 
   return cleaned;
 }
@@ -188,8 +202,9 @@ function normTransmission(value?: string | null) {
   if (cleaned === "automatic") return "automatic";
   if (cleaned === "auto") return "automatic";
   if (cleaned === "cvt") return "cvt";
+  if (cleaned === "dsg") return "dsg";
+  if (cleaned === "dct") return "dct";
   if (
-    cleaned === "dct" ||
     cleaned === "semi automatic" ||
     cleaned === "semi automatic transmission" ||
     cleaned === "semi-automatic"
