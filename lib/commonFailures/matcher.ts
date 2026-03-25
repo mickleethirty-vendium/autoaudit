@@ -16,8 +16,7 @@ let vehicleFailureMapCache: VehicleFailureMapEntry[] | null = null;
 
 async function getVehicleFailureMap(): Promise<VehicleFailureMapEntry[]> {
   if (!vehicleFailureMapCache) {
-    vehicleFailureMapCache =
-      commonFailureDataset as unknown as VehicleFailureMapEntry[];
+    vehicleFailureMapCache = commonFailureDataset;
   }
 
   return vehicleFailureMapCache;
@@ -43,6 +42,7 @@ function normMake(value?: string | null) {
 
   const aliasMap: Record<string, string> = {
     vw: "volkswagen",
+    mercedes: "mercedes-benz",
     "mercedes benz": "mercedes-benz",
     mercedesbenz: "mercedes-benz",
     merc: "mercedes-benz",
@@ -102,6 +102,7 @@ function normModel(value?: string | null) {
   if (model.includes("3 series")) return "3 series";
   if (model.includes("4 series")) return "4 series";
   if (model.includes("5 series")) return "5 series";
+  if (/^a\s?\d{3}/.test(model)) return "a class";
   if (model.includes("a class") || model.includes("aclass")) return "a class";
   if (model.includes("c class")) return "c class";
   if (model.includes("e class")) return "e class";

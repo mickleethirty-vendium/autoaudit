@@ -46,6 +46,7 @@ function normaliseMake(value?: string | null) {
 
   const aliasMap: Record<string, string> = {
     vw: "volkswagen",
+    mercedes: "mercedes-benz",
     "mercedes benz": "mercedes-benz",
     mercedesbenz: "mercedes-benz",
     merc: "mercedes-benz",
