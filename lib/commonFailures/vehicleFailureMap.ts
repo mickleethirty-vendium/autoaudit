@@ -710,4 +710,131 @@ export const vehicleFailureMap: VehicleFailureMapEntry[] = [
     year_to: 2017,
     failure_codes: ["EGR_VALVE_CLOGGING", "DPF_BLOCKAGE", "TURBO_FAILURE"],
   },
+{
+  id: "mercedes_a_class_w176_petrol_cam_adjuster",
+  make: "mercedes",
+  model: "a class",
+  generation: "w176",
+  fuel: "petrol",
+  year_from: 2013,
+  year_to: 2018,
+  issues: [
+    {
+      issue_code: "camshaft_adjuster_failure",
+      label: "Camshaft adjuster wear",
+      category: "engine",
+      severity: "medium",
+      cost_low: 650,
+      cost_high: 1400,
+      why_flagged:
+        "Early turbo petrol engines in the W176 A-Class can develop camshaft adjuster wear leading to engine noise and timing faults.",
+      why_it_matters:
+        "If ignored the timing system can become inaccurate which may trigger warning lights or misfires.",
+      questions_to_ask: [
+        "Has the camshaft adjuster or timing components ever been replaced?",
+        "Has the car had regular oil changes with correct spec oil?"
+      ],
+      red_flags: [
+        "Rattle from engine on startup",
+        "Check engine light relating to cam timing"
+      ]
+    }
+  ]
+},
+
+{
+  id: "mercedes_a_class_w176_petrol_coilpacks",
+  make: "mercedes",
+  model: "a class",
+  generation: "w176",
+  fuel: "petrol",
+  year_from: 2013,
+  year_to: 2018,
+  issues: [
+    {
+      issue_code: "ignition_coil_failure",
+      label: "Ignition coil pack failure",
+      category: "engine",
+      severity: "low",
+      cost_low: 120,
+      cost_high: 350,
+      why_flagged:
+        "Turbo petrol A-Class models sometimes develop coil pack failures causing rough running.",
+      why_it_matters:
+        "Misfires reduce performance and can damage the catalytic converter if left unresolved.",
+      questions_to_ask: [
+        "Has the car ever had ignition coil replacements?",
+        "Has it experienced misfire warnings?"
+      ],
+      red_flags: [
+        "Engine misfire under load",
+        "Check engine light"
+      ]
+    }
+  ]
+},
+
+{
+  id: "mercedes_a_class_w176_diesel_egr",
+  make: "mercedes",
+  model: "a class",
+  generation: "w176",
+  fuel: "diesel",
+  year_from: 2013,
+  year_to: 2018,
+  issues: [
+    {
+      issue_code: "egr_valve_clogging",
+      label: "EGR valve clogging",
+      category: "emissions",
+      severity: "medium",
+      cost_low: 400,
+      cost_high: 900,
+      why_flagged:
+        "Diesel A-Class engines are known to suffer EGR clogging, particularly on cars used mainly for short journeys.",
+      why_it_matters:
+        "Blocked EGR systems can reduce power and increase emissions.",
+      questions_to_ask: [
+        "Has the EGR valve ever been cleaned or replaced?",
+        "Does the car do mostly short trips?"
+      ],
+      red_flags: [
+        "Reduced power",
+        "Engine management light"
+      ]
+    }
+  ]
+},
+
+{
+  id: "mercedes_a_class_w176_diesel_dpf",
+  make: "mercedes",
+  model: "a class",
+  generation: "w176",
+  fuel: "diesel",
+  year_from: 2013,
+  year_to: 2018,
+  issues: [
+    {
+      issue_code: "dpf_blockage",
+      label: "DPF blockage risk",
+      category: "emissions",
+      severity: "medium",
+      cost_low: 450,
+      cost_high: 1500,
+      why_flagged:
+        "Urban-driven diesel A-Class models frequently suffer DPF blockage.",
+      why_it_matters:
+        "A blocked DPF can force expensive replacement if regeneration fails.",
+      questions_to_ask: [
+        "Has the car had DPF warning lights?",
+        "Does it regularly do motorway journeys?"
+      ],
+      red_flags: [
+        "DPF warning messages",
+        "Frequent regeneration cycles"
+      ]
+    }
+  ]
+}
 ];
