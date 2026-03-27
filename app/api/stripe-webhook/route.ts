@@ -265,7 +265,10 @@ function buildBaseMatcherIdentity(existingReport: any) {
   };
 }
 
-function buildEnrichedMatcherIdentity(baseIdentity: Record<string, any>, enrichment: any) {
+function buildEnrichedMatcherIdentity(
+  baseIdentity: Record<string, any>,
+  enrichment: any
+) {
   return {
     ...baseIdentity,
     make: firstString(enrichment?.make, baseIdentity.make),
@@ -373,7 +376,6 @@ export async function POST(req: Request) {
             hpi_unlocked,
             hpi_paid_at,
             stripe_session_id,
-            stripe_payment_intent_id,
             hpi_stripe_session_id,
             hpi_stripe_payment_intent_id,
             preview_payload,
@@ -436,8 +438,6 @@ export async function POST(req: Request) {
     if (checkoutTier === "report") {
       updatePayload.stripe_session_id =
         existingReport.stripe_session_id ?? session.id;
-      updatePayload.stripe_payment_intent_id =
-        existingReport.stripe_payment_intent_id ?? paymentIntentId;
     }
 
     if (checkoutTier === "hpi_upgrade") {
@@ -452,8 +452,6 @@ export async function POST(req: Request) {
     if (checkoutTier === "report_plus_hpi") {
       updatePayload.stripe_session_id =
         existingReport.stripe_session_id ?? session.id;
-      updatePayload.stripe_payment_intent_id =
-        existingReport.stripe_payment_intent_id ?? paymentIntentId;
       updatePayload.hpi_unlocked = true;
       updatePayload.hpi_paid_at = existingHpiPaidAt ?? nowIso;
       updatePayload.hpi_stripe_session_id =
@@ -555,7 +553,9 @@ export async function POST(req: Request) {
         };
 
         nextFullPayload.summary = {
-          ...(isPlainObject(nextFullPayload.summary) ? nextFullPayload.summary : {}),
+          ...(isPlainObject(nextFullPayload.summary)
+            ? nextFullPayload.summary
+            : {}),
           market_value: marketValue,
         };
 
