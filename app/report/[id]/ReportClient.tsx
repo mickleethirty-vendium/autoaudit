@@ -58,6 +58,21 @@ type VehicleIdentity = {
   mileage?: number | null;
 };
 
+type MotDefect = {
+  text?: string;
+  type?: string;
+  dangerous?: boolean;
+};
+
+type MotTest = {
+  completedDate?: string | null;
+  testResult?: string | null;
+  odometerValue?: string | number | null;
+  odometerUnit?: string | null;
+  expiryDate?: string | null;
+  defects?: MotDefect[];
+};
+
 function money(value?: number | null) {
   if (typeof value !== "number" || !Number.isFinite(value)) return "—";
   return new Intl.NumberFormat("en-GB", {
@@ -276,13 +291,6 @@ function firstNonEmptyString(...values: unknown[]) {
   return null;
 }
 
-function firstFiniteNumber(...values: unknown[]) {
-  for (const value of values) {
-    if (typeof value === "number" && Number.isFinite(value)) return value;
-  }
-  return null;
-}
-
 function parseVehicleIdentityNode(value: any): VehicleIdentity | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   return value as VehicleIdentity;
@@ -293,6 +301,7 @@ function buildVehicleIdentity(fullSummary: any): {
   enrichedIdentity: VehicleIdentity | null;
   displayIdentity: VehicleIdentity | null;
   matchExplainer: string | null;
+  identityStatusLabel: string | null;
 } {
   const baseIdentity = parseVehicleIdentityNode(fullSummary?.vehicle_identity);
   const enrichedIdentity = parseVehicleIdentityNode(
@@ -304,13 +313,16 @@ function buildVehicleIdentity(fullSummary: any): {
     enrichedIdentity ?? ukvdEnrichment ?? baseIdentity ?? null;
 
   let matchExplainer: string | null = null;
+  let identityStatusLabel: string | null = null;
 
   if (enrichedIdentity || ukvdEnrichment) {
     matchExplainer =
-      "Known model issues were matched using richer vehicle details where available, including derivative, engine data and drivetrain.";
+      "Model-specific matching was tightened using richer vehicle details where available, including derivative, engine data and drivetrain.";
+    identityStatusLabel = "Enriched match";
   } else if (baseIdentity) {
     matchExplainer =
-      "Known model issues were matched using the best available make, model and vehicle details.";
+      "Model-specific matching used the best available make, model and vehicle details.";
+    identityStatusLabel = "Base match";
   }
 
   return {
@@ -318,6 +330,7 @@ function buildVehicleIdentity(fullSummary: any): {
     enrichedIdentity,
     displayIdentity,
     matchExplainer,
+    identityStatusLabel,
   };
 }
 
@@ -356,6 +369,308 @@ function buildIdentityRows(identity: VehicleIdentity | null) {
   ].filter((row) => row.value);
 }
 
+function buildKnownIssueSummary(knownModelIssues: KnownModelIssue[]) {
+  if (!knownModelIssues.length) {
+    return {
+      strongestBasis: null as string | null,
+      strongestConfidence: null as string | null,
+      exactDerivativeCount: 0,
+      engineFamilyCount: 0,
+      generationCount: 0,
+      broadCount: 0,
+    };
+  }
+
+  let exactDerivativeCount = 0;
+  let engineFamilyCount = 0;
+  let generationCount = 0;
+  let broadCount = 0;
+
+  const confidenceRank = { high: 3, medium: 2, low: 1 } as const;
+  let strongestBasis: string | null = null;
+  let strongestConfidence: string | null = null;
+  let strongestBasisRank = 0;
+  let strongestConfidenceRank = 0;
+
+  for (const issue of knownModelIssues) {
+    const basis = issue.match_basis ?? "make_model_only";
+    const confidence = issue.match_confidence ?? null;
+
+    const basisRank =
+      basis === "exact_derivative"
+        ? 4
+        : basis === "engine_family"
+          ? 3
+          : basis === "model_generation"
+            ? 2
+            : 1;
+
+    if (basis === "exact_derivative") exactDerivativeCount += 1;
+    else if (basis === "engine_family") engineFamilyCount += 1;
+    else if (basis === "model_generation") generationCount += 1;
+    else broadCount += 1;
+
+    if (basisRank > strongestBasisRank) {
+      strongestBasisRank = basisRank;
+      strongestBasis = basis;
+    }
+
+    if (confidence && confidenceRank[confidence] > strongestConfidenceRank) {
+      strongestConfidenceRank = confidenceRank[confidence];
+      strongestConfidence = confidence;
+    }
+  }
+
+  return {
+    strongestBasis,
+    strongestConfidence,
+    exactDerivativeCount,
+    engineFamilyCount,
+    generationCount,
+    broadCount,
+  };
+}
+
+function buildKnownIssueExplainer(
+  summary: ReturnType<typeof buildKnownIssueSummary>
+) {
+  if (summary.exactDerivativeCount > 0) {
+    return "At least one issue was matched at exact derivative level, which is the strongest match type in the current dataset.";
+  }
+
+  if (summary.engineFamilyCount > 0) {
+    return "At least one issue was matched using engine-family data, which is more precise than a broad make / model match.";
+  }
+
+  if (summary.generationCount > 0) {
+    return "At least one issue was matched at model-generation level, giving more context than a broad make / model pattern alone.";
+  }
+
+  if (summary.broadCount > 0) {
+    return "These model-specific issues were matched at make / model level. They remain useful checks, but they are broader than derivative or engine-specific matches.";
+  }
+
+  return null;
+}
+
+function getUkvdStatus(fullSummary: any) {
+  const ukvd = fullSummary?.ukvd;
+  const status =
+    typeof ukvd?.enrichment_status === "string"
+      ? ukvd.enrichment_status
+      : null;
+  const error =
+    typeof ukvd?.error === "string" && ukvd.error.trim()
+      ? ukvd.error.trim()
+      : null;
+
+  return { status, error };
+}
+
+function parseMotTests(motPayload: any, fullSummary: any): MotTest[] {
+  const candidates = [
+    motPayload?.motTests,
+    fullSummary?.mot_payload?.motTests,
+    fullSummary?.motTests,
+    fullSummary?.mot_history?.tests,
+    fullSummary?.mot_history,
+  ];
+
+  for (const candidate of candidates) {
+    if (Array.isArray(candidate)) {
+      return candidate.filter(
+        (item): item is MotTest => !!item && typeof item === "object"
+      );
+    }
+  }
+
+  return [];
+}
+
+function getMotBadgeStyles(result?: string | null) {
+  const value = String(result ?? "").toUpperCase();
+
+  if (value === "PASSED" || value === "PASS") {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  }
+
+  if (value === "FAILED" || value === "FAIL") {
+    return "border-red-200 bg-red-50 text-red-700";
+  }
+
+  return "border-slate-200 bg-slate-50 text-slate-700";
+}
+
+function getMotBadgeLabel(result?: string | null) {
+  const value = String(result ?? "").toUpperCase();
+
+  if (value === "PASSED" || value === "PASS") return "Pass";
+  if (value === "FAILED" || value === "FAIL") return "Fail";
+  return titleCase(String(result ?? "Unknown").toLowerCase());
+}
+
+function parseMotMileage(test: MotTest) {
+  const raw = test?.odometerValue;
+
+  if (typeof raw === "number" && Number.isFinite(raw)) {
+    return `${raw.toLocaleString()} ${test?.odometerUnit ?? "miles"}`;
+  }
+
+  if (typeof raw === "string" && raw.trim()) {
+    const digits = Number(raw.replace(/,/g, ""));
+    if (Number.isFinite(digits)) {
+      return `${digits.toLocaleString()} ${test?.odometerUnit ?? "miles"}`;
+    }
+    return `${raw.trim()} ${test?.odometerUnit ?? ""}`.trim();
+  }
+
+  return null;
+}
+
+function groupMotDefects(defects?: MotDefect[]) {
+  const safeDefects = Array.isArray(defects) ? defects : [];
+
+  return {
+    dangerous: safeDefects.filter(
+      (defect) =>
+        String(defect?.type ?? "").toUpperCase() === "DANGEROUS" ||
+        defect?.dangerous === true
+    ),
+    major: safeDefects.filter(
+      (defect) => String(defect?.type ?? "").toUpperCase() === "MAJOR"
+    ),
+    minor: safeDefects.filter(
+      (defect) => String(defect?.type ?? "").toUpperCase() === "MINOR"
+    ),
+    advisory: safeDefects.filter(
+      (defect) => String(defect?.type ?? "").toUpperCase() === "ADVISORY"
+    ),
+    other: safeDefects.filter((defect) => {
+      const type = String(defect?.type ?? "").toUpperCase();
+      return !["DANGEROUS", "MAJOR", "MINOR", "ADVISORY"].includes(type);
+    }),
+  };
+}
+
+function defectTypeLabel(type: string) {
+  const upper = type.toUpperCase();
+  if (upper === "DANGEROUS") return "Dangerous";
+  if (upper === "MAJOR") return "Major";
+  if (upper === "MINOR") return "Minor";
+  if (upper === "ADVISORY") return "Advisory";
+  return titleCase(type.toLowerCase());
+}
+
+function defectTone(type?: string | null) {
+  const upper = String(type ?? "").toUpperCase();
+
+  if (upper === "DANGEROUS" || upper === "MAJOR") {
+    return "border-red-200 bg-red-50 text-red-700";
+  }
+
+  if (upper === "MINOR") {
+    return "border-amber-200 bg-amber-50 text-amber-700";
+  }
+
+  if (upper === "ADVISORY") {
+    return "border-slate-200 bg-white text-slate-700";
+  }
+
+  return "border-slate-200 bg-white text-slate-700";
+}
+
+function getDecisionCall(args: {
+  adjustedHigh: number | null;
+  adjustedLow: number | null;
+  marketPosition: string | null;
+  hpiUnlocked: boolean;
+  hpiChecks: HpiCheck[];
+  hpiStatus: string | null;
+}) {
+  const { adjustedHigh, marketPosition, hpiUnlocked, hpiChecks, hpiStatus } =
+    args;
+
+  const hpiFlagged =
+    hpiUnlocked &&
+    hpiStatus === "success" &&
+    hpiChecks.some((item) => {
+      if (typeof item.value === "boolean") return item.value === true;
+      if (typeof item.value === "number") return item.value > 0;
+      if (Array.isArray(item.value)) return item.value.length > 0;
+      if (typeof item.value === "string") {
+        const v = item.value.toLowerCase();
+        return (
+          v.includes("flag") ||
+          v.includes("stolen") ||
+          v.includes("write") ||
+          v.includes("finance") ||
+          v.includes("anomaly")
+        );
+      }
+      return false;
+    });
+
+  if (hpiFlagged || (adjustedHigh !== null && adjustedHigh >= 3000)) {
+    return {
+      badgeClass: "border-red-200 bg-red-50 text-red-700",
+      badgeLabel: "Walk away unless proven otherwise",
+      body:
+        "This profile carries heavier downside risk. Only proceed if the seller can clearly evidence that the key issues have already been addressed.",
+    };
+  }
+
+  if (
+    marketPosition === "high" ||
+    (adjustedHigh !== null && adjustedHigh >= 1200)
+  ) {
+    return {
+      badgeClass: "border-amber-200 bg-amber-50 text-amber-700",
+      badgeLabel: "Negotiate hard",
+      body:
+        "There is enough repair or pricing risk here to justify a firmer negotiation position and careful evidence checks.",
+    };
+  }
+
+  return {
+    badgeClass: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    badgeLabel: "Proceed, but verify",
+    body:
+      "The profile looks more manageable, but you should still verify service records, review the MoT trail and inspect the known weak points before buying.",
+  };
+}
+
+function SectionHeading({
+  eyebrow,
+  title,
+  description,
+  countLabel,
+}: {
+  eyebrow?: string;
+  title: string;
+  description?: string;
+  countLabel?: string;
+}) {
+  return (
+    <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        {eyebrow ? (
+          <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+            {eyebrow}
+          </div>
+        ) : null}
+        <h3 className="mt-1 text-lg font-bold text-slate-950">{title}</h3>
+        {description ? (
+          <p className="mt-1 text-sm leading-6 text-slate-700">{description}</p>
+        ) : null}
+      </div>
+
+      {countLabel ? (
+        <div className="text-sm text-slate-600">{countLabel}</div>
+      ) : null}
+    </div>
+  );
+}
+
 export default function ReportClient({
   reg,
   make,
@@ -369,6 +684,7 @@ export default function ReportClient({
   baseExposureHigh,
   negotiationSuggested,
   motPanel,
+  motPayload,
   hpiUnlocked,
   hpiStatus,
   hpiChecks,
@@ -407,6 +723,7 @@ export default function ReportClient({
     advisoryCount: number;
     repeatAdvisoryCount: number;
   };
+  motPayload?: any;
   hpiUnlocked: boolean;
   hpiStatus: string | null;
   hpiChecks: HpiCheck[];
@@ -444,6 +761,18 @@ export default function ReportClient({
     [vehicleIdentityData.displayIdentity]
   );
 
+  const knownIssueSummary = useMemo(
+    () => buildKnownIssueSummary(knownModelIssues),
+    [knownModelIssues]
+  );
+
+  const knownIssueExplainer = useMemo(
+    () => buildKnownIssueExplainer(knownIssueSummary),
+    [knownIssueSummary]
+  );
+
+  const ukvdStatus = useMemo(() => getUkvdStatus(fullSummary), [fullSummary]);
+
   const allItems = useMemo(
     () => [...serviceRiskItems, ...motRiskItems, ...knownModelIssues],
     [serviceRiskItems, motRiskItems, knownModelIssues]
@@ -457,6 +786,11 @@ export default function ReportClient({
   const repeatPatternDetails = useMemo(
     () => getRepeatPatternDetails(fullSummary),
     [fullSummary]
+  );
+
+  const motTests = useMemo(
+    () => parseMotTests(motPayload, fullSummary),
+    [motPayload, fullSummary]
   );
 
   const parsedConfidence = useMemo(
@@ -486,6 +820,25 @@ export default function ReportClient({
     typeof marketValue?.valuation_mileage === "number"
       ? marketValue.valuation_mileage
       : null;
+
+  const hasValuationNumbers =
+    marketBenchmark !== null || marketLow !== null || marketHigh !== null;
+  const valuationUnavailable =
+    !hasValuationNumbers && ukvdStatus.status === "error";
+  const valuationPending =
+    !hasValuationNumbers && ukvdStatus.status === "pending";
+
+  const pricePositionSummary =
+    hasValuationNumbers
+      ? marketSummaryText ||
+        "We compared the asking price with typical market value for this vehicle."
+      : valuationUnavailable
+        ? "Market valuation was temporarily unavailable for this vehicle. The rest of the paid report remains valid."
+        : valuationPending
+          ? "Market valuation is still being prepared for this vehicle."
+          : askingPrice !== null
+            ? "An asking price was captured, but a comparable market benchmark was not available in this report."
+            : "No asking price was provided, so price position could not be assessed.";
 
   const [addressedIds, setAddressedIds] = useState<Record<string, boolean>>({});
 
@@ -584,6 +937,26 @@ export default function ReportClient({
     confidenceDisplay,
   ]);
 
+  const decisionCall = useMemo(
+    () =>
+      getDecisionCall({
+        adjustedHigh: adjustedTotals.adjustedHigh,
+        adjustedLow: adjustedTotals.adjustedLow,
+        marketPosition,
+        hpiUnlocked,
+        hpiChecks,
+        hpiStatus,
+      }),
+    [
+      adjustedTotals.adjustedHigh,
+      adjustedTotals.adjustedLow,
+      marketPosition,
+      hpiUnlocked,
+      hpiChecks,
+      hpiStatus,
+    ]
+  );
+
   function toggleAddressed(key: string) {
     setAddressedIds((prev) => ({
       ...prev,
@@ -619,7 +992,7 @@ export default function ReportClient({
           <div className="mt-1 text-sm text-emerald-900/80">
             {justUnlockedHpi
               ? "Your report now includes the HPI-style history panel."
-              : "You now have service risk, detailed findings, pricing context and MoT analysis."}
+              : "You now have repair risk, price context and MoT analysis."}
           </div>
         </div>
       ) : null}
@@ -638,10 +1011,11 @@ export default function ReportClient({
             </div>
 
             <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-black sm:text-4xl">
-              Full Vehicle Report for {reg ?? "this vehicle"}
+              Proceed, negotiate or walk away?
             </h1>
 
             <div className="mt-2 text-sm text-slate-600">
+              {reg ? `${reg} · ` : ""}
               {make ? `${make} · ` : ""}
               {year ? `${year} · ` : ""}
               {fuel ? `${fuel} · ` : ""}
@@ -659,97 +1033,25 @@ export default function ReportClient({
             ) : null}
           </div>
 
-          <div className="mt-6 grid gap-4 xl:grid-cols-3">
-            <div className="rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur xl:col-span-2">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                    Vehicle identity confirmed
-                  </div>
-                  <div className="mt-1 text-sm text-slate-700">
-                    {vehicleIdentityData.matchExplainer ||
-                      "Vehicle details available for this report."}
-                  </div>
+          <div className="mt-6 rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                  Decision signal
                 </div>
-
-                {vehicleIdentityData.enrichedIdentity ? (
-                  <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-700">
-                    Enriched match
-                  </div>
-                ) : null}
+                <div className="mt-1 text-xl font-extrabold tracking-tight text-slate-950">
+                  {decisionCall.badgeLabel}
+                </div>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700">
+                  {decisionCall.body}
+                </p>
               </div>
 
-              {identityRows.length ? (
-                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {identityRows.map((row) => (
-                    <div
-                      key={row.label}
-                      className="rounded-xl border border-slate-200 bg-white p-3"
-                    >
-                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        {row.label}
-                      </div>
-                      <div className="mt-1 text-sm font-semibold text-slate-950">
-                        {row.value}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="mt-4 text-sm text-slate-600">
-                  Detailed vehicle identity was not available for this report.
-                </div>
-              )}
-            </div>
-
-            <div className="rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur">
-              <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                HPI Check
+              <div
+                className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${decisionCall.badgeClass}`}
+              >
+                Buyer guidance
               </div>
-
-              {!hpiUnlocked ? (
-                <div className="mt-4 rounded-xl border border-[var(--aa-red)]/20 bg-[var(--aa-red)]/5 p-4">
-                  <div className="text-base font-semibold text-slate-950">
-                    Upgrade to add vehicle history
-                  </div>
-                  <p className="mt-2 text-sm leading-6 text-slate-700">
-                    Add finance markers, write-off records, stolen checks,
-                    mileage anomalies, keeper history and plate changes.
-                  </p>
-                  <div className="mt-4">
-                    <a href={hpiUpgradeCheckoutUrl} className="btn-primary">
-                      Add HPI check · {hpiUpgradePriceLabel}
-                    </a>
-                  </div>
-                </div>
-              ) : hpiStatus === "error" ? (
-                <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-slate-700">
-                  We unlocked the HPI section, but there was a temporary issue
-                  loading the latest history response.
-                </div>
-              ) : (
-                <div className="mt-4 grid gap-3">
-                  {hpiChecks.length ? (
-                    hpiChecks.map((item) => (
-                      <div
-                        key={item.label}
-                        className="rounded-xl border border-slate-200 bg-white p-3"
-                      >
-                        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                          {item.label}
-                        </div>
-                        <div className="mt-1 text-sm font-semibold text-slate-950">
-                          {renderHpiDisplayValue(item.value)}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-700">
-                      HPI summary available.
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           </div>
 
@@ -757,7 +1059,7 @@ export default function ReportClient({
             <div className="rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur">
               <div className="flex items-start justify-between gap-4">
                 <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                  Service Risk
+                  Repair risk forecast
                 </div>
                 {adjustedTotals.addressedCount > 0 ? (
                   <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-700">
@@ -845,15 +1147,14 @@ export default function ReportClient({
 
             <div className="rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur">
               <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                Price Position
+                Asking price vs market
               </div>
 
               {askingPrice !== null || marketLow !== null || marketHigh !== null ? (
                 <>
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                     <div className="text-sm text-slate-700">
-                      {marketSummaryText ||
-                        "We’ve compared the asking price with typical market value."}
+                      {pricePositionSummary}
                     </div>
 
                     <div
@@ -861,7 +1162,11 @@ export default function ReportClient({
                         marketPosition
                       )}`}
                     >
-                      {valuePillLabel(marketPosition)}
+                      {valuationUnavailable
+                        ? "Valuation unavailable"
+                        : valuationPending
+                          ? "Valuation pending"
+                          : valuePillLabel(marketPosition)}
                     </div>
                   </div>
 
@@ -925,14 +1230,117 @@ export default function ReportClient({
                 </>
               ) : (
                 <div className="mt-4 text-sm text-slate-600">
-                  Value comparison was not available for this report.
+                  {valuationUnavailable
+                    ? "Market valuation was temporarily unavailable for this vehicle."
+                    : "Value comparison was not available for this report."}
                 </div>
               )}
             </div>
 
             <div className="rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur">
               <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                MoT History
+                Vehicle history
+              </div>
+
+              {!hpiUnlocked ? (
+                <div className="mt-4 rounded-xl border border-[var(--aa-red)]/20 bg-[var(--aa-red)]/5 p-4">
+                  <div className="text-base font-semibold text-slate-950">
+                    Upgrade to add vehicle history
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-slate-700">
+                    Add finance markers, write-off records, stolen checks,
+                    mileage anomalies, keeper history and plate changes.
+                  </p>
+                  <div className="mt-4">
+                    <a href={hpiUpgradeCheckoutUrl} className="btn-primary">
+                      Add HPI check · {hpiUpgradePriceLabel}
+                    </a>
+                  </div>
+                </div>
+              ) : hpiStatus === "error" ? (
+                <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-slate-700">
+                  We unlocked the vehicle history section, but there was a
+                  temporary issue loading the latest response. The rest of the
+                  report is still available.
+                </div>
+              ) : (
+                <div className="mt-4 grid gap-3">
+                  {hpiChecks.length ? (
+                    hpiChecks.map((item) => (
+                      <div
+                        key={item.label}
+                        className="rounded-xl border border-slate-200 bg-white p-3"
+                      >
+                        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          {item.label}
+                        </div>
+                        <div className="mt-1 text-sm font-semibold text-slate-950">
+                          {renderHpiDisplayValue(item.value)}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-700">
+                      Vehicle history summary available.
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-3">
+            <div className="rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur xl:col-span-2">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                    Vehicle identity used for matching
+                  </div>
+                  <div className="mt-1 text-sm text-slate-700">
+                    {vehicleIdentityData.matchExplainer ||
+                      "Vehicle details available for this report."}
+                  </div>
+                </div>
+
+                {vehicleIdentityData.identityStatusLabel ? (
+                  <div
+                    className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${
+                      vehicleIdentityData.enrichedIdentity
+                        ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
+                        : "border border-slate-200 bg-slate-50 text-slate-700"
+                    }`}
+                  >
+                    {vehicleIdentityData.identityStatusLabel}
+                  </div>
+                ) : null}
+              </div>
+
+              {identityRows.length ? (
+                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {identityRows.map((row) => (
+                    <div
+                      key={row.label}
+                      className="rounded-xl border border-slate-200 bg-white p-3"
+                    >
+                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        {row.label}
+                      </div>
+                      <div className="mt-1 text-sm font-semibold text-slate-950">
+                        {row.value}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-4 text-sm text-slate-600">
+                  Detailed vehicle identity was not available for this report.
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur">
+              <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                MoT history summary
               </div>
 
               {motPanel.available ? (
@@ -1089,25 +1497,24 @@ export default function ReportClient({
 
       <div className="mt-8">
         <h2 className="text-2xl font-extrabold tracking-tight text-slate-950">
-          Specific Risks
+          What to check before you buy
         </h2>
         <p className="mt-2 text-sm leading-6 text-slate-700">
           Tick an item if the seller can prove it has already been addressed.
-          The exposure total above will update automatically.
+          The repair-risk total above will update automatically.
         </p>
       </div>
 
       <div className="mt-5 space-y-8">
         <section>
-          <div className="mb-4 flex items-center justify-between gap-4">
-            <h3 className="text-lg font-bold text-slate-950">
-              Service exposure items
-            </h3>
-            <div className="text-sm text-slate-600">
-              {serviceRiskItems.length} item
-              {serviceRiskItems.length === 1 ? "" : "s"}
-            </div>
-          </div>
+          <SectionHeading
+            eyebrow="Practical checks"
+            title="Service and maintenance risks"
+            description="These are the most likely near-term maintenance items to verify before you commit."
+            countLabel={`${serviceRiskItems.length} item${
+              serviceRiskItems.length === 1 ? "" : "s"
+            }`}
+          />
 
           {serviceRiskItems.length ? (
             <div className="grid gap-4 lg:grid-cols-2">
@@ -1225,21 +1632,21 @@ export default function ReportClient({
             </div>
           ) : (
             <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-700">
-              No service exposure items were listed in this report.
+              No additional service or maintenance risks were listed in this
+              report.
             </div>
           )}
         </section>
 
         <section>
-          <div className="mb-4 flex items-center justify-between gap-4">
-            <h3 className="text-lg font-bold text-slate-950">
-              MoT advisory and history risks
-            </h3>
-            <div className="text-sm text-slate-600">
-              {motRiskItems.length} item
-              {motRiskItems.length === 1 ? "" : "s"}
-            </div>
-          </div>
+          <SectionHeading
+            eyebrow="History-derived checks"
+            title="MoT-derived risks"
+            description="These findings are based on patterns and warning signals found in the recorded MoT history."
+            countLabel={`${motRiskItems.length} item${
+              motRiskItems.length === 1 ? "" : "s"
+            }`}
+          />
 
           {motRiskItems.length ? (
             <div className="grid gap-4 lg:grid-cols-2">
@@ -1400,31 +1807,136 @@ export default function ReportClient({
             </div>
           ) : (
             <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-700">
-              No MoT advisory pattern risks were listed in this report.
+              No additional MoT-derived risks were listed in this report.
             </div>
           )}
         </section>
 
         <section>
-          <div className="mb-4 flex items-center justify-between gap-4">
-            <h3 className="text-lg font-bold text-slate-950">
-              Known model issues
-            </h3>
-            <div className="text-sm text-slate-600">
-              {knownModelIssues.length} item
-              {knownModelIssues.length === 1 ? "" : "s"}
+          <SectionHeading
+            eyebrow="Full record"
+            title="Full MoT history"
+            description="Every recorded test is shown below so the buyer can review the actual pass, fail and advisory trail instead of relying only on summary counts."
+            countLabel={`${motTests.length} test${
+              motTests.length === 1 ? "" : "s"
+            }`}
+          />
+
+          {motTests.length ? (
+            <div className="space-y-4">
+              {motTests.map((test, index) => {
+                const defectGroups = groupMotDefects(test.defects);
+                const allDefects = [
+                  ...defectGroups.dangerous,
+                  ...defectGroups.major,
+                  ...defectGroups.minor,
+                  ...defectGroups.advisory,
+                  ...defectGroups.other,
+                ];
+                const mileageDisplay = parseMotMileage(test);
+
+                return (
+                  <div
+                    key={`${test.completedDate ?? "mot-test"}-${index}`}
+                    className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div>
+                        <div className="text-lg font-bold tracking-tight text-slate-950">
+                          {formatDate(test.completedDate) ?? "Unknown test date"}
+                        </div>
+
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <span
+                            className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${getMotBadgeStyles(
+                              test.testResult
+                            )}`}
+                          >
+                            {getMotBadgeLabel(test.testResult)}
+                          </span>
+
+                          {mileageDisplay ? (
+                            <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-700">
+                              {mileageDisplay}
+                            </span>
+                          ) : null}
+
+                          {test.expiryDate ? (
+                            <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-700">
+                              Expiry {formatDate(test.expiryDate)}
+                            </span>
+                          ) : null}
+                        </div>
+                      </div>
+
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-right">
+                        <div className="text-sm font-semibold text-slate-950">
+                          {allDefects.length}
+                        </div>
+                        <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                          defect{allDefects.length === 1 ? "" : "s"} logged
+                        </div>
+                      </div>
+                    </div>
+
+                    {allDefects.length ? (
+                      <div className="mt-4 space-y-3">
+                        {allDefects.map((defect, defectIndex) => (
+                          <div
+                            key={`${defect.text ?? "defect"}-${defectIndex}`}
+                            className="rounded-xl border border-slate-200 bg-slate-50 p-3"
+                          >
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span
+                                className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] ${defectTone(
+                                  defect?.type
+                                )}`}
+                              >
+                                {defectTypeLabel(String(defect?.type ?? "Other"))}
+                              </span>
+                            </div>
+
+                            <div className="mt-2 text-sm leading-6 text-slate-700">
+                              {defect?.text ?? "No defect text provided."}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 text-sm text-emerald-900">
+                        No defects or advisories were recorded for this test.
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-          </div>
+          ) : (
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-700">
+              Full MoT test history was not available in this report payload.
+            </div>
+          )}
+        </section>
+
+        <section>
+          <SectionHeading
+            eyebrow="Known weak points"
+            title="Model-specific issues to check"
+            description="These are known issues associated with this vehicle type. They are not proof a fault is present, but they are sensible checks before purchase."
+            countLabel={`${knownModelIssues.length} item${
+              knownModelIssues.length === 1 ? "" : "s"
+            }`}
+          />
 
           {knownModelIssues.length ? (
             <>
               <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700">
-                These are model-specific risks associated with this vehicle type.
-                They do not necessarily mean the issue is present on this car,
-                but they are worth checking before purchase.
                 {vehicleIdentityData.matchExplainer ? (
-                  <div className="mt-2 text-slate-700">
-                    {vehicleIdentityData.matchExplainer}
+                  <div>{vehicleIdentityData.matchExplainer}</div>
+                ) : null}
+                {knownIssueExplainer ? (
+                  <div className={vehicleIdentityData.matchExplainer ? "mt-2" : ""}>
+                    {knownIssueExplainer}
                   </div>
                 ) : null}
                 {knownModelIssueExposure.low !== null &&
@@ -1578,7 +2090,8 @@ export default function ReportClient({
             </>
           ) : (
             <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-700">
-              No model-specific issues were listed in this report.
+              No additional model-specific issues were identified from the
+              available vehicle profile.
             </div>
           )}
         </section>

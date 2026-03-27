@@ -333,7 +333,12 @@ function buildFallbackUkvdMatcherInput(args: {
     registration:
       pickString(report?.registration, existingIdentity?.registration) ?? null,
     make: pickString(existingIdentity?.make, report?.make) ?? null,
-    model: pickString(existingIdentity?.model, fullPayload?.model, previewPayload?.model) ?? null,
+    model:
+      pickString(
+        existingIdentity?.model,
+        fullPayload?.model,
+        previewPayload?.model
+      ) ?? null,
     derivative: pickString(existingIdentity?.derivative) ?? null,
     generation: pickString(existingIdentity?.generation) ?? null,
     engine: pickString(existingIdentity?.engine) ?? null,
@@ -616,10 +621,7 @@ export default async function Page({
   const shouldFallbackEnrichUkvd =
     isPaid &&
     !!reg &&
-    (
-      !fullPayload?.ukvd ||
-      fullPayload?.ukvd?.enrichment_applied !== true
-    );
+    (!fullPayload?.ukvd || fullPayload?.ukvd?.enrichment_applied !== true);
 
   if (shouldFallbackEnrichUkvd) {
     try {
@@ -967,6 +969,7 @@ export default async function Page({
         baseExposureHigh={paidExposureHigh}
         negotiationSuggested={negotiationSuggested}
         motPanel={motPanel}
+        motPayload={motPayload}
         hpiUnlocked={hpiUnlocked}
         hpiStatus={hpiStatus}
         hpiChecks={hpiChecks}
