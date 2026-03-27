@@ -49,6 +49,23 @@ type KnownModelIssueInput = {
   probability_score?: number;
 };
 
+type CanonicalVehicleIdentity = {
+  registration?: string | null;
+  make?: string | null;
+  model?: string | null;
+  derivative?: string | null;
+  generation?: string | null;
+  engine?: string | null;
+  engine_family?: string | null;
+  engine_code?: string | null;
+  engine_size?: string | null;
+  power?: string | null;
+  fuel?: Fuel | null;
+  transmission?: Transmission | null;
+  year?: number | null;
+  mileage?: number | null;
+};
+
 const VALID_FUELS: Fuel[] = ["petrol", "diesel", "hybrid", "ev"];
 const VALID_TRANSMISSIONS: Transmission[] = [
   "manual",
@@ -217,6 +234,103 @@ function parseKnownModelIssues(value: unknown): KnownModelIssueInput[] {
   );
 }
 
+function normalizeIdentityFuel(value: unknown): Fuel | null {
+  return parseFuel(value);
+}
+
+function normalizeIdentityTransmission(value: unknown): Transmission | null {
+  return parseTransmission(value);
+}
+
+function buildBaseVehicleIdentity(params: {
+  registration: string | null;
+  make: string | null;
+  model: string | null;
+  derivative: string | null;
+  generation: string | null;
+  engine: string | null;
+  engine_family: string | null;
+  engine_code: string | null;
+  engine_size: string | null;
+  power: string | null;
+  fuel: Fuel;
+  transmission: Transmission;
+  year: number;
+  mileage: number;
+  requestVehicleIdentity: VehicleIdentityInput | null;
+}): CanonicalVehicleIdentity {
+  const {
+    registration,
+    make,
+    model,
+    derivative,
+    generation,
+    engine,
+    engine_family,
+    engine_code,
+    engine_size,
+    power,
+    fuel,
+    transmission,
+    year,
+    mileage,
+    requestVehicleIdentity,
+  } = params;
+
+  return {
+    registration,
+    make: make ?? requestVehicleIdentity?.make ?? null,
+    model: model ?? requestVehicleIdentity?.model ?? null,
+    derivative: derivative ?? requestVehicleIdentity?.derivative ?? null,
+    generation: generation ?? requestVehicleIdentity?.generation ?? null,
+    engine:
+      engine ??
+      requestVehicleIdentity?.engine ??
+      requestVehicleIdentity?.engine_size ??
+      engine_size ??
+      null,
+    engine_family:
+      engine_family ?? requestVehicleIdentity?.engine_family ?? null,
+    engine_code: engine_code ?? requestVehicleIdentity?.engine_code ?? null,
+    engine_size: engine_size ?? requestVehicleIdentity?.engine_size ?? null,
+    power: power ?? requestVehicleIdentity?.power ?? null,
+    fuel: fuel ?? normalizeIdentityFuel(requestVehicleIdentity?.fuel) ?? null,
+    transmission:
+      transmission ??
+      normalizeIdentityTransmission(requestVehicleIdentity?.transmission) ??
+      null,
+    year: year ?? requestVehicleIdentity?.year ?? null,
+    mileage,
+  };
+}
+
+function mergeVehicleIdentity(
+  base: CanonicalVehicleIdentity,
+  matched: VehicleIdentityInput | null | undefined
+): CanonicalVehicleIdentity {
+  if (!matched) return base;
+
+  return {
+    registration: base.registration ?? null,
+    make: base.make ?? matched.make ?? null,
+    model: base.model ?? matched.model ?? null,
+    derivative: base.derivative ?? matched.derivative ?? null,
+    generation: base.generation ?? matched.generation ?? null,
+    engine: base.engine ?? matched.engine ?? matched.engine_size ?? null,
+    engine_family: base.engine_family ?? matched.engine_family ?? null,
+    engine_code: base.engine_code ?? matched.engine_code ?? null,
+    engine_size: base.engine_size ?? matched.engine_size ?? null,
+    power: base.power ?? matched.power ?? null,
+    fuel: base.fuel ?? normalizeIdentityFuel(matched.fuel) ?? null,
+    transmission:
+      base.transmission ??
+      normalizeIdentityTransmission(matched.transmission) ??
+      null,
+    year: base.year ?? matched.year ?? null,
+    mileage: base.mileage ?? null,
+  };
+}
+
 function buildMarketValueTeaser(askingPrice: number | null) {
   return {
     source: null,
@@ -233,6 +347,32 @@ function buildMarketValueTeaser(askingPrice: number | null) {
     valuation_date: null,
     valuation_mileage: null,
     teaser_only: true,
+  };
+}
+
+function addSnapshotMeta<T extends Record<string, any>>(payload: T, meta: {
+  vehicleIdentity: CanonicalVehicleIdentity | null;
+  knownModelIssues: KnownModelIssueInput[];
+  askingPrice: number | null;
+}) {
+  const marketValueTeaser = buildMarketValueTeaser(meta.askingPrice);
+
+  return {
+    ...payload,
+    vehicle_identity: meta.vehicleIdentity,
+    vehicle_identity_enriched: null,
+    known_model_issues: meta.knownModelIssues,
+    valuation: marketValueTeaser,
+    ukvd: {
+      enrichment_applied: false,
+      enrichment: null,
+      valuation: null,
+      hpi: null,
+    },
+    summary: {
+      ...(payload?.summary ?? {}),
+      market_value: marketValueTeaser,
+    },
   };
 }
 
@@ -306,38 +446,33 @@ export async function POST(req: Request) {
 
     const motSignals = mot_payload ? extractMotSignals(mot_payload) : null;
 
-    const matcherInput = {
+    const baseVehicleIdentity = buildBaseVehicleIdentity({
       registration,
-      make: make ?? requestVehicleIdentity?.make ?? null,
-      model: model ?? requestVehicleIdentity?.model ?? null,
-      derivative: derivative ?? requestVehicleIdentity?.derivative ?? null,
-      generation: generation ?? requestVehicleIdentity?.generation ?? null,
-      engine:
-        engine ??
-        requestVehicleIdentity?.engine ??
-        requestVehicleIdentity?.engine_size ??
-        engine_size,
-      engine_family:
-        engine_family ?? requestVehicleIdentity?.engine_family ?? null,
-      engine_code: engine_code ?? requestVehicleIdentity?.engine_code ?? null,
-      engine_size: engine_size ?? requestVehicleIdentity?.engine_size ?? null,
-      power: power ?? requestVehicleIdentity?.power ?? null,
-      fuel: fuel ?? (requestVehicleIdentity?.fuel as Fuel | null) ?? null,
-      transmission:
-        transmission ??
-        (requestVehicleIdentity?.transmission as Transmission | null) ??
-        null,
-      year: year ?? requestVehicleIdentity?.year ?? null,
+      make,
+      model,
+      derivative,
+      generation,
+      engine,
+      engine_family,
+      engine_code,
+      engine_size,
+      power,
+      fuel,
+      transmission,
+      year,
       mileage,
-    };
+      requestVehicleIdentity,
+    });
 
     const matchedCommonFailures =
       requestKnownModelIssues.length > 0
         ? null
-        : await matchKnownModelIssues(matcherInput);
+        : await matchKnownModelIssues(baseVehicleIdentity);
 
-    const vehicleIdentity =
-      requestVehicleIdentity ?? matchedCommonFailures?.vehicleIdentity ?? null;
+    const vehicleIdentity = mergeVehicleIdentity(
+      baseVehicleIdentity,
+      matchedCommonFailures?.vehicleIdentity ?? requestVehicleIdentity ?? null
+    );
 
     const knownModelIssues =
       requestKnownModelIssues.length > 0
@@ -351,7 +486,7 @@ export async function POST(req: Request) {
       transmission,
       timing_type,
       asking_price,
-      make,
+      make: vehicleIdentity.make ?? make,
       registration,
       motSignals,
       marketValue: null,
@@ -359,29 +494,23 @@ export async function POST(req: Request) {
       knownModelIssues,
     });
 
-    const marketValueTeaser = buildMarketValueTeaser(asking_price);
+    const previewWithMeta = addSnapshotMeta(preview, {
+      vehicleIdentity,
+      knownModelIssues,
+      askingPrice: asking_price,
+    });
 
-    const previewWithTeasers = {
-      ...preview,
-      summary: {
-        ...(preview?.summary ?? {}),
-        market_value: marketValueTeaser,
-      },
-    };
-
-    const fullWithTeasers = {
-      ...full,
-      summary: {
-        ...(full?.summary ?? {}),
-        market_value: marketValueTeaser,
-      },
-    };
+    const fullWithMeta = addSnapshotMeta(full, {
+      vehicleIdentity,
+      knownModelIssues,
+      askingPrice: asking_price,
+    });
 
     const { data, error } = await supabaseAdmin
       .from("reports")
       .insert({
         registration,
-        make,
+        make: vehicleIdentity.make ?? make,
         car_year: year,
         mileage,
         fuel,
@@ -389,8 +518,8 @@ export async function POST(req: Request) {
         timing_type,
         asking_price,
         mot_payload,
-        preview_payload: previewWithTeasers,
-        full_payload: fullWithTeasers,
+        preview_payload: previewWithMeta,
+        full_payload: fullWithMeta,
         is_paid: false,
         hpi_checked: false,
         hpi_checked_at: null,

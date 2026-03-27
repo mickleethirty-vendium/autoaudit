@@ -40,6 +40,24 @@ type MotRepeatAdvisoryDetail = {
   patternLabel?: string;
 };
 
+type VehicleIdentity = {
+  registration?: string | null;
+  make?: string | null;
+  model?: string | null;
+  derivative?: string | null;
+  generation?: string | null;
+  engine?: string | null;
+  engine_family?: string | null;
+  engine_code?: string | null;
+  engine_size?: string | null;
+  power?: string | null;
+  power_bhp?: number | null;
+  fuel?: string | null;
+  transmission?: string | null;
+  year?: number | null;
+  mileage?: number | null;
+};
+
 function money(value?: number | null) {
   if (typeof value !== "number" || !Number.isFinite(value)) return "—";
   return new Intl.NumberFormat("en-GB", {
@@ -200,6 +218,144 @@ function matchBasisLabel(basis?: string | null) {
   return "Make / model match";
 }
 
+function parseKnownModelIssues(fullSummary: any): KnownModelIssue[] {
+  const direct = fullSummary?.known_model_issues;
+
+  if (Array.isArray(direct)) {
+    return direct as KnownModelIssue[];
+  }
+
+  if (Array.isArray(direct?.items)) {
+    return direct.items as KnownModelIssue[];
+  }
+
+  return [];
+}
+
+function parseKnownModelIssueExposure(
+  fullSummary: any,
+  knownModelIssues: KnownModelIssue[]
+) {
+  const direct = fullSummary?.known_model_issues;
+
+  if (
+    direct &&
+    !Array.isArray(direct) &&
+    typeof direct === "object" &&
+    (typeof direct.exposure_low === "number" ||
+      typeof direct.exposure_high === "number")
+  ) {
+    return {
+      low:
+        typeof direct.exposure_low === "number" ? direct.exposure_low : null,
+      high:
+        typeof direct.exposure_high === "number" ? direct.exposure_high : null,
+    };
+  }
+
+  if (!knownModelIssues.length) {
+    return { low: null, high: null };
+  }
+
+  return {
+    low: knownModelIssues.reduce(
+      (sum, item) => sum + Number(item?.cost_low ?? 0),
+      0
+    ),
+    high: knownModelIssues.reduce(
+      (sum, item) => sum + Number(item?.cost_high ?? 0),
+      0
+    ),
+  };
+}
+
+function firstNonEmptyString(...values: unknown[]) {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  return null;
+}
+
+function firstFiniteNumber(...values: unknown[]) {
+  for (const value of values) {
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+  }
+  return null;
+}
+
+function parseVehicleIdentityNode(value: any): VehicleIdentity | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  return value as VehicleIdentity;
+}
+
+function buildVehicleIdentity(fullSummary: any): {
+  baseIdentity: VehicleIdentity | null;
+  enrichedIdentity: VehicleIdentity | null;
+  displayIdentity: VehicleIdentity | null;
+  matchExplainer: string | null;
+} {
+  const baseIdentity = parseVehicleIdentityNode(fullSummary?.vehicle_identity);
+  const enrichedIdentity = parseVehicleIdentityNode(
+    fullSummary?.vehicle_identity_enriched
+  );
+  const ukvdEnrichment = parseVehicleIdentityNode(fullSummary?.ukvd?.enrichment);
+
+  const displayIdentity =
+    enrichedIdentity ?? ukvdEnrichment ?? baseIdentity ?? null;
+
+  let matchExplainer: string | null = null;
+
+  if (enrichedIdentity || ukvdEnrichment) {
+    matchExplainer =
+      "Known model issues were matched using richer vehicle details where available, including derivative, engine data and drivetrain.";
+  } else if (baseIdentity) {
+    matchExplainer =
+      "Known model issues were matched using the best available make, model and vehicle details.";
+  }
+
+  return {
+    baseIdentity,
+    enrichedIdentity,
+    displayIdentity,
+    matchExplainer,
+  };
+}
+
+function buildIdentityRows(identity: VehicleIdentity | null) {
+  if (!identity) return [];
+
+  const powerDisplay =
+    firstNonEmptyString(
+      identity.power,
+      typeof identity.power_bhp === "number"
+        ? `${Math.round(identity.power_bhp)} bhp`
+        : null
+    ) ?? null;
+
+  return [
+    { label: "Model", value: firstNonEmptyString(identity.model) },
+    { label: "Derivative", value: firstNonEmptyString(identity.derivative) },
+    { label: "Generation", value: firstNonEmptyString(identity.generation) },
+    { label: "Engine", value: firstNonEmptyString(identity.engine) },
+    { label: "Engine family", value: firstNonEmptyString(identity.engine_family) },
+    { label: "Engine code", value: firstNonEmptyString(identity.engine_code) },
+    { label: "Engine size", value: firstNonEmptyString(identity.engine_size) },
+    { label: "Power", value: powerDisplay },
+    { label: "Fuel", value: firstNonEmptyString(identity.fuel) },
+    {
+      label: "Transmission",
+      value: firstNonEmptyString(identity.transmission),
+    },
+    {
+      label: "Model year",
+      value:
+        typeof identity.year === "number" && Number.isFinite(identity.year)
+          ? String(identity.year)
+          : null,
+    },
+  ].filter((row) => row.value);
+}
+
 export default function ReportClient({
   reg,
   make,
@@ -269,11 +425,23 @@ export default function ReportClient({
   marketValue: any;
 }) {
   const knownModelIssues = useMemo<KnownModelIssue[]>(
-    () =>
-      Array.isArray(fullSummary?.known_model_issues?.items)
-        ? fullSummary.known_model_issues.items
-        : [],
+    () => parseKnownModelIssues(fullSummary),
     [fullSummary]
+  );
+
+  const knownModelIssueExposure = useMemo(
+    () => parseKnownModelIssueExposure(fullSummary, knownModelIssues),
+    [fullSummary, knownModelIssues]
+  );
+
+  const vehicleIdentityData = useMemo(
+    () => buildVehicleIdentity(fullSummary),
+    [fullSummary]
+  );
+
+  const identityRows = useMemo(
+    () => buildIdentityRows(vehicleIdentityData.displayIdentity),
+    [vehicleIdentityData.displayIdentity]
   );
 
   const allItems = useMemo(
@@ -317,16 +485,6 @@ export default function ReportClient({
   const valuationMileage =
     typeof marketValue?.valuation_mileage === "number"
       ? marketValue.valuation_mileage
-      : null;
-
-  const knownModelIssueExposureLow =
-    typeof fullSummary?.known_model_issues?.exposure_low === "number"
-      ? fullSummary.known_model_issues.exposure_low
-      : null;
-
-  const knownModelIssueExposureHigh =
-    typeof fullSummary?.known_model_issues?.exposure_high === "number"
-      ? fullSummary.known_model_issues.exposure_high
       : null;
 
   const [addressedIds, setAddressedIds] = useState<Record<string, boolean>>({});
@@ -501,7 +659,101 @@ export default function ReportClient({
             ) : null}
           </div>
 
-          <div className="mt-8 grid gap-4 xl:grid-cols-3">
+          <div className="mt-6 grid gap-4 xl:grid-cols-3">
+            <div className="rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur xl:col-span-2">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                    Vehicle identity confirmed
+                  </div>
+                  <div className="mt-1 text-sm text-slate-700">
+                    {vehicleIdentityData.matchExplainer ||
+                      "Vehicle details available for this report."}
+                  </div>
+                </div>
+
+                {vehicleIdentityData.enrichedIdentity ? (
+                  <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-700">
+                    Enriched match
+                  </div>
+                ) : null}
+              </div>
+
+              {identityRows.length ? (
+                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {identityRows.map((row) => (
+                    <div
+                      key={row.label}
+                      className="rounded-xl border border-slate-200 bg-white p-3"
+                    >
+                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        {row.label}
+                      </div>
+                      <div className="mt-1 text-sm font-semibold text-slate-950">
+                        {row.value}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-4 text-sm text-slate-600">
+                  Detailed vehicle identity was not available for this report.
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur">
+              <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                HPI Check
+              </div>
+
+              {!hpiUnlocked ? (
+                <div className="mt-4 rounded-xl border border-[var(--aa-red)]/20 bg-[var(--aa-red)]/5 p-4">
+                  <div className="text-base font-semibold text-slate-950">
+                    Upgrade to add vehicle history
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-slate-700">
+                    Add finance markers, write-off records, stolen checks,
+                    mileage anomalies, keeper history and plate changes.
+                  </p>
+                  <div className="mt-4">
+                    <a href={hpiUpgradeCheckoutUrl} className="btn-primary">
+                      Add HPI check · {hpiUpgradePriceLabel}
+                    </a>
+                  </div>
+                </div>
+              ) : hpiStatus === "error" ? (
+                <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-slate-700">
+                  We unlocked the HPI section, but there was a temporary issue
+                  loading the latest history response.
+                </div>
+              ) : (
+                <div className="mt-4 grid gap-3">
+                  {hpiChecks.length ? (
+                    hpiChecks.map((item) => (
+                      <div
+                        key={item.label}
+                        className="rounded-xl border border-slate-200 bg-white p-3"
+                      >
+                        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          {item.label}
+                        </div>
+                        <div className="mt-1 text-sm font-semibold text-slate-950">
+                          {renderHpiDisplayValue(item.value)}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-700">
+                      HPI summary available.
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-3">
             <div className="rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur">
               <div className="flex items-start justify-between gap-4">
                 <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
@@ -787,60 +1039,6 @@ export default function ReportClient({
               ) : (
                 <div className="mt-4 text-sm text-slate-600">
                   MoT history was not available for this vehicle.
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="mt-4 grid gap-4 xl:grid-cols-3">
-            <div className="xl:col-span-2" />
-
-            <div className="rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur">
-              <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                HPI Check
-              </div>
-
-              {!hpiUnlocked ? (
-                <div className="mt-4 rounded-xl border border-[var(--aa-red)]/20 bg-[var(--aa-red)]/5 p-4">
-                  <div className="text-base font-semibold text-slate-950">
-                    Upgrade to add vehicle history
-                  </div>
-                  <p className="mt-2 text-sm leading-6 text-slate-700">
-                    Add finance markers, write-off records, stolen checks,
-                    mileage anomalies, keeper history and plate changes.
-                  </p>
-                  <div className="mt-4">
-                    <a href={hpiUpgradeCheckoutUrl} className="btn-primary">
-                      Add HPI check · {hpiUpgradePriceLabel}
-                    </a>
-                  </div>
-                </div>
-              ) : hpiStatus === "error" ? (
-                <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-slate-700">
-                  We unlocked the HPI section, but there was a temporary issue
-                  loading the latest history response.
-                </div>
-              ) : (
-                <div className="mt-4 grid gap-3">
-                  {hpiChecks.length ? (
-                    hpiChecks.map((item) => (
-                      <div
-                        key={item.label}
-                        className="rounded-xl border border-slate-200 bg-white p-3"
-                      >
-                        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                          {item.label}
-                        </div>
-                        <div className="mt-1 text-sm font-semibold text-slate-950">
-                          {renderHpiDisplayValue(item.value)}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-700">
-                      HPI summary available.
-                    </div>
-                  )}
                 </div>
               )}
             </div>
@@ -1221,16 +1419,20 @@ export default function ReportClient({
           {knownModelIssues.length ? (
             <>
               <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700">
-                These are model-specific risks associated with this vehicle type,
-                engine family or drivetrain. They do not necessarily mean the
-                issue is present on this car, but they are worth checking before
-                purchase.
-                {knownModelIssueExposureLow !== null &&
-                knownModelIssueExposureHigh !== null ? (
+                These are model-specific risks associated with this vehicle type.
+                They do not necessarily mean the issue is present on this car,
+                but they are worth checking before purchase.
+                {vehicleIdentityData.matchExplainer ? (
+                  <div className="mt-2 text-slate-700">
+                    {vehicleIdentityData.matchExplainer}
+                  </div>
+                ) : null}
+                {knownModelIssueExposure.low !== null &&
+                knownModelIssueExposure.high !== null ? (
                   <div className="mt-2 font-semibold text-slate-950">
                     Weighted exposure included above:{" "}
-                    {money(knownModelIssueExposureLow)} –{" "}
-                    {money(knownModelIssueExposureHigh)}
+                    {money(knownModelIssueExposure.low)} –{" "}
+                    {money(knownModelIssueExposure.high)}
                   </div>
                 ) : null}
               </div>
@@ -1338,7 +1540,8 @@ export default function ReportClient({
 
                       {typeof item?.probability_score === "number" ? (
                         <div className="mt-3 text-xs font-medium text-slate-600">
-                          Relevance score: {Math.round(item.probability_score * 100)}%
+                          Relevance score:{" "}
+                          {Math.round(item.probability_score * 100)}%
                         </div>
                       ) : null}
 

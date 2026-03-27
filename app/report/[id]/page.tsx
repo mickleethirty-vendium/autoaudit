@@ -245,6 +245,68 @@ function valuePillLabel(position?: string | null) {
   return "Value insight pending";
 }
 
+function pickFirstObject(...values: any[]) {
+  for (const value of values) {
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      return value;
+    }
+  }
+  return null;
+}
+
+function pickNumber(...values: any[]) {
+  for (const value of values) {
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+  }
+  return null;
+}
+
+function pickString(...values: any[]) {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim()) return value;
+  }
+  return null;
+}
+
+function buildNormalizedMarketValue(fullPayload: any, preview: any) {
+  const fullSummary = fullPayload?.summary ?? {};
+  const previewSummary = preview?.summary ?? {};
+
+  return (
+    pickFirstObject(
+      fullPayload?.valuation,
+      fullSummary?.market_value,
+      preview?.valuation,
+      previewSummary?.market_value
+    ) ?? null
+  );
+}
+
+function buildNormalizedVehicleIdentity(fullPayload: any, preview: any) {
+  return {
+    vehicle_identity:
+      pickFirstObject(
+        fullPayload?.vehicle_identity,
+        fullPayload?.summary?.vehicle_identity,
+        preview?.vehicle_identity,
+        preview?.summary?.vehicle_identity
+      ) ?? null,
+    vehicle_identity_enriched:
+      pickFirstObject(
+        fullPayload?.vehicle_identity_enriched,
+        fullPayload?.summary?.vehicle_identity_enriched,
+        preview?.vehicle_identity_enriched,
+        preview?.summary?.vehicle_identity_enriched
+      ) ?? null,
+    ukvd: pickFirstObject(
+      fullPayload?.ukvd,
+      fullPayload?.summary?.ukvd,
+      preview?.ukvd,
+      preview?.summary?.ukvd
+    ),
+  };
+}
+
 export default async function Page({
   params,
   searchParams,
@@ -503,8 +565,7 @@ export default async function Page({
   const hpiUpgradePriceLabel = "£5";
   const reportPlusHpiPriceLabel = "£9.99";
 
-  const fullPayload: any = data.full_payload ?? {};
-  const fullSummary: any = fullPayload;
+  let fullPayload: any = data.full_payload ?? {};
   const fullSummaryData: any = fullPayload.summary ?? {};
   const fullItems: any[] = Array.isArray(fullPayload.items)
     ? fullPayload.items
@@ -626,21 +687,16 @@ export default async function Page({
 
   const hpiChecks = getHpiChecks(hpiSummary);
 
-  const marketValue: any =
-    (fullSummaryData?.market_value &&
-    typeof fullSummaryData.market_value === "object"
-      ? fullSummaryData.market_value
-      : null) ??
-    (previewSummary?.market_value && typeof previewSummary.market_value === "object"
-      ? previewSummary.market_value
-      : null);
+  const marketValue: any = buildNormalizedMarketValue(fullPayload, preview);
 
-  const askingPrice: number | null =
-    typeof fullSummaryData?.asking_price === "number"
-      ? fullSummaryData.asking_price
-      : typeof previewSummary?.asking_price === "number"
-        ? previewSummary.asking_price
-        : null;
+  const askingPrice: number | null = pickNumber(
+    fullPayload?.asking_price,
+    fullSummaryData?.asking_price,
+    marketValue?.asking_price,
+    preview?.asking_price,
+    previewSummary?.asking_price,
+    data.asking_price
+  );
 
   const marketLow: number | null =
     typeof marketValue?.low === "number" ? marketValue.low : null;
@@ -672,6 +728,25 @@ export default async function Page({
       ? marketValue.valuation_mileage
       : null;
 
+  const normalizedIdentity = buildNormalizedVehicleIdentity(fullPayload, preview);
+
+  fullPayload = {
+    ...fullPayload,
+    vehicle_identity: normalizedIdentity.vehicle_identity,
+    vehicle_identity_enriched: normalizedIdentity.vehicle_identity_enriched,
+    valuation: marketValue,
+    ukvd: {
+      ...(normalizedIdentity.ukvd ?? {}),
+      hpi:
+        hpiUnlocked && hpiStatus === "success"
+          ? {
+              payload: hpiPayload,
+              summary: hpiSummary,
+            }
+          : (normalizedIdentity.ukvd?.hpi ?? null),
+    },
+  };
+
   if (isPaid) {
     return (
       <ReportClient
@@ -681,7 +756,7 @@ export default async function Page({
         mileage={mileage}
         fuel={fuel}
         transmission={transmission}
-        fullSummary={fullSummary}
+        fullSummary={fullPayload}
         confidenceDisplay={confidenceDisplay}
         baseExposureLow={paidExposureLow}
         baseExposureHigh={paidExposureHigh}

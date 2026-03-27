@@ -45,7 +45,6 @@ function isLikelyValidReportId(value: string | null): value is string {
   if (!value) return false;
   const trimmed = value.trim();
   if (!trimmed) return false;
-
   return /^[a-zA-Z0-9_-]{6,}$/.test(trimmed);
 }
 
@@ -65,18 +64,25 @@ function getSuccessUrl(reportId: string, tier: CheckoutTier) {
   return `${appUrl()}/report/${reportId}?session_id={CHECKOUT_SESSION_ID}&tier=${tier}`;
 }
 
-function getCancelUrl(reportId: string, tier: CheckoutTier) {
-  if (tier === "hpi_upgrade") {
-    return `${appUrl()}/report/${reportId}`;
-  }
-
-  return `${appUrl()}/preview/${reportId}`;
+function getCancelUrl(reportId: string) {
+  return `${appUrl()}/report/${reportId}`;
 }
 
 function getProductName(tier: CheckoutTier) {
   if (tier === "hpi_upgrade") return "HPI Upgrade";
   if (tier === "report_plus_hpi") return "Report + HPI Bundle";
   return "Core Report";
+}
+
+function getUnlockFlags(tier: CheckoutTier) {
+  return {
+    unlock_report:
+      tier === "report" ||
+      tier === "hpi_upgrade" ||
+      tier === "report_plus_hpi",
+    unlock_hpi:
+      tier === "hpi_upgrade" || tier === "report_plus_hpi",
+  };
 }
 
 export async function GET(req: NextRequest) {
@@ -93,8 +99,9 @@ export async function GET(req: NextRequest) {
     }
 
     const successUrl = getSuccessUrl(reportId, tier);
-    const cancelUrl = getCancelUrl(reportId, tier);
+    const cancelUrl = getCancelUrl(reportId);
     const priceId = getStripePriceIdForTier(tier);
+    const flags = getUnlockFlags(tier);
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -111,6 +118,8 @@ export async function GET(req: NextRequest) {
         report_id: reportId,
         checkout_tier: tier,
         product_name: getProductName(tier),
+        unlock_report: String(flags.unlock_report),
+        unlock_hpi: String(flags.unlock_hpi),
       },
     });
 

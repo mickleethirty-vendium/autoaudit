@@ -23,8 +23,52 @@ function getResultsNode(payload: any) {
     payload?.results ||
     payload?.Data?.Results ||
     payload?.data?.Results ||
+    payload?.Data?.results ||
+    payload?.data?.results ||
     null
   );
+}
+
+function asArray<T = any>(value: unknown): T[] {
+  return Array.isArray(value) ? (value as T[]) : [];
+}
+
+function asBoolean(value: unknown): boolean {
+  return value === true;
+}
+
+function asNumber(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+function hasOwnKeys(value: unknown): value is Record<string, any> {
+  return !!value && typeof value === "object" && Object.keys(value).length > 0;
+}
+
+function isSuccessfulUkvdResponse(payload: any) {
+  const responseInfo = payload?.ResponseInformation ?? {};
+  const results = getResultsNode(payload);
+
+  const topLevelSuccess =
+    responseInfo?.IsSuccessStatusCode === true ||
+    responseInfo?.StatusCode === 200 ||
+    responseInfo?.StatusCode === "200" ||
+    responseInfo?.StatusCode === "Success" ||
+    responseInfo?.StatusMessage === "Success";
+
+  const hasResultsObject = hasOwnKeys(results);
+
+  const hasMeaningfulHpiData =
+    !!results?.FinanceDetails ||
+    !!results?.MiaftrDetails ||
+    !!results?.PncDetails ||
+    !!results?.MileageCheckDetails ||
+    !!results?.VehicleDetails;
+
+  return {
+    ok: (topLevelSuccess || hasResultsObject) && hasMeaningfulHpiData,
+    results,
+  };
 }
 
 export type HpiSummary = {
@@ -90,34 +134,16 @@ export async function fetchUkvdHpiByVrm(registration: string) {
     throw new Error(`UKVD HTTP ${res.status}: ${getErrorMessage(json)}`);
   }
 
-  const responseInfo = json?.ResponseInformation ?? {};
-  const results = getResultsNode(json);
+  const responseCheck = isSuccessfulUkvdResponse(json);
 
-  const topLevelSuccess =
-    responseInfo?.IsSuccessStatusCode === true ||
-    responseInfo?.StatusCode === 200 ||
-    responseInfo?.StatusCode === "200" ||
-    responseInfo?.StatusCode === "Success" ||
-    responseInfo?.StatusMessage === "Success";
-
-  const hasResultsObject =
-    !!results && typeof results === "object" && Object.keys(results).length > 0;
-
-  const hasMeaningfulHpiData =
-    !!results?.FinanceDetails ||
-    !!results?.MiaftrDetails ||
-    !!results?.PncDetails ||
-    !!results?.MileageCheckDetails ||
-    !!results?.VehicleDetails;
-
-  if ((!topLevelSuccess && !hasResultsObject) || !hasMeaningfulHpiData) {
+  if (!responseCheck.ok) {
     throw new Error(`UKVD lookup failed: ${getErrorMessage(json)}`);
   }
 
-  if (!json?.Results && results) {
+  if (!json?.Results && responseCheck.results) {
     return {
       ...json,
-      Results: results,
+      Results: responseCheck.results,
     };
   }
 
@@ -127,50 +153,40 @@ export async function fetchUkvdHpiByVrm(registration: string) {
 export function buildUkvdHpiSummary(payload: any): HpiSummary {
   const results = getResultsNode(payload) ?? {};
 
-  const financeRecords = Array.isArray(results?.FinanceDetails?.FinanceRecordList)
-    ? results.FinanceDetails.FinanceRecordList
-    : [];
+  const financeRecords = asArray(results?.FinanceDetails?.FinanceRecordList);
+  const writeOffRecords = asArray(results?.MiaftrDetails?.WriteOffRecordList);
 
-  const writeOffRecords = Array.isArray(results?.MiaftrDetails?.WriteOffRecordList)
-    ? results.MiaftrDetails.WriteOffRecordList
-    : [];
-
-  const stolen = results?.PncDetails?.IsStolen === true;
-  const mileageFlag =
-    results?.MileageCheckDetails?.MileageAnomalyDetected === true;
+  const stolen = asBoolean(results?.PncDetails?.IsStolen);
+  const mileageFlag = asBoolean(
+    results?.MileageCheckDetails?.MileageAnomalyDetected
+  );
 
   const vehicleStatus = results?.VehicleDetails?.VehicleStatus ?? {};
   const vehicleHistory = results?.VehicleDetails?.VehicleHistory ?? {};
   const colourDetails = vehicleHistory?.ColourDetails ?? {};
 
   const writeOffCategories: string[] = Array.from(
-    new Set<string>(
+    new Set(
       writeOffRecords
-        .map((r: any): string => String(r?.Category ?? "").trim())
+        .map((record: any) => String(record?.Category ?? "").trim())
         .filter((value: string) => value.length > 0)
     )
   );
 
   const importFlag =
-    vehicleStatus?.IsImported === true ||
-    vehicleStatus?.IsImportedFromNi === true ||
-    vehicleStatus?.IsImportedFromOutsideEu === true;
+    asBoolean(vehicleStatus?.IsImported) ||
+    asBoolean(vehicleStatus?.IsImportedFromNi) ||
+    asBoolean(vehicleStatus?.IsImportedFromOutsideEu);
 
-  const exportFlag = vehicleStatus?.IsExported === true;
-  const scrappedFlag = vehicleStatus?.IsScrapped === true;
+  const exportFlag = asBoolean(vehicleStatus?.IsExported);
+  const scrappedFlag = asBoolean(vehicleStatus?.IsScrapped);
 
-  const keeperChanges = Array.isArray(vehicleHistory?.KeeperChangeList)
-    ? vehicleHistory.KeeperChangeList.length
-    : 0;
-
-  const plateChanges = Array.isArray(vehicleHistory?.PlateChangeList)
-    ? vehicleHistory.PlateChangeList.length
-    : 0;
+  const keeperChanges = asArray(vehicleHistory?.KeeperChangeList).length;
+  const plateChanges = asArray(vehicleHistory?.PlateChangeList).length;
 
   const colourChanges =
-    typeof colourDetails?.NumberOfColourChanges === "number"
-      ? colourDetails.NumberOfColourChanges
-      : 0;
+    asNumber(colourDetails?.NumberOfColourChanges) ||
+    asArray(colourDetails?.ColourChangeList).length;
 
   const finance = financeRecords.length > 0;
   const writeOff = writeOffRecords.length > 0;
@@ -233,7 +249,7 @@ export function buildUkvdHpiSummary(payload: any): HpiSummary {
     finance || stolen || writeOff || mileageFlag || exportFlag || scrappedFlag;
 
   let headline = "HPI clear";
-  if (stolen || writeOff || finance || mileageFlag || exportFlag || scrappedFlag) {
+  if (caution) {
     headline = "HPI flags found";
   }
 
