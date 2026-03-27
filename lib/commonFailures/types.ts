@@ -28,19 +28,23 @@ export type FailureCategory =
   | "interior"
   | "general_maintenance_risk";
 
+export type NullableString = string | null;
+
 export type VehicleIdentity = {
-  make?: string | null;
-  model?: string | null;
-  derivative?: string | null;
-  generation?: string | null;
-  engine?: string | null;
-  engine_family?: string | null;
-  engine_code?: string | null;
-  engine_size?: string | null;
-  power?: string | null;
-  fuel?: string | null;
-  transmission?: string | null;
+  registration?: NullableString;
+  make?: NullableString;
+  model?: NullableString;
+  derivative?: NullableString;
+  generation?: NullableString;
+  engine?: NullableString;
+  engine_family?: NullableString;
+  engine_code?: NullableString;
+  engine_size?: NullableString;
+  power?: NullableString;
+  fuel?: NullableString;
+  transmission?: NullableString;
   year?: number | null;
+  mileage?: number | null;
 };
 
 export type FailurePattern = {
@@ -71,15 +75,15 @@ export type VehicleFailureMapEntry = {
   make: string;
   model: string;
 
-  derivative?: string | null;
-  generation?: string | null;
-  engine?: string | null;
-  engine_family?: string | null;
-  engine_code?: string | null;
-  engine_size?: string | null;
-  power?: string | null;
-  fuel?: string | null;
-  transmission?: string | null;
+  derivative?: NullableString;
+  generation?: NullableString;
+  engine?: NullableString;
+  engine_family?: NullableString;
+  engine_code?: NullableString;
+  engine_size?: NullableString;
+  power?: NullableString;
+  fuel?: NullableString;
+  transmission?: NullableString;
 
   year_from?: number | null;
   year_to?: number | null;
@@ -110,18 +114,18 @@ export type MatchResult = {
 };
 
 export type MatcherInput = {
-  registration?: string | null;
-  make?: string | null;
-  model?: string | null;
-  derivative?: string | null;
-  generation?: string | null;
-  engine?: string | null;
-  engine_family?: string | null;
-  engine_code?: string | null;
-  engine_size?: string | null;
-  power?: string | null;
-  fuel?: string | null;
-  transmission?: string | null;
+  registration?: NullableString;
+  make?: NullableString;
+  model?: NullableString;
+  derivative?: NullableString;
+  generation?: NullableString;
+  engine?: NullableString;
+  engine_family?: NullableString;
+  engine_code?: NullableString;
+  engine_size?: NullableString;
+  power?: NullableString;
+  fuel?: NullableString;
+  transmission?: NullableString;
   year?: number | null;
   mileage?: number | null;
 };
