@@ -7,6 +7,13 @@ import { createServerClient } from "@supabase/ssr";
 import { supabaseAdmin } from "@/lib/supabase";
 import { mustGetEnv } from "@/lib/env";
 import { buildUkvdHpiSummary, fetchUkvdHpiByVrm } from "@/lib/hpi";
+import {
+  buildUkvdMarketValue,
+  buildUkvdValuationSummary,
+  buildUkvdVehicleEnrichment,
+  fetchUkvdValuationByVrm,
+} from "@/lib/ukvdValuation";
+import { matchKnownModelIssues } from "@/lib/commonFailures";
 import ExposureBar from "@/app/components/ExposureBar";
 import ReportClient from "./ReportClient";
 
@@ -307,6 +314,43 @@ function buildNormalizedVehicleIdentity(fullPayload: any, preview: any) {
   };
 }
 
+function buildFallbackUkvdMatcherInput(args: {
+  report: any;
+  previewPayload: any;
+  fullPayload: any;
+}) {
+  const { report, previewPayload, fullPayload } = args;
+
+  const existingIdentity =
+    pickFirstObject(
+      fullPayload?.vehicle_identity_enriched,
+      fullPayload?.vehicle_identity,
+      previewPayload?.vehicle_identity_enriched,
+      previewPayload?.vehicle_identity
+    ) ?? null;
+
+  return {
+    registration:
+      pickString(report?.registration, existingIdentity?.registration) ?? null,
+    make: pickString(existingIdentity?.make, report?.make) ?? null,
+    model: pickString(existingIdentity?.model, fullPayload?.model, previewPayload?.model) ?? null,
+    derivative: pickString(existingIdentity?.derivative) ?? null,
+    generation: pickString(existingIdentity?.generation) ?? null,
+    engine: pickString(existingIdentity?.engine) ?? null,
+    engine_family: pickString(existingIdentity?.engine_family) ?? null,
+    engine_code: pickString(existingIdentity?.engine_code) ?? null,
+    engine_size: pickString(existingIdentity?.engine_size) ?? null,
+    power: pickString(existingIdentity?.power) ?? null,
+    fuel: pickString(existingIdentity?.fuel, report?.fuel) ?? null,
+    transmission: pickString(
+      existingIdentity?.transmission,
+      report?.transmission
+    ) ?? null,
+    year: pickNumber(existingIdentity?.year, report?.car_year) ?? null,
+    mileage: pickNumber(existingIdentity?.mileage, report?.mileage) ?? null,
+  };
+}
+
 export default async function Page({
   params,
   searchParams,
@@ -566,10 +610,171 @@ export default async function Page({
   const reportPlusHpiPriceLabel = "£9.99";
 
   let fullPayload: any = data.full_payload ?? {};
-  const fullSummaryData: any = fullPayload.summary ?? {};
-  const fullItems: any[] = Array.isArray(fullPayload.items)
-    ? fullPayload.items
-    : [];
+  let fullSummaryData: any = fullPayload.summary ?? {};
+  let fullItems: any[] = Array.isArray(fullPayload.items) ? fullPayload.items : [];
+
+  const shouldFallbackEnrichUkvd =
+    isPaid &&
+    !!reg &&
+    (
+      !fullPayload?.ukvd ||
+      fullPayload?.ukvd?.enrichment_applied !== true
+    );
+
+  if (shouldFallbackEnrichUkvd) {
+    try {
+      const baseMatcherInput = buildFallbackUkvdMatcherInput({
+        report: data,
+        previewPayload: preview,
+        fullPayload,
+      });
+
+      const rawUkvd = await fetchUkvdValuationByVrm(reg, mileage);
+      const valuationSummary = buildUkvdValuationSummary(rawUkvd);
+      const vehicleEnrichment = buildUkvdVehicleEnrichment(rawUkvd);
+      const marketValue = buildUkvdMarketValue({
+        valuation: valuationSummary,
+        askingPrice: pickNumber(
+          fullPayload?.asking_price,
+          fullSummaryData?.asking_price,
+          preview?.asking_price,
+          previewSummary?.asking_price,
+          data.asking_price
+        ),
+      });
+
+      const enrichedMatcherInput = {
+        ...baseMatcherInput,
+        make: pickString(vehicleEnrichment?.make, baseMatcherInput.make),
+        model: pickString(vehicleEnrichment?.model, baseMatcherInput.model),
+        derivative: pickString(
+          vehicleEnrichment?.derivative,
+          baseMatcherInput.derivative
+        ),
+        generation: pickString(
+          vehicleEnrichment?.generation,
+          baseMatcherInput.generation
+        ),
+        engine: pickString(vehicleEnrichment?.engine, baseMatcherInput.engine),
+        engine_family: pickString(
+          vehicleEnrichment?.engine_family,
+          baseMatcherInput.engine_family
+        ),
+        engine_code: pickString(
+          vehicleEnrichment?.engine_code,
+          baseMatcherInput.engine_code
+        ),
+        engine_size: pickString(
+          vehicleEnrichment?.engine_size,
+          baseMatcherInput.engine_size
+        ),
+        power: pickString(vehicleEnrichment?.power, baseMatcherInput.power),
+        fuel: pickString(vehicleEnrichment?.fuel, baseMatcherInput.fuel),
+        transmission: pickString(
+          vehicleEnrichment?.transmission,
+          baseMatcherInput.transmission
+        ),
+        year: pickNumber(vehicleEnrichment?.year, baseMatcherInput.year),
+        mileage: pickNumber(baseMatcherInput.mileage, mileage),
+      };
+
+      const matchedCommonFailures = await matchKnownModelIssues(
+        enrichedMatcherInput
+      );
+
+      const nextFullPayload = {
+        ...fullPayload,
+        vehicle_identity:
+          pickFirstObject(
+            fullPayload?.vehicle_identity,
+            preview?.vehicle_identity,
+            baseMatcherInput
+          ) ?? baseMatcherInput,
+        vehicle_identity_enriched: {
+          ...(pickFirstObject(
+            fullPayload?.vehicle_identity_enriched,
+            matchedCommonFailures?.vehicleIdentity,
+            vehicleEnrichment
+          ) ?? {}),
+          ...enrichedMatcherInput,
+        },
+        known_model_issues:
+          matchedCommonFailures?.knownModelIssues ??
+          fullPayload?.known_model_issues ??
+          [],
+        valuation: marketValue,
+        ukvd: {
+          ...(pickFirstObject(fullPayload?.ukvd) ?? {}),
+          enrichment_requested: true,
+          enrichment_applied: true,
+          enrichment_status: "success",
+          enrichment_requested_at:
+            fullPayload?.ukvd?.enrichment_requested_at ??
+            new Date().toISOString(),
+          enrichment_completed_at: new Date().toISOString(),
+          valuation: valuationSummary,
+          enrichment: vehicleEnrichment,
+          raw: rawUkvd,
+          error: null,
+        },
+      };
+
+      nextFullPayload.summary = {
+        ...(pickFirstObject(nextFullPayload.summary) ?? {}),
+        market_value: marketValue,
+      };
+
+      const { error: enrichUpdateError } = await supabaseAdmin
+        .from("reports")
+        .update({
+          full_payload: nextFullPayload,
+        })
+        .eq("id", params.id);
+
+      if (enrichUpdateError) {
+        console.error("Failed to save fallback UKVD enrichment:", enrichUpdateError);
+      } else {
+        fullPayload = nextFullPayload;
+        fullSummaryData = fullPayload.summary ?? {};
+        fullItems = Array.isArray(fullPayload.items) ? fullPayload.items : [];
+      }
+    } catch (e: any) {
+      console.error("Fallback UKVD enrichment failed:", e);
+
+      const nextFullPayload = {
+        ...fullPayload,
+        ukvd: {
+          ...(pickFirstObject(fullPayload?.ukvd) ?? {}),
+          enrichment_requested: true,
+          enrichment_applied: false,
+          enrichment_status: "error",
+          enrichment_requested_at:
+            fullPayload?.ukvd?.enrichment_requested_at ??
+            new Date().toISOString(),
+          enrichment_completed_at: new Date().toISOString(),
+          error: e?.message ?? "UKVD enrichment failed",
+        },
+      };
+
+      const { error: enrichUpdateError } = await supabaseAdmin
+        .from("reports")
+        .update({
+          full_payload: nextFullPayload,
+        })
+        .eq("id", params.id);
+
+      if (enrichUpdateError) {
+        console.error(
+          "Failed to save fallback UKVD enrichment error state:",
+          enrichUpdateError
+        );
+      } else {
+        fullPayload = nextFullPayload;
+        fullSummaryData = fullPayload.summary ?? {};
+        fullItems = Array.isArray(fullPayload.items) ? fullPayload.items : [];
+      }
+    }
+  }
 
   const paidExposureLow: number | null =
     typeof fullSummaryData.exposure_low === "number"
