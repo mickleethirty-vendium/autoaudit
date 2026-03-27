@@ -108,7 +108,6 @@ function normaliseEngineSizeLitres(value: unknown): string | null {
   const parsed = parseNumber(value);
   if (parsed === null) return null;
 
-  // If clearly CC, convert to litres-ish string.
   if (parsed > 20) {
     return (parsed / 1000).toFixed(1).replace(/\.0$/, "");
   }
@@ -153,7 +152,19 @@ function getValuationNode(results: any) {
     results?.VehicleValuation ||
     results?.GlassValuation ||
     results?.CapValuation ||
+    results?.Valuations ||
     results
+  );
+}
+
+function getValuationFiguresNode(valuation: any) {
+  return (
+    valuation?.ValuationFigures ||
+    valuation?.Figures ||
+    valuation?.Values ||
+    valuation?.Pricing ||
+    valuation?.PriceGuide ||
+    valuation
   );
 }
 
@@ -289,72 +300,133 @@ export function buildUkvdValuationSummary(payload: any): UkvdValuationSummary {
   const results = getResultsNode(payload) ?? {};
 
   const valuation = getValuationNode(results);
-  const figures = valuation?.ValuationFigures ?? valuation ?? {};
+  const figures = getValuationFiguresNode(valuation) ?? {};
 
   const retail = firstNumber(
     figures?.DealerForecourt,
-    figures?.TradeRetail
+    figures?.Retail,
+    figures?.RetailValue,
+    figures?.TradeRetail,
+    figures?.Forecourt,
+    figures?.ForecourtPrice,
+    valuation?.Retail,
+    valuation?.RetailValue
   );
 
   const privateValue = firstNumber(
     figures?.PrivateAverage,
-    figures?.PrivateClean
+    figures?.Private,
+    figures?.PrivateValue,
+    figures?.PrivateClean,
+    valuation?.Private,
+    valuation?.PrivateValue
   );
 
   const trade = firstNumber(
     figures?.TradeAverage,
+    figures?.Trade,
+    figures?.TradeValue,
     figures?.PartExchange,
-    figures?.Auction
+    figures?.Auction,
+    valuation?.Trade,
+    valuation?.TradeValue
   );
 
   const retailLow = firstNumber(
+    figures?.RetailLow,
+    figures?.ForecourtLow,
     figures?.TradeRetail,
-    figures?.PrivateClean
+    figures?.PrivateClean,
+    valuation?.RetailLow
   );
 
   const retailAverage = firstNumber(
+    figures?.RetailAverage,
     figures?.DealerForecourt,
-    figures?.TradeRetail
+    figures?.Retail,
+    figures?.RetailValue,
+    figures?.TradeRetail,
+    valuation?.RetailAverage
   );
 
   const retailHigh = firstNumber(
+    figures?.RetailHigh,
+    figures?.ForecourtHigh,
     figures?.OnTheRoad,
-    figures?.DealerForecourt
+    figures?.DealerForecourt,
+    valuation?.RetailHigh
   );
 
-  const tradeLow = firstNumber(figures?.TradePoor, figures?.Auction);
+  const tradeLow = firstNumber(
+    figures?.TradeLow,
+    figures?.TradePoor,
+    figures?.Auction,
+    valuation?.TradeLow
+  );
 
   const tradeAverage = firstNumber(
     figures?.TradeAverage,
-    figures?.PartExchange
+    figures?.Trade,
+    figures?.TradeValue,
+    figures?.PartExchange,
+    valuation?.TradeAverage
   );
 
   const tradeHigh = firstNumber(
+    figures?.TradeHigh,
     figures?.PartExchange,
-    figures?.PrivateClean
+    figures?.PrivateClean,
+    valuation?.TradeHigh
   );
 
-  const below = firstNumber(figures?.TradePoor, tradeLow, retailLow);
+  const below = firstNumber(
+    figures?.Below,
+    figures?.TradePoor,
+    tradeLow,
+    retailLow
+  );
 
-  const low = firstNumber(figures?.Auction, tradeLow, retailLow);
+  const low = firstNumber(
+    figures?.Low,
+    figures?.Auction,
+    tradeLow,
+    retailLow
+  );
 
   const average = firstNumber(
+    figures?.Average,
+    figures?.Mid,
+    figures?.Median,
     figures?.PrivateAverage,
     figures?.TradeRetail,
     figures?.DealerForecourt,
+    figures?.Retail,
+    figures?.RetailValue,
     retailAverage,
     tradeAverage
   );
 
-  const median = firstNumber(figures?.PrivateAverage, average);
+  const median = firstNumber(
+    figures?.Median,
+    figures?.Mid,
+    figures?.PrivateAverage,
+    average
+  );
 
   const high = firstNumber(
+    figures?.High,
     figures?.DealerForecourt,
+    figures?.Retail,
+    figures?.RetailValue,
     figures?.OnTheRoad,
     retailHigh
   );
 
-  const above = firstNumber(figures?.OnTheRoad, retailHigh);
+  const above = firstNumber(
+    figures?.Above,
+    figures?.OnTheRoad,
+    retailHigh
+  );
 
   const mileage = firstNumber(
     valuation?.ValuationMileage,
@@ -534,11 +606,10 @@ export function buildUkvdMarketValue(params: {
 }): UkvdMarketValue | null {
   const { valuation, askingPrice = null } = params;
 
-  if (!valuation?.available) return null;
-
   const benchmarkValue =
     firstNumber(
       valuation.average,
+      valuation.median,
       valuation.retailAverage,
       valuation.retail,
       valuation.private,
@@ -550,7 +621,8 @@ export function buildUkvdMarketValue(params: {
       valuation.low,
       valuation.tradeLow,
       valuation.retailLow,
-      valuation.trade
+      valuation.trade,
+      benchmarkValue !== null ? Math.round(benchmarkValue * 0.9) : null
     ) ?? null;
 
   const high =
@@ -558,8 +630,13 @@ export function buildUkvdMarketValue(params: {
       valuation.high,
       valuation.retailHigh,
       valuation.retail,
-      valuation.above
+      valuation.above,
+      benchmarkValue !== null ? Math.round(benchmarkValue * 1.1) : null
     ) ?? null;
+
+  if (benchmarkValue === null && low === null && high === null) {
+    return null;
+  }
 
   const delta =
     askingPrice !== null && benchmarkValue !== null
@@ -583,8 +660,7 @@ export function buildUkvdMarketValue(params: {
     }
   }
 
-  let summary =
-    "UK vehicle market data was available for this vehicle.";
+  let summary = "UK vehicle market data was available for this vehicle.";
 
   if (askingPrice !== null && benchmarkValue !== null) {
     if (position === "good") {
@@ -597,6 +673,9 @@ export function buildUkvdMarketValue(params: {
       summary =
         "The asking price appears broadly in line with typical market value for this vehicle.";
     }
+  } else if (benchmarkValue !== null) {
+    summary =
+      "We found market valuation data for this vehicle, but no asking price was provided for comparison.";
   }
 
   return {
