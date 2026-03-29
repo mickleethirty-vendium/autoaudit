@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, Suspense, useMemo, useState } from "react";
+import { FormEvent, Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
@@ -48,8 +48,12 @@ function AuthPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const initialMode = searchParams.get("mode") === "login" ? "login" : "signup";
-  const [mode, setMode] = useState<"login" | "signup">(initialMode);
+  const searchMode = searchParams.get("mode") === "login" ? "login" : "signup";
+  const [mode, setMode] = useState<"login" | "signup">(searchMode);
+
+  useEffect(() => {
+    setMode(searchMode);
+  }, [searchMode]);
 
   const nextUrl = useMemo(
     () => getSafeNext(searchParams.get("next")),
@@ -58,12 +62,60 @@ function AuthPageInner() {
 
   const claimReportId = searchParams.get("claim_report");
 
+  const emailRedirectTo = useMemo(() => {
+    if (typeof window === "undefined") return undefined;
+
+    const callbackUrl = new URL("/auth/callback", window.location.origin);
+    callbackUrl.searchParams.set("next", nextUrl);
+
+    if (claimReportId) {
+      callbackUrl.searchParams.set("claim_report", claimReportId);
+    }
+
+    return callbackUrl.toString();
+  }, [nextUrl, claimReportId]);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+
+  function setModeAndClear(nextMode: "login" | "signup") {
+    setMode(nextMode);
+    setError(null);
+    setNotice(null);
+  }
+
+  function getFriendlyAuthError(err: any) {
+    const message =
+      typeof err?.message === "string" && err.message.trim()
+        ? err.message.trim()
+        : "Something went wrong.";
+
+    const lower = message.toLowerCase();
+
+    if (
+      lower.includes("email not confirmed") ||
+      lower.includes("email_not_confirmed")
+    ) {
+      return "Please confirm your email address first using the link in your inbox, then log in.";
+    }
+
+    if (
+      lower.includes("invalid login credentials") ||
+      lower.includes("invalid_grant")
+    ) {
+      return "Incorrect email or password.";
+    }
+
+    if (lower.includes("user already registered")) {
+      return "An account already exists for this email. Try logging in instead.";
+    }
+
+    return message;
+  }
 
   async function handleClaimReport() {
     if (!claimReportId) return true;
@@ -117,15 +169,21 @@ function AuthPageInner() {
         const { data, error: signUpError } = await supabase.auth.signUp({
           email: email.trim(),
           password,
+          options: emailRedirectTo
+            ? {
+                emailRedirectTo,
+              }
+            : undefined,
         });
 
         if (signUpError) throw signUpError;
 
         if (!data.session) {
           setNotice(
-            "Account created. Please check your email to confirm your account, then log in to save your report."
+            claimReportId
+              ? "Account created. Please check your email, confirm your account, and then log in to link and save your paid report."
+              : "Account created. Please check your email and confirm your account before logging in."
           );
-          setBusy(false);
           return;
         }
 
@@ -146,7 +204,7 @@ function AuthPageInner() {
       router.push(nextUrl);
       router.refresh();
     } catch (err: any) {
-      setError(err?.message ?? "Something went wrong.");
+      setError(getFriendlyAuthError(err));
     } finally {
       setBusy(false);
     }
@@ -179,11 +237,7 @@ function AuthPageInner() {
         <div className="mt-5 flex gap-2 rounded-xl border border-slate-200 bg-slate-50 p-1">
           <button
             type="button"
-            onClick={() => {
-              setMode("signup");
-              setError(null);
-              setNotice(null);
-            }}
+            onClick={() => setModeAndClear("signup")}
             className={`flex-1 rounded-lg px-4 py-2 text-sm font-semibold transition ${
               mode === "signup"
                 ? "bg-[#b91c1c] text-white"
@@ -195,11 +249,7 @@ function AuthPageInner() {
 
           <button
             type="button"
-            onClick={() => {
-              setMode("login");
-              setError(null);
-              setNotice(null);
-            }}
+            onClick={() => setModeAndClear("login")}
             className={`flex-1 rounded-lg px-4 py-2 text-sm font-semibold transition ${
               mode === "login"
                 ? "bg-black text-white"
@@ -274,6 +324,14 @@ function AuthPageInner() {
             </div>
           ) : null}
 
+          {mode === "signup" ? (
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-600">
+              After sign-up, we’ll email you a confirmation link. Once you
+              confirm your email, you’ll be returned to AutoAudit and can log in
+              to continue.
+            </div>
+          ) : null}
+
           <button
             type="submit"
             disabled={busy}
@@ -284,8 +342,8 @@ function AuthPageInner() {
                 ? "Creating account..."
                 : "Logging in..."
               : mode === "signup"
-              ? "Create account"
-              : "Log in"}
+                ? "Create account"
+                : "Log in"}
           </button>
         </form>
 
@@ -295,11 +353,7 @@ function AuthPageInner() {
               Already have an account?{" "}
               <button
                 type="button"
-                onClick={() => {
-                  setMode("login");
-                  setError(null);
-                  setNotice(null);
-                }}
+                onClick={() => setModeAndClear("login")}
                 className="font-semibold text-[#b91c1c] hover:underline"
               >
                 Log in
@@ -310,11 +364,7 @@ function AuthPageInner() {
               Need an account?{" "}
               <button
                 type="button"
-                onClick={() => {
-                  setMode("signup");
-                  setError(null);
-                  setNotice(null);
-                }}
+                onClick={() => setModeAndClear("signup")}
                 className="font-semibold text-[#b91c1c] hover:underline"
               >
                 Create one
