@@ -63,9 +63,10 @@ function AuthPageInner() {
   const claimReportId = searchParams.get("claim_report");
 
   const emailRedirectTo = useMemo(() => {
-    if (typeof window === "undefined") return undefined;
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL?.trim() || "https://autoaudit.uk";
 
-    const callbackUrl = new URL("/auth/callback", window.location.origin);
+    const callbackUrl = new URL("/auth/callback", baseUrl);
     callbackUrl.searchParams.set("next", nextUrl);
 
     if (claimReportId) {
@@ -169,11 +170,9 @@ function AuthPageInner() {
         const { data, error: signUpError } = await supabase.auth.signUp({
           email: email.trim(),
           password,
-          options: emailRedirectTo
-            ? {
-                emailRedirectTo,
-              }
-            : undefined,
+          options: {
+            emailRedirectTo,
+          },
         });
 
         if (signUpError) throw signUpError;
