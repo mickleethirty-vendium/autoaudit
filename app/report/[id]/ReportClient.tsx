@@ -652,13 +652,15 @@ function SectionHeading({
 }) {
   return (
     <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-      <div>
+      <div className="min-w-0">
         {eyebrow ? (
           <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
             {eyebrow}
           </div>
         ) : null}
-        <h3 className="mt-1 text-lg font-bold text-slate-950">{title}</h3>
+        <h3 className="mt-1 text-lg font-bold text-slate-950 sm:text-xl">
+          {title}
+        </h3>
         {description ? (
           <p className="mt-1 text-sm leading-6 text-slate-700">{description}</p>
         ) : null}
@@ -666,6 +668,30 @@ function SectionHeading({
 
       {countLabel ? (
         <div className="text-sm text-slate-600">{countLabel}</div>
+      ) : null}
+    </div>
+  );
+}
+
+function SummaryMetric({
+  label,
+  value,
+  subtext,
+}: {
+  label: string;
+  value: string;
+  subtext?: string | null;
+}) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-3">
+      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        {label}
+      </div>
+      <div className="mt-1 break-words text-sm font-semibold text-slate-950 sm:text-base">
+        {value}
+      </div>
+      {subtext ? (
+        <div className="mt-1 break-words text-xs text-slate-500">{subtext}</div>
       ) : null}
     </div>
   );
@@ -965,7 +991,7 @@ export default function ReportClient({
   }
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:py-8">
+    <div className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-4 sm:py-6 lg:px-6">
       <div className="mb-6 hidden border-b border-slate-300 pb-3 print:block">
         <div className="text-lg font-bold text-slate-950">
           AutoAudit Vehicle Report
@@ -983,7 +1009,7 @@ export default function ReportClient({
       </div>
 
       {justUnlockedReport || justUnlockedHpi ? (
-        <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+        <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 sm:mb-6">
           <div className="text-sm font-semibold text-emerald-900">
             {justUnlockedHpi
               ? "History & provenance check unlocked"
@@ -997,24 +1023,24 @@ export default function ReportClient({
         </div>
       ) : null}
 
-      <div className="relative overflow-hidden rounded-[2rem] border border-[var(--aa-silver)] bg-[var(--aa-black)] shadow-[0_18px_60px_rgba(15,23,42,0.14)]">
+      <div className="relative overflow-hidden rounded-[1.5rem] border border-[var(--aa-silver)] bg-[var(--aa-black)] shadow-[0_18px_60px_rgba(15,23,42,0.14)] sm:rounded-[2rem]">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: "url('/hero-car-road.png')" }}
         />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.95)_0%,rgba(255,255,255,0.93)_42%,rgba(255,255,255,0.28)_72%,rgba(255,255,255,0.10)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.97)_0%,rgba(255,255,255,0.95)_48%,rgba(255,255,255,0.88)_100%)] lg:bg-[linear-gradient(90deg,rgba(255,255,255,0.95)_0%,rgba(255,255,255,0.93)_42%,rgba(255,255,255,0.28)_72%,rgba(255,255,255,0.10)_100%)]" />
 
-        <div className="relative px-5 py-6 sm:px-8 sm:py-8">
+        <div className="relative px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
           <div className="max-w-3xl">
             <div className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-700 shadow-sm">
               Paid report
             </div>
 
-            <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-black sm:text-4xl">
+            <h1 className="mt-4 text-2xl font-extrabold tracking-tight text-black sm:text-3xl lg:text-4xl">
               Proceed, negotiate or walk away?
             </h1>
 
-            <div className="mt-2 text-sm text-slate-600">
+            <div className="mt-2 text-sm leading-6 text-slate-600">
               {reg ? `${reg} · ` : ""}
               {make ? `${make} · ` : ""}
               {year ? `${year} · ` : ""}
@@ -1033,13 +1059,13 @@ export default function ReportClient({
             ) : null}
           </div>
 
-          <div className="mt-6 rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
+          <div className="mt-5 rounded-2xl border border-white/40 bg-white/92 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur sm:mt-6 sm:p-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+              <div className="min-w-0">
                 <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                   Decision signal
                 </div>
-                <div className="mt-1 text-xl font-extrabold tracking-tight text-slate-950">
+                <div className="mt-1 text-lg font-extrabold tracking-tight text-slate-950 sm:text-xl">
                   {decisionCall.badgeLabel}
                 </div>
                 <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700">
@@ -1048,16 +1074,16 @@ export default function ReportClient({
               </div>
 
               <div
-                className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${decisionCall.badgeClass}`}
+                className={`inline-flex w-fit items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${decisionCall.badgeClass}`}
               >
                 Buyer guidance
               </div>
             </div>
           </div>
 
-          <div className="mt-4 grid gap-4 xl:grid-cols-3">
-            <div className="rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur">
-              <div className="flex items-start justify-between gap-4">
+          <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
+            <div className="rounded-2xl border border-white/40 bg-white/92 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur sm:p-5">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                   Repair risk forecast
                 </div>
@@ -1068,7 +1094,7 @@ export default function ReportClient({
                 ) : null}
               </div>
 
-              <div className="mt-4">
+              <div className="mt-4 overflow-hidden">
                 {adjustedTotals.adjustedLow !== null &&
                 adjustedTotals.adjustedHigh !== null ? (
                   <ExposureBar
@@ -1082,83 +1108,68 @@ export default function ReportClient({
                 )}
               </div>
 
-              <div className="mt-4 grid gap-3">
-                <div className="rounded-xl border border-slate-200 bg-white p-3">
-                  <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Confidence
-                  </div>
-                  <div className="mt-1 text-sm font-semibold text-slate-950">
-                    {adjustedTotals.adjustedConfidenceDisplay ?? "Unavailable"}
-                  </div>
-                  {adjustedTotals.addressedCount > 0 && confidenceDisplay ? (
-                    <div className="mt-1 text-xs text-slate-500">
-                      Original: {confidenceDisplay}
-                    </div>
-                  ) : null}
-                </div>
+              <div className="mt-4 grid grid-cols-1 gap-3">
+                <SummaryMetric
+                  label="Confidence"
+                  value={adjustedTotals.adjustedConfidenceDisplay ?? "Unavailable"}
+                  subtext={
+                    adjustedTotals.addressedCount > 0 && confidenceDisplay
+                      ? `Original: ${confidenceDisplay}`
+                      : null
+                  }
+                />
 
-                <div className="rounded-xl border border-slate-200 bg-white p-3">
-                  <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Negotiation guide
-                  </div>
-                  <div className="mt-1 text-sm font-semibold text-slate-950">
-                    {money(adjustedTotals.adjustedNegotiation)}
-                  </div>
-                  {adjustedTotals.addressedCount > 0 &&
-                  typeof negotiationSuggested === "number" ? (
-                    <>
-                      <div className="mt-1 text-xs text-slate-500">
-                        Original: {money(negotiationSuggested)}
-                      </div>
-                      {adjustedTotals.negotiationReduction !== null ? (
-                        <div className="mt-1 text-xs font-medium text-emerald-700">
-                          Reduced by {money(adjustedTotals.negotiationReduction)}
-                        </div>
-                      ) : null}
-                    </>
-                  ) : null}
-                </div>
+                <SummaryMetric
+                  label="Negotiation guide"
+                  value={money(adjustedTotals.adjustedNegotiation)}
+                  subtext={
+                    adjustedTotals.addressedCount > 0 &&
+                    typeof negotiationSuggested === "number"
+                      ? adjustedTotals.negotiationReduction !== null
+                        ? `Original: ${money(
+                            negotiationSuggested
+                          )} · Reduced by ${money(
+                            adjustedTotals.negotiationReduction
+                          )}`
+                        : `Original: ${money(negotiationSuggested)}`
+                      : null
+                  }
+                />
 
-                <div className="rounded-xl border border-slate-200 bg-white p-3">
-                  <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Estimated exposure
-                  </div>
-                  <div className="mt-1 text-sm font-semibold text-slate-950">
-                    {money(adjustedTotals.adjustedLow)} –{" "}
-                    {money(adjustedTotals.adjustedHigh)}
-                  </div>
-                  {adjustedTotals.addressedCount > 0 &&
-                  baseExposureLow !== null &&
-                  baseExposureHigh !== null ? (
-                    <>
-                      <div className="mt-1 text-xs text-slate-500">
-                        Original: {money(baseExposureLow)} –{" "}
-                        {money(baseExposureHigh)}
-                      </div>
-                      <div className="mt-1 text-xs font-medium text-emerald-700">
-                        Reduced by {money(adjustedTotals.lowReduction)} –{" "}
-                        {money(adjustedTotals.highReduction)}
-                      </div>
-                    </>
-                  ) : null}
-                </div>
+                <SummaryMetric
+                  label="Estimated exposure"
+                  value={`${money(adjustedTotals.adjustedLow)} – ${money(
+                    adjustedTotals.adjustedHigh
+                  )}`}
+                  subtext={
+                    adjustedTotals.addressedCount > 0 &&
+                    baseExposureLow !== null &&
+                    baseExposureHigh !== null
+                      ? `Original: ${money(baseExposureLow)} – ${money(
+                          baseExposureHigh
+                        )} · Reduced by ${money(
+                          adjustedTotals.lowReduction
+                        )} – ${money(adjustedTotals.highReduction)}`
+                      : null
+                  }
+                />
               </div>
             </div>
 
-            <div className="rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur">
+            <div className="rounded-2xl border border-white/40 bg-white/92 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur sm:p-5">
               <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                 Asking price vs market
               </div>
 
               {askingPrice !== null || marketLow !== null || marketHigh !== null ? (
                 <>
-                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                     <div className="text-sm text-slate-700">
                       {pricePositionSummary}
                     </div>
 
                     <div
-                      className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${valuePillStyles(
+                      className={`inline-flex w-fit items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${valuePillStyles(
                         marketPosition
                       )}`}
                     >
@@ -1175,7 +1186,7 @@ export default function ReportClient({
                       <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Asking price
                       </div>
-                      <div className="mt-1 text-lg font-extrabold text-slate-950">
+                      <div className="mt-1 break-words text-base font-extrabold text-slate-950 sm:text-lg">
                         {money(askingPrice)}
                       </div>
                     </div>
@@ -1184,7 +1195,7 @@ export default function ReportClient({
                       <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Typical value
                       </div>
-                      <div className="mt-1 text-lg font-extrabold text-slate-950">
+                      <div className="mt-1 break-words text-base font-extrabold text-slate-950 sm:text-lg">
                         {money(marketBenchmark)}
                       </div>
                     </div>
@@ -1193,7 +1204,7 @@ export default function ReportClient({
                       <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Market range
                       </div>
-                      <div className="mt-1 text-lg font-extrabold text-slate-950">
+                      <div className="mt-1 break-words text-base font-extrabold text-slate-950 sm:text-lg">
                         {marketLow !== null && marketHigh !== null
                           ? `${money(marketLow)} – ${money(marketHigh)}`
                           : "—"}
@@ -1206,7 +1217,7 @@ export default function ReportClient({
                       <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Valuation basis
                       </div>
-                      <div className="mt-1 text-sm font-semibold text-slate-950">
+                      <div className="mt-1 break-words text-sm font-semibold text-slate-950">
                         {valuationDate ? formatDate(valuationDate) : "—"}
                         {valuationDate && valuationMileage !== null ? " · " : ""}
                         {valuationMileage !== null
@@ -1221,7 +1232,7 @@ export default function ReportClient({
                       <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Difference vs typical value
                       </div>
-                      <div className="mt-1 text-sm font-semibold text-slate-950">
+                      <div className="mt-1 break-words text-sm font-semibold text-slate-950">
                         {marketDelta > 0 ? "+" : ""}
                         {money(marketDelta)}
                       </div>
@@ -1237,7 +1248,7 @@ export default function ReportClient({
               )}
             </div>
 
-            <div className="rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur">
+            <div className="rounded-2xl border border-white/40 bg-white/92 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur sm:p-5">
               <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                 Vehicle history
               </div>
@@ -1252,7 +1263,10 @@ export default function ReportClient({
                     mileage anomalies, keeper history and plate changes.
                   </p>
                   <div className="mt-4">
-                    <a href={hpiUpgradeCheckoutUrl} className="btn-primary">
+                    <a
+                      href={hpiUpgradeCheckoutUrl}
+                      className="btn-primary block w-full text-center sm:inline-flex sm:w-auto"
+                    >
                       Add HPI check · {hpiUpgradePriceLabel}
                     </a>
                   </div>
@@ -1264,7 +1278,7 @@ export default function ReportClient({
                   report is still available.
                 </div>
               ) : (
-                <div className="mt-4 grid gap-3">
+                <div className="mt-4 grid grid-cols-1 gap-3">
                   {hpiChecks.length ? (
                     hpiChecks.map((item) => (
                       <div
@@ -1274,7 +1288,7 @@ export default function ReportClient({
                         <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                           {item.label}
                         </div>
-                        <div className="mt-1 text-sm font-semibold text-slate-950">
+                        <div className="mt-1 break-words text-sm font-semibold text-slate-950">
                           {renderHpiDisplayValue(item.value)}
                         </div>
                       </div>
@@ -1289,10 +1303,10 @@ export default function ReportClient({
             </div>
           </div>
 
-          <div className="mt-4 grid gap-4 xl:grid-cols-3">
-            <div className="rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur xl:col-span-2">
-              <div className="flex items-start justify-between gap-4">
-                <div>
+          <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
+            <div className="rounded-2xl border border-white/40 bg-white/92 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur sm:p-5 xl:col-span-2">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
                   <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                     Vehicle identity used for matching
                   </div>
@@ -1304,7 +1318,7 @@ export default function ReportClient({
 
                 {vehicleIdentityData.identityStatusLabel ? (
                   <div
-                    className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${
+                    className={`inline-flex w-fit rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${
                       vehicleIdentityData.enrichedIdentity
                         ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
                         : "border border-slate-200 bg-slate-50 text-slate-700"
@@ -1316,7 +1330,7 @@ export default function ReportClient({
               </div>
 
               {identityRows.length ? (
-                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {identityRows.map((row) => (
                     <div
                       key={row.label}
@@ -1325,7 +1339,7 @@ export default function ReportClient({
                       <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                         {row.label}
                       </div>
-                      <div className="mt-1 text-sm font-semibold text-slate-950">
+                      <div className="mt-1 break-words text-sm font-semibold text-slate-950">
                         {row.value}
                       </div>
                     </div>
@@ -1338,7 +1352,7 @@ export default function ReportClient({
               )}
             </div>
 
-            <div className="rounded-2xl border border-white/40 bg-white/92 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur">
+            <div className="rounded-2xl border border-white/40 bg-white/92 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur sm:p-5">
               <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                 MoT history summary
               </div>
@@ -1426,7 +1440,7 @@ export default function ReportClient({
                               key={`${detail.text ?? "detail"}-${index}`}
                               className="rounded-lg border border-amber-100 bg-white px-3 py-3"
                             >
-                              <div className="flex items-start justify-between gap-3">
+                              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                                 <div className="text-sm font-medium text-slate-900">
                                   {detail.patternLabel ?? "Pattern"}
                                 </div>
@@ -1454,7 +1468,7 @@ export default function ReportClient({
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-red-200 bg-red-50/50 p-4 print:hidden">
+      <div className="mt-6 rounded-2xl border border-red-200 bg-red-50/50 p-4 print:hidden sm:p-5">
         <div className="text-sm font-semibold text-slate-950">
           Save access to this report
         </div>
@@ -1479,12 +1493,12 @@ export default function ReportClient({
         </div>
 
         {!ownerUserId ? (
-          <div className="mt-4 flex flex-wrap gap-3">
-            <Link href={registerUrl} className="btn-primary">
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <Link href={registerUrl} className="btn-primary w-full text-center sm:w-auto">
               Create account to save report
             </Link>
 
-            <Link href={loginUrl} className="btn-outline">
+            <Link href={loginUrl} className="btn-outline w-full text-center sm:w-auto">
               Log in to save report
             </Link>
           </div>
@@ -1496,7 +1510,7 @@ export default function ReportClient({
       </div>
 
       <div className="mt-8">
-        <h2 className="text-2xl font-extrabold tracking-tight text-slate-950">
+        <h2 className="text-xl font-extrabold tracking-tight text-slate-950 sm:text-2xl">
           What to check before you buy
         </h2>
         <p className="mt-2 text-sm leading-6 text-slate-700">
@@ -1517,7 +1531,7 @@ export default function ReportClient({
           />
 
           {serviceRiskItems.length ? (
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               {serviceRiskItems.map((item, index) => {
                 const key = getItemKey(item, index);
                 const addressed = !!addressedIds[key];
@@ -1525,62 +1539,64 @@ export default function ReportClient({
                 return (
                   <div
                     key={`${item?.item_id ?? "service"}-${index}`}
-                    className={`rounded-2xl border p-5 shadow-sm transition ${itemTone(
+                    className={`rounded-2xl border p-4 shadow-sm transition sm:p-5 ${itemTone(
                       item,
                       addressed
                     )}`}
                   >
-                    <div className="mb-4 flex items-start justify-between gap-4">
-                      <div>
-                        <div
-                          className={`text-lg font-bold tracking-tight ${
-                            addressed ? "text-emerald-900" : "text-slate-950"
-                          }`}
-                        >
-                          {item?.label ?? "Flagged item"}
+                    <div className="mb-4 flex flex-col gap-3">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0">
+                          <div
+                            className={`text-base font-bold tracking-tight sm:text-lg ${
+                              addressed ? "text-emerald-900" : "text-slate-950"
+                            }`}
+                          >
+                            {item?.label ?? "Flagged item"}
+                          </div>
+                          <div className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                            {String(item?.category ?? "service").replace(
+                              /_/g,
+                              " "
+                            )}
+                          </div>
                         </div>
-                        <div className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                          {String(item?.category ?? "service").replace(
-                            /_/g,
-                            " "
-                          )}
+
+                        <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-left sm:text-right">
+                          <div className="break-words text-sm font-semibold text-slate-950">
+                            {money(Number(item?.cost_low ?? 0))} –{" "}
+                            {money(Number(item?.cost_high ?? 0))}
+                          </div>
+                          <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                            likely exposure
+                          </div>
                         </div>
                       </div>
 
-                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-right">
-                        <div className="text-sm font-semibold text-slate-950">
-                          {money(Number(item?.cost_low ?? 0))} –{" "}
-                          {money(Number(item?.cost_high ?? 0))}
+                      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white/80 px-3 py-3">
+                        <input
+                          type="checkbox"
+                          checked={addressed}
+                          onChange={() => toggleAddressed(key)}
+                          className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                        />
+                        <div>
+                          <div className="text-sm font-semibold text-slate-950">
+                            Mark as addressed by seller
+                          </div>
+                          <div className="text-xs leading-5 text-slate-600">
+                            Tick this if the seller has proof this item was fixed
+                            or completed.
+                          </div>
                         </div>
-                        <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                          likely exposure
+                      </label>
+
+                      {addressed ? (
+                        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
+                          This item has been excluded from the live exposure total.
                         </div>
-                      </div>
+                      ) : null}
                     </div>
-
-                    <label className="mb-4 flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white/80 px-3 py-3">
-                      <input
-                        type="checkbox"
-                        checked={addressed}
-                        onChange={() => toggleAddressed(key)}
-                        className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                      />
-                      <div>
-                        <div className="text-sm font-semibold text-slate-950">
-                          Mark as addressed by seller
-                        </div>
-                        <div className="text-xs text-slate-600">
-                          Tick this if the seller has proof this item was fixed
-                          or completed.
-                        </div>
-                      </div>
-                    </label>
-
-                    {addressed ? (
-                      <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
-                        This item has been excluded from the live exposure total.
-                      </div>
-                    ) : null}
 
                     {item?.why_flagged ? (
                       <p className="mt-4 text-sm leading-6 text-slate-700">
@@ -1649,7 +1665,7 @@ export default function ReportClient({
           />
 
           {motRiskItems.length ? (
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               {motRiskItems.map((item, index) => {
                 const key = getItemKey(item, serviceRiskItems.length + index);
                 const addressed = !!addressedIds[key];
@@ -1662,59 +1678,61 @@ export default function ReportClient({
                 return (
                   <div
                     key={`${item?.item_id ?? "mot"}-${index}`}
-                    className={`rounded-2xl border p-5 shadow-sm transition ${itemTone(
+                    className={`rounded-2xl border p-4 shadow-sm transition sm:p-5 ${itemTone(
                       item,
                       addressed
                     )}`}
                   >
-                    <div className="mb-4 flex items-start justify-between gap-4">
-                      <div>
-                        <div
-                          className={`text-lg font-bold tracking-tight ${
-                            addressed ? "text-emerald-900" : "text-slate-950"
-                          }`}
-                        >
-                          {item?.label ?? "MoT history item"}
+                    <div className="mb-4 flex flex-col gap-3">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0">
+                          <div
+                            className={`text-base font-bold tracking-tight sm:text-lg ${
+                              addressed ? "text-emerald-900" : "text-slate-950"
+                            }`}
+                          >
+                            {item?.label ?? "MoT history item"}
+                          </div>
+                          <div className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                            MoT-derived risk
+                          </div>
                         </div>
-                        <div className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                          MoT-derived risk
+
+                        <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-left sm:text-right">
+                          <div className="break-words text-sm font-semibold text-slate-950">
+                            {money(Number(item?.cost_low ?? 0))} –{" "}
+                            {money(Number(item?.cost_high ?? 0))}
+                          </div>
+                          <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                            likely exposure
+                          </div>
                         </div>
                       </div>
 
-                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-right">
-                        <div className="text-sm font-semibold text-slate-950">
-                          {money(Number(item?.cost_low ?? 0))} –{" "}
-                          {money(Number(item?.cost_high ?? 0))}
+                      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white/80 px-3 py-3">
+                        <input
+                          type="checkbox"
+                          checked={addressed}
+                          onChange={() => toggleAddressed(key)}
+                          className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                        />
+                        <div>
+                          <div className="text-sm font-semibold text-slate-950">
+                            Mark as addressed by seller
+                          </div>
+                          <div className="text-xs leading-5 text-slate-600">
+                            Tick this if the seller has proof this issue was
+                            repaired or resolved.
+                          </div>
                         </div>
-                        <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                          likely exposure
+                      </label>
+
+                      {addressed ? (
+                        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
+                          This item has been excluded from the live exposure total.
                         </div>
-                      </div>
+                      ) : null}
                     </div>
-
-                    <label className="mb-4 flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white/80 px-3 py-3">
-                      <input
-                        type="checkbox"
-                        checked={addressed}
-                        onChange={() => toggleAddressed(key)}
-                        className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                      />
-                      <div>
-                        <div className="text-sm font-semibold text-slate-950">
-                          Mark as addressed by seller
-                        </div>
-                        <div className="text-xs text-slate-600">
-                          Tick this if the seller has proof this issue was
-                          repaired or resolved.
-                        </div>
-                      </div>
-                    </label>
-
-                    {addressed ? (
-                      <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
-                        This item has been excluded from the live exposure total.
-                      </div>
-                    ) : null}
 
                     {item?.why_flagged ? (
                       <p className="mt-4 text-sm leading-6 text-slate-700">
@@ -1748,7 +1766,7 @@ export default function ReportClient({
                                 key={`${detail.text ?? "repeat"}-${detailIndex}`}
                                 className="rounded-lg border border-amber-100 bg-white px-3 py-3"
                               >
-                                <div className="flex items-start justify-between gap-3">
+                                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                                   <div className="text-sm font-semibold text-slate-950">
                                     {detail.patternLabel ?? "Pattern"}
                                   </div>
@@ -1838,11 +1856,11 @@ export default function ReportClient({
                 return (
                   <div
                     key={`${test.completedDate ?? "mot-test"}-${index}`}
-                    className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+                    className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"
                   >
-                    <div className="flex flex-wrap items-start justify-between gap-4">
-                      <div>
-                        <div className="text-lg font-bold tracking-tight text-slate-950">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <div className="text-base font-bold tracking-tight text-slate-950 sm:text-lg">
                           {formatDate(test.completedDate) ?? "Unknown test date"}
                         </div>
 
@@ -1869,7 +1887,7 @@ export default function ReportClient({
                         </div>
                       </div>
 
-                      <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-right">
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-left sm:text-right">
                         <div className="text-sm font-semibold text-slate-950">
                           {allDefects.length}
                         </div>
@@ -1896,7 +1914,7 @@ export default function ReportClient({
                               </span>
                             </div>
 
-                            <div className="mt-2 text-sm leading-6 text-slate-700">
+                            <div className="mt-2 break-words text-sm leading-6 text-slate-700">
                               {defect?.text ?? "No defect text provided."}
                             </div>
                           </div>
@@ -1949,7 +1967,7 @@ export default function ReportClient({
                 ) : null}
               </div>
 
-              <div className="grid gap-4 lg:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 {knownModelIssues.map((item, index) => {
                   const key = getItemKey(
                     item,
@@ -1960,77 +1978,79 @@ export default function ReportClient({
                   return (
                     <div
                       key={`${item?.issue_code ?? item?.item_id ?? "known"}-${index}`}
-                      className={`rounded-2xl border p-5 shadow-sm transition ${itemTone(
+                      className={`rounded-2xl border p-4 shadow-sm transition sm:p-5 ${itemTone(
                         item,
                         addressed
                       )}`}
                     >
-                      <div className="mb-4 flex items-start justify-between gap-4">
-                        <div>
-                          <div
-                            className={`text-lg font-bold tracking-tight ${
-                              addressed ? "text-emerald-900" : "text-slate-950"
-                            }`}
-                          >
-                            {item?.label ?? "Known issue"}
-                          </div>
-
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-700">
-                              {String(item?.category ?? "known issue").replace(
-                                /_/g,
-                                " "
-                              )}
-                            </span>
-
-                            <span
-                              className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${matchConfidencePill(
-                                item.match_confidence
-                              )}`}
+                      <div className="mb-4 flex flex-col gap-3">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="min-w-0">
+                            <div
+                              className={`text-base font-bold tracking-tight sm:text-lg ${
+                                addressed ? "text-emerald-900" : "text-slate-950"
+                              }`}
                             >
-                              {matchConfidenceLabel(item.match_confidence)}
-                            </span>
+                              {item?.label ?? "Known issue"}
+                            </div>
 
-                            <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
-                              {matchBasisLabel(item.match_basis)}
-                            </span>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-700">
+                                {String(item?.category ?? "known issue").replace(
+                                  /_/g,
+                                  " "
+                                )}
+                              </span>
+
+                              <span
+                                className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${matchConfidencePill(
+                                  item.match_confidence
+                                )}`}
+                              >
+                                {matchConfidenceLabel(item.match_confidence)}
+                              </span>
+
+                              <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                                {matchBasisLabel(item.match_basis)}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-left sm:text-right">
+                            <div className="break-words text-sm font-semibold text-slate-950">
+                              {money(Number(item?.cost_low ?? 0))} –{" "}
+                              {money(Number(item?.cost_high ?? 0))}
+                            </div>
+                            <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                              indicative cost range
+                            </div>
                           </div>
                         </div>
 
-                        <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-right">
-                          <div className="text-sm font-semibold text-slate-950">
-                            {money(Number(item?.cost_low ?? 0))} –{" "}
-                            {money(Number(item?.cost_high ?? 0))}
+                        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white/80 px-3 py-3">
+                          <input
+                            type="checkbox"
+                            checked={addressed}
+                            onChange={() => toggleAddressed(key)}
+                            className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                          />
+                          <div>
+                            <div className="text-sm font-semibold text-slate-950">
+                              Mark as addressed by seller
+                            </div>
+                            <div className="text-xs leading-5 text-slate-600">
+                              Tick this if the seller has proof this known issue
+                              has already been repaired, prevented or checked.
+                            </div>
                           </div>
-                          <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                            indicative cost range
+                        </label>
+
+                        {addressed ? (
+                          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
+                            This item has been excluded from the live exposure total.
                           </div>
-                        </div>
+                        ) : null}
                       </div>
-
-                      <label className="mb-4 flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white/80 px-3 py-3">
-                        <input
-                          type="checkbox"
-                          checked={addressed}
-                          onChange={() => toggleAddressed(key)}
-                          className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                        />
-                        <div>
-                          <div className="text-sm font-semibold text-slate-950">
-                            Mark as addressed by seller
-                          </div>
-                          <div className="text-xs text-slate-600">
-                            Tick this if the seller has proof this known issue
-                            has already been repaired, prevented or checked.
-                          </div>
-                        </div>
-                      </label>
-
-                      {addressed ? (
-                        <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
-                          This item has been excluded from the live exposure total.
-                        </div>
-                      ) : null}
 
                       {item?.why_flagged ? (
                         <p className="mt-4 text-sm leading-6 text-slate-700">
@@ -2097,7 +2117,7 @@ export default function ReportClient({
         </section>
       </div>
 
-      <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-600">
+      <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 sm:p-5">
         AutoAudit provides guidance only and is not a substitute for a
         mechanical inspection.
       </div>
