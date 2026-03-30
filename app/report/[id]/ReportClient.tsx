@@ -73,7 +73,13 @@ type MotTest = {
   defects?: MotDefect[];
 };
 
-type ReportTab = "overview" | "priority" | "mot" | "history" | "all";
+type ReportTab =
+  | "overview"
+  | "priority"
+  | "mot"
+  | "history"
+  | "known"
+  | "all";
 
 function money(value?: number | null) {
   if (typeof value !== "number" || !Number.isFinite(value)) return "—";
@@ -1457,7 +1463,7 @@ export default function ReportClient({
                 <div className="mt-1 grid gap-1.5 text-sm leading-5 text-slate-800">
                   <div>1. Start with the Priority checks tab.</div>
                   <div>2. Tick anything the seller can prove is resolved.</div>
-                  <div>3. Review MoT and vehicle history before committing.</div>
+                  <div>3. Review MoT, history and known weak points.</div>
                   <div>4. Use the overview totals to negotiate or walk away.</div>
                 </div>
               </div>
@@ -1491,6 +1497,12 @@ export default function ReportClient({
                 Vehicle history
               </TabButton>
               <TabButton
+                active={activeTab === "known"}
+                onClick={() => setActiveTab("known")}
+              >
+                Known weak points
+              </TabButton>
+              <TabButton
                 active={activeTab === "all"}
                 onClick={() => setActiveTab("all")}
               >
@@ -1501,7 +1513,7 @@ export default function ReportClient({
 
           {activeTab === "overview" ? (
             <div className="mt-3 space-y-3">
-              <section className="grid grid-cols-1 gap-3 xl:grid-cols-3">
+              <section className="grid grid-cols-1 gap-3 xl:grid-cols-4">
                 <div className="rounded-2xl border border-white/40 bg-white/92 p-3 shadow-[0_10px_28px_rgba(0,0,0,0.08)] backdrop-blur">
                   <div className="flex items-center justify-between gap-3">
                     <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
@@ -1635,6 +1647,58 @@ export default function ReportClient({
                       )}
                     </div>
                   )}
+                </div>
+
+                <div className="rounded-2xl border border-white/40 bg-white/92 p-3 shadow-[0_10px_28px_rgba(0,0,0,0.08)] backdrop-blur">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                      Known weak points
+                    </div>
+                    <div className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-700">
+                      Awareness only
+                    </div>
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <SummaryMetric
+                      label="Matched"
+                      value={String(knownModelIssues.length)}
+                    />
+                    <SummaryMetric
+                      label="Best match"
+                      value={
+                        knownIssueSummary.strongestBasis
+                          ? matchBasisLabel(knownIssueSummary.strongestBasis)
+                          : "—"
+                      }
+                    />
+                    <SummaryMetric
+                      label="Top confidence"
+                      value={
+                        knownIssueSummary.strongestConfidence
+                          ? matchConfidenceLabel(
+                              knownIssueSummary.strongestConfidence
+                            )
+                          : "—"
+                      }
+                    />
+                    <SummaryMetric
+                      label="Indicative range"
+                      value={
+                        knownModelIssueExposure.low !== null &&
+                        knownModelIssueExposure.high !== null
+                          ? `${money(knownModelIssueExposure.low)} – ${money(
+                              knownModelIssueExposure.high
+                            )}`
+                          : "—"
+                      }
+                    />
+                  </div>
+
+                  <div className="mt-2 text-[11px] leading-5 text-slate-600">
+                    Known weak points are not included in the live exposure or
+                    negotiation totals.
+                  </div>
                 </div>
               </section>
 
@@ -2098,6 +2162,90 @@ export default function ReportClient({
             </div>
           ) : null}
 
+          {activeTab === "known" ? (
+            <div className="mt-3 space-y-3">
+              <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                <div className="mb-3">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+                    Known weak points
+                  </div>
+                  <div className="mt-0.5 text-base font-bold text-slate-950">
+                    Model-specific issues to check
+                  </div>
+                  <div className="mt-1 text-xs leading-5 text-slate-700">
+                    These are awareness checks for the model, not proof of a fault
+                    on this specific vehicle and not part of the live exposure total.
+                  </div>
+                </div>
+
+                {knownModelIssues.length ? (
+                  <>
+                    <div className="mb-3 grid grid-cols-2 gap-2 lg:grid-cols-4">
+                      <SummaryMetric
+                        label="Matched"
+                        value={String(knownModelIssues.length)}
+                      />
+                      <SummaryMetric
+                        label="Best match"
+                        value={
+                          knownIssueSummary.strongestBasis
+                            ? matchBasisLabel(knownIssueSummary.strongestBasis)
+                            : "—"
+                        }
+                      />
+                      <SummaryMetric
+                        label="Top confidence"
+                        value={
+                          knownIssueSummary.strongestConfidence
+                            ? matchConfidenceLabel(
+                                knownIssueSummary.strongestConfidence
+                              )
+                            : "—"
+                        }
+                      />
+                      <SummaryMetric
+                        label="Indicative range"
+                        value={
+                          knownModelIssueExposure.low !== null &&
+                          knownModelIssueExposure.high !== null
+                            ? `${money(knownModelIssueExposure.low)} – ${money(
+                                knownModelIssueExposure.high
+                              )}`
+                            : "—"
+                        }
+                      />
+                    </div>
+
+                    <div className="mb-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm leading-5 text-slate-700">
+                      {vehicleIdentityData.matchExplainer ? (
+                        <div>{vehicleIdentityData.matchExplainer}</div>
+                      ) : null}
+                      {knownIssueExplainer ? (
+                        <div className={vehicleIdentityData.matchExplainer ? "mt-2" : ""}>
+                          {knownIssueExplainer}
+                        </div>
+                      ) : null}
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                      {knownModelIssues.map((item, index) => (
+                        <KnownIssueCard
+                          key={`${item?.issue_code ?? item?.item_id ?? "known"}-${index}`}
+                          item={item}
+                        />
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                    No additional model-specific issues were identified from the
+                    available vehicle profile.
+                  </div>
+                )}
+              </section>
+            </div>
+          ) : null}
+
           {activeTab === "all" ? (
             <div className="mt-3 space-y-3">
               <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
@@ -2141,51 +2289,57 @@ export default function ReportClient({
               <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
                 <div className="mb-3">
                   <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
-                    Known weak points
+                    History-derived checks
                   </div>
                   <div className="mt-0.5 text-base font-bold text-slate-950">
-                    Model-specific issues to check
-                  </div>
-                  <div className="mt-1 text-xs leading-5 text-slate-700">
-                    These are awareness checks for the model, not proof of a fault
-                    on this specific vehicle and not part of the live exposure total.
+                    MoT-derived risks
                   </div>
                 </div>
 
-                {knownModelIssues.length ? (
-                  <>
-                    <div className="mb-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm leading-5 text-slate-700">
-                      {vehicleIdentityData.matchExplainer ? (
-                        <div>{vehicleIdentityData.matchExplainer}</div>
-                      ) : null}
-                      {knownIssueExplainer ? (
-                        <div className={vehicleIdentityData.matchExplainer ? "mt-2" : ""}>
-                          {knownIssueExplainer}
-                        </div>
-                      ) : null}
-                      {knownModelIssueExposure.low !== null &&
-                      knownModelIssueExposure.high !== null ? (
-                        <div className="mt-2 font-semibold text-slate-950">
-                          Indicative model-issue range:{" "}
-                          {money(knownModelIssueExposure.low)} –{" "}
-                          {money(knownModelIssueExposure.high)}
-                        </div>
-                      ) : null}
-                    </div>
+                {motRiskItems.length ? (
+                  <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                    {motRiskItems.map((item, index) => {
+                      const key = getItemKey(item, serviceRiskItems.length + index);
+                      const addressed = !!addressedIds[key];
+                      const isRepeatPatternItem =
+                        item.item_id === "mot_repeat_advisories" ||
+                        String(item.label ?? "")
+                          .toLowerCase()
+                          .includes("recurring advisory pattern");
 
-                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                      {knownModelIssues.map((item, index) => (
-                        <KnownIssueCard
-                          key={`${item?.issue_code ?? item?.item_id ?? "known"}-${index}`}
+                      return (
+                        <RiskCard
+                          key={`${item?.item_id ?? "mot"}-${index}`}
                           item={item}
+                          addressed={addressed}
+                          onToggle={() => toggleAddressed(key)}
+                          badgeLabel="MoT-derived risk"
+                          extraTop={
+                            isRepeatPatternItem && repeatPatternLabels.length ? (
+                              <div className="rounded-lg border border-amber-200 bg-amber-50/70 p-3">
+                                <div className="text-sm font-semibold text-slate-950">
+                                  Pattern categories identified
+                                </div>
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                  {repeatPatternLabels.map((label) => (
+                                    <span
+                                      key={label}
+                                      className="inline-flex items-center rounded-full border border-amber-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-900"
+                                    >
+                                      {label}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : null
+                          }
                         />
-                      ))}
-                    </div>
-                  </>
+                      );
+                    })}
+                  </div>
                 ) : (
                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
-                    No additional model-specific issues were identified from the
-                    available vehicle profile.
+                    No additional MoT-derived risks were listed in this report.
                   </div>
                 )}
               </section>
