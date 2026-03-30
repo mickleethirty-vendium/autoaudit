@@ -45,7 +45,10 @@ export async function POST(req: Request) {
     const accessToken = getBearerToken(req);
 
     if (!accessToken) {
-      return NextResponse.json({ error: "Missing access token" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Missing access token" },
+        { status: 401 }
+      );
     }
 
     const supabaseAuth = createClient(
@@ -66,7 +69,13 @@ export async function POST(req: Request) {
     } = await supabaseAuth.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+      return NextResponse.json(
+        {
+          error: "Not authenticated",
+          auth_error: userError?.message ?? null,
+        },
+        { status: 401 }
+      );
     }
 
     const { data: report, error: reportError } = await supabaseAdmin
@@ -89,18 +98,31 @@ export async function POST(req: Request) {
 
     if (reportError) {
       return NextResponse.json(
-        { error: `Could not load report: ${reportError.message}` },
+        {
+          error: `Could not load report: ${reportError.message}`,
+          current_user_id: user.id,
+        },
         { status: 500 }
       );
     }
 
     if (!report) {
-      return NextResponse.json({ error: "Report not found" }, { status: 404 });
+      return NextResponse.json(
+        {
+          error: "Report not found",
+          current_user_id: user.id,
+        },
+        { status: 404 }
+      );
     }
 
     if (!hasPurchasedAccess(report)) {
       return NextResponse.json(
-        { error: "Only paid reports can be claimed" },
+        {
+          error: "Only paid reports can be claimed",
+          current_user_id: user.id,
+          owner_user_id: report.owner_user_id ?? null,
+        },
         { status: 400 }
       );
     }
@@ -109,7 +131,11 @@ export async function POST(req: Request) {
       const expiresAt = new Date(report.expires_at).getTime();
       if (Number.isFinite(expiresAt) && expiresAt < Date.now()) {
         return NextResponse.json(
-          { error: "This report has expired and can no longer be claimed" },
+          {
+            error: "This report has expired and can no longer be claimed",
+            current_user_id: user.id,
+            owner_user_id: report.owner_user_id ?? null,
+          },
           { status: 410 }
         );
       }
@@ -120,6 +146,7 @@ export async function POST(req: Request) {
         ok: true,
         report_id: report.id,
         owner_user_id: report.owner_user_id,
+        current_user_id: user.id,
         expires_at: report.expires_at,
         already_linked: true,
       });
@@ -127,7 +154,12 @@ export async function POST(req: Request) {
 
     if (report.owner_user_id && report.owner_user_id !== user.id) {
       return NextResponse.json(
-        { error: "This report is already linked to another account" },
+        {
+          error: "This report is already linked to another account",
+          owner_user_id: report.owner_user_id,
+          current_user_id: user.id,
+          report_id: report.id,
+        },
         { status: 409 }
       );
     }
@@ -138,13 +170,46 @@ export async function POST(req: Request) {
         owner_user_id: user.id,
       })
       .eq("id", reportId)
+      .is("owner_user_id", null)
       .select("id,owner_user_id,expires_at")
-      .single();
+      .maybeSingle();
 
-    if (updateError || !updated) {
+    if (updateError) {
       return NextResponse.json(
-        { error: updateError?.message ?? "Could not claim report" },
+        {
+          error: updateError.message ?? "Could not claim report",
+          current_user_id: user.id,
+        },
         { status: 500 }
+      );
+    }
+
+    if (!updated) {
+      const { data: latest, error: latestError } = await supabaseAdmin
+        .from("reports")
+        .select("id,owner_user_id,expires_at")
+        .eq("id", reportId)
+        .maybeSingle();
+
+      if (latestError) {
+        return NextResponse.json(
+          {
+            error: latestError.message ?? "Could not verify report ownership",
+            current_user_id: user.id,
+          },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json(
+        {
+          error: "This report is already linked to another account",
+          owner_user_id: latest?.owner_user_id ?? null,
+          current_user_id: user.id,
+          report_id: latest?.id ?? reportId,
+          expires_at: latest?.expires_at ?? null,
+        },
+        { status: 409 }
       );
     }
 
@@ -152,6 +217,7 @@ export async function POST(req: Request) {
       ok: true,
       report_id: updated.id,
       owner_user_id: updated.owner_user_id,
+      current_user_id: user.id,
       expires_at: updated.expires_at,
       already_linked: false,
     });
