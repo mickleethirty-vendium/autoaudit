@@ -390,11 +390,9 @@ function pickFirstObject(...values: any[]) {
   return null;
 }
 
-function deepClone<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value));
-}
-
-function extractStoredVehicleIdentity(existing: any): VehicleIdentityInput | null {
+function extractStoredVehicleIdentity(
+  existing: any
+): VehicleIdentityInput | null {
   return (
     pickFirstObject(
       existing?.full_payload?.vehicle_identity_enriched,
@@ -403,27 +401,6 @@ function extractStoredVehicleIdentity(existing: any): VehicleIdentityInput | nul
       existing?.preview_payload?.vehicle_identity
     ) ?? null
   );
-}
-
-function extractStoredKnownModelIssues(existing: any): KnownModelIssueInput[] {
-  const direct =
-    existing?.full_payload?.known_model_issues ??
-    existing?.preview_payload?.known_model_issues ??
-    [];
-
-  return Array.isArray(direct) ? direct : [];
-}
-
-function patchPayloadForReuse<T extends Record<string, any>>(
-  payload: T | null | undefined,
-  meta: {
-    vehicleIdentity: CanonicalVehicleIdentity | null;
-    knownModelIssues: KnownModelIssueInput[];
-    askingPrice: number | null;
-  }
-) {
-  const safePayload = payload && typeof payload === "object" ? deepClone(payload) : {};
-  return addSnapshotMeta(safePayload as T, meta);
 }
 
 async function findReusableReport(params: {
@@ -468,81 +445,6 @@ async function findReusableReport(params: {
   }
 
   return data ?? null;
-}
-
-async function cloneReusableReport(params: {
-  existing: any;
-  make: string | null;
-  year: number;
-  mileage: number;
-  fuel: Fuel;
-  transmission: Transmission;
-  timing_type: TimingType;
-  asking_price: number | null;
-  vehicleIdentity: CanonicalVehicleIdentity | null;
-  knownModelIssues: KnownModelIssueInput[];
-}) {
-  const {
-    existing,
-    make,
-    year,
-    mileage,
-    fuel,
-    transmission,
-    timing_type,
-    asking_price,
-    vehicleIdentity,
-    knownModelIssues,
-  } = params;
-
-  const previewPayload = patchPayloadForReuse(existing.preview_payload, {
-    vehicleIdentity,
-    knownModelIssues,
-    askingPrice: asking_price,
-  });
-
-  const fullPayload = patchPayloadForReuse(existing.full_payload, {
-    vehicleIdentity,
-    knownModelIssues,
-    askingPrice: asking_price,
-  });
-
-  const { data, error } = await supabaseAdmin
-    .from("reports")
-    .insert({
-      registration: existing.registration ?? null,
-      make: vehicleIdentity?.make ?? make ?? existing.make ?? null,
-      car_year: year,
-      mileage,
-      fuel,
-      transmission,
-      timing_type,
-      asking_price,
-      mot_payload: existing.mot_payload ?? null,
-      preview_payload: previewPayload,
-      full_payload: fullPayload,
-      is_paid: false,
-      paid_at: null,
-      stripe_session_id: null,
-      owner_user_id: null,
-      expires_at: null,
-      hpi_unlocked: false,
-      hpi_paid_at: null,
-      hpi_stripe_session_id: null,
-      hpi_checked: false,
-      hpi_checked_at: null,
-      hpi_status: null,
-      hpi_payload: null,
-      hpi_summary: null,
-    })
-    .select("id")
-    .single();
-
-  if (error || !data) {
-    throw new Error(error?.message ?? "Could not clone reusable report");
-  }
-
-  return data.id as string;
 }
 
 export async function POST(req: Request) {
@@ -631,54 +533,26 @@ export async function POST(req: Request) {
       registration,
     });
 
-    if (reusable) {
-      const storedVehicleIdentity = extractStoredVehicleIdentity(reusable);
-      const storedKnownModelIssues = extractStoredKnownModelIssues(reusable);
-
-      const vehicleIdentity = mergeVehicleIdentity(
-        baseVehicleIdentity,
-        storedVehicleIdentity ?? requestVehicleIdentity ?? null
-      );
-
-      const knownModelIssues =
-        requestKnownModelIssues.length > 0
-          ? requestKnownModelIssues
-          : storedKnownModelIssues;
-
-      const clonedReportId = await cloneReusableReport({
-        existing: reusable,
-        make,
-        year,
-        mileage,
-        fuel,
-        transmission,
-        timing_type,
-        asking_price,
-        vehicleIdentity,
-        knownModelIssues,
-      });
-
-      return NextResponse.json({
-        report_id: clonedReportId,
-        reused_existing_report: true,
-        reused_from_report_id: reusable.id,
-      });
-    }
-
-    const mot_payload = registration
-      ? await fetchDvsaMotHistory(registration)
-      : null;
+    const mot_payload =
+      reusable?.mot_payload ??
+      (registration ? await fetchDvsaMotHistory(registration) : null);
 
     const motSignals = mot_payload ? extractMotSignals(mot_payload) : null;
+
+    const reusableVehicleIdentity = extractStoredVehicleIdentity(reusable);
+    const seedVehicleIdentity = mergeVehicleIdentity(
+      baseVehicleIdentity,
+      reusableVehicleIdentity ?? requestVehicleIdentity ?? null
+    );
 
     const matchedCommonFailures =
       requestKnownModelIssues.length > 0
         ? null
-        : await matchKnownModelIssues(baseVehicleIdentity);
+        : await matchKnownModelIssues(seedVehicleIdentity);
 
     const vehicleIdentity = mergeVehicleIdentity(
-      baseVehicleIdentity,
-      matchedCommonFailures?.vehicleIdentity ?? requestVehicleIdentity ?? null
+      seedVehicleIdentity,
+      matchedCommonFailures?.vehicleIdentity ?? null
     );
 
     const knownModelIssues =
@@ -746,7 +620,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       report_id: data.id,
-      reused_existing_report: false,
+      reused_existing_report: !!reusable,
+      reused_from_report_id: reusable?.id ?? null,
+      reused_mot_payload: !!reusable?.mot_payload,
     });
   } catch (e: any) {
     return NextResponse.json(
