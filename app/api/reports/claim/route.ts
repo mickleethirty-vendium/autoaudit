@@ -88,6 +88,7 @@ export async function POST(req: Request) {
           stripe_session_id,
           expires_at,
           owner_user_id,
+          saved_at,
           hpi_unlocked,
           hpi_paid_at,
           hpi_stripe_session_id
@@ -122,6 +123,7 @@ export async function POST(req: Request) {
           error: "Only paid reports can be claimed",
           current_user_id: user.id,
           owner_user_id: report.owner_user_id ?? null,
+          saved_at: report.saved_at ?? null,
         },
         { status: 400 }
       );
@@ -135,6 +137,7 @@ export async function POST(req: Request) {
             error: "This report has expired and can no longer be claimed",
             current_user_id: user.id,
             owner_user_id: report.owner_user_id ?? null,
+            saved_at: report.saved_at ?? null,
           },
           { status: 410 }
         );
@@ -142,12 +145,47 @@ export async function POST(req: Request) {
     }
 
     if (report.owner_user_id === user.id) {
+      if (!report.saved_at) {
+        const nowIso = new Date().toISOString();
+
+        const { data: refreshed, error: refreshError } = await supabaseAdmin
+          .from("reports")
+          .update({
+            saved_at: nowIso,
+          })
+          .eq("id", report.id)
+          .eq("owner_user_id", user.id)
+          .select("id,owner_user_id,expires_at,saved_at")
+          .maybeSingle();
+
+        if (refreshError) {
+          return NextResponse.json(
+            {
+              error: refreshError.message ?? "Could not update saved_at",
+              current_user_id: user.id,
+            },
+            { status: 500 }
+          );
+        }
+
+        return NextResponse.json({
+          ok: true,
+          report_id: refreshed?.id ?? report.id,
+          owner_user_id: refreshed?.owner_user_id ?? report.owner_user_id,
+          current_user_id: user.id,
+          expires_at: refreshed?.expires_at ?? report.expires_at ?? null,
+          saved_at: refreshed?.saved_at ?? nowIso,
+          already_linked: true,
+        });
+      }
+
       return NextResponse.json({
         ok: true,
         report_id: report.id,
         owner_user_id: report.owner_user_id,
         current_user_id: user.id,
         expires_at: report.expires_at,
+        saved_at: report.saved_at ?? null,
         already_linked: true,
       });
     }
@@ -159,19 +197,23 @@ export async function POST(req: Request) {
           owner_user_id: report.owner_user_id,
           current_user_id: user.id,
           report_id: report.id,
+          saved_at: report.saved_at ?? null,
         },
         { status: 409 }
       );
     }
 
+    const nowIso = new Date().toISOString();
+
     const { data: updated, error: updateError } = await supabaseAdmin
       .from("reports")
       .update({
         owner_user_id: user.id,
+        saved_at: nowIso,
       })
       .eq("id", reportId)
       .is("owner_user_id", null)
-      .select("id,owner_user_id,expires_at")
+      .select("id,owner_user_id,expires_at,saved_at")
       .maybeSingle();
 
     if (updateError) {
@@ -187,7 +229,7 @@ export async function POST(req: Request) {
     if (!updated) {
       const { data: latest, error: latestError } = await supabaseAdmin
         .from("reports")
-        .select("id,owner_user_id,expires_at")
+        .select("id,owner_user_id,expires_at,saved_at")
         .eq("id", reportId)
         .maybeSingle();
 
@@ -208,6 +250,7 @@ export async function POST(req: Request) {
           current_user_id: user.id,
           report_id: latest?.id ?? reportId,
           expires_at: latest?.expires_at ?? null,
+          saved_at: latest?.saved_at ?? null,
         },
         { status: 409 }
       );
@@ -219,6 +262,7 @@ export async function POST(req: Request) {
       owner_user_id: updated.owner_user_id,
       current_user_id: user.id,
       expires_at: updated.expires_at,
+      saved_at: updated.saved_at ?? nowIso,
       already_linked: false,
     });
   } catch (e: any) {
