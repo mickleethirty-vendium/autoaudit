@@ -3,12 +3,12 @@
 import { FormEvent, Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
 
 function getSafeNext(nextValue: string | null) {
   if (!nextValue) return "/";
@@ -21,10 +21,10 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function getAccessTokenWithRetry() {
-  for (let attempt = 0; attempt < 5; attempt += 1) {
+async function waitForFreshAccessToken(expectedUserId?: string | null) {
+  for (let attempt = 0; attempt < 8; attempt += 1) {
     const {
-      data: { session },
+      data: { session, user },
       error,
     } = await supabase.auth.getSession();
 
@@ -32,7 +32,10 @@ async function getAccessTokenWithRetry() {
       throw new Error(error.message ?? "Could not verify your session.");
     }
 
-    if (session?.access_token) {
+    if (
+      session?.access_token &&
+      (!expectedUserId || user?.id === expectedUserId)
+    ) {
       return session.access_token;
     }
 
@@ -118,10 +121,8 @@ function AuthPageInner() {
     return message;
   }
 
-  async function handleClaimReport() {
+  async function handleClaimReport(accessToken: string) {
     if (!claimReportId) return true;
-
-    const accessToken = await getAccessTokenWithRetry();
 
     const res = await fetch("/api/reports/claim", {
       method: "POST",
@@ -136,7 +137,14 @@ function AuthPageInner() {
 
     if (!res.ok) {
       throw new Error(
-        data?.error ?? "Could not link this report to your account."
+        data?.error ??
+          `Could not link this report to your account.${
+            data?.current_user_id
+              ? ` current_user_id=${data.current_user_id}`
+              : ""
+          }${
+            data?.owner_user_id ? ` owner_user_id=${data.owner_user_id}` : ""
+          }`
       );
     }
 
@@ -157,6 +165,8 @@ function AuthPageInner() {
       if (!password.trim()) {
         throw new Error("Please enter your password.");
       }
+
+      await supabase.auth.signOut();
 
       if (mode === "signup") {
         if (password.length < 6) {
@@ -186,20 +196,30 @@ function AuthPageInner() {
           return;
         }
 
-        await handleClaimReport();
+        const accessToken =
+          data.session.access_token ||
+          (await waitForFreshAccessToken(data.user?.id ?? null));
+
+        await handleClaimReport(accessToken);
         router.push(nextUrl);
         router.refresh();
         return;
       }
 
-      const { error: loginError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
+      const { data, error: loginError } = await supabase.auth.signInWithPassword(
+        {
+          email: email.trim(),
+          password,
+        }
+      );
 
       if (loginError) throw loginError;
 
-      await handleClaimReport();
+      const accessToken =
+        data.session?.access_token ||
+        (await waitForFreshAccessToken(data.user?.id ?? null));
+
+      await handleClaimReport(accessToken);
       router.push(nextUrl);
       router.refresh();
     } catch (err: any) {
