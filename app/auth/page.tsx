@@ -24,7 +24,7 @@ function sleep(ms: number) {
 async function waitForFreshAccessToken(expectedUserId?: string | null) {
   for (let attempt = 0; attempt < 8; attempt += 1) {
     const {
-      data: { session, user },
+      data: { session },
       error,
     } = await supabase.auth.getSession();
 
@@ -32,9 +32,11 @@ async function waitForFreshAccessToken(expectedUserId?: string | null) {
       throw new Error(error.message ?? "Could not verify your session.");
     }
 
+    const sessionUserId = session?.user?.id ?? null;
+
     if (
       session?.access_token &&
-      (!expectedUserId || user?.id === expectedUserId)
+      (!expectedUserId || sessionUserId === expectedUserId)
     ) {
       return session.access_token;
     }
