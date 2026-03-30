@@ -80,28 +80,51 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-[var(--aa-bg)]">
       <main>
-        <section className="mx-auto mt-4 max-w-7xl px-4">
-          <div className="relative overflow-hidden rounded-3xl bg-[var(--aa-black)]">
+        <section className="mx-auto mt-3 max-w-7xl px-3 sm:px-4">
+          <div className="relative overflow-hidden rounded-[1.6rem] bg-[var(--aa-black)] shadow-[0_16px_48px_rgba(15,23,42,0.12)]">
             <div
               className="absolute inset-0 bg-cover bg-center"
               style={{ backgroundImage: "url('/hero-car-road.png')" }}
             />
 
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,10,10,0.42)_0%,rgba(10,10,10,0.16)_35%,rgba(10,10,10,0.28)_100%)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,10,10,0.48)_0%,rgba(10,10,10,0.18)_34%,rgba(10,10,10,0.34)_100%)]" />
 
-            <div className="relative mx-auto flex min-h-[380px] max-w-7xl flex-col items-center justify-center px-4 py-10 text-center sm:min-h-[420px] sm:py-12 lg:min-h-[460px]">
-              <h1 className="max-w-5xl text-4xl font-extrabold tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)] sm:text-5xl lg:text-6xl">
-                Know the Risks Before You Buy a Used Car
+            <div className="relative mx-auto flex min-h-[320px] max-w-7xl flex-col items-center justify-center px-4 py-8 text-center sm:min-h-[360px] sm:py-10 lg:min-h-[400px]">
+              <div className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white/85">
+                UK used car risk check
+              </div>
+
+              <h1 className="mt-3 max-w-5xl text-3xl font-extrabold tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)] sm:text-4xl lg:text-5xl">
+                Know the risks before you buy a used car
               </h1>
 
-              <p className="mt-4 max-w-3xl text-lg leading-8 text-white/92 drop-shadow-[0_2px_8px_rgba(0,0,0,0.25)] sm:text-2xl">
-                Get instant repair cost estimates and hidden risk checks
+              <p className="mt-3 max-w-3xl text-base leading-6 text-white/92 drop-shadow-[0_2px_8px_rgba(0,0,0,0.25)] sm:text-lg">
+                Get instant repair-cost signals, MoT-based warnings and optional
+                vehicle history checks from a registration.
               </p>
 
-              <div className="mt-8 w-full max-w-3xl rounded-2xl border border-white/20 bg-white/92 p-3 shadow-[0_20px_60px_rgba(0,0,0,0.20)] backdrop-blur">
+              <div className="mt-5 grid w-full max-w-3xl grid-cols-1 gap-2 sm:grid-cols-3">
+                <QuickStep
+                  number="1"
+                  title="Enter reg"
+                  text="Start with the registration plate"
+                />
+                <QuickStep
+                  number="2"
+                  title="See snapshot"
+                  text="Get fast risk and price context"
+                />
+                <QuickStep
+                  number="3"
+                  title="Unlock full report"
+                  text="View findings, MoT analysis and checks"
+                />
+              </div>
+
+              <div className="mt-5 w-full max-w-3xl rounded-2xl border border-white/20 bg-white/94 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.18)] backdrop-blur">
                 <form
                   onSubmit={handleSubmit}
-                  className="flex flex-col gap-3 sm:flex-row"
+                  className="flex flex-col gap-2.5 sm:flex-row"
                 >
                   <input
                     type="text"
@@ -115,19 +138,23 @@ export default function HomePage() {
                     autoCorrect="off"
                     spellCheck={false}
                     disabled={loading}
-                    className="h-14 flex-1 rounded-xl border border-slate-200 bg-white px-5 text-lg font-medium uppercase tracking-[0.12em] text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)] sm:h-16 sm:text-xl"
+                    className="h-13 flex-1 rounded-xl border border-slate-200 bg-white px-4 text-base font-semibold uppercase tracking-[0.12em] text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)] sm:h-14 sm:text-lg"
                   />
 
                   <button
                     type="submit"
                     disabled={!registration.trim() || loading}
-                    className="inline-flex h-14 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-8 text-lg font-bold text-white transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:opacity-50 sm:h-16 sm:text-xl"
+                    className="inline-flex h-13 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-6 text-base font-bold text-white transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:opacity-50 sm:h-14 sm:text-lg"
                   >
-                    {loading ? "Continuing…" : "Check My Car"}
+                    {loading ? "Continuing…" : "Check my car"}
                   </button>
                 </form>
 
-                <div className="mt-3 text-center sm:text-left">
+                <div className="mt-2.5 flex flex-col gap-1.5 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
+                  <div className="text-xs text-slate-500">
+                    Instant snapshot first. Full report available after.
+                  </div>
+
                   <Link
                     href="/manual-check"
                     className="text-sm font-medium text-[var(--aa-red)] transition hover:text-[var(--aa-red-strong)] hover:underline"
@@ -136,24 +163,36 @@ export default function HomePage() {
                   </Link>
                 </div>
               </div>
+
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-white/85">
+                <span className="rounded-full border border-white/15 bg-white/10 px-2.5 py-1">
+                  Core report £4.99
+                </span>
+                <span className="rounded-full border border-white/15 bg-white/10 px-2.5 py-1">
+                  Full bundle £9.99
+                </span>
+                <span className="rounded-full border border-white/15 bg-white/10 px-2.5 py-1">
+                  UK MoT + history signals
+                </span>
+              </div>
             </div>
           </div>
         </section>
 
         {userEmail ? (
-          <section className="mx-auto mt-6 max-w-7xl px-4">
-            <div className="rounded-[1.75rem] border border-black bg-white p-5 shadow-sm sm:p-6">
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <section className="mx-auto mt-4 max-w-7xl px-3 sm:px-4">
+            <div className="rounded-[1.4rem] border border-black bg-white p-4 shadow-sm sm:p-5">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="max-w-3xl">
-                  <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-700">
+                  <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-700">
                     Welcome back
                   </div>
 
-                  <h2 className="mt-4 text-2xl font-extrabold tracking-tight text-slate-950 sm:text-3xl">
+                  <h2 className="mt-3 text-xl font-extrabold tracking-tight text-slate-950 sm:text-2xl">
                     Continue where you left off
                   </h2>
 
-                  <p className="mt-2 text-sm leading-6 text-slate-700 sm:text-base">
+                  <p className="mt-1.5 text-sm leading-5 text-slate-700">
                     You’re signed in as{" "}
                     <span className="font-semibold text-slate-950">
                       {userEmail}
@@ -163,7 +202,7 @@ export default function HomePage() {
                   </p>
                 </div>
 
-                <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap">
+                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
                   <Link
                     href="/reports"
                     className="btn-primary w-full text-center sm:w-auto"
@@ -183,80 +222,163 @@ export default function HomePage() {
           </section>
         ) : null}
 
-        <section className="mt-6 border-t border-[var(--aa-silver)] bg-white">
-          <div className="mx-auto max-w-7xl px-4 py-6 sm:py-8">
-            <div className="grid gap-6 md:grid-cols-3 md:gap-8">
-              <div className="flex items-start justify-center gap-4 text-center md:text-left">
-                <ShieldIcon className="mt-1 h-12 w-12 shrink-0" />
-                <div>
-                  <div className="text-2xl font-extrabold tracking-tight text-[var(--aa-black)] sm:text-3xl">
-                    Fast Results
-                  </div>
-                  <div className="mt-1 text-xl font-medium text-slate-700 sm:mt-2 sm:text-2xl">
-                    Repair Estimates
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-start justify-center gap-4 border-y border-[var(--aa-silver)] py-6 text-center md:border-x md:border-y-0 md:py-0 md:text-left">
-                <ShieldIcon className="mt-1 h-12 w-12 shrink-0" />
-                <div>
-                  <div className="text-2xl font-extrabold tracking-tight text-[var(--aa-black)] sm:text-3xl">
-                    UK-Specific
-                  </div>
-                  <div className="mt-1 text-xl font-medium text-slate-700 sm:mt-2 sm:text-2xl">
-                    MoT Insights
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-start justify-center gap-4 text-center md:text-left">
-                <ShieldIcon className="mt-1 h-12 w-12 shrink-0" />
-                <div>
-                  <div className="text-2xl font-extrabold tracking-tight text-[var(--aa-black)] sm:text-3xl">
-                    Trusted Reports
-                  </div>
-                  <div className="mt-1 text-xl font-medium text-slate-700 sm:mt-2 sm:text-2xl">
-                    History Checks
-                  </div>
-                </div>
-              </div>
-            </div>
+        <section className="mx-auto mt-4 max-w-7xl px-3 sm:px-4">
+          <div className="grid gap-3 md:grid-cols-3">
+            <FeatureCard
+              title="Fast snapshot"
+              subtitle="See likely repair exposure quickly"
+            />
+            <FeatureCard
+              title="MoT insight"
+              subtitle="Spot repeat advisories and history patterns"
+            />
+            <FeatureCard
+              title="History checks"
+              subtitle="Add finance, write-off and keeper signals"
+            />
           </div>
         </section>
 
-        <section id="pricing" className="bg-[var(--aa-bg)]">
-          <div className="mx-auto max-w-7xl px-4 py-12">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-2xl border border-[var(--aa-silver)] bg-white p-6 shadow-sm">
-                <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                  Core Report
-                </div>
-                <div className="mt-2 text-4xl font-extrabold tracking-tight text-black">
-                  £4.99
-                </div>
-                <div className="mt-2 text-sm text-slate-700">
-                  Detailed findings, repair exposure, seller questions and MoT
-                  analysis.
-                </div>
+        <section className="mx-auto mt-4 max-w-7xl px-3 sm:px-4">
+          <div className="grid gap-3 lg:grid-cols-[1.2fr_0.8fr]">
+            <div className="rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+              <div className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-700">
+                What you get
               </div>
 
-              <div className="rounded-2xl border border-[var(--aa-red)]/20 bg-[var(--aa-red)]/5 p-6 shadow-sm">
-                <div className="text-sm font-semibold uppercase tracking-wide text-[var(--aa-red)]">
-                  Full Bundle
+              <h2 className="mt-3 text-xl font-extrabold tracking-tight text-slate-950">
+                A clearer buying decision, faster
+              </h2>
+
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                <ChecklistItem text="Near-term repair exposure estimate" />
+                <ChecklistItem text="Detailed flagged findings" />
+                <ChecklistItem text="Seller questions and red flags" />
+                <ChecklistItem text="MoT advisory and failure patterns" />
+                <ChecklistItem text="Price vs market context" />
+                <ChecklistItem text="Optional HPI-style history checks" />
+              </div>
+
+              <div className="mt-4">
+                <Link href="/check" className="btn-primary">
+                  Start your check
+                </Link>
+              </div>
+            </div>
+
+            <section id="pricing" className="rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+              <div className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-700">
+                Pricing
+              </div>
+
+              <div className="mt-3 grid gap-3">
+                <div className="rounded-xl border border-[var(--aa-silver)] bg-slate-50 p-3">
+                  <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                    Core report
+                  </div>
+                  <div className="mt-1 text-3xl font-extrabold tracking-tight text-black">
+                    £4.99
+                  </div>
+                  <div className="mt-1 text-sm leading-5 text-slate-700">
+                    Detailed findings, repair exposure, seller questions and MoT
+                    analysis.
+                  </div>
                 </div>
-                <div className="mt-2 text-4xl font-extrabold tracking-tight text-black">
-                  £9.99
-                </div>
-                <div className="mt-2 text-sm text-slate-700">
-                  Core report plus HPI-style finance, write-off, stolen, mileage
-                  and keeper checks.
+
+                <div className="rounded-xl border border-[var(--aa-red)]/20 bg-[var(--aa-red)]/5 p-3">
+                  <div className="text-[11px] font-semibold uppercase tracking-wide text-[var(--aa-red)]">
+                    Full bundle
+                  </div>
+                  <div className="mt-1 text-3xl font-extrabold tracking-tight text-black">
+                    £9.99
+                  </div>
+                  <div className="mt-1 text-sm leading-5 text-slate-700">
+                    Core report plus HPI-style finance, write-off, stolen, mileage
+                    and keeper checks.
+                  </div>
                 </div>
               </div>
+            </section>
+          </div>
+        </section>
+
+        <section className="mx-auto mt-4 max-w-7xl px-3 pb-6 sm:px-4 sm:pb-8">
+          <div className="rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+            <div className="text-sm font-semibold text-slate-950">
+              Before you buy any used car
+            </div>
+            <p className="mt-1.5 text-sm leading-5 text-slate-700">
+              Start with the reg. Get a fast snapshot. Then decide whether the
+              vehicle looks clean enough to proceed, negotiate harder, or walk
+              away.
+            </p>
+
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+              <Link href="/check" className="btn-primary w-full text-center sm:w-auto">
+                Check a registration
+              </Link>
+              <Link
+                href="/manual-check"
+                className="btn-outline w-full text-center sm:w-auto"
+              >
+                Check manually
+              </Link>
             </div>
           </div>
         </section>
       </main>
+    </div>
+  );
+}
+
+function QuickStep({
+  number,
+  title,
+  text,
+}: {
+  number: string;
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="rounded-xl border border-white/15 bg-white/10 px-3 py-2.5 text-left text-white backdrop-blur">
+      <div className="inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-white/20 px-1.5 text-[10px] font-bold">
+        {number}
+      </div>
+      <div className="mt-1 text-sm font-semibold">{title}</div>
+      <div className="mt-0.5 text-xs leading-5 text-white/80">{text}</div>
+    </div>
+  );
+}
+
+function FeatureCard({
+  title,
+  subtitle,
+}: {
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <div className="rounded-[1.2rem] border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex items-start gap-3">
+        <ShieldIcon className="mt-0.5 h-9 w-9 shrink-0" />
+        <div>
+          <div className="text-base font-extrabold tracking-tight text-[var(--aa-black)]">
+            {title}
+          </div>
+          <div className="mt-0.5 text-sm leading-5 text-slate-700">
+            {subtitle}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ChecklistItem({ text }: { text: string }) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800">
+      {text}
     </div>
   );
 }

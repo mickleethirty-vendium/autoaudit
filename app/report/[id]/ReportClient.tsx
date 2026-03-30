@@ -651,23 +651,23 @@ function SectionHeading({
   countLabel?: string;
 }) {
   return (
-    <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mb-3 flex flex-col gap-1.5 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
         {eyebrow ? (
-          <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+          <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
             {eyebrow}
           </div>
         ) : null}
-        <h3 className="mt-1 text-lg font-bold text-slate-950 sm:text-xl">
+        <h3 className="mt-0.5 text-base font-bold text-slate-950 sm:text-lg">
           {title}
         </h3>
         {description ? (
-          <p className="mt-1 text-sm leading-6 text-slate-700">{description}</p>
+          <p className="mt-0.5 text-xs leading-5 text-slate-700">{description}</p>
         ) : null}
       </div>
 
       {countLabel ? (
-        <div className="text-sm text-slate-600">{countLabel}</div>
+        <div className="text-xs text-slate-500">{countLabel}</div>
       ) : null}
     </div>
   );
@@ -683,17 +683,84 @@ function SummaryMetric({
   subtext?: string | null;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-3">
-      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+    <div className="rounded-lg border border-slate-200 bg-white px-3 py-2.5">
+      <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
         {label}
       </div>
-      <div className="mt-1 break-words text-sm font-semibold text-slate-950 sm:text-base">
+      <div className="mt-0.5 break-words text-sm font-semibold text-slate-950">
         {value}
       </div>
       {subtext ? (
-        <div className="mt-1 break-words text-xs text-slate-500">{subtext}</div>
+        <div className="mt-0.5 break-words text-[11px] leading-4 text-slate-500">
+          {subtext}
+        </div>
       ) : null}
     </div>
+  );
+}
+
+function MiniStat({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number;
+}) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+      <div className="text-sm font-bold text-slate-950">{value}</div>
+      <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+        {label}
+      </div>
+    </div>
+  );
+}
+
+function SectionCard({
+  id,
+  title,
+  eyebrow,
+  description,
+  countLabel,
+  defaultOpen = true,
+  children,
+}: {
+  id: string;
+  title: string;
+  eyebrow?: string;
+  description?: string;
+  countLabel?: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+
+  return (
+    <section
+      id={id}
+      className="scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={title}
+            description={description}
+            countLabel={countLabel}
+          />
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="shrink-0 rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-100"
+        >
+          {open ? "Hide" : "Show"}
+        </button>
+      </div>
+
+      {open ? <div>{children}</div> : null}
+    </section>
   );
 }
 
@@ -983,6 +1050,12 @@ export default function ReportClient({
     ]
   );
 
+  const priorityFindings = useMemo(() => {
+    return [...allItems]
+      .sort((a, b) => Number(b?.cost_high ?? 0) - Number(a?.cost_high ?? 0))
+      .slice(0, 3);
+  }, [allItems]);
+
   function toggleAddressed(key: string) {
     setAddressedIds((prev) => ({
       ...prev,
@@ -991,16 +1064,16 @@ export default function ReportClient({
   }
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-4 sm:py-6 lg:px-6">
-      <div className="mb-6 hidden border-b border-slate-300 pb-3 print:block">
-        <div className="text-lg font-bold text-slate-950">
+    <div className="mx-auto w-full max-w-7xl px-3 py-3 sm:px-4 sm:py-4 lg:px-5">
+      <div className="mb-4 hidden border-b border-slate-300 pb-2 print:block">
+        <div className="text-base font-bold text-slate-950">
           AutoAudit Vehicle Report
         </div>
-        <div className="text-sm text-slate-600">
+        <div className="text-xs text-slate-600">
           Generated: {new Date().toLocaleDateString("en-GB")}
         </div>
         {reg ? (
-          <div className="mt-1 text-sm text-slate-600">
+          <div className="mt-1 text-xs text-slate-600">
             Registration: <span className="font-semibold">{reg}</span>
             {make ? <> · {make}</> : null}
             {year ? <> · {year}</> : null}
@@ -1009,13 +1082,13 @@ export default function ReportClient({
       </div>
 
       {justUnlockedReport || justUnlockedHpi ? (
-        <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 sm:mb-6">
+        <div className="mb-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2.5">
           <div className="text-sm font-semibold text-emerald-900">
             {justUnlockedHpi
               ? "History & provenance check unlocked"
               : "Core report unlocked"}
           </div>
-          <div className="mt-1 text-sm text-emerald-900/80">
+          <div className="mt-0.5 text-xs text-emerald-900/80">
             {justUnlockedHpi
               ? "Your report now includes the HPI-style history panel."
               : "You now have repair risk, price context and MoT analysis."}
@@ -1023,78 +1096,193 @@ export default function ReportClient({
         </div>
       ) : null}
 
-      <div className="relative overflow-hidden rounded-[1.5rem] border border-[var(--aa-silver)] bg-[var(--aa-black)] shadow-[0_18px_60px_rgba(15,23,42,0.14)] sm:rounded-[2rem]">
+      <div className="relative overflow-hidden rounded-[1.25rem] border border-[var(--aa-silver)] bg-[var(--aa-black)] shadow-[0_16px_48px_rgba(15,23,42,0.12)] sm:rounded-[1.5rem]">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: "url('/hero-car-road.png')" }}
         />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.97)_0%,rgba(255,255,255,0.95)_48%,rgba(255,255,255,0.88)_100%)] lg:bg-[linear-gradient(90deg,rgba(255,255,255,0.95)_0%,rgba(255,255,255,0.93)_42%,rgba(255,255,255,0.28)_72%,rgba(255,255,255,0.10)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(255,255,255,0.96)_46%,rgba(255,255,255,0.90)_100%)] lg:bg-[linear-gradient(90deg,rgba(255,255,255,0.96)_0%,rgba(255,255,255,0.94)_44%,rgba(255,255,255,0.38)_72%,rgba(255,255,255,0.14)_100%)]" />
 
-        <div className="relative px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-700 shadow-sm">
-              Paid report
-            </div>
-
-            <h1 className="mt-4 text-2xl font-extrabold tracking-tight text-black sm:text-3xl lg:text-4xl">
-              Proceed, negotiate or walk away?
-            </h1>
-
-            <div className="mt-2 text-sm leading-6 text-slate-600">
-              {reg ? `${reg} · ` : ""}
-              {make ? `${make} · ` : ""}
-              {year ? `${year} · ` : ""}
-              {fuel ? `${fuel} · ` : ""}
-              {transmission ? `${transmission} · ` : ""}
-              {typeof mileage === "number"
-                ? `${mileage.toLocaleString()} miles`
-                : ""}
-            </div>
-
-            {fullSummary?.headline ? (
-              <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-700 sm:text-base">
-                {fullSummary.headline}
-                {fullSummary?.summary_text ? ` ${fullSummary.summary_text}` : ""}
-              </p>
-            ) : null}
-          </div>
-
-          <div className="mt-5 rounded-2xl border border-white/40 bg-white/92 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur sm:mt-6 sm:p-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
-              <div className="min-w-0">
-                <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                  Decision signal
-                </div>
-                <div className="mt-1 text-lg font-extrabold tracking-tight text-slate-950 sm:text-xl">
-                  {decisionCall.badgeLabel}
-                </div>
-                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700">
-                  {decisionCall.body}
-                </p>
+        <div className="relative px-3 py-3 sm:px-4 sm:py-4 lg:px-5 lg:py-5">
+          <div className="max-w-4xl">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-700 shadow-sm">
+                Paid report
               </div>
 
-              <div
-                className={`inline-flex w-fit items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${decisionCall.badgeClass}`}
-              >
-                Buyer guidance
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
-            <div className="rounded-2xl border border-white/40 bg-white/92 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur sm:p-5">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                  Repair risk forecast
+              {adjustedTotals.addressedCount > 0 ? (
+                <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-700">
+                  {adjustedTotals.addressedCount} addressed
                 </div>
-                {adjustedTotals.addressedCount > 0 ? (
-                  <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-700">
-                    {adjustedTotals.addressedCount} addressed
-                  </div>
+              ) : null}
+
+              {reg ? (
+                <div className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-600">
+                  {reg}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0 max-w-3xl">
+                <h1 className="text-[1.45rem] font-extrabold leading-none tracking-tight text-black sm:text-[1.8rem] lg:text-[2.1rem]">
+                  Proceed, negotiate or walk away?
+                </h1>
+
+                <div className="mt-1.5 text-xs leading-5 text-slate-600">
+                  {make ? `${make} · ` : ""}
+                  {year ? `${year} · ` : ""}
+                  {fuel ? `${fuel} · ` : ""}
+                  {transmission ? `${transmission} · ` : ""}
+                  {typeof mileage === "number"
+                    ? `${mileage.toLocaleString()} miles`
+                    : ""}
+                </div>
+
+                {fullSummary?.headline ? (
+                  <p className="mt-2 max-w-3xl text-sm leading-5 text-slate-700">
+                    {fullSummary.headline}
+                    {fullSummary?.summary_text ? ` ${fullSummary.summary_text}` : ""}
+                  </p>
                 ) : null}
               </div>
 
-              <div className="mt-4 overflow-hidden">
+              <div
+                className={`inline-flex w-fit items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${decisionCall.badgeClass}`}
+              >
+                {decisionCall.badgeLabel}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-3 rounded-2xl border border-white/50 bg-white/94 p-3 shadow-[0_10px_28px_rgba(0,0,0,0.08)] backdrop-blur">
+            <div className="grid grid-cols-1 gap-3 xl:grid-cols-[1.2fr_1fr]">
+              <div>
+                <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+                  Decision signal
+                </div>
+                <div className="mt-1 text-sm leading-5 text-slate-700">
+                  {decisionCall.body}
+                </div>
+
+                <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  <SummaryMetric
+                    label="Exposure"
+                    value={`${money(adjustedTotals.adjustedLow)} – ${money(
+                      adjustedTotals.adjustedHigh
+                    )}`}
+                    subtext={
+                      adjustedTotals.addressedCount > 0 &&
+                      baseExposureLow !== null &&
+                      baseExposureHigh !== null
+                        ? `Original ${money(baseExposureLow)} – ${money(baseExposureHigh)}`
+                        : null
+                    }
+                  />
+
+                  <SummaryMetric
+                    label="Negotiation"
+                    value={money(adjustedTotals.adjustedNegotiation)}
+                    subtext={
+                      adjustedTotals.addressedCount > 0 &&
+                      typeof negotiationSuggested === "number"
+                        ? `Original ${money(negotiationSuggested)}`
+                        : null
+                    }
+                  />
+
+                  <SummaryMetric
+                    label="Confidence"
+                    value={adjustedTotals.adjustedConfidenceDisplay ?? "Unavailable"}
+                    subtext={confidenceDisplay ? `Original ${confidenceDisplay}` : null}
+                  />
+
+                  <SummaryMetric
+                    label="Price view"
+                    value={
+                      valuationUnavailable
+                        ? "Unavailable"
+                        : valuationPending
+                          ? "Pending"
+                          : valuePillLabel(marketPosition)
+                    }
+                    subtext={askingPrice !== null ? `Asking ${money(askingPrice)}` : null}
+                  />
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+                  What to do next
+                </div>
+                <div className="mt-1 grid gap-1.5 text-sm leading-5 text-slate-800">
+                  <div>1. Check the priority findings below first.</div>
+                  <div>2. Tick off anything the seller can prove is resolved.</div>
+                  <div>3. Review MoT patterns and price position.</div>
+                  <div>4. Verify service history before committing.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="sticky top-2 z-20 mt-3 print:hidden">
+            <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white/95 px-2 py-2 shadow-sm backdrop-blur">
+              <div className="flex min-w-max items-center gap-2">
+                <a
+                  href="#overview"
+                  className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                >
+                  Overview
+                </a>
+                <a
+                  href="#service-risks"
+                  className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                >
+                  Service
+                </a>
+                <a
+                  href="#mot-risks"
+                  className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                >
+                  MoT risks
+                </a>
+                <a
+                  href="#mot-history"
+                  className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                >
+                  MoT history
+                </a>
+                <a
+                  href="#known-issues"
+                  className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                >
+                  Known issues
+                </a>
+                <a
+                  href="#save-report"
+                  className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                >
+                  Save
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <section
+            id="overview"
+            className="mt-3 grid scroll-mt-24 grid-cols-1 gap-3 xl:grid-cols-3"
+          >
+            <div className="rounded-2xl border border-white/40 bg-white/92 p-3 shadow-[0_10px_28px_rgba(0,0,0,0.08)] backdrop-blur">
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                  Repair risk forecast
+                </div>
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                  Live
+                </div>
+              </div>
+
+              <div className="mt-3 overflow-hidden">
                 {adjustedTotals.adjustedLow !== null &&
                 adjustedTotals.adjustedHigh !== null ? (
                   <ExposureBar
@@ -1108,161 +1296,90 @@ export default function ReportClient({
                 )}
               </div>
 
-              <div className="mt-4 grid grid-cols-1 gap-3">
+              <div className="mt-3 grid grid-cols-1 gap-2">
                 <SummaryMetric
-                  label="Confidence"
-                  value={adjustedTotals.adjustedConfidenceDisplay ?? "Unavailable"}
-                  subtext={
-                    adjustedTotals.addressedCount > 0 && confidenceDisplay
-                      ? `Original: ${confidenceDisplay}`
-                      : null
-                  }
-                />
-
-                <SummaryMetric
-                  label="Negotiation guide"
-                  value={money(adjustedTotals.adjustedNegotiation)}
-                  subtext={
-                    adjustedTotals.addressedCount > 0 &&
-                    typeof negotiationSuggested === "number"
-                      ? adjustedTotals.negotiationReduction !== null
-                        ? `Original: ${money(
-                            negotiationSuggested
-                          )} · Reduced by ${money(
-                            adjustedTotals.negotiationReduction
-                          )}`
-                        : `Original: ${money(negotiationSuggested)}`
-                      : null
-                  }
-                />
-
-                <SummaryMetric
-                  label="Estimated exposure"
+                  label="Current range"
                   value={`${money(adjustedTotals.adjustedLow)} – ${money(
                     adjustedTotals.adjustedHigh
                   )}`}
-                  subtext={
-                    adjustedTotals.addressedCount > 0 &&
-                    baseExposureLow !== null &&
-                    baseExposureHigh !== null
-                      ? `Original: ${money(baseExposureLow)} – ${money(
-                          baseExposureHigh
-                        )} · Reduced by ${money(
-                          adjustedTotals.lowReduction
-                        )} – ${money(adjustedTotals.highReduction)}`
-                      : null
-                  }
+                />
+                <SummaryMetric
+                  label="Reduction"
+                  value={`${money(adjustedTotals.lowReduction)} – ${money(
+                    adjustedTotals.highReduction
+                  )}`}
+                  subtext="From items marked addressed"
                 />
               </div>
             </div>
 
-            <div className="rounded-2xl border border-white/40 bg-white/92 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur sm:p-5">
-              <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                Asking price vs market
+            <div className="rounded-2xl border border-white/40 bg-white/92 p-3 shadow-[0_10px_28px_rgba(0,0,0,0.08)] backdrop-blur">
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                  Asking price vs market
+                </div>
+                <div
+                  className={`inline-flex w-fit items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${valuePillStyles(
+                    marketPosition
+                  )}`}
+                >
+                  {valuationUnavailable
+                    ? "Unavailable"
+                    : valuationPending
+                      ? "Pending"
+                      : valuePillLabel(marketPosition)}
+                </div>
               </div>
 
-              {askingPrice !== null || marketLow !== null || marketHigh !== null ? (
-                <>
-                  <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-                    <div className="text-sm text-slate-700">
-                      {pricePositionSummary}
-                    </div>
+              <div className="mt-2 text-xs leading-5 text-slate-700">
+                {pricePositionSummary}
+              </div>
 
-                    <div
-                      className={`inline-flex w-fit items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${valuePillStyles(
-                        marketPosition
-                      )}`}
-                    >
-                      {valuationUnavailable
-                        ? "Valuation unavailable"
-                        : valuationPending
-                          ? "Valuation pending"
-                          : valuePillLabel(marketPosition)}
-                    </div>
-                  </div>
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <SummaryMetric
+                  label="Asking"
+                  value={money(askingPrice)}
+                />
+                <SummaryMetric
+                  label="Typical"
+                  value={money(marketBenchmark)}
+                />
+                <SummaryMetric
+                  label="Range"
+                  value={
+                    marketLow !== null && marketHigh !== null
+                      ? `${money(marketLow)} – ${money(marketHigh)}`
+                      : "—"
+                  }
+                />
+              </div>
 
-                  <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                    <div className="rounded-xl border border-slate-200 bg-white p-3">
-                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Asking price
-                      </div>
-                      <div className="mt-1 break-words text-base font-extrabold text-slate-950 sm:text-lg">
-                        {money(askingPrice)}
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl border border-slate-200 bg-white p-3">
-                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Typical value
-                      </div>
-                      <div className="mt-1 break-words text-base font-extrabold text-slate-950 sm:text-lg">
-                        {money(marketBenchmark)}
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl border border-slate-200 bg-white p-3">
-                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Market range
-                      </div>
-                      <div className="mt-1 break-words text-base font-extrabold text-slate-950 sm:text-lg">
-                        {marketLow !== null && marketHigh !== null
-                          ? `${money(marketLow)} – ${money(marketHigh)}`
-                          : "—"}
-                      </div>
-                    </div>
-                  </div>
-
-                  {(valuationDate || valuationMileage !== null) && (
-                    <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3">
-                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Valuation basis
-                      </div>
-                      <div className="mt-1 break-words text-sm font-semibold text-slate-950">
-                        {valuationDate ? formatDate(valuationDate) : "—"}
-                        {valuationDate && valuationMileage !== null ? " · " : ""}
-                        {valuationMileage !== null
-                          ? `${valuationMileage.toLocaleString()} miles`
-                          : ""}
-                      </div>
-                    </div>
-                  )}
-
-                  {marketDelta !== null ? (
-                    <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3">
-                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Difference vs typical value
-                      </div>
-                      <div className="mt-1 break-words text-sm font-semibold text-slate-950">
-                        {marketDelta > 0 ? "+" : ""}
-                        {money(marketDelta)}
-                      </div>
-                    </div>
-                  ) : null}
-                </>
-              ) : (
-                <div className="mt-4 text-sm text-slate-600">
-                  {valuationUnavailable
-                    ? "Market valuation was temporarily unavailable for this vehicle."
-                    : "Value comparison was not available for this report."}
+              {(valuationDate || valuationMileage !== null || marketDelta !== null) ? (
+                <div className="mt-2 text-[11px] leading-5 text-slate-500">
+                  {valuationDate ? `Basis ${formatDate(valuationDate)}` : ""}
+                  {valuationDate && valuationMileage !== null ? " · " : ""}
+                  {valuationMileage !== null
+                    ? `${valuationMileage.toLocaleString()} miles`
+                    : ""}
+                  {marketDelta !== null ? ` · Delta ${marketDelta > 0 ? "+" : ""}${money(marketDelta)}` : ""}
                 </div>
-              )}
+              ) : null}
             </div>
 
-            <div className="rounded-2xl border border-white/40 bg-white/92 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur sm:p-5">
-              <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+            <div className="rounded-2xl border border-white/40 bg-white/92 p-3 shadow-[0_10px_28px_rgba(0,0,0,0.08)] backdrop-blur">
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                 Vehicle history
               </div>
 
               {!hpiUnlocked ? (
-                <div className="mt-4 rounded-xl border border-[var(--aa-red)]/20 bg-[var(--aa-red)]/5 p-4">
-                  <div className="text-base font-semibold text-slate-950">
-                    Upgrade to add vehicle history
+                <div className="mt-2 rounded-xl border border-[var(--aa-red)]/20 bg-[var(--aa-red)]/5 p-3">
+                  <div className="text-sm font-semibold text-slate-950">
+                    Add vehicle history
                   </div>
-                  <p className="mt-2 text-sm leading-6 text-slate-700">
-                    Add finance markers, write-off records, stolen checks,
-                    mileage anomalies, keeper history and plate changes.
+                  <p className="mt-1 text-xs leading-5 text-slate-700">
+                    Finance, write-off, stolen, mileage anomaly, keeper and plate checks.
                   </p>
-                  <div className="mt-4">
+                  <div className="mt-3">
                     <a
                       href={hpiUpgradeCheckoutUrl}
                       className="btn-primary block w-full text-center sm:inline-flex sm:w-auto"
@@ -1272,45 +1389,89 @@ export default function ReportClient({
                   </div>
                 </div>
               ) : hpiStatus === "error" ? (
-                <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-slate-700">
-                  We unlocked the vehicle history section, but there was a
-                  temporary issue loading the latest response. The rest of the
-                  report is still available.
+                <div className="mt-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-slate-700">
+                  History was unlocked, but there was a temporary loading issue.
                 </div>
               ) : (
-                <div className="mt-4 grid grid-cols-1 gap-3">
+                <div className="mt-3 grid grid-cols-2 gap-2">
                   {hpiChecks.length ? (
-                    hpiChecks.map((item) => (
-                      <div
+                    hpiChecks.slice(0, 6).map((item) => (
+                      <SummaryMetric
                         key={item.label}
-                        className="rounded-xl border border-slate-200 bg-white p-3"
-                      >
-                        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                          {item.label}
-                        </div>
-                        <div className="mt-1 break-words text-sm font-semibold text-slate-950">
-                          {renderHpiDisplayValue(item.value)}
-                        </div>
-                      </div>
+                        label={item.label}
+                        value={renderHpiDisplayValue(item.value)}
+                      />
                     ))
                   ) : (
-                    <div className="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-700">
+                    <div className="col-span-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700">
                       Vehicle history summary available.
                     </div>
                   )}
                 </div>
               )}
             </div>
-          </div>
+          </section>
 
-          <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
-            <div className="rounded-2xl border border-white/40 bg-white/92 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur sm:p-5 xl:col-span-2">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div className="min-w-0">
-                  <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+          {priorityFindings.length ? (
+            <section className="mt-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+                    Start here
+                  </div>
+                  <div className="mt-0.5 text-sm font-semibold text-slate-950">
+                    Priority findings
+                  </div>
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  Highest estimated downside first
+                </div>
+              </div>
+
+              <div className="mt-3 grid grid-cols-1 gap-2 lg:grid-cols-3">
+                {priorityFindings.map((item, index) => (
+                  <div
+                    key={`${item.item_id ?? item.label ?? "priority"}-${index}`}
+                    className={`rounded-xl border px-3 py-2.5 ${itemTone(item, false)}`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-sm font-semibold text-slate-950">
+                          {item.label ?? "Flagged item"}
+                        </div>
+                        <div className="mt-0.5 text-[11px] uppercase tracking-wide text-slate-500">
+                          {String(item.category ?? "risk").replace(/_/g, " ")}
+                        </div>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <div className="text-sm font-bold text-slate-950">
+                          {money(Number(item.cost_high ?? 0))}
+                        </div>
+                        <div className="text-[10px] uppercase tracking-wide text-slate-500">
+                          high end
+                        </div>
+                      </div>
+                    </div>
+
+                    {item.why_flagged ? (
+                      <div className="mt-2 text-xs leading-5 text-slate-700">
+                        {item.why_flagged}
+                      </div>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          <div className="mt-3 grid grid-cols-1 gap-3 xl:grid-cols-[1.15fr_0.85fr]">
+            <div className="rounded-2xl border border-white/40 bg-white/92 p-3 shadow-[0_10px_28px_rgba(0,0,0,0.08)] backdrop-blur">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                     Vehicle identity used for matching
                   </div>
-                  <div className="mt-1 text-sm text-slate-700">
+                  <div className="mt-1 text-xs leading-5 text-slate-700">
                     {vehicleIdentityData.matchExplainer ||
                       "Vehicle details available for this report."}
                   </div>
@@ -1318,7 +1479,7 @@ export default function ReportClient({
 
                 {vehicleIdentityData.identityStatusLabel ? (
                   <div
-                    className={`inline-flex w-fit rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${
+                    className={`inline-flex w-fit rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${
                       vehicleIdentityData.enrichedIdentity
                         ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
                         : "border border-slate-200 bg-slate-50 text-slate-700"
@@ -1330,136 +1491,76 @@ export default function ReportClient({
               </div>
 
               {identityRows.length ? (
-                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-3">
                   {identityRows.map((row) => (
-                    <div
+                    <SummaryMetric
                       key={row.label}
-                      className="rounded-xl border border-slate-200 bg-white p-3"
-                    >
-                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        {row.label}
-                      </div>
-                      <div className="mt-1 break-words text-sm font-semibold text-slate-950">
-                        {row.value}
-                      </div>
-                    </div>
+                      label={row.label}
+                      value={row.value as string}
+                    />
                   ))}
                 </div>
               ) : (
-                <div className="mt-4 text-sm text-slate-600">
+                <div className="mt-3 text-sm text-slate-600">
                   Detailed vehicle identity was not available for this report.
                 </div>
               )}
             </div>
 
-            <div className="rounded-2xl border border-white/40 bg-white/92 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.10)] backdrop-blur sm:p-5">
-              <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                MoT history summary
+            <div className="rounded-2xl border border-white/40 bg-white/92 p-3 shadow-[0_10px_28px_rgba(0,0,0,0.08)] backdrop-blur">
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                MoT summary
               </div>
 
               {motPanel.available ? (
                 <>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <span className="inline-flex items-center rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-800">
-                      Latest:{" "}
-                      {motPanel.latestResult
-                        ? titleCase(motPanel.latestResult)
-                        : "—"}
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <span className="inline-flex items-center rounded-full border border-slate-300 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-700">
+                      Latest {motPanel.latestResult ? titleCase(motPanel.latestResult) : "—"}
                     </span>
 
-                    <span className="inline-flex items-center rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-800">
-                      Latest advisories: {motPanel.latestAdvisoryCount}
+                    <span className="inline-flex items-center rounded-full border border-slate-300 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-700">
+                      {motPanel.latestAdvisoryCount} latest advisories
                     </span>
                   </div>
 
-                  <div className="mt-3 text-sm text-slate-600">
-                    Latest test date:{" "}
+                  <div className="mt-2 text-xs text-slate-600">
+                    Latest test:{" "}
                     <span className="font-semibold text-slate-900">
                       {formatDate(motPanel.latestDate) ?? "—"}
                     </span>
                   </div>
 
-                  <div className="mt-4 grid grid-cols-2 gap-3">
-                    <div className="rounded-xl border border-slate-200 bg-white p-3">
-                      <div className="text-lg font-extrabold text-slate-950">
-                        {motPanel.passCount}
-                      </div>
-                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Passes
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl border border-slate-200 bg-white p-3">
-                      <div className="text-lg font-extrabold text-slate-950">
-                        {motPanel.failCount}
-                      </div>
-                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Fails
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl border border-slate-200 bg-white p-3">
-                      <div className="text-lg font-extrabold text-slate-950">
-                        {motPanel.advisoryCount}
-                      </div>
-                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Advisories
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl border border-slate-200 bg-white p-3">
-                      <div className="text-lg font-extrabold text-slate-950">
-                        {motPanel.repeatAdvisoryCount}
-                      </div>
-                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Repeat patterns
-                      </div>
-                    </div>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <MiniStat label="Passes" value={motPanel.passCount} />
+                    <MiniStat label="Fails" value={motPanel.failCount} />
+                    <MiniStat label="Advisories" value={motPanel.advisoryCount} />
+                    <MiniStat
+                      label="Repeat patterns"
+                      value={motPanel.repeatAdvisoryCount}
+                    />
                   </div>
 
                   {repeatPatternLabels.length ? (
-                    <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50/70 p-4">
-                      <div className="text-xs font-semibold uppercase tracking-wide text-amber-800">
+                    <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50/70 p-3">
+                      <div className="text-[10px] font-semibold uppercase tracking-wide text-amber-800">
                         Repeated pattern categories
                       </div>
                       <div className="mt-2 flex flex-wrap gap-2">
                         {repeatPatternLabels.map((label) => (
                           <span
                             key={label}
-                            className="inline-flex items-center rounded-full border border-amber-200 bg-white px-3 py-1 text-xs font-semibold text-amber-900"
+                            className="inline-flex items-center rounded-full border border-amber-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-900"
                           >
                             {label}
                           </span>
                         ))}
                       </div>
-
-                      {repeatPatternDetails.length ? (
-                        <div className="mt-4 space-y-2">
-                          {repeatPatternDetails.slice(0, 4).map((detail, index) => (
-                            <div
-                              key={`${detail.text ?? "detail"}-${index}`}
-                              className="rounded-lg border border-amber-100 bg-white px-3 py-3"
-                            >
-                              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                                <div className="text-sm font-medium text-slate-900">
-                                  {detail.patternLabel ?? "Pattern"}
-                                </div>
-                                <div className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
-                                  Seen {detail.count ?? 0} times
-                                </div>
-                              </div>
-                              <div className="mt-2 text-sm leading-6 text-slate-700">
-                                {detail.text ?? "Repeated advisory wording detected."}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : null}
                     </div>
                   ) : null}
                 </>
               ) : (
-                <div className="mt-4 text-sm text-slate-600">
+                <div className="mt-3 text-sm text-slate-600">
                   MoT history was not available for this vehicle.
                 </div>
               )}
@@ -1468,12 +1569,15 @@ export default function ReportClient({
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-red-200 bg-red-50/50 p-4 print:hidden sm:p-5">
+      <section
+        id="save-report"
+        className="mt-3 scroll-mt-24 rounded-2xl border border-red-200 bg-red-50/50 p-3 print:hidden"
+      >
         <div className="text-sm font-semibold text-slate-950">
           Save access to this report
         </div>
 
-        <div className="mt-1 text-sm text-slate-700">
+        <div className="mt-1 text-xs leading-5 text-slate-700">
           Create an account after purchase to keep access to this report for 30
           days
           {expiresAtLabel ? (
@@ -1487,13 +1591,13 @@ export default function ReportClient({
           .
         </div>
 
-        <div className="mt-2 text-sm text-slate-700">
+        <div className="mt-1 text-xs leading-5 text-slate-700">
           If you do not register or download your report, you may not be able to
           access it again after that 30-day period has ended.
         </div>
 
         {!ownerUserId ? (
-          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             <Link href={registerUrl} className="btn-primary w-full text-center sm:w-auto">
               Create account to save report
             </Link>
@@ -1503,35 +1607,35 @@ export default function ReportClient({
             </Link>
           </div>
         ) : userId === ownerUserId ? (
-          <div className="mt-4 inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-800">
+          <div className="mt-3 inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-800">
             This report is linked to your account
           </div>
         ) : null}
-      </div>
+      </section>
 
-      <div className="mt-8">
-        <h2 className="text-xl font-extrabold tracking-tight text-slate-950 sm:text-2xl">
+      <div className="mt-4">
+        <h2 className="text-lg font-extrabold tracking-tight text-slate-950">
           What to check before you buy
         </h2>
-        <p className="mt-2 text-sm leading-6 text-slate-700">
+        <p className="mt-1 text-xs leading-5 text-slate-700">
           Tick an item if the seller can prove it has already been addressed.
           The repair-risk total above will update automatically.
         </p>
       </div>
 
-      <div className="mt-5 space-y-8">
-        <section>
-          <SectionHeading
-            eyebrow="Practical checks"
-            title="Service and maintenance risks"
-            description="These are the most likely near-term maintenance items to verify before you commit."
-            countLabel={`${serviceRiskItems.length} item${
-              serviceRiskItems.length === 1 ? "" : "s"
-            }`}
-          />
-
+      <div className="mt-3 space-y-3">
+        <SectionCard
+          id="service-risks"
+          eyebrow="Practical checks"
+          title="Service and maintenance risks"
+          description="These are the most likely near-term maintenance items to verify before you commit."
+          countLabel={`${serviceRiskItems.length} item${
+            serviceRiskItems.length === 1 ? "" : "s"
+          }`}
+          defaultOpen
+        >
           {serviceRiskItems.length ? (
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
               {serviceRiskItems.map((item, index) => {
                 const key = getItemKey(item, index);
                 const addressed = !!addressedIds[key];
@@ -1539,22 +1643,22 @@ export default function ReportClient({
                 return (
                   <div
                     key={`${item?.item_id ?? "service"}-${index}`}
-                    className={`rounded-2xl border p-4 shadow-sm transition sm:p-5 ${itemTone(
+                    className={`rounded-xl border px-3 py-3 shadow-sm transition ${itemTone(
                       item,
                       addressed
                     )}`}
                   >
-                    <div className="mb-4 flex flex-col gap-3">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="mb-3 flex flex-col gap-2.5">
+                      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
                         <div className="min-w-0">
                           <div
-                            className={`text-base font-bold tracking-tight sm:text-lg ${
+                            className={`text-sm font-bold tracking-tight ${
                               addressed ? "text-emerald-900" : "text-slate-950"
                             }`}
                           >
                             {item?.label ?? "Flagged item"}
                           </div>
-                          <div className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                             {String(item?.category ?? "service").replace(
                               /_/g,
                               " "
@@ -1562,18 +1666,18 @@ export default function ReportClient({
                           </div>
                         </div>
 
-                        <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-left sm:text-right">
+                        <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left sm:text-right">
                           <div className="break-words text-sm font-semibold text-slate-950">
                             {money(Number(item?.cost_low ?? 0))} –{" "}
                             {money(Number(item?.cost_high ?? 0))}
                           </div>
-                          <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                          <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                             likely exposure
                           </div>
                         </div>
                       </div>
 
-                      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white/80 px-3 py-3">
+                      <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-white/80 px-3 py-2.5">
                         <input
                           type="checkbox"
                           checked={addressed}
@@ -1584,7 +1688,7 @@ export default function ReportClient({
                           <div className="text-sm font-semibold text-slate-950">
                             Mark as addressed by seller
                           </div>
-                          <div className="text-xs leading-5 text-slate-600">
+                          <div className="text-[11px] leading-5 text-slate-600">
                             Tick this if the seller has proof this item was fixed
                             or completed.
                           </div>
@@ -1592,14 +1696,14 @@ export default function ReportClient({
                       </label>
 
                       {addressed ? (
-                        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
+                        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">
                           This item has been excluded from the live exposure total.
                         </div>
                       ) : null}
                     </div>
 
                     {item?.why_flagged ? (
-                      <p className="mt-4 text-sm leading-6 text-slate-700">
+                      <p className="mt-3 text-sm leading-5 text-slate-700">
                         <span className="font-semibold text-slate-950">
                           Why flagged:
                         </span>{" "}
@@ -1608,7 +1712,7 @@ export default function ReportClient({
                     ) : null}
 
                     {item?.why_it_matters ? (
-                      <p className="mt-3 text-sm leading-6 text-slate-700">
+                      <p className="mt-2 text-sm leading-5 text-slate-700">
                         <span className="font-semibold text-slate-950">
                           Why it matters:
                         </span>{" "}
@@ -1618,11 +1722,11 @@ export default function ReportClient({
 
                     {Array.isArray(item?.questions_to_ask) &&
                     item.questions_to_ask.length ? (
-                      <div className="mt-4">
+                      <div className="mt-3">
                         <div className="text-sm font-semibold text-slate-950">
                           Questions to ask
                         </div>
-                        <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
+                        <ul className="mt-1.5 space-y-1.5 text-sm leading-5 text-slate-700">
                           {item.questions_to_ask.map((q: string, i: number) => (
                             <li key={i}>• {q}</li>
                           ))}
@@ -1631,11 +1735,11 @@ export default function ReportClient({
                     ) : null}
 
                     {Array.isArray(item?.red_flags) && item.red_flags.length ? (
-                      <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3">
+                      <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3">
                         <div className="text-sm font-semibold text-slate-950">
                           Red flags
                         </div>
-                        <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
+                        <ul className="mt-1.5 space-y-1.5 text-sm leading-5 text-slate-700">
                           {item.red_flags.map((rf: string, i: number) => (
                             <li key={i}>• {rf}</li>
                           ))}
@@ -1647,25 +1751,25 @@ export default function ReportClient({
               })}
             </div>
           ) : (
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-700">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
               No additional service or maintenance risks were listed in this
               report.
             </div>
           )}
-        </section>
+        </SectionCard>
 
-        <section>
-          <SectionHeading
-            eyebrow="History-derived checks"
-            title="MoT-derived risks"
-            description="These findings are based on patterns and warning signals found in the recorded MoT history."
-            countLabel={`${motRiskItems.length} item${
-              motRiskItems.length === 1 ? "" : "s"
-            }`}
-          />
-
+        <SectionCard
+          id="mot-risks"
+          eyebrow="History-derived checks"
+          title="MoT-derived risks"
+          description="These findings are based on patterns and warning signals found in the recorded MoT history."
+          countLabel={`${motRiskItems.length} item${
+            motRiskItems.length === 1 ? "" : "s"
+          }`}
+          defaultOpen
+        >
           {motRiskItems.length ? (
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
               {motRiskItems.map((item, index) => {
                 const key = getItemKey(item, serviceRiskItems.length + index);
                 const addressed = !!addressedIds[key];
@@ -1678,38 +1782,38 @@ export default function ReportClient({
                 return (
                   <div
                     key={`${item?.item_id ?? "mot"}-${index}`}
-                    className={`rounded-2xl border p-4 shadow-sm transition sm:p-5 ${itemTone(
+                    className={`rounded-xl border px-3 py-3 shadow-sm transition ${itemTone(
                       item,
                       addressed
                     )}`}
                   >
-                    <div className="mb-4 flex flex-col gap-3">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="mb-3 flex flex-col gap-2.5">
+                      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
                         <div className="min-w-0">
                           <div
-                            className={`text-base font-bold tracking-tight sm:text-lg ${
+                            className={`text-sm font-bold tracking-tight ${
                               addressed ? "text-emerald-900" : "text-slate-950"
                             }`}
                           >
                             {item?.label ?? "MoT history item"}
                           </div>
-                          <div className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                             MoT-derived risk
                           </div>
                         </div>
 
-                        <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-left sm:text-right">
+                        <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left sm:text-right">
                           <div className="break-words text-sm font-semibold text-slate-950">
                             {money(Number(item?.cost_low ?? 0))} –{" "}
                             {money(Number(item?.cost_high ?? 0))}
                           </div>
-                          <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                          <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                             likely exposure
                           </div>
                         </div>
                       </div>
 
-                      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white/80 px-3 py-3">
+                      <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-white/80 px-3 py-2.5">
                         <input
                           type="checkbox"
                           checked={addressed}
@@ -1720,7 +1824,7 @@ export default function ReportClient({
                           <div className="text-sm font-semibold text-slate-950">
                             Mark as addressed by seller
                           </div>
-                          <div className="text-xs leading-5 text-slate-600">
+                          <div className="text-[11px] leading-5 text-slate-600">
                             Tick this if the seller has proof this issue was
                             repaired or resolved.
                           </div>
@@ -1728,14 +1832,14 @@ export default function ReportClient({
                       </label>
 
                       {addressed ? (
-                        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
+                        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">
                           This item has been excluded from the live exposure total.
                         </div>
                       ) : null}
                     </div>
 
                     {item?.why_flagged ? (
-                      <p className="mt-4 text-sm leading-6 text-slate-700">
+                      <p className="mt-3 text-sm leading-5 text-slate-700">
                         <span className="font-semibold text-slate-950">
                           Why flagged:
                         </span>{" "}
@@ -1744,7 +1848,7 @@ export default function ReportClient({
                     ) : null}
 
                     {isRepeatPatternItem && repeatPatternLabels.length ? (
-                      <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50/70 p-4">
+                      <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50/70 p-3">
                         <div className="text-sm font-semibold text-slate-950">
                           Pattern categories identified
                         </div>
@@ -1752,7 +1856,7 @@ export default function ReportClient({
                           {repeatPatternLabels.map((label) => (
                             <span
                               key={label}
-                              className="inline-flex items-center rounded-full border border-amber-200 bg-white px-3 py-1 text-xs font-semibold text-amber-900"
+                              className="inline-flex items-center rounded-full border border-amber-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-900"
                             >
                               {label}
                             </span>
@@ -1760,21 +1864,21 @@ export default function ReportClient({
                         </div>
 
                         {repeatPatternDetails.length ? (
-                          <div className="mt-4 space-y-2">
+                          <div className="mt-3 space-y-2">
                             {repeatPatternDetails.map((detail, detailIndex) => (
                               <div
                                 key={`${detail.text ?? "repeat"}-${detailIndex}`}
-                                className="rounded-lg border border-amber-100 bg-white px-3 py-3"
+                                className="rounded-lg border border-amber-100 bg-white px-3 py-2.5"
                               >
-                                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                                <div className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between">
                                   <div className="text-sm font-semibold text-slate-950">
                                     {detail.patternLabel ?? "Pattern"}
                                   </div>
-                                  <div className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                                  <div className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
                                     Seen {detail.count ?? 0} times
                                   </div>
                                 </div>
-                                <div className="mt-2 text-sm leading-6 text-slate-700">
+                                <div className="mt-1.5 text-sm leading-5 text-slate-700">
                                   {detail.text ?? "Repeated advisory wording detected."}
                                 </div>
                               </div>
@@ -1785,7 +1889,7 @@ export default function ReportClient({
                     ) : null}
 
                     {item?.why_it_matters ? (
-                      <p className="mt-3 text-sm leading-6 text-slate-700">
+                      <p className="mt-2 text-sm leading-5 text-slate-700">
                         <span className="font-semibold text-slate-950">
                           Why it matters:
                         </span>{" "}
@@ -1795,11 +1899,11 @@ export default function ReportClient({
 
                     {Array.isArray(item?.questions_to_ask) &&
                     item.questions_to_ask.length ? (
-                      <div className="mt-4">
+                      <div className="mt-3">
                         <div className="text-sm font-semibold text-slate-950">
                           Questions to ask
                         </div>
-                        <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
+                        <ul className="mt-1.5 space-y-1.5 text-sm leading-5 text-slate-700">
                           {item.questions_to_ask.map((q: string, i: number) => (
                             <li key={i}>• {q}</li>
                           ))}
@@ -1808,11 +1912,11 @@ export default function ReportClient({
                     ) : null}
 
                     {Array.isArray(item?.red_flags) && item.red_flags.length ? (
-                      <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3">
+                      <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3">
                         <div className="text-sm font-semibold text-slate-950">
                           Red flags
                         </div>
-                        <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
+                        <ul className="mt-1.5 space-y-1.5 text-sm leading-5 text-slate-700">
                           {item.red_flags.map((rf: string, i: number) => (
                             <li key={i}>• {rf}</li>
                           ))}
@@ -1824,24 +1928,24 @@ export default function ReportClient({
               })}
             </div>
           ) : (
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-700">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
               No additional MoT-derived risks were listed in this report.
             </div>
           )}
-        </section>
+        </SectionCard>
 
-        <section>
-          <SectionHeading
-            eyebrow="Full record"
-            title="Full MoT history"
-            description="Every recorded test is shown below so the buyer can review the actual pass, fail and advisory trail instead of relying only on summary counts."
-            countLabel={`${motTests.length} test${
-              motTests.length === 1 ? "" : "s"
-            }`}
-          />
-
+        <SectionCard
+          id="mot-history"
+          eyebrow="Full record"
+          title="Full MoT history"
+          description="Every recorded test is shown below so the buyer can review the actual pass, fail and advisory trail instead of relying only on summary counts."
+          countLabel={`${motTests.length} test${
+            motTests.length === 1 ? "" : "s"
+          }`}
+          defaultOpen={false}
+        >
           {motTests.length ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {motTests.map((test, index) => {
                 const defectGroups = groupMotDefects(test.defects);
                 const allDefects = [
@@ -1856,17 +1960,17 @@ export default function ReportClient({
                 return (
                   <div
                     key={`${test.completedDate ?? "mot-test"}-${index}`}
-                    className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"
+                    className="rounded-xl border border-slate-200 bg-slate-50 p-3"
                   >
-                    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+                    <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
                       <div className="min-w-0">
-                        <div className="text-base font-bold tracking-tight text-slate-950 sm:text-lg">
+                        <div className="text-sm font-bold tracking-tight text-slate-950">
                           {formatDate(test.completedDate) ?? "Unknown test date"}
                         </div>
 
                         <div className="mt-2 flex flex-wrap gap-2">
                           <span
-                            className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${getMotBadgeStyles(
+                            className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${getMotBadgeStyles(
                               test.testResult
                             )}`}
                           >
@@ -1874,39 +1978,39 @@ export default function ReportClient({
                           </span>
 
                           {mileageDisplay ? (
-                            <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-700">
+                            <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-700">
                               {mileageDisplay}
                             </span>
                           ) : null}
 
                           {test.expiryDate ? (
-                            <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-700">
+                            <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-700">
                               Expiry {formatDate(test.expiryDate)}
                             </span>
                           ) : null}
                         </div>
                       </div>
 
-                      <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-left sm:text-right">
+                      <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left sm:text-right">
                         <div className="text-sm font-semibold text-slate-950">
                           {allDefects.length}
                         </div>
-                        <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                          defect{allDefects.length === 1 ? "" : "s"} logged
+                        <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                          defect{allDefects.length === 1 ? "" : "s"}
                         </div>
                       </div>
                     </div>
 
                     {allDefects.length ? (
-                      <div className="mt-4 space-y-3">
+                      <div className="mt-3 space-y-2">
                         {allDefects.map((defect, defectIndex) => (
                           <div
                             key={`${defect.text ?? "defect"}-${defectIndex}`}
-                            className="rounded-xl border border-slate-200 bg-slate-50 p-3"
+                            className="rounded-lg border border-slate-200 bg-white p-3"
                           >
                             <div className="flex flex-wrap items-center gap-2">
                               <span
-                                className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] ${defectTone(
+                                className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${defectTone(
                                   defect?.type
                                 )}`}
                               >
@@ -1914,14 +2018,14 @@ export default function ReportClient({
                               </span>
                             </div>
 
-                            <div className="mt-2 break-words text-sm leading-6 text-slate-700">
+                            <div className="mt-1.5 break-words text-sm leading-5 text-slate-700">
                               {defect?.text ?? "No defect text provided."}
                             </div>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 text-sm text-emerald-900">
+                      <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50/70 p-3 text-sm text-emerald-900">
                         No defects or advisories were recorded for this test.
                       </div>
                     )}
@@ -1930,25 +2034,25 @@ export default function ReportClient({
               })}
             </div>
           ) : (
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-700">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
               Full MoT test history was not available in this report payload.
             </div>
           )}
-        </section>
+        </SectionCard>
 
-        <section>
-          <SectionHeading
-            eyebrow="Known weak points"
-            title="Model-specific issues to check"
-            description="These are known issues associated with this vehicle type. They are not proof a fault is present, but they are sensible checks before purchase."
-            countLabel={`${knownModelIssues.length} item${
-              knownModelIssues.length === 1 ? "" : "s"
-            }`}
-          />
-
+        <SectionCard
+          id="known-issues"
+          eyebrow="Known weak points"
+          title="Model-specific issues to check"
+          description="These are known issues associated with this vehicle type. They are not proof a fault is present, but they are sensible checks before purchase."
+          countLabel={`${knownModelIssues.length} item${
+            knownModelIssues.length === 1 ? "" : "s"
+          }`}
+          defaultOpen
+        >
           {knownModelIssues.length ? (
             <>
-              <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700">
+              <div className="mb-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm leading-5 text-slate-700">
                 {vehicleIdentityData.matchExplainer ? (
                   <div>{vehicleIdentityData.matchExplainer}</div>
                 ) : null}
@@ -1967,7 +2071,7 @@ export default function ReportClient({
                 ) : null}
               </div>
 
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
                 {knownModelIssues.map((item, index) => {
                   const key = getItemKey(
                     item,
@@ -1978,16 +2082,16 @@ export default function ReportClient({
                   return (
                     <div
                       key={`${item?.issue_code ?? item?.item_id ?? "known"}-${index}`}
-                      className={`rounded-2xl border p-4 shadow-sm transition sm:p-5 ${itemTone(
+                      className={`rounded-xl border px-3 py-3 shadow-sm transition ${itemTone(
                         item,
                         addressed
                       )}`}
                     >
-                      <div className="mb-4 flex flex-col gap-3">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="mb-3 flex flex-col gap-2.5">
+                        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
                           <div className="min-w-0">
                             <div
-                              className={`text-base font-bold tracking-tight sm:text-lg ${
+                              className={`text-sm font-bold tracking-tight ${
                                 addressed ? "text-emerald-900" : "text-slate-950"
                               }`}
                             >
@@ -1995,7 +2099,7 @@ export default function ReportClient({
                             </div>
 
                             <div className="mt-2 flex flex-wrap gap-2">
-                              <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-700">
+                              <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-700">
                                 {String(item?.category ?? "known issue").replace(
                                   /_/g,
                                   " "
@@ -2003,31 +2107,31 @@ export default function ReportClient({
                               </span>
 
                               <span
-                                className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${matchConfidencePill(
+                                className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide ${matchConfidencePill(
                                   item.match_confidence
                                 )}`}
                               >
                                 {matchConfidenceLabel(item.match_confidence)}
                               </span>
 
-                              <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                              <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
                                 {matchBasisLabel(item.match_basis)}
                               </span>
                             </div>
                           </div>
 
-                          <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-left sm:text-right">
+                          <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left sm:text-right">
                             <div className="break-words text-sm font-semibold text-slate-950">
                               {money(Number(item?.cost_low ?? 0))} –{" "}
                               {money(Number(item?.cost_high ?? 0))}
                             </div>
-                            <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                              indicative cost range
+                            <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                              indicative cost
                             </div>
                           </div>
                         </div>
 
-                        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white/80 px-3 py-3">
+                        <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-white/80 px-3 py-2.5">
                           <input
                             type="checkbox"
                             checked={addressed}
@@ -2038,7 +2142,7 @@ export default function ReportClient({
                             <div className="text-sm font-semibold text-slate-950">
                               Mark as addressed by seller
                             </div>
-                            <div className="text-xs leading-5 text-slate-600">
+                            <div className="text-[11px] leading-5 text-slate-600">
                               Tick this if the seller has proof this known issue
                               has already been repaired, prevented or checked.
                             </div>
@@ -2046,14 +2150,14 @@ export default function ReportClient({
                         </label>
 
                         {addressed ? (
-                          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
+                          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">
                             This item has been excluded from the live exposure total.
                           </div>
                         ) : null}
                       </div>
 
                       {item?.why_flagged ? (
-                        <p className="mt-4 text-sm leading-6 text-slate-700">
+                        <p className="mt-3 text-sm leading-5 text-slate-700">
                           <span className="font-semibold text-slate-950">
                             Why flagged:
                           </span>{" "}
@@ -2062,7 +2166,7 @@ export default function ReportClient({
                       ) : null}
 
                       {item?.why_it_matters ? (
-                        <p className="mt-3 text-sm leading-6 text-slate-700">
+                        <p className="mt-2 text-sm leading-5 text-slate-700">
                           <span className="font-semibold text-slate-950">
                             Why it matters:
                           </span>{" "}
@@ -2071,7 +2175,7 @@ export default function ReportClient({
                       ) : null}
 
                       {typeof item?.probability_score === "number" ? (
-                        <div className="mt-3 text-xs font-medium text-slate-600">
+                        <div className="mt-2 text-[11px] font-medium text-slate-600">
                           Relevance score:{" "}
                           {Math.round(item.probability_score * 100)}%
                         </div>
@@ -2079,11 +2183,11 @@ export default function ReportClient({
 
                       {Array.isArray(item?.questions_to_ask) &&
                       item.questions_to_ask.length ? (
-                        <div className="mt-4">
+                        <div className="mt-3">
                           <div className="text-sm font-semibold text-slate-950">
                             Questions to ask
                           </div>
-                          <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
+                          <ul className="mt-1.5 space-y-1.5 text-sm leading-5 text-slate-700">
                             {item.questions_to_ask.map((q: string, i: number) => (
                               <li key={i}>• {q}</li>
                             ))}
@@ -2092,11 +2196,11 @@ export default function ReportClient({
                       ) : null}
 
                       {Array.isArray(item?.red_flags) && item.red_flags.length ? (
-                        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3">
+                        <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3">
                           <div className="text-sm font-semibold text-slate-950">
                             Red flags
                           </div>
-                          <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
+                          <ul className="mt-1.5 space-y-1.5 text-sm leading-5 text-slate-700">
                             {item.red_flags.map((rf: string, i: number) => (
                               <li key={i}>• {rf}</li>
                             ))}
@@ -2109,15 +2213,15 @@ export default function ReportClient({
               </div>
             </>
           ) : (
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-700">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
               No additional model-specific issues were identified from the
               available vehicle profile.
             </div>
           )}
-        </section>
+        </SectionCard>
       </div>
 
-      <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 sm:p-5">
+      <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-3 text-xs leading-5 text-slate-600">
         AutoAudit provides guidance only and is not a substitute for a
         mechanical inspection.
       </div>

@@ -192,8 +192,8 @@ function AuthPageInner() {
         if (!data.session) {
           setNotice(
             claimReportId
-              ? "Account created. Please check your email, confirm your account, and then log in to link and save your paid report."
-              : "Account created. Please check your email and confirm your account before logging in."
+              ? "Account created. Check your email, confirm your account, then log in to link and save your paid report."
+              : "Account created. Check your email and confirm your account before logging in."
           );
           return;
         }
@@ -232,34 +232,34 @@ function AuthPageInner() {
   }
 
   return (
-    <div className="mx-auto max-w-md px-4 py-10">
-      <div className="rounded-2xl border border-[var(--aa-silver)] bg-white p-6 shadow-sm">
-        <div className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-slate-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-700">
+    <div className="mx-auto max-w-md px-3 py-6 sm:px-4 sm:py-8">
+      <div className="rounded-[1.4rem] border border-[var(--aa-silver)] bg-white p-4 shadow-sm sm:p-5">
+        <div className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-700">
           AutoAudit account
         </div>
 
-        <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-black">
+        <h1 className="mt-3 text-2xl font-extrabold tracking-tight text-black">
           {mode === "signup" ? "Create your account" : "Log in"}
         </h1>
 
-        <p className="mt-2 text-sm leading-6 text-slate-700">
+        <p className="mt-1.5 text-sm leading-5 text-slate-700">
           {mode === "signup"
-            ? "Create an account to save access to your paid AutoAudit report for up to 30 days."
+            ? "Create an account to save access to your paid AutoAudit report and return to it later."
             : "Log in to access your saved AutoAudit reports and continue where you left off."}
         </p>
 
         {claimReportId ? (
-          <div className="mt-4 rounded-xl border border-red-200 bg-red-50/60 p-4 text-sm text-slate-700">
+          <div className="mt-3 rounded-xl border border-red-200 bg-red-50/60 p-3 text-sm leading-5 text-slate-700">
             This account will be linked to your paid report after you{" "}
-            {mode === "signup" ? "sign up" : "log in"}.
+            {mode === "signup" ? "create your account" : "log in"}.
           </div>
         ) : null}
 
-        <div className="mt-5 flex gap-2 rounded-xl border border-slate-200 bg-slate-50 p-1">
+        <div className="mt-3 grid grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-slate-50 p-1">
           <button
             type="button"
             onClick={() => setModeAndClear("signup")}
-            className={`flex-1 rounded-lg px-4 py-2 text-sm font-semibold transition ${
+            className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
               mode === "signup"
                 ? "bg-[#b91c1c] text-white"
                 : "bg-transparent text-slate-700 hover:bg-white"
@@ -271,7 +271,7 @@ function AuthPageInner() {
           <button
             type="button"
             onClick={() => setModeAndClear("login")}
-            className={`flex-1 rounded-lg px-4 py-2 text-sm font-semibold transition ${
+            className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
               mode === "login"
                 ? "bg-black text-white"
                 : "bg-transparent text-slate-700 hover:bg-white"
@@ -281,9 +281,30 @@ function AuthPageInner() {
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="mt-6 space-y-4">
+        <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+          <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+            What happens next
+          </div>
+          <div className="mt-1 grid gap-1 text-sm leading-5 text-slate-700">
+            {mode === "signup" ? (
+              <>
+                <div>1. Create your account.</div>
+                <div>2. Confirm your email from your inbox.</div>
+                <div>3. Log in and continue to your report.</div>
+              </>
+            ) : (
+              <>
+                <div>1. Log in with your AutoAudit account.</div>
+                <div>2. We’ll send you back to the right page.</div>
+                <div>3. Your report will be linked if needed.</div>
+              </>
+            )}
+          </div>
+        </div>
+
+        <form onSubmit={onSubmit} className="mt-4 space-y-3">
           <div>
-            <label className="mb-2 block text-sm font-semibold text-slate-900">
+            <label className="mb-1.5 block text-sm font-semibold text-slate-900">
               Email address
             </label>
             <input
@@ -292,13 +313,13 @@ function AuthPageInner() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               autoComplete="email"
-              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900"
+              className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-900"
               required
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-semibold text-slate-900">
+            <label className="mb-1.5 block text-sm font-semibold text-slate-900">
               Password
             </label>
             <input
@@ -311,14 +332,14 @@ function AuthPageInner() {
               autoComplete={
                 mode === "signup" ? "new-password" : "current-password"
               }
-              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900"
+              className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-900"
               required
             />
           </div>
 
           {mode === "signup" ? (
             <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-900">
+              <label className="mb-1.5 block text-sm font-semibold text-slate-900">
                 Confirm password
               </label>
               <input
@@ -327,7 +348,7 @@ function AuthPageInner() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Re-enter your password"
                 autoComplete="new-password"
-                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-900"
                 required
               />
             </div>
@@ -345,18 +366,11 @@ function AuthPageInner() {
             </div>
           ) : null}
 
-          {mode === "signup" ? (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-600">
-              After sign-up, we’ll email you a confirmation link. Once you
-              confirm your email, you’ll be returned to AutoAudit and can log in
-              to continue.
-            </div>
-          ) : (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-600">
-              Logging in without a specific report link will take you to your
-              saved reports dashboard.
-            </div>
-          )}
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-[11px] leading-5 text-slate-600">
+            {mode === "signup"
+              ? "After sign-up, we’ll email you a confirmation link. Once confirmed, return to AutoAudit and log in to continue."
+              : "Logging in without a specific report link will take you to your saved reports dashboard."}
+          </div>
 
           <button
             type="submit"
@@ -373,7 +387,7 @@ function AuthPageInner() {
           </button>
         </form>
 
-        <div className="mt-5 text-sm text-slate-600">
+        <div className="mt-4 text-sm text-slate-600">
           {mode === "signup" ? (
             <>
               Already have an account?{" "}
@@ -399,7 +413,7 @@ function AuthPageInner() {
           )}
         </div>
 
-        <div className="mt-4 text-sm text-slate-500">
+        <div className="mt-3 text-sm text-slate-500">
           <Link href={nextUrl} className="hover:underline">
             Back
           </Link>
@@ -411,8 +425,8 @@ function AuthPageInner() {
 
 function AuthPageFallback() {
   return (
-    <div className="mx-auto max-w-md px-4 py-10">
-      <div className="rounded-2xl border border-[var(--aa-silver)] bg-white p-6 shadow-sm">
+    <div className="mx-auto max-w-md px-3 py-6 sm:px-4 sm:py-8">
+      <div className="rounded-[1.4rem] border border-[var(--aa-silver)] bg-white p-4 shadow-sm sm:p-5">
         <div className="text-sm text-slate-600">Loading account page...</div>
       </div>
     </div>

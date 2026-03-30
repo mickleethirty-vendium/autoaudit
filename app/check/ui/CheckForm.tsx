@@ -166,6 +166,41 @@ function normaliseModelForOptions(
   return null;
 }
 
+function FieldHint({
+  children,
+  tone = "default",
+}: {
+  children: React.ReactNode;
+  tone?: "default" | "required";
+}) {
+  return (
+    <p
+      className={`mt-1.5 text-[11px] leading-5 ${
+        tone === "required" ? "text-slate-700" : "text-slate-600"
+      }`}
+    >
+      {children}
+    </p>
+  );
+}
+
+function DetailBox({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+      <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+        {label}
+      </div>
+      <div className="mt-0.5 text-sm font-semibold text-slate-900">{value}</div>
+    </div>
+  );
+}
+
 export default function CheckForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -425,16 +460,25 @@ export default function CheckForm() {
   return (
     <div className="w-full">
       {!vehicle ? (
-        <form onSubmit={handleLookupSubmit} className="space-y-4 text-left">
-          <div>
+        <form onSubmit={handleLookupSubmit} className="space-y-3 text-left">
+          <div className="rounded-xl border border-slate-200 bg-white p-3">
+            <div className="mb-3">
+              <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+                Step 1
+              </div>
+              <div className="mt-0.5 text-sm font-semibold text-slate-950">
+                Confirm the vehicle
+              </div>
+            </div>
+
             <label
               htmlFor="registration"
-              className="mb-2 block text-sm font-semibold text-slate-800"
+              className="mb-1.5 block text-sm font-semibold text-slate-800"
             >
               Vehicle registration
             </label>
 
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="flex flex-col gap-2.5 sm:flex-row">
               <input
                 id="registration"
                 name="registration"
@@ -451,19 +495,23 @@ export default function CheckForm() {
                 }}
                 disabled={lookupLoading}
                 placeholder="AB12CDE"
-                className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-lg font-semibold tracking-[0.18em] text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[var(--aa-red)]"
+                className="h-13 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-semibold tracking-[0.14em] text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[var(--aa-red)]"
               />
 
               <button
                 type="submit"
                 disabled={lookupLoading}
-                className="inline-flex h-14 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-6 text-sm font-semibold text-white transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:cursor-not-allowed disabled:opacity-70 sm:min-w-[180px]"
+                className="inline-flex h-13 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-5 text-sm font-semibold text-white transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:cursor-not-allowed disabled:opacity-70 sm:min-w-[160px]"
               >
                 {lookupLoading ? "Looking up…" : "Find vehicle"}
               </button>
             </div>
 
-            <div className="mt-3">
+            <FieldHint tone="required">
+              Enter the registration to pull the vehicle details automatically.
+            </FieldHint>
+
+            <div className="mt-2.5">
               <Link
                 href="/manual-check"
                 className="text-sm font-medium text-[var(--aa-red)] transition hover:text-[var(--aa-red-strong)] hover:underline"
@@ -474,55 +522,75 @@ export default function CheckForm() {
           </div>
 
           {lookupError ? (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
               {lookupError}
             </div>
           ) : null}
 
           {lookupLoading ? (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
               <p className="text-sm font-semibold text-slate-900">
                 Looking up vehicle details…
               </p>
-              <p className="mt-1 text-sm text-slate-600">
+              <p className="mt-0.5 text-sm text-slate-600">
                 We’re checking the registration and preparing the next step.
               </p>
             </div>
           ) : null}
         </form>
       ) : (
-        <div className="space-y-5 text-left">
-          <div className="rounded-xl border border-slate-200 bg-white p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--aa-red)]">
-              Vehicle identified
-            </p>
+        <div className="space-y-3 text-left">
+          <div className="rounded-xl border border-slate-200 bg-white p-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--aa-red)]">
+                  Step 1 complete
+                </div>
 
-            <div className="mt-2 text-xl font-bold text-slate-900">
-              {vehicle.registration}
-              {vehicle.make ? (
-                <span className="ml-2 font-medium text-slate-600">
-                  · {titleCase(vehicle.make)}
-                  {resolvedModel ? ` ${titleCase(resolvedModel)}` : ""}
-                </span>
-              ) : null}
+                <div className="mt-1 text-lg font-bold text-slate-900">
+                  {vehicle.registration}
+                  {vehicle.make ? (
+                    <span className="ml-0 mt-1 block text-sm font-medium text-slate-600 sm:ml-2 sm:mt-0 sm:inline">
+                      · {titleCase(vehicle.make)}
+                      {resolvedModel ? ` ${titleCase(resolvedModel)}` : ""}
+                    </span>
+                  ) : null}
+                </div>
+
+                <div className="mt-1 text-sm text-slate-600">
+                  Vehicle found. Now add the details needed for your snapshot.
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={resetVehicleStep}
+                disabled={isSubmitting}
+                className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                Change registration
+              </button>
             </div>
 
-            <div className="mt-2 grid gap-x-4 gap-y-2 text-sm text-slate-600 sm:grid-cols-2">
-              <div>{vehicle.year || "—"}</div>
-              <div>{vehicle.fuelType || "—"}</div>
-              <div>{vehicle.bodyType || "—"}</div>
-              <div>{vehicle.colour || "—"}</div>
-              <div>Engine: {normaliseEngineSize(vehicle.engineSize) ?? "—"}</div>
-              <div>MoT: {vehicle.motStatus || "—"}</div>
-              <div>Tax: {vehicle.taxStatus || "—"}</div>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+              <DetailBox label="Year" value={String(vehicle.year || "—")} />
+              <DetailBox label="Fuel" value={vehicle.fuelType || "—"} />
+              <DetailBox label="Body" value={vehicle.bodyType || "—"} />
+              <DetailBox label="Colour" value={vehicle.colour || "—"} />
+              <DetailBox
+                label="Engine"
+                value={normaliseEngineSize(vehicle.engineSize) ?? "—"}
+              />
+              <DetailBox label="MoT" value={vehicle.motStatus || "—"} />
+              <DetailBox label="Tax" value={vehicle.taxStatus || "—"} />
             </div>
           </div>
 
           {canonicalVehicleMake && availableModelsForVehicle.length ? (
-            <div className="rounded-xl border border-slate-200 bg-white p-4">
+            <div className="rounded-xl border border-slate-200 bg-white p-3">
               <label
                 htmlFor="vehicleModel"
-                className="mb-2 block text-sm font-semibold text-slate-800"
+                className="mb-1.5 block text-sm font-semibold text-slate-800"
               >
                 Confirm model
               </label>
@@ -534,7 +602,7 @@ export default function CheckForm() {
                   if (continueError) setContinueError(null);
                 }}
                 disabled={isSubmitting}
-                className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-900 outline-none transition focus:border-[var(--aa-red)]"
+                className="h-13 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 outline-none transition focus:border-[var(--aa-red)]"
               >
                 <option value="">Select model</option>
                 {availableModelsForVehicle.map((option) => (
@@ -543,110 +611,129 @@ export default function CheckForm() {
                   </option>
                 ))}
               </select>
-              <p className="mt-2 text-xs text-slate-600">
+              <FieldHint>
                 This helps us match model-specific common failures more accurately.
-              </p>
+              </FieldHint>
             </div>
           ) : null}
 
-          <form onSubmit={handleContinue} className="space-y-5">
-            <div className="rounded-xl border border-[var(--aa-red)]/15 bg-[var(--aa-red)]/5 p-4">
-              <div className="text-sm font-semibold text-slate-900">
-                Price check
+          <form onSubmit={handleContinue} className="space-y-3">
+            <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <div className="mb-3">
+                <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+                  Step 2
+                </div>
+                <div className="mt-0.5 text-sm font-semibold text-slate-950">
+                  Complete your snapshot details
+                </div>
               </div>
-              <div className="mt-1 text-sm text-slate-700">
-                We’ll use the asking price to compare this car with typical market
-                value.
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label
+                    htmlFor="mileage"
+                    className="mb-1.5 block text-sm font-semibold text-slate-800"
+                  >
+                    Current mileage
+                  </label>
+                  <input
+                    id="mileage"
+                    name="mileage"
+                    type="text"
+                    inputMode="numeric"
+                    value={mileage}
+                    onChange={(e) => {
+                      setMileage(e.target.value.replace(/[^\d,]/g, ""));
+                      if (continueError) setContinueError(null);
+                    }}
+                    placeholder="e.g. 62,000"
+                    disabled={isSubmitting}
+                    className="h-13 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[var(--aa-red)]"
+                  />
+                  <FieldHint tone="required">
+                    Required — used in risk and valuation estimates.
+                  </FieldHint>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="gearbox"
+                    className="mb-1.5 block text-sm font-semibold text-slate-800"
+                  >
+                    Gearbox type
+                  </label>
+                  <select
+                    id="gearbox"
+                    name="gearbox"
+                    value={gearbox}
+                    onChange={(e) => {
+                      setGearbox(e.target.value);
+                      if (continueError) setContinueError(null);
+                    }}
+                    disabled={isSubmitting}
+                    className="h-13 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 outline-none transition focus:border-[var(--aa-red)]"
+                  >
+                    <option value="">Select gearbox</option>
+                    <option value="manual">Manual</option>
+                    <option value="automatic">Automatic</option>
+                    <option value="cvt">CVT</option>
+                    <option value="semi-automatic">Semi-automatic</option>
+                  </select>
+                  <FieldHint tone="required">
+                    Required — helps match likely component risks.
+                  </FieldHint>
+                </div>
               </div>
-              <div className="mt-3">
-                <label
-                  htmlFor="askingPrice"
-                  className="mb-2 block text-sm font-semibold text-slate-800"
-                >
+
+              <div className="mt-3 rounded-xl border border-[var(--aa-red)]/15 bg-[var(--aa-red)]/5 p-3">
+                <div className="text-sm font-semibold text-slate-900">
                   Asking price
-                </label>
-                <input
-                  id="askingPrice"
-                  name="askingPrice"
-                  type="text"
-                  inputMode="decimal"
-                  value={askingPrice}
-                  onChange={(e) => {
-                    setAskingPrice(e.target.value.replace(/[^\d,.]/g, ""));
-                    if (continueError) setContinueError(null);
-                  }}
-                  placeholder="Optional, e.g. 7,495"
-                  disabled={isSubmitting}
-                  className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[var(--aa-red)]"
-                />
-                <p className="mt-2 text-xs text-slate-600">
-                  Optional, but recommended.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label
-                  htmlFor="mileage"
-                  className="mb-2 block text-sm font-semibold text-slate-800"
-                >
-                  Current mileage
-                </label>
-                <input
-                  id="mileage"
-                  name="mileage"
-                  type="text"
-                  inputMode="numeric"
-                  value={mileage}
-                  onChange={(e) => {
-                    setMileage(e.target.value.replace(/[^\d,]/g, ""));
-                    if (continueError) setContinueError(null);
-                  }}
-                  placeholder="e.g. 62,000"
-                  disabled={isSubmitting}
-                  className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[var(--aa-red)]"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="gearbox"
-                  className="mb-2 block text-sm font-semibold text-slate-800"
-                >
-                  Gearbox type
-                </label>
-                <select
-                  id="gearbox"
-                  name="gearbox"
-                  value={gearbox}
-                  onChange={(e) => {
-                    setGearbox(e.target.value);
-                    if (continueError) setContinueError(null);
-                  }}
-                  disabled={isSubmitting}
-                  className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-900 outline-none transition focus:border-[var(--aa-red)]"
-                >
-                  <option value="">Select gearbox</option>
-                  <option value="manual">Manual</option>
-                  <option value="automatic">Automatic</option>
-                  <option value="cvt">CVT</option>
-                  <option value="semi-automatic">Semi-automatic</option>
-                </select>
+                </div>
+                <div className="mt-0.5 text-sm text-slate-700">
+                  Optional, but recommended for price-vs-market guidance.
+                </div>
+                <div className="mt-2.5">
+                  <input
+                    id="askingPrice"
+                    name="askingPrice"
+                    type="text"
+                    inputMode="decimal"
+                    value={askingPrice}
+                    onChange={(e) => {
+                      setAskingPrice(e.target.value.replace(/[^\d,.]/g, ""));
+                      if (continueError) setContinueError(null);
+                    }}
+                    placeholder="Optional, e.g. 7,495"
+                    disabled={isSubmitting}
+                    className="h-13 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[var(--aa-red)]"
+                  />
+                </div>
               </div>
             </div>
 
             {continueError ? (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
                 {continueError}
               </div>
             ) : null}
 
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+                What you’ll get next
+              </div>
+              <div className="mt-1 grid gap-1 text-sm leading-5 text-slate-700">
+                <div>• Free risk snapshot</div>
+                <div>• Repair exposure estimate</div>
+                <div>• Price context if asking price is entered</div>
+                <div>• Option to unlock the full report afterwards</div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2.5 sm:flex-row">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="inline-flex h-14 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-6 text-sm font-semibold text-white transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:cursor-not-allowed disabled:opacity-70"
+                className="inline-flex h-13 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-6 text-sm font-semibold text-white transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {isSubmitting ? "Building preview…" : "Continue to free preview"}
               </button>
@@ -655,7 +742,7 @@ export default function CheckForm() {
                 type="button"
                 onClick={resetVehicleStep}
                 disabled={isSubmitting}
-                className="inline-flex h-14 items-center justify-center rounded-xl border border-slate-300 bg-white px-6 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+                className="inline-flex h-13 items-center justify-center rounded-xl border border-slate-300 bg-white px-6 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 Change registration
               </button>

@@ -992,220 +992,386 @@ export default async function Page({
 
   return (
     <>
-      <div className="mx-auto w-full max-w-4xl px-3 pb-40 pt-3 sm:px-4 sm:pb-36 sm:pt-4 lg:px-6">
-        <div className="rounded-2xl border border-black bg-white px-4 py-4 shadow-[0_10px_30px_rgba(0,0,0,0.05)] sm:px-5 sm:py-5">
-          <div className="mb-3 flex flex-wrap items-center gap-2">
+      <div className="mx-auto w-full max-w-4xl px-3 pb-36 pt-3 sm:px-4 sm:pb-32 sm:pt-4 lg:px-5">
+        <section
+          id="summary"
+          className="rounded-2xl border border-black bg-white px-3 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.04)] sm:px-4 sm:py-4"
+        >
+          <div className="flex flex-wrap items-center gap-2">
             <div
-              className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${snapshotVerdict.badgeClass}`}
+              className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${snapshotVerdict.badgeClass}`}
             >
               {snapshotVerdict.badgeLabel}
             </div>
 
-            <div className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-700">
+            <div className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-700">
               AutoAudit snapshot
             </div>
+
+            {hiddenCount ? (
+              <div className="inline-flex items-center rounded-full border border-slate-300 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-600">
+                {hiddenCount}+ locked findings
+              </div>
+            ) : null}
           </div>
 
-          {reg ? (
-            <h1 className="text-2xl font-extrabold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">
-              {reg}
-              {make ? (
-                <span className="ml-0 mt-1 block font-medium text-slate-500 sm:ml-2 sm:mt-0 sm:inline">
-                  · {make}
-                </span>
-              ) : null}
-            </h1>
-          ) : (
-            <h1 className="text-2xl font-extrabold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">
-              AutoAudit Snapshot
-            </h1>
-          )}
+          <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div className="min-w-0">
+              {reg ? (
+                <h1 className="text-[1.7rem] font-extrabold leading-none tracking-tight text-slate-950 sm:text-[1.95rem]">
+                  {reg}
+                  {make ? (
+                    <span className="ml-0 mt-1 block text-base font-medium text-slate-500 sm:ml-2 sm:mt-0 sm:inline">
+                      · {make}
+                    </span>
+                  ) : null}
+                </h1>
+              ) : (
+                <h1 className="text-[1.7rem] font-extrabold leading-none tracking-tight text-slate-950 sm:text-[1.95rem]">
+                  AutoAudit Snapshot
+                </h1>
+              )}
 
-          <div className="mt-2 text-sm leading-6 text-slate-600">
-            {year ? `${year} · ` : ""}
-            {fuel ? `${fuel} · ` : ""}
-            {transmission ? `${transmission} · ` : ""}
-            {typeof mileage === "number"
-              ? `${mileage.toLocaleString()} miles`
-              : ""}
-          </div>
+              <div className="mt-1.5 text-xs leading-5 text-slate-600">
+                {year ? `${year} · ` : ""}
+                {fuel ? `${fuel} · ` : ""}
+                {transmission ? `${transmission} · ` : ""}
+                {typeof mileage === "number"
+                  ? `${mileage.toLocaleString()} miles`
+                  : ""}
+              </div>
 
-          <h2 className="mt-5 text-xl font-extrabold tracking-tight text-slate-950 sm:text-2xl">
-            {snapshotVerdict.title}
-          </h2>
+              <h2 className="mt-3 text-lg font-extrabold leading-tight tracking-tight text-slate-950 sm:text-xl">
+                {snapshotVerdict.title}
+              </h2>
 
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700 sm:text-base">
-            {snapshotVerdict.description}
-          </p>
+              <p className="mt-1.5 max-w-3xl text-sm leading-5 text-slate-700">
+                {snapshotVerdict.description}
+              </p>
+            </div>
 
-          <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-[1.6fr_0.9fr]">
-            <div className="rounded-2xl border border-black bg-white p-4 shadow-sm sm:p-5">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Estimated near-term maintenance exposure
-                  </div>
-                  <div className="mt-1 text-sm text-slate-600">
-                    Use this to budget and negotiate before you buy.
-                  </div>
+            <div className="grid min-w-[220px] grid-cols-2 gap-2 lg:w-[260px]">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                  Exposure
                 </div>
-
-                <div className="inline-flex w-fit items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700 sm:inline-flex">
-                  Instant snapshot
+                <div className="mt-0.5 text-sm font-bold text-slate-950">
+                  {previewExposureLow !== null && previewExposureHigh !== null
+                    ? `${money(previewExposureLow)}–${money(previewExposureHigh)}`
+                    : "Pending"}
                 </div>
               </div>
 
-              <div className="mt-4 overflow-hidden">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                  Confidence
+                </div>
+                <div className="mt-0.5 truncate text-sm font-bold text-slate-950">
+                  {confidenceDisplay ?? "Pending"}
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                  Price
+                </div>
+                <div className="mt-0.5 text-sm font-bold text-slate-950">
+                  {askingPrice !== null ? money(askingPrice) : "—"}
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                  Value view
+                </div>
+                <div className="mt-0.5 text-sm font-bold text-slate-950">
+                  {valuePillLabel(marketPosition)}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5">
+            <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-amber-800">
+              What to do next
+            </div>
+            <div className="mt-1 text-sm leading-5 text-amber-950">
+              Check the exposure and price position first, then unlock the full
+              report to see the exact flagged items, seller questions and
+              negotiation points.
+            </div>
+          </div>
+        </section>
+
+        <div className="sticky top-2 z-20 mt-3">
+          <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white/95 px-2 py-2 shadow-sm backdrop-blur">
+            <div className="flex min-w-max items-center gap-2">
+              <a
+                href="#summary"
+                className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+              >
+                Summary
+              </a>
+              <a
+                href="#exposure"
+                className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+              >
+                Risk
+              </a>
+              <a
+                href="#price"
+                className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+              >
+                Price
+              </a>
+              <a
+                href="#locked"
+                className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+              >
+                Locked findings
+              </a>
+              <a
+                href="#packages"
+                className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+              >
+                Unlock options
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-[1.55fr_0.95fr]">
+          <div className="space-y-3">
+            <section
+              id="exposure"
+              className="rounded-2xl border border-black bg-white p-3 shadow-sm sm:p-4"
+            >
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                    Estimated near-term maintenance exposure
+                  </div>
+                  <div className="mt-1 text-xs leading-5 text-slate-600">
+                    Your fast “so what?” budget range before buying.
+                  </div>
+                </div>
+
+                <div className="inline-flex w-fit items-center rounded-full border border-slate-300 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-700">
+                  Snapshot
+                </div>
+              </div>
+
+              <div className="mt-3 overflow-hidden">
                 {previewExposureLow !== null && previewExposureHigh !== null ? (
                   <ExposureBar low={previewExposureLow} high={previewExposureHigh} />
                 ) : (
-                  <div className="mt-2 text-sm text-slate-700">
+                  <div className="text-sm text-slate-700">
                     Exposure estimate unavailable.
                   </div>
                 )}
               </div>
 
-              <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+              <div className="mt-3 flex flex-wrap gap-2">
                 {confidenceDisplay ? (
-                  <span className="inline-flex max-w-full items-center rounded-full border border-slate-300 bg-white px-3 py-1 text-sm">
+                  <span className="inline-flex max-w-full items-center rounded-full border border-slate-300 bg-white px-2.5 py-1 text-xs text-slate-700">
                     <span className="font-semibold">Confidence:</span>
-                    <span className="ml-2 break-words">{confidenceDisplay}</span>
+                    <span className="ml-1.5 break-words">{confidenceDisplay}</span>
                   </span>
                 ) : null}
 
-                <span className="inline-flex max-w-full items-center rounded-full border border-slate-300 bg-white px-3 py-1 text-sm text-slate-600">
+                <span className="inline-flex max-w-full items-center rounded-full border border-slate-300 bg-white px-2.5 py-1 text-xs text-slate-600">
                   Best with service history + latest MoT
                 </span>
               </div>
+            </section>
 
-              {askingPrice !== null || marketLow !== null || marketHigh !== null ? (
-                <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-                    <div className="min-w-0">
-                      <div className="text-sm font-semibold text-slate-950">
-                        Price position
-                      </div>
-                      <div className="mt-1 text-sm text-slate-600">
-                        {marketSummaryText ||
-                          "We’ve compared the asking price with typical market value."}
-                      </div>
+            {(askingPrice !== null || marketLow !== null || marketHigh !== null) && (
+              <section
+                id="price"
+                className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4"
+              >
+                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-slate-950">
+                      Price position
                     </div>
+                    <div className="mt-0.5 text-xs leading-5 text-slate-600">
+                      {marketSummaryText ||
+                        "We’ve compared the asking price with typical market value."}
+                    </div>
+                  </div>
 
+                  <div
+                    className={`inline-flex w-fit items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${valuePillStyles(
+                      marketPosition
+                    )}`}
+                  >
+                    {valuePillLabel(marketPosition)}
+                  </div>
+                </div>
+
+                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                      Asking price
+                    </div>
+                    <div className="mt-0.5 break-words text-sm font-extrabold text-slate-950">
+                      {askingPrice !== null ? money(askingPrice) : "—"}
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                      Typical value
+                    </div>
+                    <div className="mt-0.5 break-words text-sm font-extrabold text-slate-950">
+                      {marketBenchmark !== null ? money(marketBenchmark) : "—"}
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                      Market range
+                    </div>
+                    <div className="mt-0.5 break-words text-sm font-extrabold text-slate-950">
+                      {marketLow !== null && marketHigh !== null
+                        ? `${money(marketLow)} – ${money(marketHigh)}`
+                        : "—"}
+                    </div>
+                  </div>
+                </div>
+
+                {(valuationDate || valuationMileage !== null) && (
+                  <div className="mt-2 text-[11px] leading-5 text-slate-500">
+                    {valuationDate ? `Valuation date: ${formatDate(valuationDate)}` : ""}
+                    {valuationDate && valuationMileage !== null ? " · " : ""}
+                    {valuationMileage !== null
+                      ? `Valuation mileage: ${valuationMileage.toLocaleString()}`
+                      : ""}
+                  </div>
+                )}
+
+                {marketDelta !== null ? (
+                  <div className="mt-2 text-sm text-slate-700">
+                    Difference vs typical value:{" "}
+                    <span className="font-semibold text-slate-950">
+                      {marketDelta > 0 ? "+" : ""}
+                      {money(marketDelta)}
+                    </span>
+                  </div>
+                ) : null}
+              </section>
+            )}
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-sm font-semibold text-slate-950">
+                    Risk breakdown by system
+                  </h2>
+                  <p className="mt-0.5 text-xs leading-5 text-slate-600">
+                    Where the estimated repair exposure sits.
+                  </p>
+                </div>
+                <a
+                  href={reportCheckoutUrl}
+                  className="hidden rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 sm:inline-flex"
+                >
+                  Unlock details
+                </a>
+              </div>
+
+              <div className="mt-3 space-y-2">
+                {buckets.length ? (
+                  buckets.map((b: any) => (
                     <div
-                      className={`inline-flex w-fit items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${valuePillStyles(
-                        marketPosition
-                      )}`}
+                      key={b.key}
+                      className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5"
                     >
-                      {valuePillLabel(marketPosition)}
-                    </div>
-                  </div>
-
-                  <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                    <div className="rounded-xl border border-white bg-white p-3">
-                      <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                        Asking price
-                      </div>
-                      <div className="mt-1 break-words text-base font-extrabold text-slate-950 sm:text-lg">
-                        {askingPrice !== null ? money(askingPrice) : "—"}
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl border border-white bg-white p-3">
-                      <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                        Typical value
-                      </div>
-                      <div className="mt-1 break-words text-base font-extrabold text-slate-950 sm:text-lg">
-                        {marketBenchmark !== null ? money(marketBenchmark) : "—"}
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl border border-white bg-white p-3">
-                      <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                        Market range
-                      </div>
-                      <div className="mt-1 break-words text-base font-extrabold text-slate-950 sm:text-lg">
-                        {marketLow !== null && marketHigh !== null
-                          ? `${money(marketLow)} – ${money(marketHigh)}`
-                          : "—"}
-                      </div>
-                    </div>
-                  </div>
-
-                  {(valuationDate || valuationMileage !== null) && (
-                    <div className="mt-3 text-xs leading-5 text-slate-500">
-                      {valuationDate ? `Valuation date: ${formatDate(valuationDate)}` : ""}
-                      {valuationDate && valuationMileage !== null ? " · " : ""}
-                      {valuationMileage !== null
-                        ? `Valuation mileage: ${valuationMileage.toLocaleString()}`
-                        : ""}
-                    </div>
-                  )}
-
-                  {marketDelta !== null ? (
-                    <div className="mt-3 text-sm text-slate-700">
-                      Difference vs typical value:{" "}
-                      <span className="font-semibold text-slate-950">
-                        {marketDelta > 0 ? "+" : ""}
-                        {money(marketDelta)}
-                      </span>
-                    </div>
-                  ) : null}
-                </div>
-              ) : null}
-
-              {previewKnownModelIssuesTeaser ? (
-                <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="text-sm font-semibold text-slate-950">
-                    Known model issues
-                  </div>
-                  <div className="mt-1 text-sm text-slate-700">
-                    {previewKnownModelIssueMessage ||
-                      "This vehicle type is associated with model-specific issues worth checking."}
-                  </div>
-
-                  {previewKnownModelIssueCount !== null ? (
-                    <div className="mt-2 text-xs font-medium text-slate-600">
-                      {previewKnownModelIssueCount} model-specific issue
-                      {previewKnownModelIssueCount === 1 ? "" : "s"} detected in
-                      the full report
-                    </div>
-                  ) : null}
-
-                  {previewKnownModelIssueLabels.length ? (
-                    <div className="mt-3 space-y-2">
-                      {previewKnownModelIssueLabels.map((label, index) => (
-                        <div
-                          key={`${label}-${index}`}
-                          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800"
-                        >
-                          <span className="select-none break-words blur-sm">{label}</span>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold text-slate-900">
+                            {b.label ?? "Category"}
+                          </div>
+                          <div className="mt-0.5 text-[11px] text-slate-600">
+                            {typeof b.item_count === "number"
+                              ? `${b.item_count} checks flagged`
+                              : ""}
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              ) : null}
-            </div>
 
-            <div className="rounded-2xl border border-black bg-slate-950 p-4 text-white shadow-sm sm:p-5">
-              <div className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-white/85">
+                        <div className="shrink-0 text-right">
+                          <div className="text-sm font-semibold text-slate-900">
+                            £{Number(b.exposure_low || 0).toLocaleString()} – £
+                            {Number(b.exposure_high || 0).toLocaleString()}
+                          </div>
+                          <div className="text-[11px] text-slate-600">estimated</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                    No category breakdown available.
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {previewKnownModelIssuesTeaser ? (
+              <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
+                <div className="text-sm font-semibold text-slate-950">
+                  Known model issues
+                </div>
+                <div className="mt-1 text-xs leading-5 text-slate-700">
+                  {previewKnownModelIssueMessage ||
+                    "This vehicle type is associated with model-specific issues worth checking."}
+                </div>
+
+                {previewKnownModelIssueCount !== null ? (
+                  <div className="mt-2 text-[11px] font-medium text-slate-600">
+                    {previewKnownModelIssueCount} model-specific issue
+                    {previewKnownModelIssueCount === 1 ? "" : "s"} found in the
+                    full report
+                  </div>
+                ) : null}
+
+                {previewKnownModelIssueLabels.length ? (
+                  <div className="mt-3 space-y-2">
+                    {previewKnownModelIssueLabels.map((label, index) => (
+                      <div
+                        key={`${label}-${index}`}
+                        className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800"
+                      >
+                        <span className="select-none break-words blur-sm">{label}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </section>
+            ) : null}
+          </div>
+
+          <div className="space-y-3">
+            <section className="rounded-2xl border border-black bg-slate-950 p-3.5 text-white shadow-sm sm:p-4">
+              <div className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white/85">
                 Unlock full findings
               </div>
 
-              <h3 className="mt-4 text-xl font-extrabold tracking-tight">
+              <h3 className="mt-3 text-lg font-extrabold tracking-tight">
                 Don’t buy blind
               </h3>
 
-              <p className="mt-2 text-sm leading-6 text-slate-300">
-                Unlock the full report to see detailed findings, MoT advisory
-                analysis, negotiation guidance, value context and seller red
-                flags.
+              <p className="mt-1.5 text-sm leading-5 text-slate-300">
+                See the exact flagged items, MoT advisory analysis, seller red
+                flags, value context and negotiation guidance.
               </p>
 
-              <div className="mt-5 space-y-3">
+              <div className="mt-3 grid grid-cols-1 gap-2">
                 <a
                   href={reportCheckoutUrl}
                   className="btn-primary block w-full text-center"
+                  title="Unlock full report"
                 >
                   Unlock core report · {priceLabel}
                 </a>
@@ -1213,75 +1379,34 @@ export default async function Page({
                 <a
                   href={reportPlusHpiCheckoutUrl}
                   className="block w-full rounded-lg border border-white/15 bg-white/10 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-white/15"
+                  title="Unlock complete bundle"
                 >
                   Get full bundle · {reportPlusHpiPriceLabel}
                 </a>
               </div>
 
-              <div className="mt-4 text-xs leading-5 text-slate-400">
-                Core report includes service risk, detailed findings, MoT
-                analysis, pricing context and known model issues. Full bundle
-                adds vehicle history & provenance checks.
+              <div className="mt-3 grid grid-cols-1 gap-2 text-xs text-slate-300">
+                <div>• Itemised repair costs and flagged findings</div>
+                <div>• Seller questions, red flags and negotiation help</div>
+                <div>• MoT analysis, value context and known model issues</div>
+                <div>• Full bundle adds finance, write-off, stolen and mileage checks</div>
               </div>
-            </div>
-          </div>
-        </div>
+            </section>
 
-        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-950">
-              Risk breakdown by system
-            </h2>
-
-            <div className="mt-3 space-y-3">
-              {buckets.length ? (
-                buckets.map((b: any) => (
-                  <div
-                    key={b.key}
-                    className="rounded-xl border border-slate-200 bg-white p-4"
-                  >
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div className="min-w-0">
-                        <div className="text-sm font-semibold text-slate-900">
-                          {b.label ?? "Category"}
-                        </div>
-                        <div className="mt-1 text-xs text-slate-600">
-                          {typeof b.item_count === "number"
-                            ? `${b.item_count} checks flagged`
-                            : ""}
-                        </div>
-                      </div>
-
-                      <div className="text-left sm:text-right">
-                        <div className="break-words text-sm font-semibold text-slate-900">
-                          £{Number(b.exposure_low || 0).toLocaleString()} – £
-                          {Number(b.exposure_high || 0).toLocaleString()}
-                        </div>
-                        <div className="text-xs text-slate-600">estimated</div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
-                  No category breakdown available.
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="rounded-2xl border border-red-200 bg-white p-4 shadow-sm sm:p-5">
-              <div className="text-base font-semibold text-slate-950">
+            <section
+              id="locked"
+              className="rounded-2xl border border-red-200 bg-white p-3 shadow-sm sm:p-4"
+            >
+              <div className="text-sm font-semibold text-slate-950">
                 Detailed findings locked
               </div>
-              <div className="mt-1 text-sm text-slate-600">
+              <div className="mt-0.5 text-xs leading-5 text-slate-600">
                 {hiddenCount
                   ? `${hiddenCount} detailed checks detected`
                   : "Detailed checks detected"}
               </div>
 
-              <div className="mt-4 space-y-2">
+              <div className="mt-3 space-y-2">
                 {(blurredLabels.length
                   ? blurredLabels
                   : [
@@ -1300,7 +1425,7 @@ export default async function Page({
                   ))}
               </div>
 
-              <div className="mt-4 grid grid-cols-1 gap-2 text-sm text-slate-700">
+              <div className="mt-3 grid grid-cols-1 gap-1.5 text-sm text-slate-700">
                 <div>✔ Itemised repair costs</div>
                 <div>✔ Seller questions and red flags</div>
                 <div>✔ Negotiation strategy</div>
@@ -1309,7 +1434,7 @@ export default async function Page({
                 <div>✔ Known model issues</div>
               </div>
 
-              <div className="mt-5">
+              <div className="mt-4">
                 <a
                   href={reportCheckoutUrl}
                   className="btn-primary block w-full text-center"
@@ -1317,46 +1442,47 @@ export default async function Page({
                   Unlock full report · {priceLabel}
                 </a>
               </div>
-            </div>
+            </section>
 
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
+            <section className="rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
               <div className="text-sm font-semibold text-slate-950">
                 Why people unlock
               </div>
-              <p className="mt-2 text-sm leading-6 text-slate-700">
+              <p className="mt-1.5 text-sm leading-5 text-slate-700">
                 A single hidden issue can cost far more than the report. The
-                full bundle adds finance, write-off, stolen, mileage and keeper
-                history checks.
+                full bundle also adds vehicle history and provenance checks.
               </p>
-            </div>
+            </section>
           </div>
         </div>
 
-        <div className="mt-6 rounded-2xl border border-black bg-white p-4 shadow-sm sm:p-5">
-          <div className="mb-4">
-            <div className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-700">
+        <section
+          id="packages"
+          className="mt-3 rounded-2xl border border-black bg-white p-3 shadow-sm sm:p-4"
+        >
+          <div className="mb-3">
+            <div className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-700">
               Choose your report
             </div>
-            <h2 className="mt-3 text-xl font-extrabold tracking-tight text-slate-950 sm:text-2xl">
+            <h2 className="mt-2 text-lg font-extrabold tracking-tight text-slate-950 sm:text-xl">
               Pick the level of checking you want
             </h2>
-            <p className="mt-2 text-sm leading-6 text-slate-700">
-              Choose the core report for service risk and MoT analysis, or go
-              straight to the full bundle with the added vehicle history &
-              provenance check.
+            <p className="mt-1.5 text-sm leading-5 text-slate-700">
+              Start with the core report, or go straight to the full bundle with
+              added vehicle history and provenance checks.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
               <div className="text-sm font-semibold text-slate-950">
                 Core report · {priceLabel}
               </div>
-              <div className="mt-2 text-sm text-slate-700">
+              <div className="mt-1.5 text-sm leading-5 text-slate-700">
                 Service risk, detailed findings, seller questions, negotiation
                 guidance, pricing context, MoT analysis and known model issues.
               </div>
-              <div className="mt-4">
+              <div className="mt-3">
                 <a
                   href={reportCheckoutUrl}
                   className="btn-primary block w-full text-center sm:inline-flex sm:w-auto"
@@ -1366,54 +1492,62 @@ export default async function Page({
               </div>
             </div>
 
-            <div className="rounded-xl border border-red-200 bg-red-50/40 p-4">
+            <div className="rounded-xl border border-red-200 bg-red-50/40 p-3">
               <div className="text-sm font-semibold text-slate-950">
                 Complete report bundle · {reportPlusHpiPriceLabel}
               </div>
-              <div className="mt-2 text-sm text-slate-700">
+              <div className="mt-1.5 text-sm leading-5 text-slate-700">
                 Everything in the core report, plus HPI-style history checks
                 including finance markers, write-off records, stolen markers,
                 mileage anomalies, keeper history and plate changes.
               </div>
-              <div className="mt-4 flex flex-col gap-3">
+              <div className="mt-3 flex flex-col gap-2.5">
                 <a
                   href={reportPlusHpiCheckoutUrl}
                   className="btn-primary block w-full text-center sm:inline-flex sm:w-auto"
                 >
                   Buy complete bundle · {reportPlusHpiPriceLabel}
                 </a>
-                <span className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700">
+                <span className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700">
                   Or start with core report and add history later for{" "}
                   {hpiUpgradePriceLabel}
                 </span>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className="mt-6 text-xs leading-5 text-slate-500">
+        <div className="mt-4 text-[11px] leading-5 text-slate-500">
           AutoAudit provides guidance only and is not a substitute for a
           mechanical inspection.
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-[9999] border-t border-slate-300 bg-white/95 px-3 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur sm:px-4">
-        <div className="mx-auto flex w-full max-w-4xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="fixed bottom-0 left-0 right-0 z-[9999] border-t border-slate-300 bg-white/95 px-3 py-2.5 pb-[calc(0.6rem+env(safe-area-inset-bottom))] backdrop-blur sm:px-4">
+        <div className="mx-auto flex w-full max-w-4xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0 text-sm">
-            <div className="font-semibold text-slate-950">
+            <div className="font-semibold leading-5 text-slate-950">
               Unlock core report · {priceLabel}
             </div>
             <div className="text-xs text-slate-600">
-              Service risk, MoT analysis and full report findings
+              See exact flagged items, MoT analysis and seller guidance
             </div>
           </div>
 
-          <a
-            href={reportCheckoutUrl}
-            className="btn-primary block w-full text-center sm:w-auto"
-          >
-            Unlock report
-          </a>
+          <div className="flex w-full gap-2 sm:w-auto">
+            <a
+              href={reportCheckoutUrl}
+              className="btn-primary block w-full text-center sm:w-auto"
+            >
+              Unlock report
+            </a>
+            <a
+              href={reportPlusHpiCheckoutUrl}
+              className="block w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-center text-sm font-semibold text-slate-800 transition hover:bg-slate-100 sm:w-auto"
+            >
+              Full bundle
+            </a>
+          </div>
         </div>
       </div>
     </>

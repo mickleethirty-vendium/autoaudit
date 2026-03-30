@@ -43,99 +43,119 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-[var(--aa-bg)] text-slate-900 antialiased">
-        <header className="sticky top-0 z-50 border-b border-[var(--aa-silver)] bg-white/80 backdrop-blur-xl backdrop-saturate-150 shadow-[0_2px_10px_rgba(0,0,0,0.04)]">
-          <div className="mx-auto w-full max-w-6xl px-4">
-            <div className="flex items-center justify-between py-3">
-              <div className="flex items-center gap-4">
-                <Link href="/" className="group flex items-center">
+        <header className="sticky top-0 z-50 border-b border-[var(--aa-silver)] bg-white/88 backdrop-blur-xl backdrop-saturate-150 shadow-[0_2px_10px_rgba(0,0,0,0.04)]">
+          <div className="mx-auto w-full max-w-6xl px-3 sm:px-4">
+            <div className="flex items-center justify-between py-2.5 sm:py-3">
+              <div className="flex min-w-0 items-center gap-3">
+                <Link href="/" className="group flex shrink-0 items-center">
                   <img
                     src="/logo-shield-red.png"
                     alt="AutoAudit"
-                    className="block select-none transition-transform duration-200 group-hover:scale-[1.03]"
-                    style={{ height: 64, width: "auto" }}
+                    className="block select-none transition-transform duration-200 group-hover:scale-[1.02]"
+                    style={{ height: 50, width: "auto" }}
                   />
                 </Link>
 
-                <div className="hidden h-10 w-px bg-[var(--aa-silver)] sm:block" />
+                <div className="hidden h-8 w-px bg-[var(--aa-silver)] sm:block" />
 
-                <div className="hidden sm:flex sm:flex-col sm:gap-2">
-                  <span className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-white px-3 py-1 text-xs font-semibold text-black shadow-sm">
-                    Used car checks. Faster decisions.
+                <div className="hidden min-w-0 sm:flex sm:flex-col">
+                  <span className="text-sm font-semibold text-slate-950">
+                    AutoAudit
                   </span>
-
-                  <span className="inline-flex w-fit items-center rounded-full border border-[#b91c1c]/20 bg-[#b91c1c]/5 px-3 py-1 text-xs font-semibold text-[#b91c1c] shadow-sm">
-                    127 cars checked today
+                  <span className="text-xs text-slate-600">
+                    Used car checks. Faster decisions.
                   </span>
                 </div>
               </div>
 
-              <nav className="hidden items-center gap-2 sm:flex">
+              <nav className="hidden items-center gap-1.5 sm:flex">
+                <Link
+                  href="/check"
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-black"
+                >
+                  Check a car
+                </Link>
+
                 <Link
                   href="/how-it-works"
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition duration-200 hover:bg-slate-100 hover:text-black"
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-black"
                 >
                   How it works
                 </Link>
 
                 <Link
                   href="/#pricing"
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition duration-200 hover:bg-slate-100 hover:text-black"
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-black"
                 >
                   Pricing
                 </Link>
 
                 {isLoggedIn ? (
                   <>
-                    <div className="inline-flex max-w-[240px] items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 shadow-sm">
+                    <Link
+                      href="/reports"
+                      className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-black"
+                    >
+                      My reports
+                    </Link>
+
+                    <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-800 shadow-sm">
                       Signed in
                     </div>
 
                     {userEmail ? (
-                      <div className="max-w-[260px] truncate rounded-lg px-3 py-2 text-sm font-medium text-slate-600">
+                      <div className="max-w-[220px] truncate rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
                         {userEmail}
                       </div>
                     ) : null}
-
-                    <Link
-                      href="/reports"
-                      className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition duration-200 hover:bg-slate-100 hover:text-black"
-                    >
-                      My Reports
-                    </Link>
 
                     <LogoutButton />
                   </>
                 ) : (
                   <Link
                     href="/auth?mode=login"
-                    className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition duration-200 hover:bg-slate-100 hover:text-black"
+                    className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-black"
                   >
-                    Log In
+                    Log in
                   </Link>
                 )}
               </nav>
             </div>
 
-            <div className="pb-3 sm:hidden">
+            <div className="pb-2.5 sm:hidden">
               <div className="flex flex-wrap items-center gap-2">
+                <Link
+                  href="/check"
+                  className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm"
+                >
+                  Check a car
+                </Link>
+
+                <Link
+                  href="/#pricing"
+                  className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm"
+                >
+                  Pricing
+                </Link>
+
                 {isLoggedIn ? (
                   <>
                     <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 shadow-sm">
                       Signed in
                     </span>
 
+                    <Link
+                      href="/reports"
+                      className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm"
+                    >
+                      My reports
+                    </Link>
+
                     {userEmail ? (
                       <span className="max-w-[220px] truncate rounded-full border border-[var(--aa-silver)] bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm">
                         {userEmail}
                       </span>
                     ) : null}
-
-                    <Link
-                      href="/reports"
-                      className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm"
-                    >
-                      My Reports
-                    </Link>
 
                     <LogoutButton />
                   </>
@@ -144,7 +164,7 @@ export default async function RootLayout({
                     href="/auth?mode=login"
                     className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm"
                   >
-                    Log In
+                    Log in
                   </Link>
                 )}
               </div>
@@ -152,7 +172,7 @@ export default async function RootLayout({
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-6xl px-4 pb-16 pt-6">
+        <main className="mx-auto w-full max-w-6xl px-3 pb-12 pt-4 sm:px-4 sm:pb-14 sm:pt-5">
           {children}
         </main>
       </body>
