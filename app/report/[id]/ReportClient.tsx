@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import ExposureBar from "@/app/components/ExposureBar";
+import ReportDisclaimer from "@/app/components/ReportDisclaimer";
 
 type RiskItem = {
   item_id?: string;
@@ -1470,6 +1471,8 @@ export default function ReportClient({
             </div>
           </div>
 
+          <ReportDisclaimer />
+
           <div className="mt-3 overflow-x-auto rounded-2xl border border-slate-200 bg-white/95 px-2 py-2 shadow-sm backdrop-blur print:hidden">
             <div className="flex min-w-max items-center gap-2">
               <TabButton
@@ -2390,11 +2393,6 @@ export default function ReportClient({
           ) : null}
         </section>
       ) : null}
-
-      <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-3 text-xs leading-5 text-slate-600">
-        AutoAudit provides guidance only and is not a substitute for a
-        mechanical inspection.
-      </div>
     </div>
   );
 }
