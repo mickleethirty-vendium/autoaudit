@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { mustGetEnv } from "@/lib/env";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
@@ -101,13 +102,14 @@ export default async function ReportsPage() {
 
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
 
-  if (!user) {
+  if (userError || !user) {
     redirect("/auth?mode=login&next=/reports");
   }
 
-  const { data: reports, error } = await supabase
+  const { data: reports, error } = await supabaseAdmin
     .from("reports")
     .select(
       `
@@ -117,6 +119,8 @@ export default async function ReportsPage() {
         car_year,
         year,
         created_at,
+        saved_at,
+        owner_user_id,
         is_paid,
         paid_at,
         stripe_session_id,
@@ -127,6 +131,7 @@ export default async function ReportsPage() {
       `
     )
     .eq("owner_user_id", user.id)
+    .order("saved_at", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false });
 
   const safeReports = Array.isArray(reports) ? reports : [];
@@ -281,10 +286,10 @@ export default async function ReportsPage() {
                           <div className="mt-3 grid gap-3 sm:grid-cols-2">
                             <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
                               <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                                Created
+                                Saved
                               </div>
                               <div className="mt-1 text-sm font-semibold text-slate-950">
-                                {formatDate(report.created_at)}
+                                {formatDate(report.saved_at ?? report.created_at)}
                               </div>
                             </div>
 
