@@ -73,6 +73,8 @@ type MotTest = {
   defects?: MotDefect[];
 };
 
+type ReportTab = "overview" | "priority" | "mot" | "history" | "all";
+
 function money(value?: number | null) {
   if (typeof value !== "number" || !Number.isFinite(value)) return "—";
   return new Intl.NumberFormat("en-GB", {
@@ -613,7 +615,7 @@ function getDecisionCall(args: {
   if (hpiFlagged || (adjustedHigh !== null && adjustedHigh >= 3000)) {
     return {
       badgeClass: "border-red-200 bg-red-50 text-red-700",
-      badgeLabel: "Walk away unless proven otherwise",
+      badgeLabel: "Proceed with caution",
       body:
         "This profile carries heavier downside risk. Only proceed if the seller can clearly evidence that the key issues have already been addressed.",
     };
@@ -625,7 +627,7 @@ function getDecisionCall(args: {
   ) {
     return {
       badgeClass: "border-amber-200 bg-amber-50 text-amber-700",
-      badgeLabel: "Negotiate hard",
+      badgeLabel: "Negotiate carefully",
       body:
         "There is enough repair or pricing risk here to justify a firmer negotiation position and careful evidence checks.",
     };
@@ -633,44 +635,10 @@ function getDecisionCall(args: {
 
   return {
     badgeClass: "border-emerald-200 bg-emerald-50 text-emerald-700",
-    badgeLabel: "Proceed, but verify",
+    badgeLabel: "Looks more manageable",
     body:
       "The profile looks more manageable, but you should still verify service records, review the MoT trail and inspect the known weak points before buying.",
   };
-}
-
-function SectionHeading({
-  eyebrow,
-  title,
-  description,
-  countLabel,
-}: {
-  eyebrow?: string;
-  title: string;
-  description?: string;
-  countLabel?: string;
-}) {
-  return (
-    <div className="mb-3 flex flex-col gap-1.5 sm:flex-row sm:items-end sm:justify-between">
-      <div className="min-w-0">
-        {eyebrow ? (
-          <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
-            {eyebrow}
-          </div>
-        ) : null}
-        <h3 className="mt-0.5 text-base font-bold text-slate-950 sm:text-lg">
-          {title}
-        </h3>
-        {description ? (
-          <p className="mt-0.5 text-xs leading-5 text-slate-700">{description}</p>
-        ) : null}
-      </div>
-
-      {countLabel ? (
-        <div className="text-xs text-slate-500">{countLabel}</div>
-      ) : null}
-    </div>
-  );
 }
 
 function SummaryMetric({
@@ -716,51 +684,141 @@ function MiniStat({
   );
 }
 
-function SectionCard({
-  id,
-  title,
-  eyebrow,
-  description,
-  countLabel,
-  defaultOpen = true,
+function TabButton({
+  active,
+  onClick,
   children,
 }: {
-  id: string;
-  title: string;
-  eyebrow?: string;
-  description?: string;
-  countLabel?: string;
-  defaultOpen?: boolean;
+  active: boolean;
+  onClick: () => void;
   children: React.ReactNode;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
-
   return (
-    <section
-      id={id}
-      className="scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4"
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+        active
+          ? "border-black bg-slate-950 text-white"
+          : "border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100"
+      }`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={title}
-            description={description}
-            countLabel={countLabel}
-          />
+      {children}
+    </button>
+  );
+}
+
+function RiskCard({
+  item,
+  addressed,
+  onToggle,
+  badgeLabel,
+  extraTop,
+}: {
+  item: RiskItem;
+  addressed: boolean;
+  onToggle: () => void;
+  badgeLabel: string;
+  extraTop?: React.ReactNode;
+}) {
+  return (
+    <div
+      className={`rounded-xl border px-3 py-3 shadow-sm transition ${itemTone(
+        item,
+        addressed
+      )}`}
+    >
+      <div className="mb-3 flex flex-col gap-2.5">
+        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <div
+              className={`text-sm font-bold tracking-tight ${
+                addressed ? "text-emerald-900" : "text-slate-950"
+              }`}
+            >
+              {item?.label ?? "Flagged item"}
+            </div>
+            <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+              {badgeLabel}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left sm:text-right">
+            <div className="break-words text-sm font-semibold text-slate-950">
+              {money(Number(item?.cost_low ?? 0))} –{" "}
+              {money(Number(item?.cost_high ?? 0))}
+            </div>
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+              likely exposure
+            </div>
+          </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          className="shrink-0 rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-100"
-        >
-          {open ? "Hide" : "Show"}
-        </button>
+        <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-white/80 px-3 py-2.5">
+          <input
+            type="checkbox"
+            checked={addressed}
+            onChange={onToggle}
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+          />
+          <div>
+            <div className="text-sm font-semibold text-slate-950">
+              Mark as addressed by seller
+            </div>
+            <div className="text-[11px] leading-5 text-slate-600">
+              Tick this if the seller has proof this item was fixed, completed or
+              clearly checked.
+            </div>
+          </div>
+        </label>
+
+        {addressed ? (
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">
+            This item has been excluded from the live exposure total.
+          </div>
+        ) : null}
       </div>
 
-      {open ? <div>{children}</div> : null}
-    </section>
+      {extraTop ? <div className="mb-3">{extraTop}</div> : null}
+
+      {item?.why_flagged ? (
+        <p className="mt-2 text-sm leading-5 text-slate-700">
+          <span className="font-semibold text-slate-950">Why flagged:</span>{" "}
+          {item.why_flagged}
+        </p>
+      ) : null}
+
+      {item?.why_it_matters ? (
+        <p className="mt-2 text-sm leading-5 text-slate-700">
+          <span className="font-semibold text-slate-950">Why it matters:</span>{" "}
+          {item.why_it_matters}
+        </p>
+      ) : null}
+
+      {Array.isArray(item?.questions_to_ask) && item.questions_to_ask.length ? (
+        <div className="mt-3">
+          <div className="text-sm font-semibold text-slate-950">
+            Questions to ask
+          </div>
+          <ul className="mt-1.5 space-y-1.5 text-sm leading-5 text-slate-700">
+            {item.questions_to_ask.map((q: string, i: number) => (
+              <li key={i}>• {q}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {Array.isArray(item?.red_flags) && item.red_flags.length ? (
+        <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3">
+          <div className="text-sm font-semibold text-slate-950">Red flags</div>
+          <ul className="mt-1.5 space-y-1.5 text-sm leading-5 text-slate-700">
+            {item.red_flags.map((rf: string, i: number) => (
+              <li key={i}>• {rf}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -834,6 +892,8 @@ export default function ReportClient({
   askingPrice: number | null;
   marketValue: any;
 }) {
+  const [activeTab, setActiveTab] = useState<ReportTab>("overview");
+
   const knownModelIssues = useMemo<KnownModelIssue[]>(
     () => parseKnownModelIssues(fullSummary),
     [fullSummary]
@@ -1053,7 +1113,7 @@ export default function ReportClient({
   const priorityFindings = useMemo(() => {
     return [...allItems]
       .sort((a, b) => Number(b?.cost_high ?? 0) - Number(a?.cost_high ?? 0))
-      .slice(0, 3);
+      .slice(0, 5);
   }, [allItems]);
 
   function toggleAddressed(key: string) {
@@ -1126,7 +1186,7 @@ export default function ReportClient({
             <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0 max-w-3xl">
                 <h1 className="text-[1.45rem] font-extrabold leading-none tracking-tight text-black sm:text-[1.8rem] lg:text-[2.1rem]">
-                  Proceed, negotiate or walk away?
+                  What should you do next?
                 </h1>
 
                 <div className="mt-1.5 text-xs leading-5 text-slate-600">
@@ -1216,896 +1276,735 @@ export default function ReportClient({
                   What to do next
                 </div>
                 <div className="mt-1 grid gap-1.5 text-sm leading-5 text-slate-800">
-                  <div>1. Check the priority findings below first.</div>
-                  <div>2. Tick off anything the seller can prove is resolved.</div>
-                  <div>3. Review MoT patterns and price position.</div>
-                  <div>4. Verify service history before committing.</div>
+                  <div>1. Start with the Priority checks tab.</div>
+                  <div>2. Tick anything the seller can prove is resolved.</div>
+                  <div>3. Review MoT and vehicle history before committing.</div>
+                  <div>4. Use the overview totals to negotiate or walk away.</div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="sticky top-2 z-20 mt-3 print:hidden">
-            <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white/95 px-2 py-2 shadow-sm backdrop-blur">
-              <div className="flex min-w-max items-center gap-2">
-                <a
-                  href="#overview"
-                  className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
-                >
-                  Overview
-                </a>
-                <a
-                  href="#service-risks"
-                  className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
-                >
-                  Service
-                </a>
-                <a
-                  href="#mot-risks"
-                  className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
-                >
-                  MoT risks
-                </a>
-                <a
-                  href="#mot-history"
-                  className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
-                >
-                  MoT history
-                </a>
-                <a
-                  href="#known-issues"
-                  className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
-                >
-                  Known issues
-                </a>
-                <a
-                  href="#save-report"
-                  className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
-                >
-                  Save
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <section
-            id="overview"
-            className="mt-3 grid scroll-mt-24 grid-cols-1 gap-3 xl:grid-cols-3"
-          >
-            <div className="rounded-2xl border border-white/40 bg-white/92 p-3 shadow-[0_10px_28px_rgba(0,0,0,0.08)] backdrop-blur">
-              <div className="flex items-center justify-between gap-3">
-                <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                  Repair risk forecast
-                </div>
-                <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                  Live
-                </div>
-              </div>
-
-              <div className="mt-3 overflow-hidden">
-                {adjustedTotals.adjustedLow !== null &&
-                adjustedTotals.adjustedHigh !== null ? (
-                  <ExposureBar
-                    low={adjustedTotals.adjustedLow}
-                    high={adjustedTotals.adjustedHigh}
-                  />
-                ) : (
-                  <div className="text-sm text-slate-600">
-                    Exposure estimate unavailable.
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-3 grid grid-cols-1 gap-2">
-                <SummaryMetric
-                  label="Current range"
-                  value={`${money(adjustedTotals.adjustedLow)} – ${money(
-                    adjustedTotals.adjustedHigh
-                  )}`}
-                />
-                <SummaryMetric
-                  label="Reduction"
-                  value={`${money(adjustedTotals.lowReduction)} – ${money(
-                    adjustedTotals.highReduction
-                  )}`}
-                  subtext="From items marked addressed"
-                />
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-white/40 bg-white/92 p-3 shadow-[0_10px_28px_rgba(0,0,0,0.08)] backdrop-blur">
-              <div className="flex items-center justify-between gap-3">
-                <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                  Asking price vs market
-                </div>
-                <div
-                  className={`inline-flex w-fit items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${valuePillStyles(
-                    marketPosition
-                  )}`}
-                >
-                  {valuationUnavailable
-                    ? "Unavailable"
-                    : valuationPending
-                      ? "Pending"
-                      : valuePillLabel(marketPosition)}
-                </div>
-              </div>
-
-              <div className="mt-2 text-xs leading-5 text-slate-700">
-                {pricePositionSummary}
-              </div>
-
-              <div className="mt-3 grid grid-cols-3 gap-2">
-                <SummaryMetric
-                  label="Asking"
-                  value={money(askingPrice)}
-                />
-                <SummaryMetric
-                  label="Typical"
-                  value={money(marketBenchmark)}
-                />
-                <SummaryMetric
-                  label="Range"
-                  value={
-                    marketLow !== null && marketHigh !== null
-                      ? `${money(marketLow)} – ${money(marketHigh)}`
-                      : "—"
-                  }
-                />
-              </div>
-
-              {(valuationDate || valuationMileage !== null || marketDelta !== null) ? (
-                <div className="mt-2 text-[11px] leading-5 text-slate-500">
-                  {valuationDate ? `Basis ${formatDate(valuationDate)}` : ""}
-                  {valuationDate && valuationMileage !== null ? " · " : ""}
-                  {valuationMileage !== null
-                    ? `${valuationMileage.toLocaleString()} miles`
-                    : ""}
-                  {marketDelta !== null ? ` · Delta ${marketDelta > 0 ? "+" : ""}${money(marketDelta)}` : ""}
-                </div>
-              ) : null}
-            </div>
-
-            <div className="rounded-2xl border border-white/40 bg-white/92 p-3 shadow-[0_10px_28px_rgba(0,0,0,0.08)] backdrop-blur">
-              <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+          <div className="mt-3 overflow-x-auto rounded-2xl border border-slate-200 bg-white/95 px-2 py-2 shadow-sm backdrop-blur print:hidden">
+            <div className="flex min-w-max items-center gap-2">
+              <TabButton
+                active={activeTab === "overview"}
+                onClick={() => setActiveTab("overview")}
+              >
+                Overview
+              </TabButton>
+              <TabButton
+                active={activeTab === "priority"}
+                onClick={() => setActiveTab("priority")}
+              >
+                Priority checks
+              </TabButton>
+              <TabButton
+                active={activeTab === "mot"}
+                onClick={() => setActiveTab("mot")}
+              >
+                MoT
+              </TabButton>
+              <TabButton
+                active={activeTab === "history"}
+                onClick={() => setActiveTab("history")}
+              >
                 Vehicle history
-              </div>
+              </TabButton>
+              <TabButton
+                active={activeTab === "all"}
+                onClick={() => setActiveTab("all")}
+              >
+                All findings
+              </TabButton>
+            </div>
+          </div>
 
-              {!hpiUnlocked ? (
-                <div className="mt-2 rounded-xl border border-[var(--aa-red)]/20 bg-[var(--aa-red)]/5 p-3">
-                  <div className="text-sm font-semibold text-slate-950">
-                    Add vehicle history
+          {activeTab === "overview" ? (
+            <div className="mt-3 space-y-3">
+              <section className="grid grid-cols-1 gap-3 xl:grid-cols-3">
+                <div className="rounded-2xl border border-white/40 bg-white/92 p-3 shadow-[0_10px_28px_rgba(0,0,0,0.08)] backdrop-blur">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                      Repair risk forecast
+                    </div>
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                      Live
+                    </div>
                   </div>
-                  <p className="mt-1 text-xs leading-5 text-slate-700">
-                    Finance, write-off, stolen, mileage anomaly, keeper and plate checks.
-                  </p>
-                  <div className="mt-3">
-                    <a
-                      href={hpiUpgradeCheckoutUrl}
-                      className="btn-primary block w-full text-center sm:inline-flex sm:w-auto"
-                    >
-                      Add HPI check · {hpiUpgradePriceLabel}
-                    </a>
-                  </div>
-                </div>
-              ) : hpiStatus === "error" ? (
-                <div className="mt-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-slate-700">
-                  History was unlocked, but there was a temporary loading issue.
-                </div>
-              ) : (
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  {hpiChecks.length ? (
-                    hpiChecks.slice(0, 6).map((item) => (
-                      <SummaryMetric
-                        key={item.label}
-                        label={item.label}
-                        value={renderHpiDisplayValue(item.value)}
+
+                  <div className="mt-3 overflow-hidden">
+                    {adjustedTotals.adjustedLow !== null &&
+                    adjustedTotals.adjustedHigh !== null ? (
+                      <ExposureBar
+                        low={adjustedTotals.adjustedLow}
+                        high={adjustedTotals.adjustedHigh}
                       />
-                    ))
-                  ) : (
-                    <div className="col-span-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700">
-                      Vehicle history summary available.
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </section>
-
-          {priorityFindings.length ? (
-            <section className="mt-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
-                    Start here
-                  </div>
-                  <div className="mt-0.5 text-sm font-semibold text-slate-950">
-                    Priority findings
-                  </div>
-                </div>
-                <div className="text-[11px] text-slate-500">
-                  Highest estimated downside first
-                </div>
-              </div>
-
-              <div className="mt-3 grid grid-cols-1 gap-2 lg:grid-cols-3">
-                {priorityFindings.map((item, index) => (
-                  <div
-                    key={`${item.item_id ?? item.label ?? "priority"}-${index}`}
-                    className={`rounded-xl border px-3 py-2.5 ${itemTone(item, false)}`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="text-sm font-semibold text-slate-950">
-                          {item.label ?? "Flagged item"}
-                        </div>
-                        <div className="mt-0.5 text-[11px] uppercase tracking-wide text-slate-500">
-                          {String(item.category ?? "risk").replace(/_/g, " ")}
-                        </div>
-                      </div>
-                      <div className="shrink-0 text-right">
-                        <div className="text-sm font-bold text-slate-950">
-                          {money(Number(item.cost_high ?? 0))}
-                        </div>
-                        <div className="text-[10px] uppercase tracking-wide text-slate-500">
-                          high end
-                        </div>
-                      </div>
-                    </div>
-
-                    {item.why_flagged ? (
-                      <div className="mt-2 text-xs leading-5 text-slate-700">
-                        {item.why_flagged}
-                      </div>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            </section>
-          ) : null}
-
-          <div className="mt-3 grid grid-cols-1 gap-3 xl:grid-cols-[1.15fr_0.85fr]">
-            <div className="rounded-2xl border border-white/40 bg-white/92 p-3 shadow-[0_10px_28px_rgba(0,0,0,0.08)] backdrop-blur">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                    Vehicle identity used for matching
-                  </div>
-                  <div className="mt-1 text-xs leading-5 text-slate-700">
-                    {vehicleIdentityData.matchExplainer ||
-                      "Vehicle details available for this report."}
-                  </div>
-                </div>
-
-                {vehicleIdentityData.identityStatusLabel ? (
-                  <div
-                    className={`inline-flex w-fit rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${
-                      vehicleIdentityData.enrichedIdentity
-                        ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
-                        : "border border-slate-200 bg-slate-50 text-slate-700"
-                    }`}
-                  >
-                    {vehicleIdentityData.identityStatusLabel}
-                  </div>
-                ) : null}
-              </div>
-
-              {identityRows.length ? (
-                <div className="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-3">
-                  {identityRows.map((row) => (
-                    <SummaryMetric
-                      key={row.label}
-                      label={row.label}
-                      value={row.value as string}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="mt-3 text-sm text-slate-600">
-                  Detailed vehicle identity was not available for this report.
-                </div>
-              )}
-            </div>
-
-            <div className="rounded-2xl border border-white/40 bg-white/92 p-3 shadow-[0_10px_28px_rgba(0,0,0,0.08)] backdrop-blur">
-              <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                MoT summary
-              </div>
-
-              {motPanel.available ? (
-                <>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <span className="inline-flex items-center rounded-full border border-slate-300 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-700">
-                      Latest {motPanel.latestResult ? titleCase(motPanel.latestResult) : "—"}
-                    </span>
-
-                    <span className="inline-flex items-center rounded-full border border-slate-300 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-700">
-                      {motPanel.latestAdvisoryCount} latest advisories
-                    </span>
-                  </div>
-
-                  <div className="mt-2 text-xs text-slate-600">
-                    Latest test:{" "}
-                    <span className="font-semibold text-slate-900">
-                      {formatDate(motPanel.latestDate) ?? "—"}
-                    </span>
-                  </div>
-
-                  <div className="mt-3 grid grid-cols-2 gap-2">
-                    <MiniStat label="Passes" value={motPanel.passCount} />
-                    <MiniStat label="Fails" value={motPanel.failCount} />
-                    <MiniStat label="Advisories" value={motPanel.advisoryCount} />
-                    <MiniStat
-                      label="Repeat patterns"
-                      value={motPanel.repeatAdvisoryCount}
-                    />
-                  </div>
-
-                  {repeatPatternLabels.length ? (
-                    <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50/70 p-3">
-                      <div className="text-[10px] font-semibold uppercase tracking-wide text-amber-800">
-                        Repeated pattern categories
-                      </div>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {repeatPatternLabels.map((label) => (
-                          <span
-                            key={label}
-                            className="inline-flex items-center rounded-full border border-amber-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-900"
-                          >
-                            {label}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
-                </>
-              ) : (
-                <div className="mt-3 text-sm text-slate-600">
-                  MoT history was not available for this vehicle.
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <section
-        id="save-report"
-        className="mt-3 scroll-mt-24 rounded-2xl border border-red-200 bg-red-50/50 p-3 print:hidden"
-      >
-        <div className="text-sm font-semibold text-slate-950">
-          Save access to this report
-        </div>
-
-        <div className="mt-1 text-xs leading-5 text-slate-700">
-          Create an account after purchase to keep access to this report for 30
-          days
-          {expiresAtLabel ? (
-            <>
-              {" "}
-              — until <span className="font-semibold">{expiresAtLabel}</span>
-            </>
-          ) : (
-            <> from the date of payment</>
-          )}
-          .
-        </div>
-
-        <div className="mt-1 text-xs leading-5 text-slate-700">
-          If you do not register or download your report, you may not be able to
-          access it again after that 30-day period has ended.
-        </div>
-
-        {!ownerUserId ? (
-          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-            <Link href={registerUrl} className="btn-primary w-full text-center sm:w-auto">
-              Create account to save report
-            </Link>
-
-            <Link href={loginUrl} className="btn-outline w-full text-center sm:w-auto">
-              Log in to save report
-            </Link>
-          </div>
-        ) : userId === ownerUserId ? (
-          <div className="mt-3 inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-800">
-            This report is linked to your account
-          </div>
-        ) : null}
-      </section>
-
-      <div className="mt-4">
-        <h2 className="text-lg font-extrabold tracking-tight text-slate-950">
-          What to check before you buy
-        </h2>
-        <p className="mt-1 text-xs leading-5 text-slate-700">
-          Tick an item if the seller can prove it has already been addressed.
-          The repair-risk total above will update automatically.
-        </p>
-      </div>
-
-      <div className="mt-3 space-y-3">
-        <SectionCard
-          id="service-risks"
-          eyebrow="Practical checks"
-          title="Service and maintenance risks"
-          description="These are the most likely near-term maintenance items to verify before you commit."
-          countLabel={`${serviceRiskItems.length} item${
-            serviceRiskItems.length === 1 ? "" : "s"
-          }`}
-          defaultOpen
-        >
-          {serviceRiskItems.length ? (
-            <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-              {serviceRiskItems.map((item, index) => {
-                const key = getItemKey(item, index);
-                const addressed = !!addressedIds[key];
-
-                return (
-                  <div
-                    key={`${item?.item_id ?? "service"}-${index}`}
-                    className={`rounded-xl border px-3 py-3 shadow-sm transition ${itemTone(
-                      item,
-                      addressed
-                    )}`}
-                  >
-                    <div className="mb-3 flex flex-col gap-2.5">
-                      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="min-w-0">
-                          <div
-                            className={`text-sm font-bold tracking-tight ${
-                              addressed ? "text-emerald-900" : "text-slate-950"
-                            }`}
-                          >
-                            {item?.label ?? "Flagged item"}
-                          </div>
-                          <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                            {String(item?.category ?? "service").replace(
-                              /_/g,
-                              " "
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left sm:text-right">
-                          <div className="break-words text-sm font-semibold text-slate-950">
-                            {money(Number(item?.cost_low ?? 0))} –{" "}
-                            {money(Number(item?.cost_high ?? 0))}
-                          </div>
-                          <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                            likely exposure
-                          </div>
-                        </div>
-                      </div>
-
-                      <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-white/80 px-3 py-2.5">
-                        <input
-                          type="checkbox"
-                          checked={addressed}
-                          onChange={() => toggleAddressed(key)}
-                          className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                        />
-                        <div>
-                          <div className="text-sm font-semibold text-slate-950">
-                            Mark as addressed by seller
-                          </div>
-                          <div className="text-[11px] leading-5 text-slate-600">
-                            Tick this if the seller has proof this item was fixed
-                            or completed.
-                          </div>
-                        </div>
-                      </label>
-
-                      {addressed ? (
-                        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">
-                          This item has been excluded from the live exposure total.
-                        </div>
-                      ) : null}
-                    </div>
-
-                    {item?.why_flagged ? (
-                      <p className="mt-3 text-sm leading-5 text-slate-700">
-                        <span className="font-semibold text-slate-950">
-                          Why flagged:
-                        </span>{" "}
-                        {item.why_flagged}
-                      </p>
-                    ) : null}
-
-                    {item?.why_it_matters ? (
-                      <p className="mt-2 text-sm leading-5 text-slate-700">
-                        <span className="font-semibold text-slate-950">
-                          Why it matters:
-                        </span>{" "}
-                        {item.why_it_matters}
-                      </p>
-                    ) : null}
-
-                    {Array.isArray(item?.questions_to_ask) &&
-                    item.questions_to_ask.length ? (
-                      <div className="mt-3">
-                        <div className="text-sm font-semibold text-slate-950">
-                          Questions to ask
-                        </div>
-                        <ul className="mt-1.5 space-y-1.5 text-sm leading-5 text-slate-700">
-                          {item.questions_to_ask.map((q: string, i: number) => (
-                            <li key={i}>• {q}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    ) : null}
-
-                    {Array.isArray(item?.red_flags) && item.red_flags.length ? (
-                      <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3">
-                        <div className="text-sm font-semibold text-slate-950">
-                          Red flags
-                        </div>
-                        <ul className="mt-1.5 space-y-1.5 text-sm leading-5 text-slate-700">
-                          {item.red_flags.map((rf: string, i: number) => (
-                            <li key={i}>• {rf}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
-              No additional service or maintenance risks were listed in this
-              report.
-            </div>
-          )}
-        </SectionCard>
-
-        <SectionCard
-          id="mot-risks"
-          eyebrow="History-derived checks"
-          title="MoT-derived risks"
-          description="These findings are based on patterns and warning signals found in the recorded MoT history."
-          countLabel={`${motRiskItems.length} item${
-            motRiskItems.length === 1 ? "" : "s"
-          }`}
-          defaultOpen
-        >
-          {motRiskItems.length ? (
-            <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-              {motRiskItems.map((item, index) => {
-                const key = getItemKey(item, serviceRiskItems.length + index);
-                const addressed = !!addressedIds[key];
-                const isRepeatPatternItem =
-                  item.item_id === "mot_repeat_advisories" ||
-                  String(item.label ?? "")
-                    .toLowerCase()
-                    .includes("recurring advisory pattern");
-
-                return (
-                  <div
-                    key={`${item?.item_id ?? "mot"}-${index}`}
-                    className={`rounded-xl border px-3 py-3 shadow-sm transition ${itemTone(
-                      item,
-                      addressed
-                    )}`}
-                  >
-                    <div className="mb-3 flex flex-col gap-2.5">
-                      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="min-w-0">
-                          <div
-                            className={`text-sm font-bold tracking-tight ${
-                              addressed ? "text-emerald-900" : "text-slate-950"
-                            }`}
-                          >
-                            {item?.label ?? "MoT history item"}
-                          </div>
-                          <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                            MoT-derived risk
-                          </div>
-                        </div>
-
-                        <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left sm:text-right">
-                          <div className="break-words text-sm font-semibold text-slate-950">
-                            {money(Number(item?.cost_low ?? 0))} –{" "}
-                            {money(Number(item?.cost_high ?? 0))}
-                          </div>
-                          <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                            likely exposure
-                          </div>
-                        </div>
-                      </div>
-
-                      <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-white/80 px-3 py-2.5">
-                        <input
-                          type="checkbox"
-                          checked={addressed}
-                          onChange={() => toggleAddressed(key)}
-                          className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                        />
-                        <div>
-                          <div className="text-sm font-semibold text-slate-950">
-                            Mark as addressed by seller
-                          </div>
-                          <div className="text-[11px] leading-5 text-slate-600">
-                            Tick this if the seller has proof this issue was
-                            repaired or resolved.
-                          </div>
-                        </div>
-                      </label>
-
-                      {addressed ? (
-                        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">
-                          This item has been excluded from the live exposure total.
-                        </div>
-                      ) : null}
-                    </div>
-
-                    {item?.why_flagged ? (
-                      <p className="mt-3 text-sm leading-5 text-slate-700">
-                        <span className="font-semibold text-slate-950">
-                          Why flagged:
-                        </span>{" "}
-                        {item.why_flagged}
-                      </p>
-                    ) : null}
-
-                    {isRepeatPatternItem && repeatPatternLabels.length ? (
-                      <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50/70 p-3">
-                        <div className="text-sm font-semibold text-slate-950">
-                          Pattern categories identified
-                        </div>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {repeatPatternLabels.map((label) => (
-                            <span
-                              key={label}
-                              className="inline-flex items-center rounded-full border border-amber-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-900"
-                            >
-                              {label}
-                            </span>
-                          ))}
-                        </div>
-
-                        {repeatPatternDetails.length ? (
-                          <div className="mt-3 space-y-2">
-                            {repeatPatternDetails.map((detail, detailIndex) => (
-                              <div
-                                key={`${detail.text ?? "repeat"}-${detailIndex}`}
-                                className="rounded-lg border border-amber-100 bg-white px-3 py-2.5"
-                              >
-                                <div className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between">
-                                  <div className="text-sm font-semibold text-slate-950">
-                                    {detail.patternLabel ?? "Pattern"}
-                                  </div>
-                                  <div className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
-                                    Seen {detail.count ?? 0} times
-                                  </div>
-                                </div>
-                                <div className="mt-1.5 text-sm leading-5 text-slate-700">
-                                  {detail.text ?? "Repeated advisory wording detected."}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : null}
-                      </div>
-                    ) : null}
-
-                    {item?.why_it_matters ? (
-                      <p className="mt-2 text-sm leading-5 text-slate-700">
-                        <span className="font-semibold text-slate-950">
-                          Why it matters:
-                        </span>{" "}
-                        {item.why_it_matters}
-                      </p>
-                    ) : null}
-
-                    {Array.isArray(item?.questions_to_ask) &&
-                    item.questions_to_ask.length ? (
-                      <div className="mt-3">
-                        <div className="text-sm font-semibold text-slate-950">
-                          Questions to ask
-                        </div>
-                        <ul className="mt-1.5 space-y-1.5 text-sm leading-5 text-slate-700">
-                          {item.questions_to_ask.map((q: string, i: number) => (
-                            <li key={i}>• {q}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    ) : null}
-
-                    {Array.isArray(item?.red_flags) && item.red_flags.length ? (
-                      <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3">
-                        <div className="text-sm font-semibold text-slate-950">
-                          Red flags
-                        </div>
-                        <ul className="mt-1.5 space-y-1.5 text-sm leading-5 text-slate-700">
-                          {item.red_flags.map((rf: string, i: number) => (
-                            <li key={i}>• {rf}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
-              No additional MoT-derived risks were listed in this report.
-            </div>
-          )}
-        </SectionCard>
-
-        <SectionCard
-          id="mot-history"
-          eyebrow="Full record"
-          title="Full MoT history"
-          description="Every recorded test is shown below so the buyer can review the actual pass, fail and advisory trail instead of relying only on summary counts."
-          countLabel={`${motTests.length} test${
-            motTests.length === 1 ? "" : "s"
-          }`}
-          defaultOpen={false}
-        >
-          {motTests.length ? (
-            <div className="space-y-3">
-              {motTests.map((test, index) => {
-                const defectGroups = groupMotDefects(test.defects);
-                const allDefects = [
-                  ...defectGroups.dangerous,
-                  ...defectGroups.major,
-                  ...defectGroups.minor,
-                  ...defectGroups.advisory,
-                  ...defectGroups.other,
-                ];
-                const mileageDisplay = parseMotMileage(test);
-
-                return (
-                  <div
-                    key={`${test.completedDate ?? "mot-test"}-${index}`}
-                    className="rounded-xl border border-slate-200 bg-slate-50 p-3"
-                  >
-                    <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
-                      <div className="min-w-0">
-                        <div className="text-sm font-bold tracking-tight text-slate-950">
-                          {formatDate(test.completedDate) ?? "Unknown test date"}
-                        </div>
-
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          <span
-                            className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${getMotBadgeStyles(
-                              test.testResult
-                            )}`}
-                          >
-                            {getMotBadgeLabel(test.testResult)}
-                          </span>
-
-                          {mileageDisplay ? (
-                            <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-700">
-                              {mileageDisplay}
-                            </span>
-                          ) : null}
-
-                          {test.expiryDate ? (
-                            <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-700">
-                              Expiry {formatDate(test.expiryDate)}
-                            </span>
-                          ) : null}
-                        </div>
-                      </div>
-
-                      <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left sm:text-right">
-                        <div className="text-sm font-semibold text-slate-950">
-                          {allDefects.length}
-                        </div>
-                        <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                          defect{allDefects.length === 1 ? "" : "s"}
-                        </div>
-                      </div>
-                    </div>
-
-                    {allDefects.length ? (
-                      <div className="mt-3 space-y-2">
-                        {allDefects.map((defect, defectIndex) => (
-                          <div
-                            key={`${defect.text ?? "defect"}-${defectIndex}`}
-                            className="rounded-lg border border-slate-200 bg-white p-3"
-                          >
-                            <div className="flex flex-wrap items-center gap-2">
-                              <span
-                                className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${defectTone(
-                                  defect?.type
-                                )}`}
-                              >
-                                {defectTypeLabel(String(defect?.type ?? "Other"))}
-                              </span>
-                            </div>
-
-                            <div className="mt-1.5 break-words text-sm leading-5 text-slate-700">
-                              {defect?.text ?? "No defect text provided."}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
                     ) : (
-                      <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50/70 p-3 text-sm text-emerald-900">
-                        No defects or advisories were recorded for this test.
+                      <div className="text-sm text-slate-600">
+                        Exposure estimate unavailable.
                       </div>
                     )}
                   </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
-              Full MoT test history was not available in this report payload.
-            </div>
-          )}
-        </SectionCard>
 
-        <SectionCard
-          id="known-issues"
-          eyebrow="Known weak points"
-          title="Model-specific issues to check"
-          description="These are known issues associated with this vehicle type. They are not proof a fault is present, but they are sensible checks before purchase."
-          countLabel={`${knownModelIssues.length} item${
-            knownModelIssues.length === 1 ? "" : "s"
-          }`}
-          defaultOpen
-        >
-          {knownModelIssues.length ? (
-            <>
-              <div className="mb-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm leading-5 text-slate-700">
-                {vehicleIdentityData.matchExplainer ? (
-                  <div>{vehicleIdentityData.matchExplainer}</div>
-                ) : null}
-                {knownIssueExplainer ? (
-                  <div className={vehicleIdentityData.matchExplainer ? "mt-2" : ""}>
-                    {knownIssueExplainer}
+                  <div className="mt-3 grid grid-cols-1 gap-2">
+                    <SummaryMetric
+                      label="Current range"
+                      value={`${money(adjustedTotals.adjustedLow)} – ${money(
+                        adjustedTotals.adjustedHigh
+                      )}`}
+                    />
+                    <SummaryMetric
+                      label="Reduction"
+                      value={`${money(adjustedTotals.lowReduction)} – ${money(
+                        adjustedTotals.highReduction
+                      )}`}
+                      subtext="From items marked addressed"
+                    />
                   </div>
-                ) : null}
-                {knownModelIssueExposure.low !== null &&
-                knownModelIssueExposure.high !== null ? (
-                  <div className="mt-2 font-semibold text-slate-950">
-                    Weighted exposure included above:{" "}
-                    {money(knownModelIssueExposure.low)} –{" "}
-                    {money(knownModelIssueExposure.high)}
-                  </div>
-                ) : null}
-              </div>
+                </div>
 
-              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                {knownModelIssues.map((item, index) => {
-                  const key = getItemKey(
-                    item,
-                    serviceRiskItems.length + motRiskItems.length + index
-                  );
-                  const addressed = !!addressedIds[key];
-
-                  return (
+                <div className="rounded-2xl border border-white/40 bg-white/92 p-3 shadow-[0_10px_28px_rgba(0,0,0,0.08)] backdrop-blur">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                      Asking price vs market
+                    </div>
                     <div
-                      key={`${item?.issue_code ?? item?.item_id ?? "known"}-${index}`}
-                      className={`rounded-xl border px-3 py-3 shadow-sm transition ${itemTone(
-                        item,
-                        addressed
+                      className={`inline-flex w-fit items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${valuePillStyles(
+                        marketPosition
                       )}`}
                     >
-                      <div className="mb-3 flex flex-col gap-2.5">
-                        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
-                          <div className="min-w-0">
-                            <div
-                              className={`text-sm font-bold tracking-tight ${
-                                addressed ? "text-emerald-900" : "text-slate-950"
-                              }`}
-                            >
-                              {item?.label ?? "Known issue"}
+                      {valuationUnavailable
+                        ? "Unavailable"
+                        : valuationPending
+                          ? "Pending"
+                          : valuePillLabel(marketPosition)}
+                    </div>
+                  </div>
+
+                  <div className="mt-2 text-xs leading-5 text-slate-700">
+                    {pricePositionSummary}
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    <SummaryMetric label="Asking" value={money(askingPrice)} />
+                    <SummaryMetric label="Typical" value={money(marketBenchmark)} />
+                    <SummaryMetric
+                      label="Range"
+                      value={
+                        marketLow !== null && marketHigh !== null
+                          ? `${money(marketLow)} – ${money(marketHigh)}`
+                          : "—"
+                      }
+                    />
+                  </div>
+
+                  {(valuationDate || valuationMileage !== null || marketDelta !== null) ? (
+                    <div className="mt-2 text-[11px] leading-5 text-slate-500">
+                      {valuationDate ? `Basis ${formatDate(valuationDate)}` : ""}
+                      {valuationDate && valuationMileage !== null ? " · " : ""}
+                      {valuationMileage !== null
+                        ? `${valuationMileage.toLocaleString()} miles`
+                        : ""}
+                      {marketDelta !== null
+                        ? ` · Delta ${marketDelta > 0 ? "+" : ""}${money(marketDelta)}`
+                        : ""}
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="rounded-2xl border border-white/40 bg-white/92 p-3 shadow-[0_10px_28px_rgba(0,0,0,0.08)] backdrop-blur">
+                  <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                    Vehicle history
+                  </div>
+
+                  {!hpiUnlocked ? (
+                    <div className="mt-2 rounded-xl border border-[var(--aa-red)]/20 bg-[var(--aa-red)]/5 p-3">
+                      <div className="text-sm font-semibold text-slate-950">
+                        Add vehicle history
+                      </div>
+                      <p className="mt-1 text-xs leading-5 text-slate-700">
+                        Finance, write-off, stolen, mileage anomaly, keeper and plate checks.
+                      </p>
+                      <div className="mt-3">
+                        <a
+                          href={hpiUpgradeCheckoutUrl}
+                          className="btn-primary block w-full text-center sm:inline-flex sm:w-auto"
+                        >
+                          Add HPI check · {hpiUpgradePriceLabel}
+                        </a>
+                      </div>
+                    </div>
+                  ) : hpiStatus === "error" ? (
+                    <div className="mt-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-slate-700">
+                      History was unlocked, but there was a temporary loading issue.
+                    </div>
+                  ) : (
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      {hpiChecks.length ? (
+                        hpiChecks.slice(0, 6).map((item) => (
+                          <SummaryMetric
+                            key={item.label}
+                            label={item.label}
+                            value={renderHpiDisplayValue(item.value)}
+                          />
+                        ))
+                      ) : (
+                        <div className="col-span-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700">
+                          Vehicle history summary available.
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              <section className="grid grid-cols-1 gap-3 xl:grid-cols-[1.15fr_0.85fr]">
+                <div className="rounded-2xl border border-white/40 bg-white/92 p-3 shadow-[0_10px_28px_rgba(0,0,0,0.08)] backdrop-blur">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                        Vehicle identity used for matching
+                      </div>
+                      <div className="mt-1 text-xs leading-5 text-slate-700">
+                        {vehicleIdentityData.matchExplainer ||
+                          "Vehicle details available for this report."}
+                      </div>
+                    </div>
+
+                    {vehicleIdentityData.identityStatusLabel ? (
+                      <div
+                        className={`inline-flex w-fit rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${
+                          vehicleIdentityData.enrichedIdentity
+                            ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
+                            : "border border-slate-200 bg-slate-50 text-slate-700"
+                        }`}
+                      >
+                        {vehicleIdentityData.identityStatusLabel}
+                      </div>
+                    ) : null}
+                  </div>
+
+                  {identityRows.length ? (
+                    <div className="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-3">
+                      {identityRows.map((row) => (
+                        <SummaryMetric
+                          key={row.label}
+                          label={row.label}
+                          value={row.value as string}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="mt-3 text-sm text-slate-600">
+                      Detailed vehicle identity was not available for this report.
+                    </div>
+                  )}
+                </div>
+
+                <div className="rounded-2xl border border-white/40 bg-white/92 p-3 shadow-[0_10px_28px_rgba(0,0,0,0.08)] backdrop-blur">
+                  <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                    MoT summary
+                  </div>
+
+                  {motPanel.available ? (
+                    <>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <span className="inline-flex items-center rounded-full border border-slate-300 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-700">
+                          Latest {motPanel.latestResult ? titleCase(motPanel.latestResult) : "—"}
+                        </span>
+
+                        <span className="inline-flex items-center rounded-full border border-slate-300 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-700">
+                          {motPanel.latestAdvisoryCount} latest advisories
+                        </span>
+                      </div>
+
+                      <div className="mt-2 text-xs text-slate-600">
+                        Latest test:{" "}
+                        <span className="font-semibold text-slate-900">
+                          {formatDate(motPanel.latestDate) ?? "—"}
+                        </span>
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        <MiniStat label="Passes" value={motPanel.passCount} />
+                        <MiniStat label="Fails" value={motPanel.failCount} />
+                        <MiniStat label="Advisories" value={motPanel.advisoryCount} />
+                        <MiniStat
+                          label="Repeat patterns"
+                          value={motPanel.repeatAdvisoryCount}
+                        />
+                      </div>
+
+                      {repeatPatternLabels.length ? (
+                        <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50/70 p-3">
+                          <div className="text-[10px] font-semibold uppercase tracking-wide text-amber-800">
+                            Repeated pattern categories
+                          </div>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {repeatPatternLabels.map((label) => (
+                              <span
+                                key={label}
+                                className="inline-flex items-center rounded-full border border-amber-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-900"
+                              >
+                                {label}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                    </>
+                  ) : (
+                    <div className="mt-3 text-sm text-slate-600">
+                      MoT history was not available for this vehicle.
+                    </div>
+                  )}
+                </div>
+              </section>
+            </div>
+          ) : null}
+
+          {activeTab === "priority" ? (
+            <div className="mt-3 space-y-3">
+              <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+                      Start here
+                    </div>
+                    <div className="mt-0.5 text-sm font-semibold text-slate-950">
+                      Priority checks
+                    </div>
+                  </div>
+                  <div className="text-[11px] text-slate-500">
+                    Highest estimated downside first
+                  </div>
+                </div>
+
+                <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-2">
+                  {priorityFindings.length ? (
+                    priorityFindings.map((item, index) => {
+                      const key = getItemKey(item, allItems.indexOf(item));
+                      const addressed = !!addressedIds[key];
+
+                      return (
+                        <RiskCard
+                          key={`${item.item_id ?? item.label ?? "priority"}-${index}`}
+                          item={item}
+                          addressed={addressed}
+                          onToggle={() => toggleAddressed(key)}
+                          badgeLabel={String(item.category ?? "priority").replace(
+                            /_/g,
+                            " "
+                          )}
+                        />
+                      );
+                    })
+                  ) : (
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                      No priority findings were available for this report.
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              {knownModelIssues.length ? (
+                <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                  <div className="text-sm font-semibold text-slate-950">
+                    Known issue matching notes
+                  </div>
+                  <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm leading-5 text-slate-700">
+                    {vehicleIdentityData.matchExplainer ? (
+                      <div>{vehicleIdentityData.matchExplainer}</div>
+                    ) : null}
+                    {knownIssueExplainer ? (
+                      <div className={vehicleIdentityData.matchExplainer ? "mt-2" : ""}>
+                        {knownIssueExplainer}
+                      </div>
+                    ) : null}
+                    {knownModelIssueExposure.low !== null &&
+                    knownModelIssueExposure.high !== null ? (
+                      <div className="mt-2 font-semibold text-slate-950">
+                        Weighted exposure included above:{" "}
+                        {money(knownModelIssueExposure.low)} –{" "}
+                        {money(knownModelIssueExposure.high)}
+                      </div>
+                    ) : null}
+                  </div>
+                </section>
+              ) : null}
+            </div>
+          ) : null}
+
+          {activeTab === "mot" ? (
+            <div className="mt-3 space-y-3">
+              <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                <div className="mb-3">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+                    History-derived checks
+                  </div>
+                  <div className="mt-0.5 text-base font-bold text-slate-950">
+                    MoT-derived risks
+                  </div>
+                  <p className="mt-0.5 text-xs leading-5 text-slate-700">
+                    These findings are based on patterns and warning signals found
+                    in the recorded MoT history.
+                  </p>
+                </div>
+
+                {motRiskItems.length ? (
+                  <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                    {motRiskItems.map((item, index) => {
+                      const key = getItemKey(item, serviceRiskItems.length + index);
+                      const addressed = !!addressedIds[key];
+                      const isRepeatPatternItem =
+                        item.item_id === "mot_repeat_advisories" ||
+                        String(item.label ?? "")
+                          .toLowerCase()
+                          .includes("recurring advisory pattern");
+
+                      return (
+                        <RiskCard
+                          key={`${item?.item_id ?? "mot"}-${index}`}
+                          item={item}
+                          addressed={addressed}
+                          onToggle={() => toggleAddressed(key)}
+                          badgeLabel="MoT-derived risk"
+                          extraTop={
+                            isRepeatPatternItem && repeatPatternLabels.length ? (
+                              <div className="rounded-lg border border-amber-200 bg-amber-50/70 p-3">
+                                <div className="text-sm font-semibold text-slate-950">
+                                  Pattern categories identified
+                                </div>
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                  {repeatPatternLabels.map((label) => (
+                                    <span
+                                      key={label}
+                                      className="inline-flex items-center rounded-full border border-amber-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-900"
+                                    >
+                                      {label}
+                                    </span>
+                                  ))}
+                                </div>
+
+                                {repeatPatternDetails.length ? (
+                                  <div className="mt-3 space-y-2">
+                                    {repeatPatternDetails.map((detail, detailIndex) => (
+                                      <div
+                                        key={`${detail.text ?? "repeat"}-${detailIndex}`}
+                                        className="rounded-lg border border-amber-100 bg-white px-3 py-2.5"
+                                      >
+                                        <div className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between">
+                                          <div className="text-sm font-semibold text-slate-950">
+                                            {detail.patternLabel ?? "Pattern"}
+                                          </div>
+                                          <div className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+                                            Seen {detail.count ?? 0} times
+                                          </div>
+                                        </div>
+                                        <div className="mt-1.5 text-sm leading-5 text-slate-700">
+                                          {detail.text ?? "Repeated advisory wording detected."}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : null}
+                              </div>
+                            ) : null
+                          }
+                        />
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                    No additional MoT-derived risks were listed in this report.
+                  </div>
+                )}
+              </section>
+
+              <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                <div className="mb-3">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+                    Full record
+                  </div>
+                  <div className="mt-0.5 text-base font-bold text-slate-950">
+                    Full MoT history
+                  </div>
+                </div>
+
+                {motTests.length ? (
+                  <div className="space-y-3">
+                    {motTests.map((test, index) => {
+                      const defectGroups = groupMotDefects(test.defects);
+                      const allDefects = [
+                        ...defectGroups.dangerous,
+                        ...defectGroups.major,
+                        ...defectGroups.minor,
+                        ...defectGroups.advisory,
+                        ...defectGroups.other,
+                      ];
+                      const mileageDisplay = parseMotMileage(test);
+
+                      return (
+                        <div
+                          key={`${test.completedDate ?? "mot-test"}-${index}`}
+                          className="rounded-xl border border-slate-200 bg-slate-50 p-3"
+                        >
+                          <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+                            <div className="min-w-0">
+                              <div className="text-sm font-bold tracking-tight text-slate-950">
+                                {formatDate(test.completedDate) ?? "Unknown test date"}
+                              </div>
+
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                <span
+                                  className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${getMotBadgeStyles(
+                                    test.testResult
+                                  )}`}
+                                >
+                                  {getMotBadgeLabel(test.testResult)}
+                                </span>
+
+                                {mileageDisplay ? (
+                                  <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-700">
+                                    {mileageDisplay}
+                                  </span>
+                                ) : null}
+
+                                {test.expiryDate ? (
+                                  <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-700">
+                                    Expiry {formatDate(test.expiryDate)}
+                                  </span>
+                                ) : null}
+                              </div>
                             </div>
 
-                            <div className="mt-2 flex flex-wrap gap-2">
-                              <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-700">
-                                {String(item?.category ?? "known issue").replace(
-                                  /_/g,
-                                  " "
-                                )}
-                              </span>
+                            <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left sm:text-right">
+                              <div className="text-sm font-semibold text-slate-950">
+                                {allDefects.length}
+                              </div>
+                              <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                                defect{allDefects.length === 1 ? "" : "s"}
+                              </div>
+                            </div>
+                          </div>
 
+                          {allDefects.length ? (
+                            <div className="mt-3 space-y-2">
+                              {allDefects.map((defect, defectIndex) => (
+                                <div
+                                  key={`${defect.text ?? "defect"}-${defectIndex}`}
+                                  className="rounded-lg border border-slate-200 bg-white p-3"
+                                >
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <span
+                                      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${defectTone(
+                                        defect?.type
+                                      )}`}
+                                    >
+                                      {defectTypeLabel(String(defect?.type ?? "Other"))}
+                                    </span>
+                                  </div>
+
+                                  <div className="mt-1.5 break-words text-sm leading-5 text-slate-700">
+                                    {defect?.text ?? "No defect text provided."}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50/70 p-3 text-sm text-emerald-900">
+                              No defects or advisories were recorded for this test.
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                    Full MoT test history was not available in this report payload.
+                  </div>
+                )}
+              </section>
+            </div>
+          ) : null}
+
+          {activeTab === "history" ? (
+            <div className="mt-3 space-y-3">
+              <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                <div className="mb-3">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+                    Vehicle history
+                  </div>
+                  <div className="mt-0.5 text-base font-bold text-slate-950">
+                    History & provenance
+                  </div>
+                </div>
+
+                {!hpiUnlocked ? (
+                  <div className="rounded-xl border border-[var(--aa-red)]/20 bg-[var(--aa-red)]/5 p-3">
+                    <div className="text-sm font-semibold text-slate-950">
+                      Upgrade to add vehicle history
+                    </div>
+                    <p className="mt-1 text-sm leading-5 text-slate-700">
+                      Add finance markers, write-off records, stolen checks,
+                      mileage anomalies, keeper history and plate changes.
+                    </p>
+                    <div className="mt-3">
+                      <a
+                        href={hpiUpgradeCheckoutUrl}
+                        className="btn-primary block w-full text-center sm:inline-flex sm:w-auto"
+                      >
+                        Add HPI check · {hpiUpgradePriceLabel}
+                      </a>
+                    </div>
+                  </div>
+                ) : hpiStatus === "error" ? (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-slate-700">
+                    We unlocked the vehicle history section, but there was a
+                    temporary issue loading the latest response. The rest of the
+                    report is still available.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    {hpiChecks.length ? (
+                      hpiChecks.map((item) => (
+                        <SummaryMetric
+                          key={item.label}
+                          label={item.label}
+                          value={renderHpiDisplayValue(item.value)}
+                        />
+                      ))
+                    ) : (
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                        Vehicle history summary available.
+                      </div>
+                    )}
+                  </div>
+                )}
+              </section>
+
+              <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                <div className="mb-3">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+                    Save access
+                  </div>
+                  <div className="mt-0.5 text-base font-bold text-slate-950">
+                    Save this report to your account
+                  </div>
+                </div>
+
+                <div className="text-xs leading-5 text-slate-700">
+                  Create an account after purchase to keep access to this report for 30
+                  days
+                  {expiresAtLabel ? (
+                    <>
+                      {" "}
+                      — until <span className="font-semibold">{expiresAtLabel}</span>
+                    </>
+                  ) : (
+                    <> from the date of payment</>
+                  )}
+                  .
+                </div>
+
+                <div className="mt-1 text-xs leading-5 text-slate-700">
+                  If you do not register or download your report, you may not be able to
+                  access it again after that 30-day period has ended.
+                </div>
+
+                {!ownerUserId ? (
+                  <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                    <Link href={registerUrl} className="btn-primary w-full text-center sm:w-auto">
+                      Create account to save report
+                    </Link>
+
+                    <Link href={loginUrl} className="btn-outline w-full text-center sm:w-auto">
+                      Log in to save report
+                    </Link>
+                  </div>
+                ) : userId === ownerUserId ? (
+                  <div className="mt-3 inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-800">
+                    This report is linked to your account
+                  </div>
+                ) : null}
+              </section>
+            </div>
+          ) : null}
+
+          {activeTab === "all" ? (
+            <div className="mt-3 space-y-3">
+              <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                <div className="mb-3">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+                    Practical checks
+                  </div>
+                  <div className="mt-0.5 text-base font-bold text-slate-950">
+                    Service and maintenance risks
+                  </div>
+                </div>
+
+                {serviceRiskItems.length ? (
+                  <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                    {serviceRiskItems.map((item, index) => {
+                      const key = getItemKey(item, index);
+                      const addressed = !!addressedIds[key];
+
+                      return (
+                        <RiskCard
+                          key={`${item?.item_id ?? "service"}-${index}`}
+                          item={item}
+                          addressed={addressed}
+                          onToggle={() => toggleAddressed(key)}
+                          badgeLabel={String(item?.category ?? "service").replace(
+                            /_/g,
+                            " "
+                          )}
+                        />
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                    No additional service or maintenance risks were listed in this
+                    report.
+                  </div>
+                )}
+              </section>
+
+              <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                <div className="mb-3">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+                    Known weak points
+                  </div>
+                  <div className="mt-0.5 text-base font-bold text-slate-950">
+                    Model-specific issues
+                  </div>
+                </div>
+
+                {knownModelIssues.length ? (
+                  <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                    {knownModelIssues.map((item, index) => {
+                      const key = getItemKey(
+                        item,
+                        serviceRiskItems.length + motRiskItems.length + index
+                      );
+                      const addressed = !!addressedIds[key];
+
+                      return (
+                        <RiskCard
+                          key={`${item?.issue_code ?? item?.item_id ?? "known"}-${index}`}
+                          item={item}
+                          addressed={addressed}
+                          onToggle={() => toggleAddressed(key)}
+                          badgeLabel={String(item?.category ?? "known issue").replace(
+                            /_/g,
+                            " "
+                          )}
+                          extraTop={
+                            <div className="flex flex-wrap gap-2">
                               <span
                                 className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide ${matchConfidencePill(
                                   item.match_confidence
@@ -2117,108 +2016,28 @@ export default function ReportClient({
                               <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
                                 {matchBasisLabel(item.match_basis)}
                               </span>
+
+                              {typeof item?.probability_score === "number" ? (
+                                <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+                                  Relevance {Math.round(item.probability_score * 100)}%
+                                </span>
+                              ) : null}
                             </div>
-                          </div>
-
-                          <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left sm:text-right">
-                            <div className="break-words text-sm font-semibold text-slate-950">
-                              {money(Number(item?.cost_low ?? 0))} –{" "}
-                              {money(Number(item?.cost_high ?? 0))}
-                            </div>
-                            <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                              indicative cost
-                            </div>
-                          </div>
-                        </div>
-
-                        <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-white/80 px-3 py-2.5">
-                          <input
-                            type="checkbox"
-                            checked={addressed}
-                            onChange={() => toggleAddressed(key)}
-                            className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                          />
-                          <div>
-                            <div className="text-sm font-semibold text-slate-950">
-                              Mark as addressed by seller
-                            </div>
-                            <div className="text-[11px] leading-5 text-slate-600">
-                              Tick this if the seller has proof this known issue
-                              has already been repaired, prevented or checked.
-                            </div>
-                          </div>
-                        </label>
-
-                        {addressed ? (
-                          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">
-                            This item has been excluded from the live exposure total.
-                          </div>
-                        ) : null}
-                      </div>
-
-                      {item?.why_flagged ? (
-                        <p className="mt-3 text-sm leading-5 text-slate-700">
-                          <span className="font-semibold text-slate-950">
-                            Why flagged:
-                          </span>{" "}
-                          {item.why_flagged}
-                        </p>
-                      ) : null}
-
-                      {item?.why_it_matters ? (
-                        <p className="mt-2 text-sm leading-5 text-slate-700">
-                          <span className="font-semibold text-slate-950">
-                            Why it matters:
-                          </span>{" "}
-                          {item.why_it_matters}
-                        </p>
-                      ) : null}
-
-                      {typeof item?.probability_score === "number" ? (
-                        <div className="mt-2 text-[11px] font-medium text-slate-600">
-                          Relevance score:{" "}
-                          {Math.round(item.probability_score * 100)}%
-                        </div>
-                      ) : null}
-
-                      {Array.isArray(item?.questions_to_ask) &&
-                      item.questions_to_ask.length ? (
-                        <div className="mt-3">
-                          <div className="text-sm font-semibold text-slate-950">
-                            Questions to ask
-                          </div>
-                          <ul className="mt-1.5 space-y-1.5 text-sm leading-5 text-slate-700">
-                            {item.questions_to_ask.map((q: string, i: number) => (
-                              <li key={i}>• {q}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      ) : null}
-
-                      {Array.isArray(item?.red_flags) && item.red_flags.length ? (
-                        <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3">
-                          <div className="text-sm font-semibold text-slate-950">
-                            Red flags
-                          </div>
-                          <ul className="mt-1.5 space-y-1.5 text-sm leading-5 text-slate-700">
-                            {item.red_flags.map((rf: string, i: number) => (
-                              <li key={i}>• {rf}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      ) : null}
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          ) : (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
-              No additional model-specific issues were identified from the
-              available vehicle profile.
+                          }
+                        />
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                    No additional model-specific issues were identified from the
+                    available vehicle profile.
+                  </div>
+                )}
+              </section>
             </div>
-          )}
-        </SectionCard>
+          ) : null}
+        </div>
       </div>
 
       <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-3 text-xs leading-5 text-slate-600">
