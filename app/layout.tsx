@@ -45,20 +45,20 @@ export default async function RootLayout({
       <body className="min-h-screen bg-[var(--aa-bg)] text-slate-900 antialiased">
         <header className="sticky top-0 z-50 border-b border-[var(--aa-silver)] bg-white/88 backdrop-blur-xl backdrop-saturate-150 shadow-[0_2px_10px_rgba(0,0,0,0.04)]">
           <div className="mx-auto w-full max-w-6xl px-3 sm:px-4">
-            <div className="flex items-center justify-between py-2.5 sm:py-3">
-              <div className="flex min-w-0 items-center gap-3">
+            <div className="flex items-center justify-between gap-4 py-2.5 sm:py-3">
+              <div className="flex min-w-0 shrink items-center gap-3">
                 <Link href="/" className="group flex shrink-0 items-center">
                   <img
                     src="/logo-shield-red.png"
                     alt="AutoAudit"
-                    className="block select-none transition-transform duration-200 group-hover:scale-[1.02]"
+                    className="block max-w-none select-none transition-transform duration-200 group-hover:scale-[1.02]"
                     style={{ height: 50, width: "auto" }}
                   />
                 </Link>
 
-                <div className="hidden h-8 w-px bg-[var(--aa-silver)] sm:block" />
+                <div className="hidden h-8 w-px shrink-0 bg-[var(--aa-silver)] xl:block" />
 
-                <div className="hidden min-w-0 sm:flex sm:flex-col">
+                <div className="hidden min-w-0 xl:flex xl:flex-col">
                   <span className="text-sm font-semibold text-slate-950">
                     AutoAudit
                   </span>
@@ -68,24 +68,24 @@ export default async function RootLayout({
                 </div>
               </div>
 
-              <nav className="hidden items-center gap-1.5 sm:flex">
+              <nav className="hidden min-w-0 shrink-0 items-center gap-1 lg:flex xl:gap-1.5">
                 <Link
                   href="/check"
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-black"
+                  className="whitespace-nowrap rounded-lg px-2.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-black xl:px-3"
                 >
                   Check a car
                 </Link>
 
                 <Link
                   href="/how-it-works"
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-black"
+                  className="whitespace-nowrap rounded-lg px-2.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-black xl:px-3"
                 >
                   How it works
                 </Link>
 
                 <Link
                   href="/#pricing"
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-black"
+                  className="whitespace-nowrap rounded-lg px-2.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-black xl:px-3"
                 >
                   Pricing
                 </Link>
@@ -94,27 +94,29 @@ export default async function RootLayout({
                   <>
                     <Link
                       href="/reports"
-                      className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-black"
+                      className="whitespace-nowrap rounded-lg px-2.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-black xl:px-3"
                     >
                       My reports
                     </Link>
 
-                    <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-800 shadow-sm">
+                    <div className="inline-flex shrink-0 items-center rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-800 shadow-sm xl:px-2.5">
                       Signed in
                     </div>
 
                     {userEmail ? (
-                      <div className="max-w-[220px] truncate rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                      <div className="hidden max-w-[180px] truncate rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-sm text-slate-600 2xl:block">
                         {userEmail}
                       </div>
                     ) : null}
 
-                    <LogoutButton />
+                    <div className="shrink-0">
+                      <LogoutButton />
+                    </div>
                   </>
                 ) : (
                   <Link
                     href="/auth?mode=login"
-                    className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-black"
+                    className="whitespace-nowrap rounded-lg px-2.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-black xl:px-3"
                   >
                     Log in
                   </Link>
@@ -122,13 +124,20 @@ export default async function RootLayout({
               </nav>
             </div>
 
-            <div className="pb-2.5 sm:hidden">
+            <div className="pb-2.5 lg:hidden">
               <div className="flex flex-wrap items-center gap-2">
                 <Link
                   href="/check"
                   className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm"
                 >
                   Check a car
+                </Link>
+
+                <Link
+                  href="/how-it-works"
+                  className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm"
+                >
+                  How it works
                 </Link>
 
                 <Link
