@@ -588,9 +588,18 @@ function getDecisionCall(args: {
   hpiUnlocked: boolean;
   hpiChecks: HpiCheck[];
   hpiStatus: string | null;
+  addressedCount: number;
+  baseExposureHigh: number | null;
 }) {
-  const { adjustedHigh, marketPosition, hpiUnlocked, hpiChecks, hpiStatus } =
-    args;
+  const {
+    adjustedHigh,
+    marketPosition,
+    hpiUnlocked,
+    hpiChecks,
+    hpiStatus,
+    addressedCount,
+    baseExposureHigh,
+  } = args;
 
   const hpiFlagged =
     hpiUnlocked &&
@@ -612,18 +621,36 @@ function getDecisionCall(args: {
       return false;
     });
 
-  if (hpiFlagged || (adjustedHigh !== null && adjustedHigh >= 3000)) {
+  const reductionRatio =
+    typeof adjustedHigh === "number" &&
+    typeof baseExposureHigh === "number" &&
+    baseExposureHigh > 0
+      ? 1 - adjustedHigh / baseExposureHigh
+      : 0;
+
+  if (hpiFlagged) {
     return {
       badgeClass: "border-red-200 bg-red-50 text-red-700",
-      badgeLabel: "Proceed with caution",
+      badgeLabel: "Higher caution advised",
       body:
-        "This profile carries heavier downside risk. Only proceed if the seller can clearly evidence that the key issues have already been addressed.",
+        "Vehicle history signals add extra downside risk here. Only proceed if the seller can clearly explain and evidence the issues.",
+    };
+  }
+
+  if (adjustedHigh !== null && adjustedHigh >= 2600) {
+    return {
+      badgeClass: "border-red-200 bg-red-50 text-red-700",
+      badgeLabel: "Higher caution advised",
+      body:
+        "This profile still carries heavier downside risk. You should only proceed with strong evidence that the key issues have already been addressed.",
     };
   }
 
   if (
-    marketPosition === "high" ||
-    (adjustedHigh !== null && adjustedHigh >= 1200)
+    adjustedHigh !== null &&
+    adjustedHigh >= 1400 &&
+    reductionRatio < 0.3 &&
+    addressedCount < 2
   ) {
     return {
       badgeClass: "border-amber-200 bg-amber-50 text-amber-700",
@@ -633,11 +660,23 @@ function getDecisionCall(args: {
     };
   }
 
+  if (
+    marketPosition === "high" ||
+    (adjustedHigh !== null && adjustedHigh >= 900)
+  ) {
+    return {
+      badgeClass: "border-amber-200 bg-amber-50 text-amber-700",
+      badgeLabel: "Check carefully before buying",
+      body:
+        "Some of the risk looks more manageable now, but there is still enough uncertainty to justify careful checks and a stronger buying position.",
+    };
+  }
+
   return {
     badgeClass: "border-emerald-200 bg-emerald-50 text-emerald-700",
     badgeLabel: "Looks more manageable",
     body:
-      "The profile looks more manageable, but you should still verify service records, review the MoT trail and inspect the known weak points before buying.",
+      "The profile now looks more manageable, but you should still verify service records, review the MoT trail and inspect the known weak points before buying.",
   };
 }
 
@@ -1099,14 +1138,18 @@ export default function ReportClient({
         hpiUnlocked,
         hpiChecks,
         hpiStatus,
+        addressedCount: adjustedTotals.addressedCount,
+        baseExposureHigh,
       }),
     [
       adjustedTotals.adjustedHigh,
       adjustedTotals.adjustedLow,
+      adjustedTotals.addressedCount,
       marketPosition,
       hpiUnlocked,
       hpiChecks,
       hpiStatus,
+      baseExposureHigh,
     ]
   );
 
@@ -1143,15 +1186,40 @@ export default function ReportClient({
 
       {justUnlockedReport || justUnlockedHpi ? (
         <div className="mb-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2.5">
-          <div className="text-sm font-semibold text-emerald-900">
-            {justUnlockedHpi
-              ? "History & provenance check unlocked"
-              : "Core report unlocked"}
-          </div>
-          <div className="mt-0.5 text-xs text-emerald-900/80">
-            {justUnlockedHpi
-              ? "Your report now includes the HPI-style history panel."
-              : "You now have repair risk, price context and MoT analysis."}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <div className="text-sm font-semibold text-emerald-900">
+                {justUnlockedHpi
+                  ? "History & provenance check unlocked"
+                  : "Core report unlocked"}
+              </div>
+              <div className="mt-0.5 text-xs text-emerald-900/80">
+                {justUnlockedHpi
+                  ? "Your report now includes the HPI-style history panel."
+                  : "You now have repair risk, price context and MoT analysis."}
+              </div>
+            </div>
+
+            {!ownerUserId ? (
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <Link
+                  href={registerUrl}
+                  className="inline-flex items-center justify-center rounded-lg border border-emerald-700 bg-emerald-700 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800"
+                >
+                  Create account to save
+                </Link>
+                <Link
+                  href={loginUrl}
+                  className="inline-flex items-center justify-center rounded-lg border border-emerald-300 bg-white px-3 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-50"
+                >
+                  Log in to save
+                </Link>
+              </div>
+            ) : userId === ownerUserId ? (
+              <div className="inline-flex items-center rounded-full border border-emerald-300 bg-white px-3 py-1 text-xs font-medium text-emerald-800">
+                This report is linked to your account
+              </div>
+            ) : null}
           </div>
         </div>
       ) : null}
@@ -2039,6 +2107,49 @@ export default function ReportClient({
           ) : null}
         </div>
       </div>
+
+      {!justUnlockedReport && !justUnlockedHpi ? (
+        <section className="mt-3 rounded-2xl border border-red-200 bg-red-50/50 p-3 print:hidden">
+          <div className="text-sm font-semibold text-slate-950">
+            Save access to this report
+          </div>
+
+          <div className="mt-1 text-xs leading-5 text-slate-700">
+            Create an account after purchase to keep access to this report for 30
+            days
+            {expiresAtLabel ? (
+              <>
+                {" "}
+                — until <span className="font-semibold">{expiresAtLabel}</span>
+              </>
+            ) : (
+              <> from the date of payment</>
+            )}
+            .
+          </div>
+
+          <div className="mt-1 text-xs leading-5 text-slate-700">
+            If you do not register or download your report, you may not be able to
+            access it again after that 30-day period has ended.
+          </div>
+
+          {!ownerUserId ? (
+            <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+              <Link href={registerUrl} className="btn-primary w-full text-center sm:w-auto">
+                Create account to save report
+              </Link>
+
+              <Link href={loginUrl} className="btn-outline w-full text-center sm:w-auto">
+                Log in to save report
+              </Link>
+            </div>
+          ) : userId === ownerUserId ? (
+            <div className="mt-3 inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-800">
+              This report is linked to your account
+            </div>
+          ) : null}
+        </section>
+      ) : null}
 
       <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-3 text-xs leading-5 text-slate-600">
         AutoAudit provides guidance only and is not a substitute for a
