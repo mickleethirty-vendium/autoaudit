@@ -1,18 +1,13 @@
+import { createBrowserClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { mustGetEnv } from "./env";
 
 // Browser-safe public client.
-// Used for public reads and client-side auth flows.
-export const supabasePublic = createClient(
+// Used for client-side auth flows and browser reads that should share the same
+// cookie/session model as the rest of the app.
+export const supabasePublic = createBrowserClient(
   mustGetEnv("NEXT_PUBLIC_SUPABASE_URL"),
-  mustGetEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-    },
-  }
+  mustGetEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
 );
 
 // Server-side admin client.

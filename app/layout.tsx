@@ -3,6 +3,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { mustGetEnv } from "@/lib/env";
+import LogoutButton from "@/app/components/LogoutButton";
 
 export const metadata = {
   title: "AutoAudit",
@@ -96,11 +97,13 @@ export default async function RootLayout({
                     ) : null}
 
                     <Link
-                      href="/auth?mode=login"
+                      href="/reports"
                       className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition duration-200 hover:bg-slate-100 hover:text-black"
                     >
-                      Account
+                      My Reports
                     </Link>
+
+                    <LogoutButton />
                   </>
                 ) : (
                   <Link
@@ -128,11 +131,13 @@ export default async function RootLayout({
                     ) : null}
 
                     <Link
-                      href="/auth?mode=login"
+                      href="/reports"
                       className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm"
                     >
-                      Account
+                      My Reports
                     </Link>
+
+                    <LogoutButton />
                   </>
                 ) : (
                   <Link

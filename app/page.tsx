@@ -1,9 +1,13 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { createBrowserClient } from "@supabase/ssr";
 import ShieldIcon from "@/app/components/ShieldIcon";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 function cleanRegistration(reg: string) {
   return reg.replace(/\s/g, "").toUpperCase();
@@ -19,8 +23,49 @@ function formatRegistrationInput(value: string) {
 export default function HomePage() {
   const router = useRouter();
 
+  const supabase = useMemo(
+    () => createBrowserClient(supabaseUrl, supabaseAnonKey),
+    []
+  );
+
   const [registration, setRegistration] = useState("");
   const [loading, setLoading] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadUser() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!mounted) return;
+      setUserEmail(
+        typeof user?.email === "string" && user.email.trim()
+          ? user.email.trim()
+          : null
+      );
+    }
+
+    loadUser();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextEmail =
+        typeof session?.user?.email === "string" && session.user.email.trim()
+          ? session.user.email.trim()
+          : null;
+
+      setUserEmail(nextEmail);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [supabase]);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -94,6 +139,49 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {userEmail ? (
+          <section className="mx-auto mt-6 max-w-7xl px-4">
+            <div className="rounded-[1.75rem] border border-black bg-white p-5 shadow-sm sm:p-6">
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                <div className="max-w-3xl">
+                  <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-700">
+                    Welcome back
+                  </div>
+
+                  <h2 className="mt-4 text-2xl font-extrabold tracking-tight text-slate-950 sm:text-3xl">
+                    Continue where you left off
+                  </h2>
+
+                  <p className="mt-2 text-sm leading-6 text-slate-700 sm:text-base">
+                    You’re signed in as{" "}
+                    <span className="font-semibold text-slate-950">
+                      {userEmail}
+                    </span>
+                    . View your saved reports or start a fresh check on another
+                    vehicle.
+                  </p>
+                </div>
+
+                <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap">
+                  <Link
+                    href="/reports"
+                    className="btn-primary w-full text-center sm:w-auto"
+                  >
+                    View saved reports
+                  </Link>
+
+                  <Link
+                    href="/check"
+                    className="btn-outline w-full text-center sm:w-auto"
+                  >
+                    Start a new check
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         <section className="mt-6 border-t border-[var(--aa-silver)] bg-white">
           <div className="mx-auto max-w-7xl px-4 py-6 sm:py-8">

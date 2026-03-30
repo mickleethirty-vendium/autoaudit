@@ -11,9 +11,9 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
 
 function getSafeNext(nextValue: string | null) {
-  if (!nextValue) return "/";
-  if (!nextValue.startsWith("/")) return "/";
-  if (nextValue.startsWith("//")) return "/";
+  if (!nextValue) return "/reports";
+  if (!nextValue.startsWith("/")) return "/reports";
+  if (nextValue.startsWith("//")) return "/reports";
   return nextValue;
 }
 
@@ -245,7 +245,7 @@ function AuthPageInner() {
         <p className="mt-2 text-sm leading-6 text-slate-700">
           {mode === "signup"
             ? "Create an account to save access to your paid AutoAudit report for up to 30 days."
-            : "Log in to save and return to your paid AutoAudit report."}
+            : "Log in to access your saved AutoAudit reports and continue where you left off."}
         </p>
 
         {claimReportId ? (
@@ -351,7 +351,12 @@ function AuthPageInner() {
               confirm your email, you’ll be returned to AutoAudit and can log in
               to continue.
             </div>
-          ) : null}
+          ) : (
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-600">
+              Logging in without a specific report link will take you to your
+              saved reports dashboard.
+            </div>
+          )}
 
           <button
             type="submit"
