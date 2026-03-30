@@ -121,6 +121,17 @@ function itemTone(item: RiskItem, addressed: boolean) {
   return "border-slate-200 bg-white";
 }
 
+function issueTone(item: RiskItem) {
+  const high = Number(item?.cost_high ?? 0);
+  if (high >= 1000) {
+    return "border-amber-200 bg-amber-50/60";
+  }
+  if (high >= 400) {
+    return "border-slate-200 bg-slate-50";
+  }
+  return "border-slate-200 bg-white";
+}
+
 function getRepeatPatternLabels(fullSummary: any): string[] {
   const raw =
     fullSummary?.mot_summary?.repeat_advisory_categories ??
@@ -861,6 +872,106 @@ function RiskCard({
   );
 }
 
+function KnownIssueCard({
+  item,
+}: {
+  item: KnownModelIssue;
+}) {
+  return (
+    <div className={`rounded-xl border px-3 py-3 shadow-sm ${issueTone(item)}`}>
+      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <div className="text-sm font-bold tracking-tight text-slate-950">
+            {item?.label ?? "Known issue"}
+          </div>
+
+          <div className="mt-2 flex flex-wrap gap-2">
+            <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-700">
+              {String(item?.category ?? "known issue").replace(/_/g, " ")}
+            </span>
+
+            <span
+              className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide ${matchConfidencePill(
+                item.match_confidence
+              )}`}
+            >
+              {matchConfidenceLabel(item.match_confidence)}
+            </span>
+
+            <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+              {matchBasisLabel(item.match_basis)}
+            </span>
+
+            {typeof item?.probability_score === "number" ? (
+              <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+                Relevance {Math.round(item.probability_score * 100)}%
+              </span>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left sm:text-right">
+          <div className="break-words text-sm font-semibold text-slate-950">
+            {money(Number(item?.cost_low ?? 0))} –{" "}
+            {money(Number(item?.cost_high ?? 0))}
+          </div>
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+            indicative only
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5">
+        <div className="text-sm font-semibold text-slate-950">
+          Check for awareness
+        </div>
+        <div className="text-[11px] leading-5 text-slate-600">
+          This is a known weak point for the model, not proof that this specific
+          car has the fault.
+        </div>
+      </div>
+
+      {item?.why_flagged ? (
+        <p className="mt-3 text-sm leading-5 text-slate-700">
+          <span className="font-semibold text-slate-950">Why flagged:</span>{" "}
+          {item.why_flagged}
+        </p>
+      ) : null}
+
+      {item?.why_it_matters ? (
+        <p className="mt-2 text-sm leading-5 text-slate-700">
+          <span className="font-semibold text-slate-950">Why it matters:</span>{" "}
+          {item.why_it_matters}
+        </p>
+      ) : null}
+
+      {Array.isArray(item?.questions_to_ask) && item.questions_to_ask.length ? (
+        <div className="mt-3">
+          <div className="text-sm font-semibold text-slate-950">
+            Questions to ask
+          </div>
+          <ul className="mt-1.5 space-y-1.5 text-sm leading-5 text-slate-700">
+            {item.questions_to_ask.map((q: string, i: number) => (
+              <li key={i}>• {q}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {Array.isArray(item?.red_flags) && item.red_flags.length ? (
+        <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3">
+          <div className="text-sm font-semibold text-slate-950">Red flags</div>
+          <ul className="mt-1.5 space-y-1.5 text-sm leading-5 text-slate-700">
+            {item.red_flags.map((rf: string, i: number) => (
+              <li key={i}>• {rf}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export default function ReportClient({
   reg,
   make,
@@ -965,9 +1076,9 @@ export default function ReportClient({
 
   const ukvdStatus = useMemo(() => getUkvdStatus(fullSummary), [fullSummary]);
 
-  const allItems = useMemo(
-    () => [...serviceRiskItems, ...motRiskItems, ...knownModelIssues],
-    [serviceRiskItems, motRiskItems, knownModelIssues]
+  const exposureItems = useMemo(
+    () => [...serviceRiskItems, ...motRiskItems],
+    [serviceRiskItems, motRiskItems]
   );
 
   const repeatPatternLabels = useMemo(
@@ -1042,7 +1153,7 @@ export default function ReportClient({
     let lowReduction = 0;
     let highReduction = 0;
 
-    allItems.forEach((item, index) => {
+    exposureItems.forEach((item, index) => {
       const key = getItemKey(item, index);
       if (addressedIds[key]) {
         lowReduction += Number(item.cost_low ?? 0);
@@ -1119,7 +1230,7 @@ export default function ReportClient({
       adjustedConfidenceDisplay,
     };
   }, [
-    allItems,
+    exposureItems,
     addressedIds,
     baseExposureLow,
     baseExposureHigh,
@@ -1154,10 +1265,10 @@ export default function ReportClient({
   );
 
   const priorityFindings = useMemo(() => {
-    return [...allItems]
+    return [...exposureItems]
       .sort((a, b) => Number(b?.cost_high ?? 0) - Number(a?.cost_high ?? 0))
       .slice(0, 5);
-  }, [allItems]);
+  }, [exposureItems]);
 
   function toggleAddressed(key: string) {
     setAddressedIds((prev) => ({
@@ -1652,7 +1763,7 @@ export default function ReportClient({
                 <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-2">
                   {priorityFindings.length ? (
                     priorityFindings.map((item, index) => {
-                      const key = getItemKey(item, allItems.indexOf(item));
+                      const key = getItemKey(item, exposureItems.indexOf(item));
                       const addressed = !!addressedIds[key];
 
                       return (
@@ -1679,25 +1790,10 @@ export default function ReportClient({
               {knownModelIssues.length ? (
                 <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
                   <div className="text-sm font-semibold text-slate-950">
-                    Known issue matching notes
+                    Known model weak points
                   </div>
                   <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm leading-5 text-slate-700">
-                    {vehicleIdentityData.matchExplainer ? (
-                      <div>{vehicleIdentityData.matchExplainer}</div>
-                    ) : null}
-                    {knownIssueExplainer ? (
-                      <div className={vehicleIdentityData.matchExplainer ? "mt-2" : ""}>
-                        {knownIssueExplainer}
-                      </div>
-                    ) : null}
-                    {knownModelIssueExposure.low !== null &&
-                    knownModelIssueExposure.high !== null ? (
-                      <div className="mt-2 font-semibold text-slate-950">
-                        Weighted exposure included above:{" "}
-                        {money(knownModelIssueExposure.low)} –{" "}
-                        {money(knownModelIssueExposure.high)}
-                      </div>
-                    ) : null}
+                    These issues are included as an awareness check, not as proof of a fault on this specific car and not as part of the live negotiation total.
                   </div>
                 </section>
               ) : null}
@@ -2048,54 +2144,44 @@ export default function ReportClient({
                     Known weak points
                   </div>
                   <div className="mt-0.5 text-base font-bold text-slate-950">
-                    Model-specific issues
+                    Model-specific issues to check
+                  </div>
+                  <div className="mt-1 text-xs leading-5 text-slate-700">
+                    These are awareness checks for the model, not proof of a fault
+                    on this specific vehicle and not part of the live exposure total.
                   </div>
                 </div>
 
                 {knownModelIssues.length ? (
-                  <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                    {knownModelIssues.map((item, index) => {
-                      const key = getItemKey(
-                        item,
-                        serviceRiskItems.length + motRiskItems.length + index
-                      );
-                      const addressed = !!addressedIds[key];
+                  <>
+                    <div className="mb-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm leading-5 text-slate-700">
+                      {vehicleIdentityData.matchExplainer ? (
+                        <div>{vehicleIdentityData.matchExplainer}</div>
+                      ) : null}
+                      {knownIssueExplainer ? (
+                        <div className={vehicleIdentityData.matchExplainer ? "mt-2" : ""}>
+                          {knownIssueExplainer}
+                        </div>
+                      ) : null}
+                      {knownModelIssueExposure.low !== null &&
+                      knownModelIssueExposure.high !== null ? (
+                        <div className="mt-2 font-semibold text-slate-950">
+                          Indicative model-issue range:{" "}
+                          {money(knownModelIssueExposure.low)} –{" "}
+                          {money(knownModelIssueExposure.high)}
+                        </div>
+                      ) : null}
+                    </div>
 
-                      return (
-                        <RiskCard
+                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                      {knownModelIssues.map((item, index) => (
+                        <KnownIssueCard
                           key={`${item?.issue_code ?? item?.item_id ?? "known"}-${index}`}
                           item={item}
-                          addressed={addressed}
-                          onToggle={() => toggleAddressed(key)}
-                          badgeLabel={String(item?.category ?? "known issue").replace(
-                            /_/g,
-                            " "
-                          )}
-                          extraTop={
-                            <div className="flex flex-wrap gap-2">
-                              <span
-                                className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide ${matchConfidencePill(
-                                  item.match_confidence
-                                )}`}
-                              >
-                                {matchConfidenceLabel(item.match_confidence)}
-                              </span>
-
-                              <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
-                                {matchBasisLabel(item.match_basis)}
-                              </span>
-
-                              {typeof item?.probability_score === "number" ? (
-                                <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
-                                  Relevance {Math.round(item.probability_score * 100)}%
-                                </span>
-                              ) : null}
-                            </div>
-                          }
                         />
-                      );
-                    })}
-                  </div>
+                      ))}
+                    </div>
+                  </>
                 ) : (
                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
                     No additional model-specific issues were identified from the
