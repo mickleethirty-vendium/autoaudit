@@ -31,11 +31,7 @@ function getReportTitle(report: any) {
       : null;
 
   const year =
-    typeof report?.car_year === "number"
-      ? report.car_year
-      : typeof report?.year === "number"
-        ? report.year
-        : null;
+    typeof report?.car_year === "number" ? report.car_year : null;
 
   if (make && year) return `${reg} · ${make} · ${year}`;
   if (make) return `${reg} · ${make}`;
@@ -117,7 +113,6 @@ export default async function ReportsPage() {
         registration,
         make,
         car_year,
-        year,
         created_at,
         saved_at,
         owner_user_id,
@@ -138,18 +133,20 @@ export default async function ReportsPage() {
 
   const stats = {
     total: safeReports.length,
-    paid: safeReports.filter((report) => {
-      const access = getAccessMeta(report);
-      return access.sortWeight >= 2;
-    }).length,
-    hpi: safeReports.filter((report) => {
-      const access = getAccessMeta(report);
-      return access.sortWeight >= 3;
-    }).length,
+    paid: safeReports.filter((report) => getAccessMeta(report).sortWeight >= 2)
+      .length,
+    hpi: safeReports.filter((report) => getAccessMeta(report).sortWeight >= 3)
+      .length,
   };
 
   return (
     <div className="mx-auto w-full max-w-6xl">
+      <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-slate-800">
+        <div><strong>Debug user ID:</strong> {user.id}</div>
+        <div><strong>Debug report count:</strong> {safeReports.length}</div>
+        <div><strong>Debug query error:</strong> {error?.message ?? "none"}</div>
+      </div>
+
       <div className="relative overflow-hidden rounded-[1.75rem] border border-black bg-slate-950 shadow-[0_18px_60px_rgba(15,23,42,0.14)]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(185,28,28,0.18),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.08),transparent_28%)]" />
 
@@ -232,93 +229,75 @@ export default async function ReportsPage() {
             We couldn’t load your saved reports right now. Please try again.
           </div>
         ) : safeReports.length ? (
-          <>
-            <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
-                  Saved checks
-                </div>
-                <h2 className="mt-1 text-2xl font-extrabold tracking-tight text-slate-950">
-                  Your recent reports
-                </h2>
-              </div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            {safeReports.map((report: any) => {
+              const access = getAccessMeta(report);
 
-              <div className="text-sm text-slate-600">
-                {safeReports.length} saved report
-                {safeReports.length === 1 ? "" : "s"}
-              </div>
-            </div>
-
-            <div className="grid gap-4 lg:grid-cols-2">
-              {safeReports.map((report: any) => {
-                const access = getAccessMeta(report);
-
-                return (
+              return (
+                <div
+                  key={report.id}
+                  className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+                >
                   <div
-                    key={report.id}
-                    className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_14px_30px_rgba(15,23,42,0.08)]"
-                  >
-                    <div
-                      className={`absolute inset-y-0 left-0 w-1 ${access.accentClass}`}
-                    />
+                    className={`absolute inset-y-0 left-0 w-1 ${access.accentClass}`}
+                  />
 
-                    <div className="pl-1">
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <div
-                              className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${access.className}`}
-                            >
-                              {access.text}
-                            </div>
-
-                            {report?.expires_at ? (
-                              <div className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600">
-                                Access until {formatDate(report.expires_at)}
-                              </div>
-                            ) : null}
-                          </div>
-
-                          <h3 className="mt-4 text-xl font-extrabold tracking-tight text-slate-950">
-                            {getReportTitle(report)}
-                          </h3>
-
-                          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                              <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                                Saved
-                              </div>
-                              <div className="mt-1 text-sm font-semibold text-slate-950">
-                                {formatDate(report.saved_at ?? report.created_at)}
-                              </div>
-                            </div>
-
-                            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                              <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                                Access level
-                              </div>
-                              <div className="mt-1 text-sm font-semibold text-slate-950">
-                                {access.shortText}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="sm:shrink-0">
-                          <Link
-                            href={`/report/${report.id}`}
-                            className="btn-primary block w-full text-center sm:w-auto"
+                  <div className="pl-1">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <div
+                            className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${access.className}`}
                           >
-                            Open report
-                          </Link>
+                            {access.text}
+                          </div>
+
+                          {report?.expires_at ? (
+                            <div className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600">
+                              Access until {formatDate(report.expires_at)}
+                            </div>
+                          ) : null}
                         </div>
+
+                        <h3 className="mt-4 text-xl font-extrabold tracking-tight text-slate-950">
+                          {getReportTitle(report)}
+                        </h3>
+
+                        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                            <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                              Saved
+                            </div>
+                            <div className="mt-1 text-sm font-semibold text-slate-950">
+                              {formatDate(report.saved_at ?? report.created_at)}
+                            </div>
+                          </div>
+
+                          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                            <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                              Access level
+                            </div>
+                            <div className="mt-1 text-sm font-semibold text-slate-950">
+                              {access.shortText}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="sm:shrink-0">
+                        <Link
+                          href={`/report/${report.id}`}
+                          className="btn-primary block w-full text-center sm:w-auto"
+                        >
+                          Open report
+                        </Link>
                       </div>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </>
+                </div>
+              );
+            })}
+          </div>
         ) : (
           <div className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
             <div className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-700">
@@ -333,21 +312,6 @@ export default async function ReportsPage() {
               Once you unlock a paid AutoAudit report and link it to your
               account, you’ll be able to return to it from this dashboard.
             </p>
-
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <Link
-                href="/check"
-                className="btn-primary w-full text-center sm:w-auto"
-              >
-                Run a vehicle check
-              </Link>
-              <Link
-                href="/how-it-works"
-                className="btn-outline w-full text-center sm:w-auto"
-              >
-                See how AutoAudit works
-              </Link>
-            </div>
           </div>
         )}
       </div>
