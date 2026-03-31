@@ -85,7 +85,7 @@ export default async function RootLayout({
                 {user ? (
                   <>
                     <Link
-                      href="/dashboard"
+                      href="/reports"
                       className="text-sm text-slate-600 hover:text-slate-900"
                     >
                       Dashboard
@@ -130,7 +130,7 @@ export default async function RootLayout({
 
                     {user ? (
                       <>
-                        <Link href="/dashboard" className="hover:text-slate-900">
+                        <Link href="/reports" className="hover:text-slate-900">
                           Dashboard
                         </Link>
                         <LogoutButton />
