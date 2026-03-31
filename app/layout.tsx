@@ -40,20 +40,17 @@ export default async function RootLayout({
     <html lang="en-GB">
       <body className="min-h-screen bg-white text-slate-900">
         <div className="flex min-h-screen flex-col">
-          <header className="border-b border-slate-200 bg-white">
+          <header className="relative z-50 border-b border-slate-200 bg-white">
             <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-              <Link href="/" className="flex shrink-0 items-center gap-2">
+              <Link href="/" className="flex shrink-0 items-center">
                 <Image
                   src="/logo-shield-red.png"
                   alt="AutoAudit"
                   width={36}
                   height={36}
                   priority
-                  className="h-8 w-8 sm:h-9 sm:w-9"
+                  className="h-9 w-9 sm:h-10 sm:w-10"
                 />
-                <span className="text-lg font-semibold tracking-tight text-slate-900">
-                  AutoAudit
-                </span>
               </Link>
 
               <nav className="hidden items-center gap-4 sm:flex">
@@ -103,7 +100,7 @@ export default async function RootLayout({
                   Menu
                 </summary>
 
-                <div className="absolute right-0 mt-2 w-44 rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
+                <div className="absolute right-0 z-[60] mt-2 w-44 rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
                   <div className="flex flex-col gap-3 text-sm text-slate-700">
                     <Link href="/terms" className="hover:text-slate-900">
                       Terms
