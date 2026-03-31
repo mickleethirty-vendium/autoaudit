@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 function mustGetEnv(name: string) {
-  const value = process.env[name];
+  const value = process.env[name]?.trim();
   if (!value) {
     throw new Error(`Missing environment variable: ${name}`);
   }
@@ -48,16 +48,32 @@ function isLikelyValidReportId(value: string | null): value is string {
   return /^[a-zA-Z0-9_-]{6,}$/.test(trimmed);
 }
 
+function assertValidStripePriceId(value: string, envName: string) {
+  if (!/^price_[a-zA-Z0-9]+$/.test(value)) {
+    throw new Error(`Invalid Stripe price ID in ${envName}`);
+  }
+  return value;
+}
+
 function getStripePriceIdForTier(tier: CheckoutTier) {
   if (tier === "hpi_upgrade") {
-    return mustGetEnv("STRIPE_HPI_UPGRADE_PRICE_ID");
+    return assertValidStripePriceId(
+      mustGetEnv("STRIPE_HPI_UPGRADE_PRICE_ID"),
+      "STRIPE_HPI_UPGRADE_PRICE_ID"
+    );
   }
 
   if (tier === "report_plus_hpi") {
-    return mustGetEnv("STRIPE_REPORT_PLUS_HPI_PRICE_ID");
+    return assertValidStripePriceId(
+      mustGetEnv("STRIPE_REPORT_PLUS_HPI_PRICE_ID"),
+      "STRIPE_REPORT_PLUS_HPI_PRICE_ID"
+    );
   }
 
-  return mustGetEnv("STRIPE_REPORT_PRICE_ID");
+  return assertValidStripePriceId(
+    mustGetEnv("STRIPE_REPORT_PRICE_ID"),
+    "STRIPE_REPORT_PRICE_ID"
+  );
 }
 
 function getSuccessUrl(reportId: string, tier: CheckoutTier) {
@@ -124,6 +140,12 @@ export async function GET(req: NextRequest) {
     });
 
     if (!session.url) {
+      console.error("Stripe checkout session created without URL", {
+        reportId,
+        tier,
+        sessionId: session.id,
+      });
+
       return NextResponse.json(
         { error: "Failed to create Stripe checkout session" },
         { status: 500 }
@@ -131,8 +153,14 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.redirect(session.url);
-  } catch (error) {
-    console.error("Stripe checkout error:", error);
+  } catch (error: any) {
+    console.error("Stripe checkout error:", {
+      message: error?.message ?? "Unknown error",
+      type: error?.type ?? null,
+      code: error?.code ?? null,
+      raw: error,
+    });
+
     return NextResponse.json(
       { error: "Unable to start checkout" },
       { status: 500 }
