@@ -21,6 +21,15 @@ type Props = {
 
 export async function generateStaticParams() {
   const { wave1Models } = await import("@/lib/seo/data");
+
+  console.log(
+    "SEO model params sample:",
+    wave1Models.slice(0, 10).map((row) => ({
+      make: row.make_slug,
+      model: row.model_slug,
+    }))
+  );
+
   return wave1Models.map((row) => ({
     make: row.make_slug,
     model: row.model_slug,
