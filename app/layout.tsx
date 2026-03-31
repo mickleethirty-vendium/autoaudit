@@ -44,12 +44,12 @@ export default async function RootLayout({
             <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
               <Link href="/" className="flex shrink-0 items-center">
                 <Image
-                  src="/logo.png"
+                  src="/logo-shield-red.png"
                   alt="AutoAudit"
-                  width={240}
-                  height={64}
+                  width={220}
+                  height={60}
                   priority
-                  className="h-auto w-[180px] sm:w-[220px] lg:w-[240px]"
+                  className="h-auto w-[160px] sm:w-[200px] lg:w-[220px]"
                 />
               </Link>
 
