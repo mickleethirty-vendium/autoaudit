@@ -95,7 +95,7 @@ export default async function RootLayout({
                   </>
                 ) : (
                   <Link
-                    href="/login"
+                    href="/auth?mode=login"
                     className="text-sm text-slate-600 hover:text-slate-900"
                   >
                     Sign in

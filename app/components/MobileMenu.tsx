@@ -77,7 +77,7 @@ export default function MobileMenu({
               </Link>
             ) : (
               <Link
-                href="/login"
+                href="/auth?mode=login"
                 onClick={closeMenu}
                 className="hover:text-slate-900"
               >
