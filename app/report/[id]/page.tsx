@@ -462,11 +462,7 @@ export default async function Page({
     }
   }
 
-  if (
-    isPaid &&
-    user?.id &&
-    !ownerUserId
-  ) {
+  if (isPaid && user?.id && !ownerUserId) {
     const { error: claimError } = await supabaseAdmin
       .from("reports")
       .update({
@@ -615,7 +611,7 @@ export default async function Page({
   const previewKnownModelIssueLabels: string[] = Array.isArray(
     previewKnownModelIssuesTeaser?.top_labels
   )
-    ? previewKnownModelIssueLabels = previewKnownModelIssuesTeaser.top_labels.filter(
+    ? previewKnownModelIssuesTeaser.top_labels.filter(
         (value: unknown) => typeof value === "string" && value.trim()
       )
     : [];
