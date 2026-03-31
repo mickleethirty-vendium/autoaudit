@@ -49,7 +49,6 @@ export default async function RootLayout({
                   width={48}
                   height={60}
                   priority
-                  className="h-9 w-auto sm:h-10"
                 />
               </Link>
 
