@@ -42,35 +42,38 @@ export default async function RootLayout({
         <div className="flex min-h-screen flex-col">
           <header className="border-b border-slate-200 bg-white">
             <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-              <Link href="/" className="flex shrink-0 items-center">
+              <Link href="/" className="flex shrink-0 items-center gap-2">
                 <Image
                   src="/logo-shield-red.png"
                   alt="AutoAudit"
-                  width={220}
-                  height={60}
+                  width={36}
+                  height={36}
                   priority
-                  className="h-auto w-[160px] sm:w-[200px] lg:w-[220px]"
+                  className="h-8 w-8 sm:h-9 sm:w-9"
                 />
+                <span className="text-lg font-semibold tracking-tight text-slate-900">
+                  AutoAudit
+                </span>
               </Link>
 
-              <nav className="flex min-w-0 items-center gap-3 sm:gap-4">
+              <nav className="hidden items-center gap-4 sm:flex">
                 <Link
                   href="/terms"
-                  className="hidden text-sm text-slate-600 hover:text-slate-900 sm:inline"
+                  className="text-sm text-slate-600 hover:text-slate-900"
                 >
                   Terms
                 </Link>
 
                 <Link
                   href="/privacy"
-                  className="hidden text-sm text-slate-600 hover:text-slate-900 sm:inline"
+                  className="text-sm text-slate-600 hover:text-slate-900"
                 >
                   Privacy
                 </Link>
 
                 <a
                   href="mailto:support@autoaudit.uk"
-                  className="hidden items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900 md:inline-flex"
+                  className="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900"
                 >
                   Contact us
                 </a>
@@ -94,6 +97,44 @@ export default async function RootLayout({
                   </Link>
                 )}
               </nav>
+
+              <details className="relative sm:hidden">
+                <summary className="cursor-pointer list-none text-sm font-medium text-slate-700">
+                  Menu
+                </summary>
+
+                <div className="absolute right-0 mt-2 w-44 rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
+                  <div className="flex flex-col gap-3 text-sm text-slate-700">
+                    <Link href="/terms" className="hover:text-slate-900">
+                      Terms
+                    </Link>
+
+                    <Link href="/privacy" className="hover:text-slate-900">
+                      Privacy
+                    </Link>
+
+                    <a
+                      href="mailto:support@autoaudit.uk"
+                      className="hover:text-slate-900"
+                    >
+                      Contact us
+                    </a>
+
+                    {user ? (
+                      <>
+                        <Link href="/dashboard" className="hover:text-slate-900">
+                          Dashboard
+                        </Link>
+                        <LogoutButton />
+                      </>
+                    ) : (
+                      <Link href="/login" className="hover:text-slate-900">
+                        Sign in
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </details>
             </div>
           </header>
 
