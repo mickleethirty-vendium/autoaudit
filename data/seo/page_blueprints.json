@@ -1,0 +1,156 @@
+[
+  {
+    "page_family": "landing-registration",
+    "route_pattern": "/check-car-by-registration",
+    "dataset_dependency": "keyword_seeds",
+    "template_variables": "-",
+    "why_it_exists": "Capture the highest-intent head terms around reg checks",
+    "launch_phase": 1,
+    "priority": 1,
+    "index_rule": "index,follow",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "page_family": "landing-mot",
+    "route_pattern": "/mot-history-check",
+    "dataset_dependency": "keyword_seeds",
+    "template_variables": "-",
+    "why_it_exists": "Capture MOT checker and MOT history queries",
+    "launch_phase": 1,
+    "priority": 1,
+    "index_rule": "index,follow",
+    "source_url": "https://www.gov.uk/check-mot-history"
+  },
+  {
+    "page_family": "landing-history",
+    "route_pattern": "/vehicle-history-check",
+    "dataset_dependency": "keyword_seeds",
+    "template_variables": "-",
+    "why_it_exists": "Compete on history / HPI-alternative terms",
+    "launch_phase": 1,
+    "priority": 1,
+    "index_rule": "index,follow",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "page_family": "model-problems",
+    "route_pattern": "/cars/[make]/[model]/common-problems",
+    "dataset_dependency": "makes_models",
+    "template_variables": "make, model",
+    "why_it_exists": "Capture make+model common-problems searches",
+    "launch_phase": 2,
+    "priority": 1,
+    "index_rule": "index,follow",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "page_family": "model-reliability",
+    "route_pattern": "/cars/[make]/[model]/reliability",
+    "dataset_dependency": "makes_models",
+    "template_variables": "make, model",
+    "why_it_exists": "Capture reliability searches for the same models",
+    "launch_phase": 2,
+    "priority": 1,
+    "index_rule": "index,follow",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "page_family": "model-buyers-guide",
+    "route_pattern": "/cars/[make]/[model]/buyers-guide",
+    "dataset_dependency": "makes_models",
+    "template_variables": "make, model",
+    "why_it_exists": "Higher-conversion used-car intent pages",
+    "launch_phase": 2,
+    "priority": 2,
+    "index_rule": "index,follow",
+    "source_url": "https://www.theaa.com/cars/advice"
+  },
+  {
+    "page_family": "problem-hub",
+    "route_pattern": "/problems/[problem]",
+    "dataset_dependency": "problem_types",
+    "template_variables": "problem",
+    "why_it_exists": "Capture symptoms / repair cost intent at the issue level",
+    "launch_phase": 2,
+    "priority": 1,
+    "index_rule": "index,follow",
+    "source_url": "https://www.theaa.com/cars/advice/guides/most-common-used-car-issues"
+  },
+  {
+    "page_family": "make-problem",
+    "route_pattern": "/problems/[problem]/[make]",
+    "dataset_dependency": "problem_types x makes",
+    "template_variables": "problem, make",
+    "why_it_exists": "Attach generic issue terms to major brands",
+    "launch_phase": 3,
+    "priority": 2,
+    "index_rule": "index,follow",
+    "source_url": "https://www.theaa.com/cars/advice/guides/most-common-used-car-issues"
+  },
+  {
+    "page_family": "model-problem",
+    "route_pattern": "/cars/[make]/[model]/problems/[problem]",
+    "dataset_dependency": "makes_models x problem_types",
+    "template_variables": "make, model, problem",
+    "why_it_exists": "Highest-value long-tail pages; should be gated to top problem-model matches only",
+    "launch_phase": 4,
+    "priority": 2,
+    "index_rule": "index-if-supported",
+    "source_url": "https://www.theaa.com/cars/advice/guides/most-common-used-car-issues"
+  },
+  {
+    "page_family": "advisory-hub",
+    "route_pattern": "/mot-advisories/[advisory]",
+    "dataset_dependency": "mot_advisory_types",
+    "template_variables": "advisory",
+    "why_it_exists": "Capture educational advisory intent and definitions",
+    "launch_phase": 2,
+    "priority": 1,
+    "index_rule": "index,follow",
+    "source_url": "https://www.gov.uk/check-mot-history"
+  },
+  {
+    "page_family": "make-advisory",
+    "route_pattern": "/mot-advisories/[advisory]/[make]",
+    "dataset_dependency": "mot_advisory_types x makes",
+    "template_variables": "advisory, make",
+    "why_it_exists": "Surface brand-specific advisory patterns before model-level scale",
+    "launch_phase": 3,
+    "priority": 2,
+    "index_rule": "index,follow",
+    "source_url": "https://www.gov.uk/check-mot-history"
+  },
+  {
+    "page_family": "model-advisory",
+    "route_pattern": "/mot-advisories/[advisory]/[make]/[model]",
+    "dataset_dependency": "mot_advisory_types x makes_models",
+    "template_variables": "advisory, make, model",
+    "why_it_exists": "The 100k+ scale opportunity; only index where there is genuine data support",
+    "launch_phase": 4,
+    "priority": 3,
+    "index_rule": "index-if-supported",
+    "source_url": "https://www.gov.uk/check-mot-history"
+  },
+  {
+    "page_family": "model-problem-repair-cost",
+    "route_pattern": "/cars/[make]/[model]/problems/[problem]/repair-cost",
+    "dataset_dependency": "supported model_problem_matches",
+    "template_variables": "make, model, problem",
+    "why_it_exists": "Separate commercial-intent page only for proven issue/model combinations",
+    "launch_phase": 5,
+    "priority": 3,
+    "index_rule": "index-if-supported",
+    "source_url": "https://www.theaa.com/cars/advice/guides/most-common-used-car-issues"
+  },
+  {
+    "page_family": "model-advisory-repair-cost",
+    "route_pattern": "/mot-advisories/[advisory]/[make]/[model]/repair-cost",
+    "dataset_dependency": "supported model_advisory_matches",
+    "template_variables": "advisory, make, model",
+    "why_it_exists": "Second page type that turns advisory intent into repair-cost / buyer-impact intent",
+    "launch_phase": 5,
+    "priority": 3,
+    "index_rule": "index-if-supported",
+    "source_url": "https://www.gov.uk/check-mot-history"
+  }
+]

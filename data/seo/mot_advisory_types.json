@@ -1,0 +1,1100 @@
+[
+  {
+    "advisory_slug": "brake-pads-worn",
+    "advisory_label": "Brake pads wearing thin",
+    "mot_section": "1. Brakes",
+    "category": "Brakes",
+    "linked_problem_family": "brake-pad-wear",
+    "notes": "Pad friction material getting low",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "brake-discs-worn-or-pitted",
+    "advisory_label": "Brake discs worn, pitted or scored",
+    "mot_section": "1. Brakes",
+    "category": "Brakes",
+    "linked_problem_family": "brake-disc-wear",
+    "notes": "Disc lip, scoring or corrosion noted",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "brake-pipe-corroded",
+    "advisory_label": "Brake pipe corroded",
+    "mot_section": "1. Brakes",
+    "category": "Brakes",
+    "linked_problem_family": "brake-pipe-corrosion",
+    "notes": "Common corrosion advisory",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "brake-hose-deteriorated",
+    "advisory_label": "Brake hose deteriorated",
+    "mot_section": "1. Brakes",
+    "category": "Brakes",
+    "linked_problem_family": "brake-caliper-binding",
+    "notes": "Flexible hose cracking or perishing",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "parking-brake-efficiency-low",
+    "advisory_label": "Parking brake efficiency low",
+    "mot_section": "1. Brakes",
+    "category": "Brakes",
+    "linked_problem_family": "brake-caliper-binding",
+    "notes": "Handbrake travel / hold weaker than expected",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "parking-brake-binding",
+    "advisory_label": "Parking brake binding or not fully releasing",
+    "mot_section": "1. Brakes",
+    "category": "Brakes",
+    "linked_problem_family": "brake-caliper-binding",
+    "notes": "Drag from rear brakes or cables",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "brake-imbalance",
+    "advisory_label": "Brake imbalance approaching limit",
+    "mot_section": "1. Brakes",
+    "category": "Brakes",
+    "linked_problem_family": "brake-caliper-binding",
+    "notes": "Side-to-side imbalance noted",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "abs-warning-indicator",
+    "advisory_label": "ABS warning indicator illuminated",
+    "mot_section": "1. Brakes",
+    "category": "Brakes",
+    "linked_problem_family": "abs-sensor-failure",
+    "notes": "ABS / ESC system fault stored",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "brake-fluid-leak-minor",
+    "advisory_label": "Minor brake fluid leak / seepage",
+    "mot_section": "1. Brakes",
+    "category": "Brakes",
+    "linked_problem_family": "brake-pipe-corrosion",
+    "notes": "Hydraulic seepage to monitor",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "master-cylinder-seepage",
+    "advisory_label": "Master cylinder / servo seepage",
+    "mot_section": "1. Brakes",
+    "category": "Brakes",
+    "linked_problem_family": "brake-pipe-corrosion",
+    "notes": "Fluid seepage around master cylinder",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "rear-brake-corrosion",
+    "advisory_label": "Rear brakes corroded / restricted use",
+    "mot_section": "1. Brakes",
+    "category": "Brakes",
+    "linked_problem_family": "brake-disc-wear",
+    "notes": "Light use corrosion on rear discs / drums",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "brake-dust-shield-insecure",
+    "advisory_label": "Brake backplate / dust shield insecure",
+    "mot_section": "1. Brakes",
+    "category": "Brakes",
+    "linked_problem_family": "brake-disc-wear",
+    "notes": "Shield corrosion or looseness",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "brake-pedal-travel-excessive",
+    "advisory_label": "Brake pedal travel excessive",
+    "mot_section": "1. Brakes",
+    "category": "Brakes",
+    "linked_problem_family": "brake-pipe-corrosion",
+    "notes": "Pedal long but not yet a fail",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "handbrake-cable-corroded",
+    "advisory_label": "Handbrake cable corroded / stiff",
+    "mot_section": "1. Brakes",
+    "category": "Brakes",
+    "linked_problem_family": "brake-caliper-binding",
+    "notes": "Cable drag or corrosion",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "electronic-parking-brake-fault",
+    "advisory_label": "Electronic parking brake fault stored",
+    "mot_section": "1. Brakes",
+    "category": "Brakes",
+    "linked_problem_family": "brake-caliper-binding",
+    "notes": "EPB issue recorded",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "track-rod-end-play",
+    "advisory_label": "Track rod end has slight play",
+    "mot_section": "2. Steering",
+    "category": "Steering",
+    "linked_problem_family": "track-rod-end-wear",
+    "notes": "Common wear point",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "steering-rack-gaiter-damaged",
+    "advisory_label": "Steering rack gaiter deteriorated or damaged",
+    "mot_section": "2. Steering",
+    "category": "Steering",
+    "linked_problem_family": "power-steering-rack",
+    "notes": "Split boot can lead to rack wear",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "power-steering-fluid-leak",
+    "advisory_label": "Power steering fluid leak / seepage",
+    "mot_section": "2. Steering",
+    "category": "Steering",
+    "linked_problem_family": "power-steering-rack",
+    "notes": "Hydraulic leak noted",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "steering-column-play",
+    "advisory_label": "Slight steering column / joint play",
+    "mot_section": "2. Steering",
+    "category": "Steering",
+    "linked_problem_family": "steering-column-clunk",
+    "notes": "Column or UJ movement",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "steering-wheel-off-centre",
+    "advisory_label": "Steering wheel off-centre",
+    "mot_section": "2. Steering",
+    "category": "Steering",
+    "linked_problem_family": "wheel-alignment-issues",
+    "notes": "Often linked to tracking or suspension",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "eps-warning-history",
+    "advisory_label": "Electric power steering warning history",
+    "mot_section": "2. Steering",
+    "category": "Steering",
+    "linked_problem_family": "power-steering-rack",
+    "notes": "EPS system issue stored",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "steering-rack-mounting-worn",
+    "advisory_label": "Steering rack mounting worn",
+    "mot_section": "2. Steering",
+    "category": "Steering",
+    "linked_problem_family": "power-steering-rack",
+    "notes": "Mount movement or deterioration",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "inner-track-rod-play",
+    "advisory_label": "Inner steering joint has play",
+    "mot_section": "2. Steering",
+    "category": "Steering",
+    "linked_problem_family": "track-rod-end-wear",
+    "notes": "Inner joint wear",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "uneven-steering-assistance",
+    "advisory_label": "Uneven steering assistance",
+    "mot_section": "2. Steering",
+    "category": "Steering",
+    "linked_problem_family": "power-steering-rack",
+    "notes": "Heavy spot or inconsistent assist",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "subframe-affecting-steering",
+    "advisory_label": "Subframe corrosion affecting steering mount area",
+    "mot_section": "2. Steering",
+    "category": "Steering",
+    "linked_problem_family": "corrosion-underbody",
+    "notes": "Corrosion near steering components",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "windscreen-chip",
+    "advisory_label": "Windscreen chip outside immediate fail zone",
+    "mot_section": "3. Visibility",
+    "category": "Visibility",
+    "linked_problem_family": "windscreen-chip-or-crack",
+    "notes": "Chip to monitor",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "windscreen-crack-small",
+    "advisory_label": "Small windscreen crack",
+    "mot_section": "3. Visibility",
+    "category": "Visibility",
+    "linked_problem_family": "windscreen-chip-or-crack",
+    "notes": "Crack not yet fail-sized / positioned",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "wiper-blades-deteriorated",
+    "advisory_label": "Wiper blades deteriorated",
+    "mot_section": "3. Visibility",
+    "category": "Visibility",
+    "linked_problem_family": "windscreen-chip-or-crack",
+    "notes": "Smearing / split blades",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "washer-jets-misaligned",
+    "advisory_label": "Washer jets misaligned or weak",
+    "mot_section": "3. Visibility",
+    "category": "Visibility",
+    "linked_problem_family": "battery-drain",
+    "notes": "Poor screen wash coverage",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "washer-fluid-warning",
+    "advisory_label": "Washer system weak / low performance",
+    "mot_section": "3. Visibility",
+    "category": "Visibility",
+    "linked_problem_family": "battery-drain",
+    "notes": "Pump or supply issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "mirror-damaged",
+    "advisory_label": "Mirror housing / glass damaged",
+    "mot_section": "3. Visibility",
+    "category": "Visibility",
+    "linked_problem_family": "door-lock-actuator-failure",
+    "notes": "Mirror damage affecting view",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "headlamp-lens-cloudy",
+    "advisory_label": "Headlamp lens cloudy / deteriorated",
+    "mot_section": "3. Visibility",
+    "category": "Visibility",
+    "linked_problem_family": "infotainment-screen-failure",
+    "notes": "Can affect visibility / aim",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "bonnet-catch-operation",
+    "advisory_label": "Bonnet catch operation stiff",
+    "mot_section": "3. Visibility",
+    "category": "Visibility",
+    "linked_problem_family": "door-lock-actuator-failure",
+    "notes": "Catch needs adjustment",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "rear-view-obstructed",
+    "advisory_label": "Rear view restricted by damage or accessory",
+    "mot_section": "3. Visibility",
+    "category": "Visibility",
+    "linked_problem_family": "door-lock-actuator-failure",
+    "notes": "Visibility issue noted",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "window-operation-slow",
+    "advisory_label": "Window operation slow / intermittent",
+    "mot_section": "3. Visibility",
+    "category": "Visibility",
+    "linked_problem_family": "wiring-earth-fault",
+    "notes": "Could affect demisting or visibility",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "headlamp-aim",
+    "advisory_label": "Headlamp aim slightly incorrect",
+    "mot_section": "4. Lamps, reflectors and electrical equipment",
+    "category": "Lamps / electrical",
+    "linked_problem_family": "wiring-earth-fault",
+    "notes": "Adjustment needed",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "headlamp-bulb-dim",
+    "advisory_label": "Headlamp output weak or bulb dim",
+    "mot_section": "4. Lamps, reflectors and electrical equipment",
+    "category": "Lamps / electrical",
+    "linked_problem_family": "wiring-earth-fault",
+    "notes": "Ageing bulb or voltage issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "side-light-inoperative",
+    "advisory_label": "Side light inoperative intermittently",
+    "mot_section": "4. Lamps, reflectors and electrical equipment",
+    "category": "Lamps / electrical",
+    "linked_problem_family": "wiring-earth-fault",
+    "notes": "Lamp circuit issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "brake-light-intermittent",
+    "advisory_label": "Brake light intermittent",
+    "mot_section": "4. Lamps, reflectors and electrical equipment",
+    "category": "Lamps / electrical",
+    "linked_problem_family": "wiring-earth-fault",
+    "notes": "Lamp holder / switch issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "indicator-repeaters-faulty",
+    "advisory_label": "Indicator repeater faulty",
+    "mot_section": "4. Lamps, reflectors and electrical equipment",
+    "category": "Lamps / electrical",
+    "linked_problem_family": "wiring-earth-fault",
+    "notes": "Mirror or wing repeater issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "rear-fog-light-issue",
+    "advisory_label": "Rear fog light issue recorded",
+    "mot_section": "4. Lamps, reflectors and electrical equipment",
+    "category": "Lamps / electrical",
+    "linked_problem_family": "wiring-earth-fault",
+    "notes": "Lamp or switch problem",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "number-plate-light-out",
+    "advisory_label": "Number plate light out",
+    "mot_section": "4. Lamps, reflectors and electrical equipment",
+    "category": "Lamps / electrical",
+    "linked_problem_family": "wiring-earth-fault",
+    "notes": "Common minor fault",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "reverse-light-fault",
+    "advisory_label": "Reverse light fault",
+    "mot_section": "4. Lamps, reflectors and electrical equipment",
+    "category": "Lamps / electrical",
+    "linked_problem_family": "wiring-earth-fault",
+    "notes": "Bulb / switch issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "battery-insecure",
+    "advisory_label": "Battery insecure or mounting poor",
+    "mot_section": "4. Lamps, reflectors and electrical equipment",
+    "category": "Lamps / electrical",
+    "linked_problem_family": "battery-drain",
+    "notes": "Clamp or tray issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "battery-condition-weak",
+    "advisory_label": "Battery condition weak",
+    "mot_section": "4. Lamps, reflectors and electrical equipment",
+    "category": "Lamps / electrical",
+    "linked_problem_family": "battery-drain",
+    "notes": "Low reserve capacity",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "wiring-chafed",
+    "advisory_label": "Electrical wiring chafed or insecure",
+    "mot_section": "4. Lamps, reflectors and electrical equipment",
+    "category": "Lamps / electrical",
+    "linked_problem_family": "wiring-earth-fault",
+    "notes": "Potential intermittent fault",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "fusebox-water-ingress",
+    "advisory_label": "Fusebox / electrical compartment shows moisture",
+    "mot_section": "4. Lamps, reflectors and electrical equipment",
+    "category": "Lamps / electrical",
+    "linked_problem_family": "sunroof-drain-leak",
+    "notes": "Moisture ingress risk",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "tpms-warning",
+    "advisory_label": "TPMS warning light illuminated",
+    "mot_section": "4. Lamps, reflectors and electrical equipment",
+    "category": "Lamps / electrical",
+    "linked_problem_family": "wheel-alignment-issues",
+    "notes": "Tyre pressure monitor issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "dashboard-warning-light",
+    "advisory_label": "Non-critical dashboard warning light present",
+    "mot_section": "4. Lamps, reflectors and electrical equipment",
+    "category": "Lamps / electrical",
+    "linked_problem_family": "wiring-earth-fault",
+    "notes": "Stored fault to investigate",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "parking-sensor-fault",
+    "advisory_label": "Parking sensor fault recorded",
+    "mot_section": "4. Lamps, reflectors and electrical equipment",
+    "category": "Lamps / electrical",
+    "linked_problem_family": "wiring-earth-fault",
+    "notes": "Sensor / module issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "camera-system-fault",
+    "advisory_label": "Reversing camera / surround view fault",
+    "mot_section": "4. Lamps, reflectors and electrical equipment",
+    "category": "Lamps / electrical",
+    "linked_problem_family": "infotainment-screen-failure",
+    "notes": "Camera or module issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "charging-system-warning",
+    "advisory_label": "Charging system warning history",
+    "mot_section": "4. Lamps, reflectors and electrical equipment",
+    "category": "Lamps / electrical",
+    "linked_problem_family": "alternator-failure",
+    "notes": "Alternator / smart charge issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "12v-socket-fault",
+    "advisory_label": "12V socket / accessory power fault",
+    "mot_section": "4. Lamps, reflectors and electrical equipment",
+    "category": "Lamps / electrical",
+    "linked_problem_family": "wiring-earth-fault",
+    "notes": "Fuse or wiring issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "front-tyres-low-tread",
+    "advisory_label": "Front tyres nearing legal tread limit",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "wheel-alignment-issues",
+    "notes": "Common advisory",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "rear-tyres-low-tread",
+    "advisory_label": "Rear tyres nearing legal tread limit",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "wheel-alignment-issues",
+    "notes": "Common advisory",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "tyre-sidewall-damaged",
+    "advisory_label": "Tyre sidewall damaged or cracked",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "wheel-alignment-issues",
+    "notes": "Sidewall deterioration",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "tyre-uneven-wear",
+    "advisory_label": "Tyres show uneven wear",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "wheel-alignment-issues",
+    "notes": "Tracking or suspension wear hint",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "wheel-bearing-noisy",
+    "advisory_label": "Wheel bearing noisy",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "wheel-bearing-wear",
+    "notes": "Bearing wear starting",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "suspension-arm-bush-worn",
+    "advisory_label": "Suspension arm bush worn",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "suspension-arm-bush-wear",
+    "notes": "Control arm / rear beam bush wear",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "ball-joint-play",
+    "advisory_label": "Ball joint has slight play",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "ball-joint-wear",
+    "notes": "Common wear advisory",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "drop-link-worn",
+    "advisory_label": "Anti-roll bar drop link worn",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "drop-link-wear",
+    "notes": "Rattle source",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "coil-spring-corroded",
+    "advisory_label": "Coil spring corroded",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "coil-spring-breakage",
+    "notes": "Spring corrosion before breakage",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "coil-spring-broken-end",
+    "advisory_label": "Coil spring fractured at end",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "coil-spring-breakage",
+    "notes": "Often advisories before fail",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "shock-absorber-misting",
+    "advisory_label": "Shock absorber light misting",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "shock-absorber-leak",
+    "notes": "Dampness noted",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "shock-absorber-weak",
+    "advisory_label": "Shock absorber weak",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "shock-absorber-leak",
+    "notes": "Reduced damping performance",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "top-mount-worn",
+    "advisory_label": "Suspension top mount worn",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "shock-absorber-leak",
+    "notes": "Knock / clunk over bumps",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "rear-axle-bush-worn",
+    "advisory_label": "Rear axle / beam bush worn",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "suspension-arm-bush-wear",
+    "notes": "Common on hatchbacks",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "subframe-corrosion",
+    "advisory_label": "Subframe corroded",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "corrosion-underbody",
+    "notes": "Corrosion around mounting points",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "alloy-wheel-damaged",
+    "advisory_label": "Alloy wheel damaged or buckled",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "wheel-alignment-issues",
+    "notes": "Can cause vibration",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "tyre-pressure-mismatch",
+    "advisory_label": "Tyres mismatched or pressures incorrect",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "wheel-alignment-issues",
+    "notes": "Can affect handling",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "cv-boot-damaged",
+    "advisory_label": "CV boot deteriorated / starting to split",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "driveshaft-cv-joint",
+    "notes": "Grease leak risk",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "driveshaft-vibration",
+    "advisory_label": "Driveshaft vibration noted",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "driveshaft-cv-joint",
+    "notes": "Possible inner CV wear",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "wheel-alignment-off",
+    "advisory_label": "Wheel alignment visibly out",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "wheel-alignment-issues",
+    "notes": "Steering geometry issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "rear-shock-bush-worn",
+    "advisory_label": "Rear shock bush worn",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "shock-absorber-leak",
+    "notes": "Noise / looseness",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "leaf-spring-wear",
+    "advisory_label": "Leaf spring / rear spring wear",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "coil-spring-breakage",
+    "notes": "Applicable to some vans / pickups",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "wheel-corrosion",
+    "advisory_label": "Wheel corrosion around bead seat",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "wheel-alignment-issues",
+    "notes": "Potential slow leaks",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "tpms-sensor-fault",
+    "advisory_label": "TPMS sensor fault",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "wheel-alignment-issues",
+    "notes": "Sensor battery / signal issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "suspension-arm-corrosion",
+    "advisory_label": "Suspension arm corroded",
+    "mot_section": "5. Axles, wheels, tyres and suspension",
+    "category": "Tyres / suspension",
+    "linked_problem_family": "suspension-arm-bush-wear",
+    "notes": "Corrosion near structural point",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "sill-corrosion",
+    "advisory_label": "Sill corrosion noted",
+    "mot_section": "6. Body, structure and attachments",
+    "category": "Body / structure",
+    "linked_problem_family": "corrosion-underbody",
+    "notes": "Common older-car rust area",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "floorpan-corrosion",
+    "advisory_label": "Floorpan corrosion",
+    "mot_section": "6. Body, structure and attachments",
+    "category": "Body / structure",
+    "linked_problem_family": "corrosion-underbody",
+    "notes": "Underbody rust",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "inner-wing-corrosion",
+    "advisory_label": "Inner wing corrosion",
+    "mot_section": "6. Body, structure and attachments",
+    "category": "Body / structure",
+    "linked_problem_family": "corrosion-underbody",
+    "notes": "Structural corrosion risk",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "exhaust-corroded",
+    "advisory_label": "Exhaust corroded",
+    "mot_section": "6. Body, structure and attachments",
+    "category": "Body / structure",
+    "linked_problem_family": "exhaust-corrosion",
+    "notes": "Silencer / centre section rust",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "exhaust-leak-minor",
+    "advisory_label": "Minor exhaust leak",
+    "mot_section": "6. Body, structure and attachments",
+    "category": "Body / structure",
+    "linked_problem_family": "exhaust-corrosion",
+    "notes": "Blowing joint or flexi",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "engine-oil-leak",
+    "advisory_label": "Engine oil leak / seepage",
+    "mot_section": "6. Body, structure and attachments",
+    "category": "Body / structure",
+    "linked_problem_family": "oil-leak-engine",
+    "notes": "Common advisory",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "gearbox-oil-leak",
+    "advisory_label": "Gearbox oil leak / seepage",
+    "mot_section": "6. Body, structure and attachments",
+    "category": "Body / structure",
+    "linked_problem_family": "oil-leak-engine",
+    "notes": "Transmission seepage",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "coolant-leak",
+    "advisory_label": "Coolant leak / staining visible",
+    "mot_section": "6. Body, structure and attachments",
+    "category": "Body / structure",
+    "linked_problem_family": "radiator-leak",
+    "notes": "Cooling system seepage",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "fuel-line-corrosion",
+    "advisory_label": "Fuel line corroded",
+    "mot_section": "6. Body, structure and attachments",
+    "category": "Body / structure",
+    "linked_problem_family": "high-pressure-fuel-pump",
+    "notes": "Line corrosion underbody",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "bumper-insecure",
+    "advisory_label": "Bumper insecure",
+    "mot_section": "6. Body, structure and attachments",
+    "category": "Body / structure",
+    "linked_problem_family": "door-lock-actuator-failure",
+    "notes": "Fixings broken or missing",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "undertray-loose",
+    "advisory_label": "Engine undertray loose / damaged",
+    "mot_section": "6. Body, structure and attachments",
+    "category": "Body / structure",
+    "linked_problem_family": "door-lock-actuator-failure",
+    "notes": "Can cause noise / drag",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "door-check-strap-fault",
+    "advisory_label": "Door check strap / hinge wear",
+    "mot_section": "6. Body, structure and attachments",
+    "category": "Body / structure",
+    "linked_problem_family": "door-lock-actuator-failure",
+    "notes": "Door operation issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "door-lock-fault",
+    "advisory_label": "Door lock not operating correctly",
+    "mot_section": "6. Body, structure and attachments",
+    "category": "Body / structure",
+    "linked_problem_family": "door-lock-actuator-failure",
+    "notes": "Central locking concern",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "tailgate-strut-weak",
+    "advisory_label": "Tailgate / bonnet struts weak",
+    "mot_section": "6. Body, structure and attachments",
+    "category": "Body / structure",
+    "linked_problem_family": "door-lock-actuator-failure",
+    "notes": "Won't hold open properly",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "seat-mount-loose",
+    "advisory_label": "Seat mounting slight movement",
+    "mot_section": "6. Body, structure and attachments",
+    "category": "Body / structure",
+    "linked_problem_family": "door-lock-actuator-failure",
+    "notes": "Fixings to inspect",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "seat-belt-frayed",
+    "advisory_label": "Seat belt fraying or slow retraction",
+    "mot_section": "6. Body, structure and attachments",
+    "category": "Body / structure",
+    "linked_problem_family": "airbag-warning-light",
+    "notes": "Seat belt wear",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "towbar-corroded",
+    "advisory_label": "Towbar corroded / wiring issue",
+    "mot_section": "6. Body, structure and attachments",
+    "category": "Body / structure",
+    "linked_problem_family": "wiring-earth-fault",
+    "notes": "Accessory mount needs attention",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "sunroof-drains-blocked",
+    "advisory_label": "Sunroof drains blocked / water ingress signs",
+    "mot_section": "6. Body, structure and attachments",
+    "category": "Body / structure",
+    "linked_problem_family": "sunroof-drain-leak",
+    "notes": "Damp / staining",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "windscreen-bond-seepage",
+    "advisory_label": "Windscreen bond / seal seepage",
+    "mot_section": "6. Body, structure and attachments",
+    "category": "Body / structure",
+    "linked_problem_family": "sunroof-drain-leak",
+    "notes": "Water ingress path",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "subframe-shield-corroded",
+    "advisory_label": "Subframe / heat shield corroded",
+    "mot_section": "6. Body, structure and attachments",
+    "category": "Body / structure",
+    "linked_problem_family": "corrosion-underbody",
+    "notes": "Corrosion or rattles",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "seat-belt-warning-light",
+    "advisory_label": "Seat belt warning light issue",
+    "mot_section": "7. Other equipment",
+    "category": "Other equipment",
+    "linked_problem_family": "airbag-warning-light",
+    "notes": "Seat sensor / buckle fault",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "airbag-warning-light",
+    "advisory_label": "Airbag warning light illuminated",
+    "mot_section": "7. Other equipment",
+    "category": "Other equipment",
+    "linked_problem_family": "airbag-warning-light",
+    "notes": "SRS issue present",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "horn-weak",
+    "advisory_label": "Horn weak or intermittent",
+    "mot_section": "7. Other equipment",
+    "category": "Other equipment",
+    "linked_problem_family": "wiring-earth-fault",
+    "notes": "Horn circuit issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "speedometer-inaccurate",
+    "advisory_label": "Speedometer / display issue",
+    "mot_section": "7. Other equipment",
+    "category": "Other equipment",
+    "linked_problem_family": "infotainment-screen-failure",
+    "notes": "Cluster / sensor issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "esc-warning-light",
+    "advisory_label": "ESC / stability control warning light",
+    "mot_section": "7. Other equipment",
+    "category": "Other equipment",
+    "linked_problem_family": "abs-sensor-failure",
+    "notes": "ABS/ESP system issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "adblue-warning",
+    "advisory_label": "AdBlue countdown / warning displayed",
+    "mot_section": "7. Other equipment",
+    "category": "Other equipment",
+    "linked_problem_family": "adblue-system-fault",
+    "notes": "SCR fault imminent",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "engine-management-light",
+    "advisory_label": "Engine management light illuminated",
+    "mot_section": "7. Other equipment",
+    "category": "Other equipment",
+    "linked_problem_family": "maf-sensor-fault",
+    "notes": "Generic engine fault present",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "parking-brake-switch-fault",
+    "advisory_label": "Parking brake switch / button fault",
+    "mot_section": "7. Other equipment",
+    "category": "Other equipment",
+    "linked_problem_family": "electronic-parking-brake-fault",
+    "notes": "EPB control issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "keyless-entry-fault",
+    "advisory_label": "Keyless entry / start fault",
+    "mot_section": "7. Other equipment",
+    "category": "Other equipment",
+    "linked_problem_family": "wiring-earth-fault",
+    "notes": "Module or antenna issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "immobiliser-warning",
+    "advisory_label": "Immobiliser / key recognition warning",
+    "mot_section": "7. Other equipment",
+    "category": "Other equipment",
+    "linked_problem_family": "wiring-earth-fault",
+    "notes": "Starting system issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "exhaust-emissions-borderline",
+    "advisory_label": "Exhaust emissions close to test limit",
+    "mot_section": "8. Nuisance",
+    "category": "Nuisance / emissions",
+    "linked_problem_family": "oxygen-sensor-failure",
+    "notes": "Future fail risk",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "dpf-warning",
+    "advisory_label": "DPF warning / regeneration needed",
+    "mot_section": "8. Nuisance",
+    "category": "Nuisance / emissions",
+    "linked_problem_family": "dpf-blockage",
+    "notes": "Filter loading issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "smoke-under-load",
+    "advisory_label": "Smoke under load observed",
+    "mot_section": "8. Nuisance",
+    "category": "Nuisance / emissions",
+    "linked_problem_family": "turbo-failure",
+    "notes": "Could indicate diesel / turbo issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "fluid-leak-general",
+    "advisory_label": "General fluid leak / seepage",
+    "mot_section": "8. Nuisance",
+    "category": "Nuisance / emissions",
+    "linked_problem_family": "oil-leak-engine",
+    "notes": "Further diagnosis needed",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "engine-noise",
+    "advisory_label": "Engine noise increased",
+    "mot_section": "8. Nuisance",
+    "category": "Nuisance / emissions",
+    "linked_problem_family": "timing-chain-stretch",
+    "notes": "Rattle / knock to investigate",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "exhaust-noise",
+    "advisory_label": "Exhaust noise above expected",
+    "mot_section": "8. Nuisance",
+    "category": "Nuisance / emissions",
+    "linked_problem_family": "exhaust-corrosion",
+    "notes": "Leak or mounting issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "catalyst-efficiency-low",
+    "advisory_label": "Catalyst efficiency low / warning stored",
+    "mot_section": "8. Nuisance",
+    "category": "Nuisance / emissions",
+    "linked_problem_family": "catalytic-converter-failure",
+    "notes": "Emission control issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "coolant-temperature-fluctuation",
+    "advisory_label": "Coolant temperature fluctuation noted",
+    "mot_section": "8. Nuisance",
+    "category": "Nuisance / emissions",
+    "linked_problem_family": "thermostat-housing-leak",
+    "notes": "Cooling control issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "mil-on",
+    "advisory_label": "MIL / check engine light on",
+    "mot_section": "8. Nuisance",
+    "category": "Nuisance / emissions",
+    "linked_problem_family": "maf-sensor-fault",
+    "notes": "Stored powertrain fault",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "adblue-no-start-risk",
+    "advisory_label": "AdBlue system may trigger no-start",
+    "mot_section": "8. Nuisance",
+    "category": "Nuisance / emissions",
+    "linked_problem_family": "adblue-system-fault",
+    "notes": "SCR repair needed",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "ev-battery-coolant-leak",
+    "advisory_label": "EV / hybrid battery cooling system seepage",
+    "mot_section": "8. Nuisance",
+    "category": "Nuisance / emissions",
+    "linked_problem_family": "hybrid-battery-degradation",
+    "notes": "Battery thermal system needs inspection",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "onboard-charger-warning",
+    "advisory_label": "Onboard charger / charging warning present",
+    "mot_section": "7. Other equipment",
+    "category": "Other equipment",
+    "linked_problem_family": "charge-port-or-onboard-charger",
+    "notes": "Charging fault stored",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "heater-not-demisting",
+    "advisory_label": "Heater / demister performance weak",
+    "mot_section": "3. Visibility",
+    "category": "Visibility",
+    "linked_problem_family": "heater-matrix-leak",
+    "notes": "Poor demist can affect visibility",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  },
+  {
+    "advisory_slug": "ac-not-cold",
+    "advisory_label": "Air conditioning not cooling effectively",
+    "mot_section": "7. Other equipment",
+    "category": "Other equipment",
+    "linked_problem_family": "ac-compressor-failure",
+    "notes": "Compressor or refrigerant issue",
+    "source_url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles"
+  }
+]

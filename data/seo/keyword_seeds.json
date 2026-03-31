@@ -1,0 +1,1012 @@
+[
+  {
+    "keyword_or_template": "check car by registration",
+    "cluster": "registration",
+    "page_family": "landing-registration",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "car check by reg",
+    "cluster": "registration",
+    "page_family": "landing-registration",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "vehicle check by registration",
+    "cluster": "registration",
+    "page_family": "landing-registration",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "vehicle check UK",
+    "cluster": "registration",
+    "page_family": "landing-registration",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "used car check UK",
+    "cluster": "registration",
+    "page_family": "landing-registration",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "free car check UK",
+    "cluster": "registration",
+    "page_family": "landing-registration",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "car history check UK",
+    "cluster": "history",
+    "page_family": "landing-history",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "vehicle history check",
+    "cluster": "history",
+    "page_family": "landing-history",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "check vehicle history",
+    "cluster": "history",
+    "page_family": "landing-history",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "car history check by reg",
+    "cluster": "history",
+    "page_family": "landing-history",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "HPI check alternative",
+    "cluster": "history",
+    "page_family": "landing-history",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "MOT history check",
+    "cluster": "mot",
+    "page_family": "landing-mot",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.gov.uk/check-mot-history"
+  },
+  {
+    "keyword_or_template": "check MOT history",
+    "cluster": "mot",
+    "page_family": "landing-mot",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.gov.uk/check-mot-history"
+  },
+  {
+    "keyword_or_template": "MOT check by registration",
+    "cluster": "mot",
+    "page_family": "landing-mot",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.gov.uk/check-mot-history"
+  },
+  {
+    "keyword_or_template": "MOT checker",
+    "cluster": "mot",
+    "page_family": "landing-mot",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.rac.co.uk/car-care/mot-checker"
+  },
+  {
+    "keyword_or_template": "car valuation check",
+    "cluster": "valuation",
+    "page_family": "landing-valuation",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "used car valuation UK",
+    "cluster": "valuation",
+    "page_family": "landing-valuation",
+    "search_intent": "money",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "is this car worth buying",
+    "cluster": "buyer-intent",
+    "page_family": "landing-buyer",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "should I buy this used car",
+    "cluster": "buyer-intent",
+    "page_family": "landing-buyer",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "car repair risk check",
+    "cluster": "repair-risk",
+    "page_family": "landing-repair",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "used car repair risk",
+    "cluster": "repair-risk",
+    "page_family": "landing-repair",
+    "search_intent": "money",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "known problems by registration",
+    "cluster": "repair-risk",
+    "page_family": "landing-repair",
+    "search_intent": "money",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "MOT advisories meaning",
+    "cluster": "mot-advisory",
+    "page_family": "advisory-hub",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.gov.uk/check-mot-history"
+  },
+  {
+    "keyword_or_template": "what do MOT advisories mean",
+    "cluster": "mot-advisory",
+    "page_family": "advisory-hub",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.gov.uk/check-mot-history"
+  },
+  {
+    "keyword_or_template": "common MOT advisories",
+    "cluster": "mot-advisory",
+    "page_family": "advisory-hub",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.gov.uk/check-mot-history"
+  },
+  {
+    "keyword_or_template": "{make} {model} common problems",
+    "cluster": "model-common-problems",
+    "page_family": "model-problems",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "template",
+    "notes": "Populate with makes_models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "{make} {model} reliability",
+    "cluster": "model-reliability",
+    "page_family": "model-reliability",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "template",
+    "notes": "Populate with makes_models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "{make} {model} known issues",
+    "cluster": "model-known-issues",
+    "page_family": "model-problems",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "template",
+    "notes": "Populate with makes_models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "{make} {model} buyers guide",
+    "cluster": "model-buyers-guide",
+    "page_family": "model-buyers-guide",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "template",
+    "notes": "Populate with makes_models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "{make} {model} running costs",
+    "cluster": "model-running-costs",
+    "page_family": "model-reliability",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "template",
+    "notes": "Populate with makes_models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "{make} {model} maintenance costs",
+    "cluster": "model-running-costs",
+    "page_family": "model-reliability",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "template",
+    "notes": "Populate with makes_models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "{make} {model} MOT problems",
+    "cluster": "model-mot-patterns",
+    "page_family": "model-mot-patterns",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "template",
+    "notes": "Populate with makes_models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "{make} {model} common MOT failures",
+    "cluster": "model-mot-patterns",
+    "page_family": "model-mot-patterns",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "template",
+    "notes": "Populate with makes_models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "{make} {model} worth buying",
+    "cluster": "model-worth-buying",
+    "page_family": "model-buyers-guide",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "template",
+    "notes": "Populate with makes_models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "{make} {model} used buying guide",
+    "cluster": "model-buyers-guide",
+    "page_family": "model-buyers-guide",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "template",
+    "notes": "Populate with makes_models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "{make} {model} expensive to fix",
+    "cluster": "model-repair-cost",
+    "page_family": "model-repair-cost",
+    "search_intent": "money",
+    "priority_tier": 2,
+    "row_type": "template",
+    "notes": "Populate with makes_models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "problems with {make} {model}",
+    "cluster": "model-common-problems",
+    "page_family": "model-problems",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "template",
+    "notes": "Populate with makes_models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "{make} {model} reliability UK",
+    "cluster": "model-reliability",
+    "page_family": "model-reliability",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "template",
+    "notes": "Populate with makes_models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "{make} {model} review used",
+    "cluster": "model-buyers-guide",
+    "page_family": "model-buyers-guide",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "template",
+    "notes": "Populate with makes_models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "{problem} symptoms",
+    "cluster": "problem-symptoms",
+    "page_family": "problem-hub",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "template",
+    "notes": "Populate with problem_types and / or makes_models",
+    "source_url": "https://www.theaa.com/cars/advice/guides/most-common-used-car-issues"
+  },
+  {
+    "keyword_or_template": "{problem} repair cost",
+    "cluster": "problem-repair-cost",
+    "page_family": "problem-hub",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "template",
+    "notes": "Populate with problem_types and / or makes_models",
+    "source_url": "https://www.theaa.com/cars/advice/guides/most-common-used-car-issues"
+  },
+  {
+    "keyword_or_template": "{problem} warning signs",
+    "cluster": "problem-symptoms",
+    "page_family": "problem-hub",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "template",
+    "notes": "Populate with problem_types and / or makes_models",
+    "source_url": "https://www.theaa.com/cars/advice/guides/most-common-used-car-issues"
+  },
+  {
+    "keyword_or_template": "{problem} MOT advisory",
+    "cluster": "problem-advisory",
+    "page_family": "problem-hub",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "template",
+    "notes": "Populate with problem_types and / or makes_models",
+    "source_url": "https://www.theaa.com/cars/advice/guides/most-common-used-car-issues"
+  },
+  {
+    "keyword_or_template": "{problem} causes",
+    "cluster": "problem-causes",
+    "page_family": "problem-hub",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "template",
+    "notes": "Populate with problem_types and / or makes_models",
+    "source_url": "https://www.theaa.com/cars/advice/guides/most-common-used-car-issues"
+  },
+  {
+    "keyword_or_template": "{problem} should I buy a car with this issue",
+    "cluster": "problem-buyer-intent",
+    "page_family": "problem-hub",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "template",
+    "notes": "Populate with problem_types and / or makes_models",
+    "source_url": "https://www.theaa.com/cars/advice/guides/most-common-used-car-issues"
+  },
+  {
+    "keyword_or_template": "{make} {problem}",
+    "cluster": "make-problem",
+    "page_family": "make-problem",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "template",
+    "notes": "Populate with problem_types and / or makes_models",
+    "source_url": "https://www.theaa.com/cars/advice/guides/most-common-used-car-issues"
+  },
+  {
+    "keyword_or_template": "{make} {model} {problem}",
+    "cluster": "model-problem",
+    "page_family": "model-problem",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "template",
+    "notes": "Populate with problem_types and / or makes_models",
+    "source_url": "https://www.theaa.com/cars/advice/guides/most-common-used-car-issues"
+  },
+  {
+    "keyword_or_template": "{make} {model} {problem} cost",
+    "cluster": "model-problem",
+    "page_family": "model-problem",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "template",
+    "notes": "Populate with problem_types and / or makes_models",
+    "source_url": "https://www.theaa.com/cars/advice/guides/most-common-used-car-issues"
+  },
+  {
+    "keyword_or_template": "{make} {model} {problem} symptoms",
+    "cluster": "model-problem",
+    "page_family": "model-problem",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "template",
+    "notes": "Populate with problem_types and / or makes_models",
+    "source_url": "https://www.theaa.com/cars/advice/guides/most-common-used-car-issues"
+  },
+  {
+    "keyword_or_template": "{engine_family} problems",
+    "cluster": "engine-family-problems",
+    "page_family": "engine-family",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "template",
+    "notes": "Populate with problem_types and / or makes_models",
+    "source_url": "https://www.theaa.com/cars/advice/guides/most-common-used-car-issues"
+  },
+  {
+    "keyword_or_template": "{advisory} advisory meaning",
+    "cluster": "advisory-meaning",
+    "page_family": "advisory-hub",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "template",
+    "notes": "Populate with mot_advisory_types and / or makes_models",
+    "source_url": "https://www.gov.uk/check-mot-history"
+  },
+  {
+    "keyword_or_template": "{advisory} repair cost",
+    "cluster": "advisory-repair-cost",
+    "page_family": "advisory-hub",
+    "search_intent": "money",
+    "priority_tier": 2,
+    "row_type": "template",
+    "notes": "Populate with mot_advisory_types and / or makes_models",
+    "source_url": "https://www.gov.uk/check-mot-history"
+  },
+  {
+    "keyword_or_template": "{advisory} MOT advisory",
+    "cluster": "advisory-meaning",
+    "page_family": "advisory-hub",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "template",
+    "notes": "Populate with mot_advisory_types and / or makes_models",
+    "source_url": "https://www.gov.uk/check-mot-history"
+  },
+  {
+    "keyword_or_template": "{advisory} serious",
+    "cluster": "advisory-seriousness",
+    "page_family": "advisory-hub",
+    "search_intent": "money",
+    "priority_tier": 2,
+    "row_type": "template",
+    "notes": "Populate with mot_advisory_types and / or makes_models",
+    "source_url": "https://www.gov.uk/check-mot-history"
+  },
+  {
+    "keyword_or_template": "{advisory} fail next MOT",
+    "cluster": "advisory-meaning",
+    "page_family": "advisory-hub",
+    "search_intent": "money",
+    "priority_tier": 2,
+    "row_type": "template",
+    "notes": "Populate with mot_advisory_types and / or makes_models",
+    "source_url": "https://www.gov.uk/check-mot-history"
+  },
+  {
+    "keyword_or_template": "{make} {model} {advisory}",
+    "cluster": "model-advisory",
+    "page_family": "model-advisory",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "template",
+    "notes": "Populate with mot_advisory_types and / or makes_models",
+    "source_url": "https://www.gov.uk/check-mot-history"
+  },
+  {
+    "keyword_or_template": "{make} {advisory}",
+    "cluster": "make-advisory",
+    "page_family": "make-advisory",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "template",
+    "notes": "Populate with mot_advisory_types and / or makes_models",
+    "source_url": "https://www.gov.uk/check-mot-history"
+  },
+  {
+    "keyword_or_template": "{make} {model} common advisories",
+    "cluster": "model-mot-patterns",
+    "page_family": "model-mot-patterns",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "template",
+    "notes": "Populate with mot_advisory_types and / or makes_models",
+    "source_url": "https://www.gov.uk/check-mot-history"
+  },
+  {
+    "keyword_or_template": "{make} {model} MOT advisories",
+    "cluster": "model-mot-patterns",
+    "page_family": "model-mot-patterns",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "template",
+    "notes": "Populate with mot_advisory_types and / or makes_models",
+    "source_url": "https://www.gov.uk/check-mot-history"
+  },
+  {
+    "keyword_or_template": "Ford Puma common problems",
+    "cluster": "model-common-problems",
+    "page_family": "model-problems",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "Example seed from high-demand UK models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "Kia Sportage common problems",
+    "cluster": "model-common-problems",
+    "page_family": "model-problems",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "Example seed from high-demand UK models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "Nissan Qashqai common problems",
+    "cluster": "model-common-problems",
+    "page_family": "model-problems",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "Example seed from high-demand UK models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "Vauxhall Corsa common problems",
+    "cluster": "model-common-problems",
+    "page_family": "model-problems",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "Example seed from high-demand UK models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "Nissan Juke common problems",
+    "cluster": "model-common-problems",
+    "page_family": "model-problems",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "Example seed from high-demand UK models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "Volkswagen Golf common problems",
+    "cluster": "model-common-problems",
+    "page_family": "model-problems",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "Example seed from high-demand UK models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "Volvo XC40 common problems",
+    "cluster": "model-common-problems",
+    "page_family": "model-problems",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "Example seed from high-demand UK models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "MG HS common problems",
+    "cluster": "model-common-problems",
+    "page_family": "model-problems",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "Example seed from high-demand UK models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "Volkswagen Tiguan common problems",
+    "cluster": "model-common-problems",
+    "page_family": "model-problems",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "Example seed from high-demand UK models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "Hyundai Tucson common problems",
+    "cluster": "model-common-problems",
+    "page_family": "model-problems",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "Example seed from high-demand UK models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "BMW 3 Series common problems",
+    "cluster": "model-common-problems",
+    "page_family": "model-problems",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "Example seed from high-demand UK models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "Audi A4 common problems",
+    "cluster": "model-common-problems",
+    "page_family": "model-problems",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "Example seed from high-demand UK models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "Ford Focus common problems",
+    "cluster": "model-common-problems",
+    "page_family": "model-problems",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "Example seed from high-demand UK models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "Skoda Octavia common problems",
+    "cluster": "model-common-problems",
+    "page_family": "model-problems",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "Example seed from high-demand UK models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "Toyota Yaris common problems",
+    "cluster": "model-common-problems",
+    "page_family": "model-problems",
+    "search_intent": "info",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "Example seed from high-demand UK models",
+    "source_url": "https://www.carwow.co.uk/news/10086/best-selling-cars-2025"
+  },
+  {
+    "keyword_or_template": "BMW reliability",
+    "cluster": "brand-or-guide",
+    "page_family": "brand-hub",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.theaa.com/cars/advice"
+  },
+  {
+    "keyword_or_template": "Audi reliability",
+    "cluster": "brand-or-guide",
+    "page_family": "brand-hub",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.theaa.com/cars/advice"
+  },
+  {
+    "keyword_or_template": "Ford reliability UK",
+    "cluster": "brand-or-guide",
+    "page_family": "brand-hub",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.theaa.com/cars/advice"
+  },
+  {
+    "keyword_or_template": "Volkswagen reliability UK",
+    "cluster": "brand-or-guide",
+    "page_family": "brand-hub",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.theaa.com/cars/advice"
+  },
+  {
+    "keyword_or_template": "Toyota reliability UK",
+    "cluster": "brand-or-guide",
+    "page_family": "brand-hub",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.theaa.com/cars/advice"
+  },
+  {
+    "keyword_or_template": "Kia reliability UK",
+    "cluster": "brand-or-guide",
+    "page_family": "brand-hub",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.theaa.com/cars/advice"
+  },
+  {
+    "keyword_or_template": "Hyundai reliability UK",
+    "cluster": "brand-or-guide",
+    "page_family": "brand-hub",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.theaa.com/cars/advice"
+  },
+  {
+    "keyword_or_template": "Nissan reliability UK",
+    "cluster": "brand-or-guide",
+    "page_family": "brand-hub",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.theaa.com/cars/advice"
+  },
+  {
+    "keyword_or_template": "Vauxhall reliability UK",
+    "cluster": "brand-or-guide",
+    "page_family": "brand-hub",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.theaa.com/cars/advice"
+  },
+  {
+    "keyword_or_template": "Volvo reliability UK",
+    "cluster": "brand-or-guide",
+    "page_family": "brand-hub",
+    "search_intent": "info",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.theaa.com/cars/advice"
+  },
+  {
+    "keyword_or_template": "best used family SUV UK",
+    "cluster": "brand-or-guide",
+    "page_family": "guides",
+    "search_intent": "money",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.theaa.com/cars/advice"
+  },
+  {
+    "keyword_or_template": "best used hatchback UK",
+    "cluster": "brand-or-guide",
+    "page_family": "guides",
+    "search_intent": "money",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.theaa.com/cars/advice"
+  },
+  {
+    "keyword_or_template": "best used crossover UK",
+    "cluster": "brand-or-guide",
+    "page_family": "guides",
+    "search_intent": "money",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.theaa.com/cars/advice"
+  },
+  {
+    "keyword_or_template": "most reliable used car UK",
+    "cluster": "brand-or-guide",
+    "page_family": "guides",
+    "search_intent": "money",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.theaa.com/cars/advice"
+  },
+  {
+    "keyword_or_template": "used car red flags UK",
+    "cluster": "brand-or-guide",
+    "page_family": "guides",
+    "search_intent": "money",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.theaa.com/cars/advice"
+  },
+  {
+    "keyword_or_template": "how to check a used car before buying UK",
+    "cluster": "brand-or-guide",
+    "page_family": "guides",
+    "search_intent": "money",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.theaa.com/cars/advice"
+  },
+  {
+    "keyword_or_template": "what to ask when buying a used car privately UK",
+    "cluster": "brand-or-guide",
+    "page_family": "guides",
+    "search_intent": "money",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.theaa.com/cars/advice"
+  },
+  {
+    "keyword_or_template": "car write off check UK",
+    "cluster": "history",
+    "page_family": "landing-history",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "stolen car check UK",
+    "cluster": "history",
+    "page_family": "landing-history",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "finance check car by reg",
+    "cluster": "history",
+    "page_family": "landing-history",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "mileage anomaly check",
+    "cluster": "history",
+    "page_family": "landing-history",
+    "search_intent": "money",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "plate change check",
+    "cluster": "history",
+    "page_family": "landing-history",
+    "search_intent": "money",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "keeper history check",
+    "cluster": "history",
+    "page_family": "landing-history",
+    "search_intent": "money",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "cheap HPI check alternative",
+    "cluster": "history",
+    "page_family": "landing-history",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "car check before buying privately",
+    "cluster": "buyer-intent",
+    "page_family": "landing-buyer",
+    "search_intent": "money",
+    "priority_tier": 1,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "best site to check used car history UK",
+    "cluster": "buyer-intent",
+    "page_family": "landing-buyer",
+    "search_intent": "money",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  },
+  {
+    "keyword_or_template": "how much will a used car cost to repair",
+    "cluster": "repair-risk",
+    "page_family": "landing-repair",
+    "search_intent": "money",
+    "priority_tier": 2,
+    "row_type": "fixed",
+    "notes": "",
+    "source_url": "https://www.carwow.co.uk/car-check"
+  }
+]

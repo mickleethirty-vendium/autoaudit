@@ -1,0 +1,42 @@
+[
+  {
+    "phase": 1,
+    "name": "Money pages + schema",
+    "goal": "Launch head-term landing pages and shared schema components",
+    "max_pages": 12,
+    "ship_when": "Core templates, metadata and reg-input CTA are stable",
+    "success_gate": "Search Console indexing + conversion tracking in place"
+  },
+  {
+    "phase": 2,
+    "name": "Top 100 models + issue hubs",
+    "goal": "Publish the highest-confidence model pages plus problem/advisory hubs",
+    "max_pages": 450,
+    "ship_when": "Unique value blocks are working (repair exposure, MOT trends, buyer guidance)",
+    "success_gate": "At least 30% of pages indexed and non-zero conversions from organic"
+  },
+  {
+    "phase": 3,
+    "name": "Brand x issue and brand x advisory",
+    "goal": "Broaden long-tail coverage with brand-level issue pages",
+    "max_pages": 3500,
+    "ship_when": "Internal linking + canonical rules are stable",
+    "success_gate": "No thin-page spike; page quality / engagement holds"
+  },
+  {
+    "phase": 4,
+    "name": "Model x advisory / model x problem scale",
+    "goal": "Expand into the 100k opportunity using only supported combinations",
+    "max_pages": 25000,
+    "ship_when": "You can gate pages by real data density and suppress weak combinations",
+    "success_gate": "Indexing rate acceptable; crawl budget not wasted"
+  },
+  {
+    "phase": 5,
+    "name": "Iterative scale-up",
+    "goal": "Add more supported combinations, refresh top pages, prune low-value pages",
+    "max_pages": 100000,
+    "ship_when": "Top templates have proven rankings and conversions",
+    "success_gate": "Quarterly content QA + automated noindex rules for thin pages"
+  }
+]
