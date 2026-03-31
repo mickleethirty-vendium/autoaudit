@@ -20,11 +20,6 @@ function formatRegistrationInput(value: string) {
   return `${cleaned.slice(0, 4)} ${cleaned.slice(4, 7)}`;
 }
 
-function formatDailyReportCount(count: number | null) {
-  if (count === null) return "—";
-  return count.toLocaleString("en-GB");
-}
-
 export default function HomePage() {
   const router = useRouter();
 
@@ -36,7 +31,6 @@ export default function HomePage() {
   const [registration, setRegistration] = useState("");
   const [loading, setLoading] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [dailyReportCount, setDailyReportCount] = useState<number | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -73,44 +67,6 @@ export default function HomePage() {
     };
   }, [supabase]);
 
-  useEffect(() => {
-    let active = true;
-
-    async function loadDailyReportCount() {
-      try {
-        const response = await fetch("/api/stats/daily-report-count", {
-          method: "GET",
-          cache: "no-store",
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to load daily report count");
-        }
-
-        const data = (await response.json()) as { count?: number };
-
-        if (!active) return;
-
-        setDailyReportCount(
-          typeof data.count === "number" && Number.isFinite(data.count)
-            ? data.count
-            : 0
-        );
-      } catch (error) {
-        console.error("Daily report count fetch failed", error);
-
-        if (!active) return;
-        setDailyReportCount(0);
-      }
-    }
-
-    loadDailyReportCount();
-
-    return () => {
-      active = false;
-    };
-  }, []);
-
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -146,13 +102,6 @@ export default function HomePage() {
                 Get instant repair-cost signals, MoT-based warnings and optional
                 vehicle history checks from a registration.
               </p>
-
-              <div className="mt-4 inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-medium text-white/90 backdrop-blur">
-                <span className="font-semibold">
-                  {formatDailyReportCount(dailyReportCount)}
-                </span>
-                <span className="ml-1.5">reports generated today</span>
-              </div>
 
               <div className="mt-5 grid w-full max-w-3xl grid-cols-1 gap-2 sm:grid-cols-3">
                 <QuickStep

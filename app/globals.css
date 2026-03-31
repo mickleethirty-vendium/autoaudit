@@ -206,12 +206,24 @@ h3 {
 @media print {
   @page {
     size: A4;
-    margin: 18mm;
+    margin: 14mm;
   }
 
   html,
   body {
-    background: white !important;
+    background: #ffffff !important;
+    color: var(--aa-black) !important;
+  }
+
+  html {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body {
+    min-height: auto !important;
+    font-size: 11pt;
+    line-height: 1.45;
   }
 
   .print\:block {
@@ -222,15 +234,51 @@ h3 {
     display: none !important;
   }
 
+  .print\:inline-flex {
+    display: inline-flex !important;
+  }
+
+  header,
+  footer,
+  nav,
+  summary,
+  details,
   button,
-  a.btn-primary,
-  a.btn-outline {
+  .btn-primary,
+  .btn-outline,
+  .fixed,
+  .sticky {
     display: none !important;
+  }
+
+  a {
+    text-decoration: none !important;
+  }
+
+  a[href] {
+    color: inherit !important;
+  }
+
+  input,
+  select,
+  textarea {
+    box-shadow: none !important;
+    outline: none !important;
+  }
+
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    animation: none !important;
+    transition: none !important;
   }
 
   .rounded-2xl,
   .rounded-xl,
-  .break-inside-avoid {
+  .rounded-lg,
+  .card,
+  section,
+  article {
     break-inside: avoid;
     page-break-inside: avoid;
   }
@@ -243,24 +291,105 @@ h3 {
     color: var(--aa-black) !important;
   }
 
-  body {
-    font-size: 12pt;
-    line-height: 1.4;
-  }
-
   h1 {
-    font-size: 22pt;
+    font-size: 20pt !important;
+    line-height: 1.15 !important;
   }
 
   h2 {
-    font-size: 16pt;
+    font-size: 15pt !important;
+    line-height: 1.2 !important;
   }
 
   h3 {
-    font-size: 14pt;
+    font-size: 13pt !important;
+    line-height: 1.25 !important;
   }
 
-  * {
+  p,
+  li,
+  div,
+  span {
+    orphans: 3;
+    widows: 3;
+  }
+
+  ul,
+  ol {
+    padding-left: 1.1rem;
+  }
+
+  .overflow-x-auto,
+  .overflow-y-auto,
+  .overflow-hidden {
+    overflow: visible !important;
+  }
+
+  .backdrop-blur,
+  .backdrop-blur-sm,
+  .backdrop-blur-md,
+  .backdrop-blur-lg {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  [style*="background-image"] {
+    background-image: none !important;
+  }
+
+  .bg-\[var\(--aa-black\)\],
+  .aa-bg-black {
+    background: #ffffff !important;
+    color: var(--aa-black) !important;
+  }
+
+  .text-white,
+  .text-white\/85,
+  .text-white\/90,
+  .text-white\/92 {
+    color: var(--aa-black) !important;
+  }
+
+  .border-white\/15,
+  .border-white\/20,
+  .border-white\/40,
+  .border-white\/50 {
+    border-color: #d1d5db !important;
+  }
+
+  .bg-white\/94,
+  .bg-white\/95,
+  .bg-white\/10,
+  .bg-white\/80,
+  .bg-white\/92 {
+    background: #ffffff !important;
+  }
+
+  .shadow-sm,
+  .shadow-lg,
+  .shadow-xl,
+  .shadow-2xl {
     box-shadow: none !important;
+  }
+
+  .mx-auto,
+  .max-w-7xl,
+  .max-w-6xl,
+  .max-w-4xl,
+  .max-w-3xl,
+  .max-w-2xl {
+    max-width: 100% !important;
+  }
+
+  main,
+  section,
+  div {
+    max-height: none !important;
+  }
+
+  pre {
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+    overflow: visible !important;
   }
 }

@@ -698,6 +698,80 @@ function getDecisionCall(args: {
   };
 }
 
+function buildSellerSummaryMessage(args: {
+  repeatPatternLabels: string[];
+  adjustedLow: number | null;
+  adjustedHigh: number | null;
+  priorityFindings: RiskItem[];
+  knownModelIssues: KnownModelIssue[];
+  adjustedNegotiation: number | null;
+}) {
+  const {
+    repeatPatternLabels,
+    adjustedLow,
+    adjustedHigh,
+    priorityFindings,
+    knownModelIssues,
+    adjustedNegotiation,
+  } = args;
+
+  const bullets: string[] = [];
+
+  if (repeatPatternLabels.length) {
+    bullets.push(
+      `Repeated MoT advisory patterns relating to ${repeatPatternLabels
+        .slice(0, 2)
+        .join(" and ")
+        .toLowerCase()}`
+    );
+  }
+
+  if (adjustedLow !== null || adjustedHigh !== null) {
+    if (adjustedLow !== null && adjustedHigh !== null) {
+      bullets.push(
+        `Estimated repair exposure between ${money(adjustedLow)} and ${money(
+          adjustedHigh
+        )}`
+      );
+    } else if (adjustedHigh !== null) {
+      bullets.push(`Potential repair exposure of up to ${money(adjustedHigh)}`);
+    }
+  }
+
+  const strongestFinding = priorityFindings.find(
+    (item) => typeof item?.label === "string" && item.label.trim()
+  );
+  if (strongestFinding?.label) {
+    bullets.push(`A flagged issue around ${strongestFinding.label.toLowerCase()}`);
+  }
+
+  const knownIssue = knownModelIssues.find(
+    (item) => typeof item?.label === "string" && item.label.trim()
+  );
+  if (knownIssue?.label) {
+    bullets.push(`A known model weak point around ${knownIssue.label.toLowerCase()}`);
+  }
+
+  const finalBullets = bullets.filter(Boolean).slice(0, 3);
+
+  const askLine =
+    typeof adjustedNegotiation === "number" && adjustedNegotiation > 0
+      ? `Would you be open to adjusting the price to reflect that risk?`
+      : `Would you be open to adjusting the asking price?`;
+
+  return [
+    "Hi — I ran a vehicle risk report on this car and it flagged a few concerns:",
+    "",
+    ...(finalBullets.length
+      ? finalBullets.map((item) => `• ${item}`)
+      : ["• A few points in the report that could affect near-term costs"]),
+    "",
+    "Based on this information I’d need to factor potential repair costs into the price.",
+    "",
+    askLine,
+  ].join("\n");
+}
+
 function SummaryMetric({
   label,
   value,
@@ -811,7 +885,7 @@ function RiskCard({
           </div>
         </div>
 
-        <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-white/80 px-3 py-2.5">
+        <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-white/80 px-3 py-2.5 print:hidden">
           <input
             type="checkbox"
             checked={addressed}
@@ -979,6 +1053,75 @@ function KnownIssueCard({
   );
 }
 
+function SellerSummaryModal({
+  open,
+  onClose,
+  message,
+}: {
+  open: boolean;
+  onClose: () => void;
+  message: string;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  if (!open) return null;
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(message);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch (error) {
+      console.error("Copy seller summary failed", error);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 p-4 print:hidden">
+      <div className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-bold tracking-tight text-slate-950">
+              Seller summary
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Copy and paste this message to the seller.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            Close
+          </button>
+        </div>
+
+        <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <pre className="whitespace-pre-wrap break-words font-sans text-sm leading-6 text-slate-800">
+            {message}
+          </pre>
+        </div>
+
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-xs text-slate-500">
+            Keep it factual and polite.
+          </div>
+
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="inline-flex items-center justify-center rounded-lg border border-[var(--aa-red)] bg-[var(--aa-red)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--aa-red-strong)]"
+          >
+            {copied ? "Copied" : "Copy message"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ReportClient({
   reg,
   make,
@@ -1050,6 +1193,7 @@ export default function ReportClient({
   marketValue: any;
 }) {
   const [activeTab, setActiveTab] = useState<ReportTab>("overview");
+  const [sellerSummaryOpen, setSellerSummaryOpen] = useState(false);
 
   const knownModelIssues = useMemo<KnownModelIssue[]>(
     () => parseKnownModelIssues(fullSummary),
@@ -1277,6 +1421,26 @@ export default function ReportClient({
       .slice(0, 5);
   }, [exposureItems]);
 
+  const sellerSummaryMessage = useMemo(
+    () =>
+      buildSellerSummaryMessage({
+        repeatPatternLabels,
+        adjustedLow: adjustedTotals.adjustedLow,
+        adjustedHigh: adjustedTotals.adjustedHigh,
+        priorityFindings,
+        knownModelIssues,
+        adjustedNegotiation: adjustedTotals.adjustedNegotiation,
+      }),
+    [
+      repeatPatternLabels,
+      adjustedTotals.adjustedLow,
+      adjustedTotals.adjustedHigh,
+      adjustedTotals.adjustedNegotiation,
+      priorityFindings,
+      knownModelIssues,
+    ]
+  );
+
   function toggleAddressed(key: string) {
     setAddressedIds((prev) => ({
       ...prev,
@@ -1284,8 +1448,18 @@ export default function ReportClient({
     }));
   }
 
+  function handleDownloadPdf() {
+    window.print();
+  }
+
   return (
     <div className="mx-auto w-full max-w-7xl px-3 py-3 sm:px-4 sm:py-4 lg:px-5">
+      <SellerSummaryModal
+        open={sellerSummaryOpen}
+        onClose={() => setSellerSummaryOpen(false)}
+        message={sellerSummaryMessage}
+      />
+
       <div className="mb-4 hidden border-b border-slate-300 pb-2 print:block">
         <div className="text-base font-bold text-slate-950">
           AutoAudit Vehicle Report
@@ -1303,7 +1477,7 @@ export default function ReportClient({
       </div>
 
       {justUnlockedReport || justUnlockedHpi ? (
-        <div className="mb-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2.5">
+        <div className="mb-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 print:hidden">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
               <div className="text-sm font-semibold text-emerald-900">
@@ -1393,8 +1567,34 @@ export default function ReportClient({
                 ) : null}
               </div>
 
+              <div className="flex flex-col items-start gap-2 print:hidden">
+                <div
+                  className={`inline-flex w-fit items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${decisionCall.badgeClass}`}
+                >
+                  {decisionCall.badgeLabel}
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSellerSummaryOpen(true)}
+                    className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
+                  >
+                    Show seller summary
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleDownloadPdf}
+                    className="inline-flex items-center justify-center rounded-lg border border-[var(--aa-red)] bg-[var(--aa-red)] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[var(--aa-red-strong)]"
+                  >
+                    Download PDF
+                  </button>
+                </div>
+              </div>
+
               <div
-                className={`inline-flex w-fit items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${decisionCall.badgeClass}`}
+                className={`hidden print:inline-flex w-fit items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${decisionCall.badgeClass}`}
               >
                 {decisionCall.badgeLabel}
               </div>
@@ -1515,7 +1715,7 @@ export default function ReportClient({
           </div>
 
           {activeTab === "overview" ? (
-            <div className="mt-3 space-y-3">
+            <div className="mt-3 space-y-3 print:hidden">
               <section className="grid grid-cols-1 gap-3 xl:grid-cols-4">
                 <div className="rounded-2xl border border-white/40 bg-white/92 p-3 shadow-[0_10px_28px_rgba(0,0,0,0.08)] backdrop-blur">
                   <div className="flex items-center justify-between gap-3">
@@ -1811,7 +2011,7 @@ export default function ReportClient({
           ) : null}
 
           {activeTab === "priority" ? (
-            <div className="mt-3 space-y-3">
+            <div className="mt-3 space-y-3 print:hidden">
               <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
                 <div className="flex items-center justify-between gap-3">
                   <div>
@@ -1868,7 +2068,7 @@ export default function ReportClient({
           ) : null}
 
           {activeTab === "mot" ? (
-            <div className="mt-3 space-y-3">
+            <div className="mt-3 space-y-3 print:hidden">
               <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
                 <div className="mb-3">
                   <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
@@ -2063,7 +2263,7 @@ export default function ReportClient({
           ) : null}
 
           {activeTab === "history" ? (
-            <div className="mt-3 space-y-3">
+            <div className="mt-3 space-y-3 print:hidden">
               <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
                 <div className="mb-3">
                   <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
@@ -2166,7 +2366,7 @@ export default function ReportClient({
           ) : null}
 
           {activeTab === "known" ? (
-            <div className="mt-3 space-y-3">
+            <div className="mt-3 space-y-3 print:hidden">
               <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
                 <div className="mb-3">
                   <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
@@ -2250,7 +2450,7 @@ export default function ReportClient({
           ) : null}
 
           {activeTab === "all" ? (
-            <div className="mt-3 space-y-3">
+            <div className="mt-3 space-y-3 print:hidden">
               <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
                 <div className="mb-3">
                   <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
@@ -2348,6 +2548,223 @@ export default function ReportClient({
               </section>
             </div>
           ) : null}
+
+          <div className="hidden print:block mt-4 space-y-4">
+            <section className="rounded-xl border border-slate-300 bg-white p-4">
+              <div className="text-sm font-bold text-slate-950">Overview</div>
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <SummaryMetric
+                  label="Exposure"
+                  value={`${money(adjustedTotals.adjustedLow)} – ${money(
+                    adjustedTotals.adjustedHigh
+                  )}`}
+                />
+                <SummaryMetric
+                  label="Negotiation"
+                  value={money(adjustedTotals.adjustedNegotiation)}
+                />
+                <SummaryMetric
+                  label="Confidence"
+                  value={adjustedTotals.adjustedConfidenceDisplay ?? "Unavailable"}
+                />
+                <SummaryMetric
+                  label="Price view"
+                  value={
+                    valuationUnavailable
+                      ? "Unavailable"
+                      : valuationPending
+                        ? "Pending"
+                        : valuePillLabel(marketPosition)
+                  }
+                />
+              </div>
+
+              <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm leading-5 text-slate-700">
+                {decisionCall.body}
+              </div>
+
+              {sellerSummaryMessage ? (
+                <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Seller summary
+                  </div>
+                  <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-sm leading-6 text-slate-800">
+                    {sellerSummaryMessage}
+                  </pre>
+                </div>
+              ) : null}
+            </section>
+
+            <section className="rounded-xl border border-slate-300 bg-white p-4">
+              <div className="text-sm font-bold text-slate-950">Priority checks</div>
+              <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-2">
+                {priorityFindings.length ? (
+                  priorityFindings.map((item, index) => (
+                    <RiskCard
+                      key={`${item.item_id ?? item.label ?? "priority-print"}-${index}`}
+                      item={item}
+                      addressed={false}
+                      onToggle={() => {}}
+                      badgeLabel={String(item.category ?? "priority").replace(/_/g, " ")}
+                    />
+                  ))
+                ) : (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                    No priority findings were available for this report.
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <section className="rounded-xl border border-slate-300 bg-white p-4">
+              <div className="text-sm font-bold text-slate-950">Service and maintenance risks</div>
+              <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-2">
+                {serviceRiskItems.length ? (
+                  serviceRiskItems.map((item, index) => (
+                    <RiskCard
+                      key={`${item?.item_id ?? "service-print"}-${index}`}
+                      item={item}
+                      addressed={false}
+                      onToggle={() => {}}
+                      badgeLabel={String(item?.category ?? "service").replace(/_/g, " ")}
+                    />
+                  ))
+                ) : (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                    No additional service or maintenance risks were listed in this report.
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <section className="rounded-xl border border-slate-300 bg-white p-4">
+              <div className="text-sm font-bold text-slate-950">MoT-derived risks</div>
+              <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-2">
+                {motRiskItems.length ? (
+                  motRiskItems.map((item, index) => (
+                    <RiskCard
+                      key={`${item?.item_id ?? "mot-print"}-${index}`}
+                      item={item}
+                      addressed={false}
+                      onToggle={() => {}}
+                      badgeLabel="MoT-derived risk"
+                    />
+                  ))
+                ) : (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                    No additional MoT-derived risks were listed in this report.
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <section className="rounded-xl border border-slate-300 bg-white p-4">
+              <div className="text-sm font-bold text-slate-950">Full MoT history</div>
+              <div className="mt-3 space-y-3">
+                {motTests.length ? (
+                  motTests.map((test, index) => {
+                    const defectGroups = groupMotDefects(test.defects);
+                    const allDefects = [
+                      ...defectGroups.dangerous,
+                      ...defectGroups.major,
+                      ...defectGroups.minor,
+                      ...defectGroups.advisory,
+                      ...defectGroups.other,
+                    ];
+
+                    return (
+                      <div
+                        key={`${test.completedDate ?? "mot-print-test"}-${index}`}
+                        className="rounded-xl border border-slate-200 bg-slate-50 p-3"
+                      >
+                        <div className="text-sm font-bold text-slate-950">
+                          {formatDate(test.completedDate) ?? "Unknown test date"}
+                        </div>
+                        <div className="mt-1 text-xs text-slate-600">
+                          {getMotBadgeLabel(test.testResult)}
+                          {parseMotMileage(test) ? ` · ${parseMotMileage(test)}` : ""}
+                          {test.expiryDate ? ` · Expiry ${formatDate(test.expiryDate)}` : ""}
+                        </div>
+
+                        {allDefects.length ? (
+                          <div className="mt-3 space-y-2">
+                            {allDefects.map((defect, defectIndex) => (
+                              <div
+                                key={`${defect.text ?? "mot-print-defect"}-${defectIndex}`}
+                                className="rounded-lg border border-slate-200 bg-white p-3"
+                              >
+                                <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                                  {defectTypeLabel(String(defect?.type ?? "Other"))}
+                                </div>
+                                <div className="mt-1 text-sm leading-5 text-slate-700">
+                                  {defect?.text ?? "No defect text provided."}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50/70 p-3 text-sm text-emerald-900">
+                            No defects or advisories were recorded for this test.
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                    Full MoT test history was not available in this report payload.
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <section className="rounded-xl border border-slate-300 bg-white p-4">
+              <div className="text-sm font-bold text-slate-950">Vehicle history</div>
+              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {hpiUnlocked && hpiStatus !== "error" ? (
+                  hpiChecks.length ? (
+                    hpiChecks.map((item) => (
+                      <SummaryMetric
+                        key={item.label}
+                        label={item.label}
+                        value={renderHpiDisplayValue(item.value)}
+                      />
+                    ))
+                  ) : (
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                      Vehicle history summary available.
+                    </div>
+                  )
+                ) : !hpiUnlocked ? (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                    Vehicle history was not unlocked for this report.
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-slate-700">
+                    Vehicle history was unlocked, but there was a temporary loading issue.
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <section className="rounded-xl border border-slate-300 bg-white p-4">
+              <div className="text-sm font-bold text-slate-950">Known weak points</div>
+              <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-2">
+                {knownModelIssues.length ? (
+                  knownModelIssues.map((item, index) => (
+                    <KnownIssueCard
+                      key={`${item?.issue_code ?? item?.item_id ?? "known-print"}-${index}`}
+                      item={item}
+                    />
+                  ))
+                ) : (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                    No additional model-specific issues were identified from the available vehicle profile.
+                  </div>
+                )}
+              </div>
+            </section>
+          </div>
         </div>
       </div>
 

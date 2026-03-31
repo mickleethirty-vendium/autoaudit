@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { mustGetEnv } from "@/lib/env";
 import LogoutButton from "@/app/components/LogoutButton";
+import DailyReportCountPill from "@/app/components/DailyReportCountPill";
 
 export const metadata = {
   title: "AutoAudit",
@@ -42,16 +43,22 @@ export default async function RootLayout({
         <div className="flex min-h-screen flex-col">
           <header className="relative z-50 border-b border-slate-200 bg-white">
             <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-              <Link href="/" className="flex shrink-0 items-center">
-                <Image
-                  src="/logo-shield-red.png"
-                  alt="AutoAudit"
-                  width={120}
-                  height={150}
-                  priority
-                  className="h-[64px] w-auto"
-                />
-              </Link>
+              <div className="flex min-w-0 items-center gap-3">
+                <Link href="/" className="flex shrink-0 items-center">
+                  <Image
+                    src="/logo-shield-red.png"
+                    alt="AutoAudit"
+                    width={120}
+                    height={150}
+                    priority
+                    className="h-[64px] w-auto"
+                  />
+                </Link>
+
+                <div className="hidden sm:block">
+                  <DailyReportCountPill />
+                </div>
+              </div>
 
               <nav className="hidden items-center gap-4 sm:flex">
                 <Link
@@ -100,7 +107,11 @@ export default async function RootLayout({
                   Menu
                 </summary>
 
-                <div className="absolute right-0 z-[60] mt-2 w-44 rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
+                <div className="absolute right-0 z-[60] mt-2 w-52 rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
+                  <div className="mb-3">
+                    <DailyReportCountPill compact />
+                  </div>
+
                   <div className="flex flex-col gap-3 text-sm text-slate-700">
                     <Link href="/terms" className="hover:text-slate-900">
                       Terms
@@ -138,7 +149,7 @@ export default async function RootLayout({
           <main className="flex-1">{children}</main>
 
           <footer className="border-t border-slate-200 bg-white">
-            <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6 text-sm text-slate-600 sm:px-6 lg:px-8 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
               <p>© {new Date().getFullYear()} AutoAudit. All rights reserved.</p>
 
               <div className="flex flex-wrap items-center gap-4">
