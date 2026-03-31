@@ -8,8 +8,8 @@ export function titleCase(input: string) {
 
 export function absoluteUrl(path: string) {
   const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-    "https://www.autoaudit.co.uk";
+    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
+    "https://www.autoaudit.uk";
 
   return `${siteUrl}${path.startsWith("/") ? path : `/${path}`}`;
 }
