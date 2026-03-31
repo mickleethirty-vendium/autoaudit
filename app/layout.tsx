@@ -40,29 +40,32 @@ export default async function RootLayout({
       <body className="min-h-screen bg-white text-slate-900">
         <div className="flex min-h-screen flex-col">
           <header className="border-b border-slate-200 bg-white">
-            <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-              <Link href="/" className="text-lg font-semibold tracking-tight">
+            <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-4 sm:px-6 lg:px-8">
+              <Link
+                href="/"
+                className="shrink-0 text-lg font-semibold tracking-tight"
+              >
                 AutoAudit
               </Link>
 
-              <nav className="flex items-center gap-3 sm:gap-4">
+              <nav className="flex min-w-0 items-center gap-3 sm:gap-4">
                 <Link
                   href="/terms"
-                  className="text-sm text-slate-600 hover:text-slate-900"
+                  className="hidden text-sm text-slate-600 hover:text-slate-900 sm:inline"
                 >
                   Terms
                 </Link>
 
                 <Link
                   href="/privacy"
-                  className="text-sm text-slate-600 hover:text-slate-900"
+                  className="hidden text-sm text-slate-600 hover:text-slate-900 sm:inline"
                 >
                   Privacy
                 </Link>
 
                 <a
                   href="mailto:support@autoaudit.uk"
-                  className="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900"
+                  className="hidden items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900 sm:inline-flex"
                 >
                   Contact us
                 </a>
