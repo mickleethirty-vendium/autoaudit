@@ -103,7 +103,7 @@ export default function HomePage() {
                 vehicle history checks from a registration.
               </p>
 
-              <div className="mt-5 grid w-full max-w-3xl grid-cols-1 gap-2 sm:grid-cols-3">
+              <div className="mt-4 grid w-full max-w-3xl grid-cols-1 gap-1.5 sm:mt-5 sm:gap-2 sm:grid-cols-3">
                 <QuickStep
                   number="1"
                   title="Enter reg"
@@ -121,7 +121,7 @@ export default function HomePage() {
                 />
               </div>
 
-              <div className="mt-5 w-full max-w-3xl rounded-2xl border border-white/20 bg-white/94 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.18)] backdrop-blur">
+              <div className="mt-4 w-full max-w-3xl rounded-2xl border border-white/20 bg-white/94 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.18)] backdrop-blur sm:mt-5">
                 <form
                   onSubmit={handleSubmit}
                   className="flex flex-col gap-2.5 sm:flex-row"
@@ -138,13 +138,13 @@ export default function HomePage() {
                     autoCorrect="off"
                     spellCheck={false}
                     disabled={loading}
-                    className="h-13 flex-1 rounded-xl border border-slate-200 bg-white px-4 text-base font-semibold uppercase tracking-[0.12em] text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)] sm:h-14 sm:text-lg"
+                    className="h-14 flex-1 rounded-xl border-2 border-slate-300 bg-white px-4 text-lg font-bold uppercase tracking-[0.12em] text-slate-900 placeholder:text-slate-400 shadow-[0_6px_18px_rgba(15,23,42,0.08)] focus:border-[var(--aa-red)] sm:h-14 sm:border sm:text-lg sm:font-semibold sm:shadow-none"
                   />
 
                   <button
                     type="submit"
                     disabled={!registration.trim() || loading}
-                    className="inline-flex h-13 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-6 text-base font-bold text-white transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:opacity-50 sm:h-14 sm:text-lg"
+                    className="inline-flex h-14 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-6 text-base font-bold text-white shadow-[0_10px_24px_rgba(193,18,31,0.22)] transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:opacity-50 sm:h-14 sm:text-lg sm:shadow-none"
                   >
                     {loading ? "Continuing…" : "Check my car"}
                   </button>
@@ -347,12 +347,16 @@ function QuickStep({
   text: string;
 }) {
   return (
-    <div className="rounded-xl border border-white/15 bg-white/10 px-3 py-2.5 text-left text-white backdrop-blur">
-      <div className="inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-white/20 px-1.5 text-[10px] font-bold">
+    <div className="rounded-lg border border-white/10 bg-white/8 px-3 py-2 text-left text-white/92 backdrop-blur sm:rounded-xl sm:border-white/15 sm:bg-white/10 sm:px-3 sm:py-2.5 sm:text-white">
+      <div className="inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-white/15 px-1.5 text-[9px] font-bold sm:h-5 sm:min-w-[1.25rem] sm:bg-white/20 sm:text-[10px]">
         {number}
       </div>
-      <div className="mt-1 text-sm font-semibold">{title}</div>
-      <div className="mt-0.5 text-xs leading-5 text-white/80">{text}</div>
+      <div className="mt-0.5 text-[12px] font-semibold leading-4 sm:mt-1 sm:text-sm sm:leading-normal">
+        {title}
+      </div>
+      <div className="mt-0.5 text-[11px] leading-4 text-white/75 sm:text-xs sm:leading-5 sm:text-white/80">
+        {text}
+      </div>
     </div>
   );
 }

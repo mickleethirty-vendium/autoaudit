@@ -421,7 +421,7 @@ export default async function Page({
   let isPaid = data.is_paid === true;
   let hpiUnlocked = data.hpi_unlocked === true;
 
-  const ownerUserId = (data.owner_user_id as string | null) ?? null;
+  let ownerUserId = (data.owner_user_id as string | null) ?? null;
   const expiresAt = (data.expires_at as string | null) ?? null;
   const expiresAtLabel = formatDate(expiresAt);
   const hasExpired = isExpired(expiresAt);
@@ -459,6 +459,30 @@ export default async function Page({
       }
     } catch (e) {
       console.error("Failed to verify Stripe session on report page:", e);
+    }
+  }
+
+  if (
+    isPaid &&
+    user?.id &&
+    !ownerUserId
+  ) {
+    const { error: claimError } = await supabaseAdmin
+      .from("reports")
+      .update({
+        owner_user_id: user.id,
+      })
+      .eq("id", params.id)
+      .is("owner_user_id", null);
+
+    if (claimError) {
+      console.error("Failed to auto-link paid report to logged-in user:", {
+        reportId: params.id,
+        userId: user.id,
+        error: claimError,
+      });
+    } else {
+      ownerUserId = user.id;
     }
   }
 
@@ -591,7 +615,7 @@ export default async function Page({
   const previewKnownModelIssueLabels: string[] = Array.isArray(
     previewKnownModelIssuesTeaser?.top_labels
   )
-    ? previewKnownModelIssuesTeaser.top_labels.filter(
+    ? previewKnownModelIssueLabels = previewKnownModelIssuesTeaser.top_labels.filter(
         (value: unknown) => typeof value === "string" && value.trim()
       )
     : [];

@@ -6,6 +6,7 @@ import { createServerClient } from "@supabase/ssr";
 import { mustGetEnv } from "@/lib/env";
 import LogoutButton from "@/app/components/LogoutButton";
 import DailyReportCountPill from "@/app/components/DailyReportCountPill";
+import MobileMenu from "@/app/components/MobileMenu";
 
 export const metadata = {
   title: "AutoAudit",
@@ -102,47 +103,7 @@ export default async function RootLayout({
                 )}
               </nav>
 
-              <details className="relative sm:hidden">
-                <summary className="cursor-pointer list-none text-sm font-medium text-slate-700">
-                  Menu
-                </summary>
-
-                <div className="absolute right-0 z-[60] mt-2 w-52 rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
-                  <div className="mb-3">
-                    <DailyReportCountPill compact />
-                  </div>
-
-                  <div className="flex flex-col gap-3 text-sm text-slate-700">
-                    <Link href="/terms" className="hover:text-slate-900">
-                      Terms
-                    </Link>
-
-                    <Link href="/privacy" className="hover:text-slate-900">
-                      Privacy
-                    </Link>
-
-                    <a
-                      href="mailto:support@autoaudit.uk"
-                      className="hover:text-slate-900"
-                    >
-                      Contact us
-                    </a>
-
-                    {user ? (
-                      <>
-                        <Link href="/reports" className="hover:text-slate-900">
-                          Dashboard
-                        </Link>
-                        <LogoutButton />
-                      </>
-                    ) : (
-                      <Link href="/login" className="hover:text-slate-900">
-                        Sign in
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              </details>
+              <MobileMenu isSignedIn={!!user} />
             </div>
           </header>
 
