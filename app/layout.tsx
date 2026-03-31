@@ -46,9 +46,10 @@ export default async function RootLayout({
                 <Image
                   src="/logo-shield-red.png"
                   alt="AutoAudit"
-                  width={48}
-                  height={60}
+                  width={120}
+                  height={150}
                   priority
+                  className="h-[64px] w-auto"
                 />
               </Link>
 
