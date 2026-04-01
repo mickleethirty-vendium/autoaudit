@@ -117,6 +117,129 @@ function getNegotiationPoints(make: string, model: string) {
   ];
 }
 
+function getRelatedAdvisoryGuides(make: string, model: string) {
+  const normalizedMake = make.toLowerCase();
+  const normalizedModel = model.toLowerCase();
+
+  const defaultGuides = [
+    {
+      href: "/mot-advisories/brake-wear",
+      label: "Brake wear advisory meaning",
+      description: "Understand how brake-related advisories affect buying risk",
+    },
+    {
+      href: "/mot-advisories/oil-leak",
+      label: "Oil leak advisory meaning",
+      description: "See why oil leaks matter before you buy a used car",
+    },
+    {
+      href: "/mot-advisories/suspension-wear",
+      label: "Suspension wear advisory meaning",
+      description: "Check what suspension-related advisories usually signal",
+    },
+    {
+      href: "/mot-advisories/steering-component-wear",
+      label: "Steering advisory meaning",
+      description: "Learn what steering-related advisories can mean for safety",
+    },
+  ];
+
+  if (["audi", "bmw", "mercedes-benz", "mercedes"].includes(normalizedMake)) {
+    return [
+      {
+        href: "/mot-advisories/oil-leak",
+        label: "Oil leak advisory meaning",
+        description: "Useful where engine bay seepage or leaks can become costly",
+      },
+      {
+        href: "/mot-advisories/brake-wear",
+        label: "Brake wear advisory meaning",
+        description: "Brake advisories are common and can affect negotiation",
+      },
+      {
+        href: "/mot-advisories/suspension-wear",
+        label: "Suspension wear advisory meaning",
+        description: "Helpful for spotting age and mileage-related wear",
+      },
+      {
+        href: "/mot-advisories/electrical-fault",
+        label: "Electrical fault advisory meaning",
+        description: "Understand what electrical warnings can imply",
+      },
+    ];
+  }
+
+  if (
+    ["a1", "a3", "fiesta", "corsa", "polo", "yaris", "micra"].includes(
+      normalizedModel
+    )
+  ) {
+    return [
+      {
+        href: "/mot-advisories/brake-wear",
+        label: "Brake wear advisory meaning",
+        description: "Town-driven cars often pick up repeated brake-related notes",
+      },
+      {
+        href: "/mot-advisories/tyre-wear",
+        label: "Tyre wear advisory meaning",
+        description: "Helpful for spotting alignment or usage issues",
+      },
+      {
+        href: "/mot-advisories/suspension-wear",
+        label: "Suspension wear advisory meaning",
+        description: "Useful for knocks, links and worn suspension components",
+      },
+      {
+        href: "/mot-advisories/exhaust-corrosion",
+        label: "Exhaust corrosion advisory meaning",
+        description: "Common on older cars and worth checking before purchase",
+      },
+    ];
+  }
+
+  if (
+    [
+      "qashqai",
+      "tucson",
+      "sportage",
+      "kuga",
+      "tiguan",
+      "xc40",
+      "xc60",
+      "x1",
+      "x3",
+      "q3",
+      "q5",
+    ].includes(normalizedModel)
+  ) {
+    return [
+      {
+        href: "/mot-advisories/suspension-wear",
+        label: "Suspension wear advisory meaning",
+        description: "Heavier family cars often show suspension-related wear",
+      },
+      {
+        href: "/mot-advisories/tyre-wear",
+        label: "Tyre wear advisory meaning",
+        description: "Useful for spotting alignment and load-related wear",
+      },
+      {
+        href: "/mot-advisories/brake-wear",
+        label: "Brake wear advisory meaning",
+        description: "Brake work can be more expensive on larger vehicles",
+      },
+      {
+        href: "/mot-advisories/steering-component-wear",
+        label: "Steering advisory meaning",
+        description: "Check for bushes, joints and steering-related wear",
+      },
+    ];
+  }
+
+  return defaultGuides;
+}
+
 export async function generateStaticParams() {
   const { wave1Models } = await import("@/lib/seo/data");
 
@@ -163,6 +286,7 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
   const issueBullets = getGenericIssueBullets(row.make, row.model);
   const buyerSummary = getBuyerSummary(row.make, row.model);
   const negotiationPoints = getNegotiationPoints(row.make, row.model);
+  const relatedAdvisoryGuides = getRelatedAdvisoryGuides(row.make, row.model);
 
   const faqs = [
     {
@@ -322,6 +446,29 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
             <li key={item}>{item}</li>
           ))}
         </ul>
+      </section>
+
+      <section className="mt-10 space-y-4">
+        <h2 className="text-2xl font-semibold">Related MOT advisory guides</h2>
+        <p className="text-slate-700">
+          These advisory guides help explain the kinds of warning signs buyers
+          often see alongside common ownership issues on used {row.make}{" "}
+          {row.model} examples.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {relatedAdvisoryGuides.map((guide) => (
+            <Link
+              key={guide.href}
+              href={guide.href}
+              className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
+            >
+              <h3 className="font-medium">{guide.label}</h3>
+              <p className="mt-1 text-sm text-slate-600">
+                {guide.description}
+              </p>
+            </Link>
+          ))}
+        </div>
       </section>
 
       <section className="mt-10 rounded-3xl border bg-slate-900 p-6 text-white">

@@ -60,6 +60,117 @@ function getBuyerGuidance(advisoryLabel: string) {
   ];
 }
 
+function getRelatedModelGuides(advisoryLabel: string) {
+  const normalized = advisoryLabel.toLowerCase();
+
+  if (normalized.includes("brake")) {
+    return [
+      {
+        href: "/cars/ford/fiesta/common-problems",
+        label: "Ford Fiesta common problems",
+        description: "A strong example of a high-volume used model where brake history matters",
+      },
+      {
+        href: "/cars/audi/a3/common-problems",
+        label: "Audi A3 common problems",
+        description: "Useful if you are researching brake wear on a premium hatchback",
+      },
+      {
+        href: "/cars/bmw/3-series/common-problems",
+        label: "BMW 3 Series common problems",
+        description: "See broader ownership risks and negotiation points",
+      },
+      {
+        href: "/cars/audi/a1/common-problems",
+        label: "Audi A1 common problems",
+        description: "Helpful for buyers comparing brake-related warnings on smaller cars",
+      },
+    ];
+  }
+
+  if (
+    normalized.includes("oil") ||
+    normalized.includes("leak") ||
+    normalized.includes("engine")
+  ) {
+    return [
+      {
+        href: "/cars/bmw/3-series/common-problems",
+        label: "BMW 3 Series common problems",
+        description: "Useful when checking engine bay issues and ownership risk",
+      },
+      {
+        href: "/cars/audi/a3/common-problems",
+        label: "Audi A3 common problems",
+        description: "Read the broader used buying guide for a high-volume premium model",
+      },
+      {
+        href: "/cars/audi/a1/common-problems",
+        label: "Audi A1 common problems",
+        description: "Helpful if you are comparing leak-related warnings on smaller cars",
+      },
+      {
+        href: "/cars/ford/fiesta/common-problems",
+        label: "Ford Fiesta common problems",
+        description: "A useful benchmark for common used-car warning signs",
+      },
+    ];
+  }
+
+  if (
+    normalized.includes("suspension") ||
+    normalized.includes("steering") ||
+    normalized.includes("bush") ||
+    normalized.includes("shock")
+  ) {
+    return [
+      {
+        href: "/cars/ford/fiesta/common-problems",
+        label: "Ford Fiesta common problems",
+        description: "Suspension and wear-related issues are common on urban-driven examples",
+      },
+      {
+        href: "/cars/audi/a1/common-problems",
+        label: "Audi A1 common problems",
+        description: "Useful if you are comparing advisory patterns on smaller premium cars",
+      },
+      {
+        href: "/cars/bmw/3-series/common-problems",
+        label: "BMW 3 Series common problems",
+        description: "Helpful for broader context on wear, mileage and repair exposure",
+      },
+      {
+        href: "/cars/audi/a3/common-problems",
+        label: "Audi A3 common problems",
+        description: "Read the wider buyer guide for a common used hatchback",
+      },
+    ];
+  }
+
+  return [
+    {
+      href: "/cars/audi/a1/common-problems",
+      label: "Audi A1 common problems",
+      description: "Read the used buying guide for a popular smaller premium hatchback",
+    },
+    {
+      href: "/cars/audi/a3/common-problems",
+      label: "Audi A3 common problems",
+      description: "See broader reliability pointers and buyer warnings",
+    },
+    {
+      href: "/cars/bmw/3-series/common-problems",
+      label: "BMW 3 Series common problems",
+      description: "Helpful for understanding ownership risk on a popular used model",
+    },
+    {
+      href: "/cars/ford/fiesta/common-problems",
+      label: "Ford Fiesta common problems",
+      description: "A useful benchmark for common used-car buying risks",
+    },
+  ];
+}
+
 export async function generateStaticParams() {
   const { allMotAdvisoryTypes } = await import("@/lib/seo/data");
   return allMotAdvisoryTypes.map((row) => ({
@@ -98,6 +209,7 @@ export default async function AdvisoryHubPage({ params }: Props) {
 
   const path = buildAdvisoryHubPath(advisory);
   const buyerGuidance = getBuyerGuidance(row.advisory_label);
+  const relatedModelGuides = getRelatedModelGuides(row.advisory_label);
 
   const faqs = [
     {
@@ -243,6 +355,28 @@ export default async function AdvisoryHubPage({ params }: Props) {
             <li key={item}>{item}</li>
           ))}
         </ul>
+      </section>
+
+      <section className="mt-10 space-y-4">
+        <h2 className="text-2xl font-semibold">Related model guides</h2>
+        <p className="text-slate-700">
+          These model guides help you see the broader ownership risks and buying
+          warnings that often sit alongside this type of advisory.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {relatedModelGuides.map((guide) => (
+            <Link
+              key={guide.href}
+              href={guide.href}
+              className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
+            >
+              <h3 className="font-medium">{guide.label}</h3>
+              <p className="mt-1 text-sm text-slate-600">
+                {guide.description}
+              </p>
+            </Link>
+          ))}
+        </div>
       </section>
 
       <section className="mt-10 rounded-3xl border bg-slate-900 p-6 text-white">
