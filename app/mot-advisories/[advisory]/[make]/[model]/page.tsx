@@ -47,9 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const title = `${modelRow.make} ${modelRow.model} ${advisoryRow.advisory_label} Advisory | AutoAudit`;
-
-  const description = `Understand what "${advisoryRow.advisory_label}" means when it appears on a ${modelRow.make} ${modelRow.model} MOT history. Learn the likely cause, repair impact and how to check the exact car by registration.`;
-
+  const description = `Understand what ${advisoryRow.advisory_label} means when it appears on a ${modelRow.make} ${modelRow.model} MOT history. Learn the likely cause, repair impact and how to check the exact car by registration.`;
   const path = `/mot-advisories/${advisory}/${make}/${model}`;
 
   return {
@@ -77,12 +75,13 @@ export default async function AdvisoryModelPage({ params }: Props) {
 
   const faqs = [
     {
-      question: `What does "${advisoryRow.advisory_label}" mean on a ${modelRow.make} ${modelRow.model}?`,
+      question: `What does ${advisoryRow.advisory_label} mean on a ${modelRow.make} ${modelRow.model}?`,
       answer: `It means the MOT tester has identified a developing issue related to ${advisoryRow.advisory_label.toLowerCase()}. The car can still pass the MOT, but the problem may worsen if ignored.`,
     },
     {
       question: `Should I avoid buying a ${modelRow.make} ${modelRow.model} with this advisory?`,
-      answer: `Not necessarily. The key is understanding severity, likely repair cost and whether the issue appears repeatedly across MOT tests.`,
+      answer:
+        "Not necessarily. The key is understanding severity, likely repair cost and whether the issue appears repeatedly across MOT tests.",
     },
   ];
 
@@ -104,7 +103,6 @@ export default async function AdvisoryModelPage({ params }: Props) {
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
-
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
@@ -125,8 +123,9 @@ export default async function AdvisoryModelPage({ params }: Props) {
       </h1>
 
       <p className="mt-4 text-lg text-slate-700">
-        This page explains what a "{advisoryRow.advisory_label}" MOT advisory
-        means when it appears on a {modelRow.make} {modelRow.model}.
+        This page explains what the{" "}
+        <span className="font-medium">{advisoryRow.advisory_label}</span> MOT
+        advisory means when it appears on a {modelRow.make} {modelRow.model}.
       </p>
 
       <section className="mt-8 rounded-2xl border p-6">
@@ -135,8 +134,8 @@ export default async function AdvisoryModelPage({ params }: Props) {
         </h2>
 
         <p className="mt-2 text-slate-700">
-          Enter the registration to check the exact vehicle history rather
-          than relying on general model guidance.
+          Enter the registration to check the exact vehicle history rather than
+          relying on general model guidance.
         </p>
 
         <form
@@ -162,9 +161,7 @@ export default async function AdvisoryModelPage({ params }: Props) {
       </section>
 
       <section className="mt-10 space-y-4">
-        <h2 className="text-2xl font-semibold">
-          Why this advisory appears
-        </h2>
+        <h2 className="text-2xl font-semibold">Why this advisory appears</h2>
 
         <p className="text-slate-700">
           MOT advisories highlight developing problems that could become more
@@ -180,9 +177,7 @@ export default async function AdvisoryModelPage({ params }: Props) {
       </section>
 
       <section className="mt-10 space-y-4">
-        <h2 className="text-2xl font-semibold">
-          Buyer guidance
-        </h2>
+        <h2 className="text-2xl font-semibold">Buyer guidance</h2>
 
         <ul className="list-disc pl-6 text-slate-700">
           <li>Ask the seller whether this issue has already been repaired.</li>
@@ -201,7 +196,6 @@ export default async function AdvisoryModelPage({ params }: Props) {
           </div>
         ))}
       </section>
-
     </main>
   );
 }
