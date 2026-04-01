@@ -130,7 +130,7 @@ export default async function AdvisoryHubPage({ params }: Props) {
   });
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10">
+    <main className="mx-auto max-w-5xl px-4 py-6">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
@@ -150,7 +150,7 @@ export default async function AdvisoryHubPage({ params }: Props) {
 
       <section className="overflow-hidden rounded-3xl border bg-white shadow-sm">
         <div className="grid gap-0 lg:grid-cols-2">
-          <div className="relative min-h-[280px] lg:min-h-full">
+          <div className="relative min-h-[260px] lg:min-h-full">
             <Image
               src="/hero-car-road.png"
               alt={`${row.advisory_label} MOT advisory guide`}
@@ -160,30 +160,26 @@ export default async function AdvisoryHubPage({ params }: Props) {
             />
           </div>
 
-          <div className="p-6 sm:p-8 lg:p-10">
-            <div className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
-              MOT advisory meaning
-            </div>
-
-            <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+          <div className="p-5 sm:p-6 lg:p-7">
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
               {row.advisory_label}: what it means
             </h1>
 
-            <p className="mt-4 text-lg text-slate-700">
+            <p className="mt-3 text-base text-slate-700">
               If you have seen this MOT advisory on a used car, this page
               explains what it usually means, why buyers should care and what to
               check before you commit.
             </p>
 
-            <div className="mt-3 text-sm text-slate-600">
+            <div className="mt-2 text-sm text-slate-600">
               MOT section: {row.mot_section}. Category: {row.category}.
             </div>
 
-            <div className="mt-6 rounded-2xl border-2 border-slate-900 bg-slate-50 p-5">
-              <h2 className="text-xl font-semibold">
+            <div className="mt-4 rounded-2xl border-2 border-slate-900 bg-slate-50 p-4">
+              <h2 className="text-lg font-semibold sm:text-xl">
                 Check the exact car by registration
               </h2>
-              <p className="mt-2 text-slate-700">
+              <p className="mt-2 text-sm text-slate-700 sm:text-base">
                 An MOT advisory is only useful in context. Enter the registration
                 to see whether this issue appears once, repeatedly or alongside
                 other warning signs.

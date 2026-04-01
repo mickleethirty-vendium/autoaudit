@@ -194,7 +194,7 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
   });
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10">
+    <main className="mx-auto max-w-5xl px-4 py-6">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
@@ -214,7 +214,7 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
 
       <section className="overflow-hidden rounded-3xl border bg-white shadow-sm">
         <div className="grid gap-0 lg:grid-cols-2">
-          <div className="relative min-h-[280px] lg:min-h-full">
+          <div className="relative min-h-[260px] lg:min-h-full">
             <Image
               src="/hero-car-road.png"
               alt={`${row.make} ${row.model} used car buying guide`}
@@ -224,26 +224,22 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
             />
           </div>
 
-          <div className="p-6 sm:p-8 lg:p-10">
-            <div className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
-              Used {row.make} {row.model} buyers guide
-            </div>
-
-            <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+          <div className="p-5 sm:p-6 lg:p-7">
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
               {row.make} {row.model} Common Problems
             </h1>
 
-            <p className="mt-4 text-lg text-slate-700">
+            <p className="mt-3 text-base text-slate-700">
               Research the common problems, ownership risks and buying warning
               signs for the {row.make} {row.model}, then check the exact car by
               registration before you commit.
             </p>
 
-            <div className="mt-6 rounded-2xl border-2 border-slate-900 bg-slate-50 p-5">
-              <h2 className="text-xl font-semibold">
+            <div className="mt-4 rounded-2xl border-2 border-slate-900 bg-slate-50 p-4">
+              <h2 className="text-lg font-semibold sm:text-xl">
                 Check a specific {row.make} {row.model} now
               </h2>
-              <p className="mt-2 text-slate-700">
+              <p className="mt-2 text-sm text-slate-700 sm:text-base">
                 General model advice is useful, but the real question is whether
                 the exact car you are viewing looks like a risk.
               </p>
