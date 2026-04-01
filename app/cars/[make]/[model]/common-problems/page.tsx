@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getModelByParams } from "@/lib/seo/data";
+import { allMotAdvisoryTypes, getModelByParams } from "@/lib/seo/data";
 import {
   absoluteUrl,
+  buildAdvisoryHubPath,
   buildModelCommonProblemsPath,
 } from "@/lib/seo/routes";
 import {
@@ -19,6 +20,12 @@ type Props = {
     make: string;
     model: string;
   }>;
+};
+
+type AdvisoryGuideCard = {
+  href: string;
+  label: string;
+  description: string;
 };
 
 function getGenericIssueBullets(make: string, model: string) {
@@ -117,88 +124,93 @@ function getNegotiationPoints(make: string, model: string) {
   ];
 }
 
+function matchesKeywords(
+  advisory: (typeof allMotAdvisoryTypes)[number],
+  keywords: string[]
+) {
+  const haystack = [
+    advisory.advisory_label,
+    advisory.advisory_slug,
+    advisory.category,
+    advisory.mot_section,
+    advisory.notes || "",
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  return keywords.some((keyword) => haystack.includes(keyword.toLowerCase()));
+}
+
+function buildAdvisoryCard(
+  advisory: (typeof allMotAdvisoryTypes)[number],
+  description: string
+): AdvisoryGuideCard {
+  return {
+    href: buildAdvisoryHubPath(advisory.advisory_slug),
+    label: `${advisory.advisory_label} advisory meaning`,
+    description,
+  };
+}
+
 function getRelatedAdvisoryGuides(make: string, model: string) {
   const normalizedMake = make.toLowerCase();
   const normalizedModel = model.toLowerCase();
 
-  const defaultGuides = [
-    {
-      href: "/mot-advisories/brake-wear",
-      label: "Brake wear advisory meaning",
-      description: "Understand how brake-related advisories affect buying risk",
-    },
-    {
-      href: "/mot-advisories/oil-leak",
-      label: "Oil leak advisory meaning",
-      description: "See why oil leaks matter before you buy a used car",
-    },
-    {
-      href: "/mot-advisories/suspension-wear",
-      label: "Suspension wear advisory meaning",
-      description: "Check what suspension-related advisories usually signal",
-    },
-    {
-      href: "/mot-advisories/steering-component-wear",
-      label: "Steering advisory meaning",
-      description: "Learn what steering-related advisories can mean for safety",
-    },
-  ];
+  const cards: AdvisoryGuideCard[] = [];
+  const usedSlugs = new Set<string>();
+
+  const pushFirstMatch = (keywords: string[], description: string) => {
+    const match = allMotAdvisoryTypes.find(
+      (advisory) =>
+        !usedSlugs.has(advisory.advisory_slug) &&
+        matchesKeywords(advisory, keywords)
+    );
+
+    if (!match) return;
+
+    usedSlugs.add(match.advisory_slug);
+    cards.push(buildAdvisoryCard(match, description));
+  };
 
   if (["audi", "bmw", "mercedes-benz", "mercedes"].includes(normalizedMake)) {
-    return [
-      {
-        href: "/mot-advisories/oil-leak",
-        label: "Oil leak advisory meaning",
-        description: "Useful where engine bay seepage or leaks can become costly",
-      },
-      {
-        href: "/mot-advisories/brake-wear",
-        label: "Brake wear advisory meaning",
-        description: "Brake advisories are common and can affect negotiation",
-      },
-      {
-        href: "/mot-advisories/suspension-wear",
-        label: "Suspension wear advisory meaning",
-        description: "Helpful for spotting age and mileage-related wear",
-      },
-      {
-        href: "/mot-advisories/electrical-fault",
-        label: "Electrical fault advisory meaning",
-        description: "Understand what electrical warnings can imply",
-      },
-    ];
-  }
-
-  if (
+    pushFirstMatch(
+      ["oil", "leak", "engine"],
+      "Useful where engine bay seepage or leaks can become costly"
+    );
+    pushFirstMatch(
+      ["brake", "disc", "pad"],
+      "Brake advisories are common and can affect negotiation"
+    );
+    pushFirstMatch(
+      ["suspension", "bush", "shock", "strut"],
+      "Helpful for spotting age and mileage-related wear"
+    );
+    pushFirstMatch(
+      ["electrical", "lamp", "wiring", "battery"],
+      "Understand what electrical warnings can imply"
+    );
+  } else if (
     ["a1", "a3", "fiesta", "corsa", "polo", "yaris", "micra"].includes(
       normalizedModel
     )
   ) {
-    return [
-      {
-        href: "/mot-advisories/brake-wear",
-        label: "Brake wear advisory meaning",
-        description: "Town-driven cars often pick up repeated brake-related notes",
-      },
-      {
-        href: "/mot-advisories/tyre-wear",
-        label: "Tyre wear advisory meaning",
-        description: "Helpful for spotting alignment or usage issues",
-      },
-      {
-        href: "/mot-advisories/suspension-wear",
-        label: "Suspension wear advisory meaning",
-        description: "Useful for knocks, links and worn suspension components",
-      },
-      {
-        href: "/mot-advisories/exhaust-corrosion",
-        label: "Exhaust corrosion advisory meaning",
-        description: "Common on older cars and worth checking before purchase",
-      },
-    ];
-  }
-
-  if (
+    pushFirstMatch(
+      ["brake", "disc", "pad"],
+      "Town-driven cars often pick up repeated brake-related notes"
+    );
+    pushFirstMatch(
+      ["tyre", "wheel", "alignment"],
+      "Helpful for spotting alignment or usage issues"
+    );
+    pushFirstMatch(
+      ["suspension", "drop link", "bush", "shock"],
+      "Useful for knocks, links and worn suspension components"
+    );
+    pushFirstMatch(
+      ["exhaust", "corrosion", "emission"],
+      "Common on older cars and worth checking before purchase"
+    );
+  } else if (
     [
       "qashqai",
       "tucson",
@@ -213,31 +225,58 @@ function getRelatedAdvisoryGuides(make: string, model: string) {
       "q5",
     ].includes(normalizedModel)
   ) {
-    return [
-      {
-        href: "/mot-advisories/suspension-wear",
-        label: "Suspension wear advisory meaning",
-        description: "Heavier family cars often show suspension-related wear",
-      },
-      {
-        href: "/mot-advisories/tyre-wear",
-        label: "Tyre wear advisory meaning",
-        description: "Useful for spotting alignment and load-related wear",
-      },
-      {
-        href: "/mot-advisories/brake-wear",
-        label: "Brake wear advisory meaning",
-        description: "Brake work can be more expensive on larger vehicles",
-      },
-      {
-        href: "/mot-advisories/steering-component-wear",
-        label: "Steering advisory meaning",
-        description: "Check for bushes, joints and steering-related wear",
-      },
-    ];
+    pushFirstMatch(
+      ["suspension", "bush", "shock", "strut"],
+      "Heavier family cars often show suspension-related wear"
+    );
+    pushFirstMatch(
+      ["tyre", "wheel", "alignment"],
+      "Useful for spotting alignment and load-related wear"
+    );
+    pushFirstMatch(
+      ["brake", "disc", "pad"],
+      "Brake work can be more expensive on larger vehicles"
+    );
+    pushFirstMatch(
+      ["steering", "joint", "rack", "track rod"],
+      "Check for bushes, joints and steering-related wear"
+    );
+  } else {
+    pushFirstMatch(
+      ["brake", "disc", "pad"],
+      "Understand how brake-related advisories affect buying risk"
+    );
+    pushFirstMatch(
+      ["oil", "leak", "engine"],
+      "See why oil and engine-related warnings matter before you buy"
+    );
+    pushFirstMatch(
+      ["suspension", "bush", "shock", "strut"],
+      "Check what suspension-related advisories usually signal"
+    );
+    pushFirstMatch(
+      ["steering", "joint", "rack", "track rod"],
+      "Learn what steering-related advisories can mean for safety"
+    );
   }
 
-  return defaultGuides;
+  if (cards.length < 4) {
+    for (const advisory of allMotAdvisoryTypes) {
+      if (usedSlugs.has(advisory.advisory_slug)) continue;
+
+      usedSlugs.add(advisory.advisory_slug);
+      cards.push(
+        buildAdvisoryCard(
+          advisory,
+          "Read the broader meaning and buyer impact of this advisory"
+        )
+      );
+
+      if (cards.length === 4) break;
+    }
+  }
+
+  return cards;
 }
 
 export async function generateStaticParams() {

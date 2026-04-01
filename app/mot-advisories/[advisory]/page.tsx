@@ -2,8 +2,12 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAdvisoryBySlug } from "@/lib/seo/data";
-import { absoluteUrl, buildAdvisoryHubPath } from "@/lib/seo/routes";
+import { getAdvisoryBySlug, wave1Models } from "@/lib/seo/data";
+import {
+  absoluteUrl,
+  buildAdvisoryHubPath,
+  buildModelCommonProblemsPath,
+} from "@/lib/seo/routes";
 import {
   articleSchema,
   breadcrumbSchema,
@@ -15,6 +19,12 @@ type Props = {
   params: Promise<{
     advisory: string;
   }>;
+};
+
+type ModelGuideCard = {
+  href: string;
+  label: string;
+  description: string;
 };
 
 function getBuyerGuidance(advisoryLabel: string) {
@@ -60,115 +70,132 @@ function getBuyerGuidance(advisoryLabel: string) {
   ];
 }
 
+function buildModelGuideCard(
+  model: (typeof wave1Models)[number],
+  description: string
+): ModelGuideCard {
+  return {
+    href: buildModelCommonProblemsPath(model.make_slug, model.model_slug),
+    label: `${model.make} ${model.model} common problems`,
+    description,
+  };
+}
+
 function getRelatedModelGuides(advisoryLabel: string) {
   const normalized = advisoryLabel.toLowerCase();
+  const cards: ModelGuideCard[] = [];
+  const usedFullSlugs = new Set<string>();
+
+  const pushIfExists = (
+    matcher: (row: (typeof wave1Models)[number]) => boolean,
+    description: string
+  ) => {
+    const match = wave1Models.find(
+      (row) => !usedFullSlugs.has(row.full_slug) && matcher(row)
+    );
+
+    if (!match) return;
+
+    usedFullSlugs.add(match.full_slug);
+    cards.push(buildModelGuideCard(match, description));
+  };
 
   if (normalized.includes("brake")) {
-    return [
-      {
-        href: "/cars/ford/fiesta/common-problems",
-        label: "Ford Fiesta common problems",
-        description: "A strong example of a high-volume used model where brake history matters",
-      },
-      {
-        href: "/cars/audi/a3/common-problems",
-        label: "Audi A3 common problems",
-        description: "Useful if you are researching brake wear on a premium hatchback",
-      },
-      {
-        href: "/cars/bmw/3-series/common-problems",
-        label: "BMW 3 Series common problems",
-        description: "See broader ownership risks and negotiation points",
-      },
-      {
-        href: "/cars/audi/a1/common-problems",
-        label: "Audi A1 common problems",
-        description: "Helpful for buyers comparing brake-related warnings on smaller cars",
-      },
-    ];
-  }
-
-  if (
+    pushIfExists(
+      (row) => row.make_slug === "ford" && row.model_slug === "fiesta",
+      "A strong example of a high-volume used model where brake history matters"
+    );
+    pushIfExists(
+      (row) => row.make_slug === "audi" && row.model_slug === "a3",
+      "Useful if you are researching brake wear on a premium hatchback"
+    );
+    pushIfExists(
+      (row) => row.make_slug === "bmw" && row.model_slug === "3-series",
+      "See broader ownership risks and negotiation points"
+    );
+    pushIfExists(
+      (row) => row.make_slug === "audi" && row.model_slug === "a1",
+      "Helpful for buyers comparing brake-related warnings on smaller cars"
+    );
+  } else if (
     normalized.includes("oil") ||
     normalized.includes("leak") ||
     normalized.includes("engine")
   ) {
-    return [
-      {
-        href: "/cars/bmw/3-series/common-problems",
-        label: "BMW 3 Series common problems",
-        description: "Useful when checking engine bay issues and ownership risk",
-      },
-      {
-        href: "/cars/audi/a3/common-problems",
-        label: "Audi A3 common problems",
-        description: "Read the broader used buying guide for a high-volume premium model",
-      },
-      {
-        href: "/cars/audi/a1/common-problems",
-        label: "Audi A1 common problems",
-        description: "Helpful if you are comparing leak-related warnings on smaller cars",
-      },
-      {
-        href: "/cars/ford/fiesta/common-problems",
-        label: "Ford Fiesta common problems",
-        description: "A useful benchmark for common used-car warning signs",
-      },
-    ];
-  }
-
-  if (
+    pushIfExists(
+      (row) => row.make_slug === "bmw" && row.model_slug === "3-series",
+      "Useful when checking engine bay issues and ownership risk"
+    );
+    pushIfExists(
+      (row) => row.make_slug === "audi" && row.model_slug === "a3",
+      "Read the broader used buying guide for a high-volume premium model"
+    );
+    pushIfExists(
+      (row) => row.make_slug === "audi" && row.model_slug === "a1",
+      "Helpful if you are comparing leak-related warnings on smaller cars"
+    );
+    pushIfExists(
+      (row) => row.make_slug === "ford" && row.model_slug === "fiesta",
+      "A useful benchmark for common used-car warning signs"
+    );
+  } else if (
     normalized.includes("suspension") ||
     normalized.includes("steering") ||
     normalized.includes("bush") ||
     normalized.includes("shock")
   ) {
-    return [
-      {
-        href: "/cars/ford/fiesta/common-problems",
-        label: "Ford Fiesta common problems",
-        description: "Suspension and wear-related issues are common on urban-driven examples",
-      },
-      {
-        href: "/cars/audi/a1/common-problems",
-        label: "Audi A1 common problems",
-        description: "Useful if you are comparing advisory patterns on smaller premium cars",
-      },
-      {
-        href: "/cars/bmw/3-series/common-problems",
-        label: "BMW 3 Series common problems",
-        description: "Helpful for broader context on wear, mileage and repair exposure",
-      },
-      {
-        href: "/cars/audi/a3/common-problems",
-        label: "Audi A3 common problems",
-        description: "Read the wider buyer guide for a common used hatchback",
-      },
-    ];
+    pushIfExists(
+      (row) => row.make_slug === "ford" && row.model_slug === "fiesta",
+      "Suspension and wear-related issues are common on urban-driven examples"
+    );
+    pushIfExists(
+      (row) => row.make_slug === "audi" && row.model_slug === "a1",
+      "Useful if you are comparing advisory patterns on smaller premium cars"
+    );
+    pushIfExists(
+      (row) => row.make_slug === "bmw" && row.model_slug === "3-series",
+      "Helpful for broader context on wear, mileage and repair exposure"
+    );
+    pushIfExists(
+      (row) => row.make_slug === "audi" && row.model_slug === "a3",
+      "Read the wider buyer guide for a common used hatchback"
+    );
+  } else {
+    pushIfExists(
+      (row) => row.make_slug === "audi" && row.model_slug === "a1",
+      "Read the used buying guide for a popular smaller premium hatchback"
+    );
+    pushIfExists(
+      (row) => row.make_slug === "audi" && row.model_slug === "a3",
+      "See broader reliability pointers and buyer warnings"
+    );
+    pushIfExists(
+      (row) => row.make_slug === "bmw" && row.model_slug === "3-series",
+      "Helpful for understanding ownership risk on a popular used model"
+    );
+    pushIfExists(
+      (row) => row.make_slug === "ford" && row.model_slug === "fiesta",
+      "A useful benchmark for common used-car buying risks"
+    );
   }
 
-  return [
-    {
-      href: "/cars/audi/a1/common-problems",
-      label: "Audi A1 common problems",
-      description: "Read the used buying guide for a popular smaller premium hatchback",
-    },
-    {
-      href: "/cars/audi/a3/common-problems",
-      label: "Audi A3 common problems",
-      description: "See broader reliability pointers and buyer warnings",
-    },
-    {
-      href: "/cars/bmw/3-series/common-problems",
-      label: "BMW 3 Series common problems",
-      description: "Helpful for understanding ownership risk on a popular used model",
-    },
-    {
-      href: "/cars/ford/fiesta/common-problems",
-      label: "Ford Fiesta common problems",
-      description: "A useful benchmark for common used-car buying risks",
-    },
-  ];
+  if (cards.length < 4) {
+    for (const model of wave1Models) {
+      if (usedFullSlugs.has(model.full_slug)) continue;
+
+      usedFullSlugs.add(model.full_slug);
+      cards.push(
+        buildModelGuideCard(
+          model,
+          "Read the buyer guide and broader used-car warning signs"
+        )
+      );
+
+      if (cards.length === 4) break;
+    }
+  }
+
+  return cards;
 }
 
 export async function generateStaticParams() {
