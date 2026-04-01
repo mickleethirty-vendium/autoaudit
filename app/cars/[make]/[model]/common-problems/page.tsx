@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getModelByParams } from "@/lib/seo/data";
 import {
@@ -19,16 +21,104 @@ type Props = {
   }>;
 };
 
+function getGenericIssueBullets(make: string, model: string) {
+  const normalizedMake = make.toLowerCase();
+  const normalizedModel = model.toLowerCase();
+
+  const premiumMakes = [
+    "audi",
+    "bmw",
+    "mercedes-benz",
+    "mercedes",
+    "jaguar",
+    "land rover",
+    "lexus",
+    "volvo",
+  ];
+
+  const cityCarsAndSuperminis = [
+    "a1",
+    "a3",
+    "fiesta",
+    "corsa",
+    "polo",
+    "yaris",
+    "micra",
+    "208",
+    "clio",
+    "fabia",
+    "ibiza",
+  ];
+
+  const suvKeywords = [
+    "qashqai",
+    "tucson",
+    "sportage",
+    "kuga",
+    "tiguan",
+    "xc40",
+    "xc60",
+    "x1",
+    "x3",
+    "q3",
+    "q5",
+    "range rover",
+    "discovery",
+    "captur",
+    "2008",
+    "3008",
+  ];
+
+  if (premiumMakes.includes(normalizedMake)) {
+    return [
+      "Suspension wear, knocks or bush deterioration on higher-mileage examples",
+      "Brake disc and pad wear showing up repeatedly in MOT history",
+      "Oil leaks, coolant seepage or age-related engine bay issues",
+      "Electrical or sensor faults becoming more common as the vehicle ages",
+    ];
+  }
+
+  if (cityCarsAndSuperminis.includes(normalizedModel)) {
+    return [
+      "Brake wear and tyre wear from stop-start town driving",
+      "Suspension knocks or worn drop links on rough urban roads",
+      "Clutch wear on hard-used manual examples",
+      "Exhaust corrosion or minor oil leaks on older cars",
+    ];
+  }
+
+  if (suvKeywords.includes(normalizedModel)) {
+    return [
+      "Suspension wear and alignment-related tyre wear on heavier vehicles",
+      "Brake wear due to extra vehicle weight and family use",
+      "Advisories around bushes, links and steering components",
+      "General wear linked to towing, load carrying or mixed road use",
+    ];
+  }
+
+  return [
+    "Suspension wear or knocking noises as the vehicle ages",
+    "Brake disc or brake pad wear appearing during MOT tests",
+    "Oil leaks or damp engine components on older examples",
+    "Exhaust, tyre or steering advisories building up over time",
+  ];
+}
+
+function getBuyerSummary(make: string, model: string) {
+  return `The ${make} ${model} can be a sensible used buy, but condition matters far more than badge reputation alone. A clean MOT record, consistent maintenance and sensible pricing are usually stronger buying signals than general forum chatter or seller claims.`;
+}
+
+function getNegotiationPoints(make: string, model: string) {
+  return [
+    `Ask whether the ${make} ${model} has had any recent brake, tyre or suspension work.`,
+    "Check whether repeated MOT advisories point to a pattern rather than a one-off repair.",
+    "Compare the asking price with condition, mileage and visible maintenance evidence.",
+    "Use unresolved advisories or warning signs as a negotiation lever before purchase.",
+  ];
+}
+
 export async function generateStaticParams() {
   const { wave1Models } = await import("@/lib/seo/data");
-
-  console.log(
-    "SEO model params sample:",
-    wave1Models.slice(0, 10).map((row) => ({
-      make: row.make_slug,
-      model: row.model_slug,
-    }))
-  );
 
   return wave1Models.map((row) => ({
     make: row.make_slug,
@@ -70,17 +160,22 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
   if (!row) notFound();
 
   const path = buildModelCommonProblemsPath(make, model);
+  const issueBullets = getGenericIssueBullets(row.make, row.model);
+  const buyerSummary = getBuyerSummary(row.make, row.model);
+  const negotiationPoints = getNegotiationPoints(row.make, row.model);
 
   const faqs = [
     {
       question: `Is the ${row.make} ${row.model} reliable?`,
-      answer:
-        `Reliability depends on engine, age, maintenance history and MOT pattern. AutoAudit pages should be expanded with your real issue matches and MOT evidence over time.`,
+      answer: `Reliability depends on age, maintenance history, mileage and MOT pattern. A well-maintained ${row.make} ${row.model} can be a better buy than a neglected example with a stronger reputation on paper.`,
     },
     {
       question: `Should I check a ${row.make} ${row.model} by registration?`,
-      answer:
-        `Yes. A registration check lets you look at that exact car rather than relying only on general model guidance.`,
+      answer: `Yes. A registration check lets you inspect the history of the exact car you are considering, including MOT patterns, pricing context and repair risk indicators.`,
+    },
+    {
+      question: `What should I look for when buying a used ${row.make} ${row.model}?`,
+      answer: `Focus on MOT history, repeat advisories, maintenance evidence, tyre and brake condition, signs of leaks and whether the asking price reflects the car's condition and history.`,
     },
   ];
 
@@ -99,7 +194,7 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
   });
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10">
+    <main className="mx-auto max-w-5xl px-4 py-10">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
@@ -117,62 +212,187 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema()) }}
       />
 
-      <h1 className="text-3xl font-bold tracking-tight">
-        {row.make} {row.model} Common Problems
-      </h1>
-      <p className="mt-4 text-lg text-slate-700">
-        Use this page as the public SEO entry point for model-specific guidance,
-        then move users into a registration lookup for the exact car.
-      </p>
+      <section className="overflow-hidden rounded-3xl border bg-white shadow-sm">
+        <div className="grid gap-0 lg:grid-cols-2">
+          <div className="relative min-h-[280px] lg:min-h-full">
+            <Image
+              src="/hero-car-road.png"
+              alt={`${row.make} ${row.model} used car buying guide`}
+              fill
+              priority
+              className="object-cover"
+            />
+          </div>
 
-      <section className="mt-8 rounded-2xl border p-6">
-        <h2 className="text-xl font-semibold">
-          Check a specific {row.make} {row.model}
+          <div className="p-6 sm:p-8 lg:p-10">
+            <div className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
+              Used {row.make} {row.model} buyers guide
+            </div>
+
+            <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+              {row.make} {row.model} Common Problems
+            </h1>
+
+            <p className="mt-4 text-lg text-slate-700">
+              Research the common problems, ownership risks and buying warning
+              signs for the {row.make} {row.model}, then check the exact car by
+              registration before you commit.
+            </p>
+
+            <div className="mt-6 rounded-2xl border-2 border-slate-900 bg-slate-50 p-5">
+              <h2 className="text-xl font-semibold">
+                Check a specific {row.make} {row.model} now
+              </h2>
+              <p className="mt-2 text-slate-700">
+                General model advice is useful, but the real question is whether
+                the exact car you are viewing looks like a risk.
+              </p>
+
+              <form
+                action="/check"
+                method="GET"
+                className="mt-4 flex flex-col gap-3 sm:flex-row"
+              >
+                <input
+                  type="text"
+                  name="registration"
+                  placeholder={`Enter ${row.make} ${row.model} registration`}
+                  required
+                  className="w-full rounded-xl border border-slate-300 px-4 py-3 text-base uppercase tracking-[0.2em]"
+                />
+                <button
+                  type="submit"
+                  className="rounded-xl bg-slate-900 px-6 py-3 text-base font-semibold text-white shadow-sm"
+                >
+                  Check this car
+                </button>
+              </form>
+
+              <p className="mt-3 text-sm font-medium text-slate-600">
+                Free preview • MOT history • Repair risk estimate • Market value
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-10 space-y-4">
+        <h2 className="text-2xl font-semibold">
+          Why people land on this page
         </h2>
-        <p className="mt-2 text-slate-700">
-          Enter the registration to check the exact car, not just the model in
-          general.
+        <p className="text-slate-700">
+          Most buyers searching for {row.make} {row.model} common problems are
+          already looking at a specific used car and want to know whether it is
+          likely to become expensive, troublesome or overpriced. This page helps
+          you spot the usual warning signs before you buy.
+        </p>
+      </section>
+
+      <section className="mt-10 space-y-4">
+        <h2 className="text-2xl font-semibold">
+          Common issues seen on the {row.make} {row.model}
+        </h2>
+        <p className="text-slate-700">
+          Like many used cars, the {row.make} {row.model} can develop age and
+          mileage-related faults over time. These often show up first as MOT
+          advisories, repeat maintenance items or negotiation points during a
+          viewing.
+        </p>
+        <ul className="list-disc pl-6 text-slate-700">
+          {issueBullets.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+        <p className="text-slate-700">
+          That does not mean every {row.make} {row.model} is risky. It means the
+          exact vehicle history matters much more than the badge alone.
+        </p>
+      </section>
+
+      <section className="mt-10 space-y-4">
+        <h2 className="text-2xl font-semibold">Buyer summary</h2>
+        <p className="text-slate-700">{buyerSummary}</p>
+        <p className="text-slate-700">
+          The best used examples are usually the ones with steady servicing,
+          clean MOT patterns and an asking price that makes sense against age,
+          mileage and condition.
+        </p>
+      </section>
+
+      <section className="mt-10 space-y-4">
+        <h2 className="text-2xl font-semibold">What to check before buying</h2>
+        <ul className="list-disc pl-6 text-slate-700">
+          {negotiationPoints.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="mt-10 rounded-3xl border bg-slate-900 p-6 text-white">
+        <h2 className="text-2xl font-semibold">
+          Looking at one right now? Run the registration check.
+        </h2>
+        <p className="mt-3 max-w-2xl text-slate-200">
+          A model guide can only take you so far. Enter the registration to see
+          whether the exact {row.make} {row.model} you are considering shows MOT
+          warning signs, price risk or likely repair exposure.
         </p>
 
         <form
           action="/check"
           method="GET"
-          className="mt-4 flex flex-col gap-3 sm:flex-row"
+          className="mt-5 flex flex-col gap-3 sm:flex-row"
         >
           <input
             type="text"
             name="registration"
             placeholder={`Enter ${row.make} ${row.model} registration`}
             required
-            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-base uppercase tracking-wide"
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-base uppercase tracking-[0.2em] text-slate-900"
           />
           <button
             type="submit"
-            className="rounded-xl bg-slate-900 px-6 py-3 text-white"
+            className="rounded-xl bg-white px-6 py-3 text-base font-semibold text-slate-900"
           >
-            Check this car
+            Start free check
           </button>
         </form>
       </section>
 
       <section className="mt-10 space-y-4">
-        <h2 className="text-2xl font-semibold">What to include here next</h2>
-        <ul className="list-disc pl-6 text-slate-700">
-          <li>Known issue matches from your failure dataset</li>
-          <li>MOT advisory pattern summary for this model</li>
-          <li>Repair exposure estimate band</li>
-          <li>Negotiation guidance</li>
-          <li>Seller questions</li>
-        </ul>
+        <h2 className="text-2xl font-semibold">
+          Why a registration check helps more
+        </h2>
+        <p className="text-slate-700">
+          General reliability guides are useful, but they cannot tell you
+          whether a specific car has repeated advisories, suspicious gaps,
+          pricing risk or signs of neglected maintenance. That is where an
+          AutoAudit check becomes more useful than a generic article.
+        </p>
       </section>
 
       <section className="mt-10 space-y-4">
-        <h2 className="text-2xl font-semibold">Buyer summary</h2>
-        <p className="text-slate-700">
-          Keep the introduction broad but useful. The real moat comes from
-          blending make/model guidance with MOT signals and your paid report
-          flow.
-        </p>
+        <h2 className="text-2xl font-semibold">Related checks</h2>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Link
+            href="/check-car-by-registration"
+            className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
+          >
+            <h3 className="font-medium">Check a car by registration</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Run a full used car risk check before you buy
+            </p>
+          </Link>
+          <Link
+            href="/mot-history-check"
+            className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
+          >
+            <h3 className="font-medium">MOT history check</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Review MOT records and advisory patterns
+            </p>
+          </Link>
+        </div>
       </section>
 
       <section className="mt-10 space-y-4">

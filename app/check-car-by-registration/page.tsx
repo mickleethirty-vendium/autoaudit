@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { absoluteUrl } from "@/lib/seo/routes";
 import { breadcrumbSchema, faqSchema, productSchema } from "@/lib/seo/schema";
@@ -74,7 +75,7 @@ export default function CheckCarByRegistrationPage() {
   ]);
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10">
+    <main className="mx-auto max-w-5xl px-4 py-10">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -94,59 +95,83 @@ export default function CheckCarByRegistrationPage() {
         }}
       />
 
-      <section className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Check a Car by Registration
-          </h1>
-          <p className="mt-4 text-lg text-slate-700">
-            Enter a UK registration to see MOT history, repair risk, market
-            value and buyer warnings before you commit to a used car.
-          </p>
-        </div>
-
-        <section className="rounded-2xl border bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-semibold">Run a check now</h2>
-          <p className="mt-2 text-slate-700">
-            Enter a registration to check MOT history, repair risk and market
-            value before you buy.
-          </p>
-
-          <form
-            action="/check"
-            method="GET"
-            className="mt-4 flex flex-col gap-3 sm:flex-row"
-          >
-            <input
-              type="text"
-              name="registration"
-              placeholder="Enter registration"
-              required
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-base uppercase tracking-wide"
+      <section className="overflow-hidden rounded-3xl border bg-white shadow-sm">
+        <div className="grid gap-0 lg:grid-cols-2">
+          <div className="relative min-h-[280px] lg:min-h-full">
+            <Image
+              src="/hero-car-road.png"
+              alt="Used car driving on an open road"
+              fill
+              priority
+              className="object-cover"
             />
-            <button
-              type="submit"
-              className="rounded-xl bg-slate-900 px-6 py-3 text-white"
-            >
-              Check car
-            </button>
-          </form>
-
-          <div className="mt-4 flex flex-wrap gap-2 text-sm text-slate-600">
-            <span className="rounded-full bg-slate-100 px-3 py-1">
-              Free preview
-            </span>
-            <span className="rounded-full bg-slate-100 px-3 py-1">
-              MOT history
-            </span>
-            <span className="rounded-full bg-slate-100 px-3 py-1">
-              Repair risk estimate
-            </span>
-            <span className="rounded-full bg-slate-100 px-3 py-1">
-              Market value context
-            </span>
           </div>
-        </section>
+
+          <div className="p-6 sm:p-8 lg:p-10">
+            <div className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
+              UK used car check
+            </div>
+
+            <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+              Check a Car by Registration Before You Buy
+            </h1>
+
+            <p className="mt-4 text-lg text-slate-700">
+              Run a UK car check by registration to spot MOT warning signs,
+              repair risk, market value issues and hidden buying mistakes before
+              you hand over any money.
+            </p>
+
+            <div className="mt-6 rounded-2xl border-2 border-slate-900 bg-slate-50 p-5">
+              <h2 className="text-xl font-semibold">
+                Enter the registration now
+              </h2>
+              <p className="mt-2 text-slate-700">
+                Get a free snapshot first. If the car looks risky or overpriced,
+                you will know before you commit.
+              </p>
+
+              <form
+                action="/check"
+                method="GET"
+                className="mt-4 flex flex-col gap-3 sm:flex-row"
+              >
+                <input
+                  type="text"
+                  name="registration"
+                  placeholder="Enter registration"
+                  required
+                  className="w-full rounded-xl border border-slate-300 px-4 py-3 text-base uppercase tracking-[0.2em]"
+                />
+                <button
+                  type="submit"
+                  className="rounded-xl bg-slate-900 px-6 py-3 text-base font-semibold text-white shadow-sm"
+                >
+                  Check this car
+                </button>
+              </form>
+
+              <p className="mt-3 text-sm font-medium text-slate-600">
+                Free preview • MOT history • Repair risk estimate • Market value
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-10 space-y-4">
+        <h2 className="text-2xl font-semibold">Why people land on this page</h2>
+        <p className="text-slate-700">
+          Most buyers search for a car check when they are already looking at a
+          specific vehicle and want to know one thing: is this car likely to be
+          a mistake? AutoAudit helps answer that before you buy.
+        </p>
+        <ul className="list-disc pl-6 text-slate-700">
+          <li>Check whether the MOT history suggests repeat problems</li>
+          <li>See whether the price looks sensible for the car</li>
+          <li>Spot likely repair exposure before viewing or buying</li>
+          <li>Use evidence to negotiate more confidently with the seller</li>
+        </ul>
       </section>
 
       <section className="mt-10 space-y-4">
@@ -212,18 +237,35 @@ export default function CheckCarByRegistrationPage() {
         </ol>
       </section>
 
-      <section className="mt-10 space-y-4">
-        <h2 className="text-2xl font-semibold">Why buyers use it</h2>
-        <p className="text-slate-700">
-          The goal is simple: help you avoid overpaying, spot repair risks early
-          and ask better questions before purchase.
+      <section className="mt-10 rounded-3xl border bg-slate-900 p-6 text-white">
+        <h2 className="text-2xl font-semibold">
+          Found a car already? Run the check now.
+        </h2>
+        <p className="mt-3 max-w-2xl text-slate-200">
+          If you have the registration, you already have enough to start.
+          Check the car before the viewing, before the deposit and before you
+          talk yourself into a bad deal.
         </p>
-        <ul className="list-disc pl-6 text-slate-700">
-          <li>Check whether the MOT history suggests recurring issues</li>
-          <li>Understand whether the asking price looks sensible</li>
-          <li>Spot warning signs before viewing or buying</li>
-          <li>Use evidence to negotiate with more confidence</li>
-        </ul>
+
+        <form
+          action="/check"
+          method="GET"
+          className="mt-5 flex flex-col gap-3 sm:flex-row"
+        >
+          <input
+            type="text"
+            name="registration"
+            placeholder="Enter registration"
+            required
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-base uppercase tracking-[0.2em] text-slate-900"
+          />
+          <button
+            type="submit"
+            className="rounded-xl bg-white px-6 py-3 text-base font-semibold text-slate-900"
+          >
+            Start free check
+          </button>
+        </form>
       </section>
 
       <section className="mt-10 space-y-4">

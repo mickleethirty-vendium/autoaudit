@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAdvisoryBySlug, getModelByParams } from "@/lib/seo/data";
 import { absoluteUrl } from "@/lib/seo/routes";
@@ -15,6 +17,49 @@ type Props = {
     model: string;
   }>;
 };
+
+function getBuyerGuidance(advisoryLabel: string, make: string, model: string) {
+  const normalized = advisoryLabel.toLowerCase();
+
+  if (normalized.includes("brake")) {
+    return [
+      `Ask whether the brake-related issue on this ${make} ${model} has already been repaired.`,
+      "Check whether the same brake advisory appears on more than one MOT.",
+      "Budget for likely brake work and use that cost in your negotiation.",
+    ];
+  }
+
+  if (
+    normalized.includes("oil") ||
+    normalized.includes("leak") ||
+    normalized.includes("engine")
+  ) {
+    return [
+      `Ask what was diagnosed on this ${make} ${model} and whether any repair invoice exists.`,
+      "Check for repeat advisories or signs that the issue was ignored.",
+      "Treat active leaks or vague seller explanations as a negotiation point.",
+    ];
+  }
+
+  if (
+    normalized.includes("suspension") ||
+    normalized.includes("steering") ||
+    normalized.includes("bush") ||
+    normalized.includes("shock")
+  ) {
+    return [
+      `Ask whether the worn suspension or steering parts on this ${make} ${model} have been changed.`,
+      "Look for repeat advisories that suggest long-term neglect.",
+      "Budget for alignment and any related follow-on work if needed.",
+    ];
+  }
+
+  return [
+    `Ask whether this advisory on the ${make} ${model} has already been repaired.`,
+    "Check whether the same issue appears on multiple MOT tests.",
+    "Estimate the likely repair cost and factor it into your offer.",
+  ];
+}
 
 export async function generateStaticParams() {
   const { wave1Models, allMotAdvisoryTypes } = await import("@/lib/seo/data");
@@ -72,6 +117,11 @@ export default async function AdvisoryModelPage({ params }: Props) {
   if (!advisoryRow || !modelRow) notFound();
 
   const path = `/mot-advisories/${advisory}/${make}/${model}`;
+  const buyerGuidance = getBuyerGuidance(
+    advisoryRow.advisory_label,
+    modelRow.make,
+    modelRow.model
+  );
 
   const faqs = [
     {
@@ -83,6 +133,10 @@ export default async function AdvisoryModelPage({ params }: Props) {
       answer:
         "Not necessarily. The key is understanding severity, likely repair cost and whether the issue appears repeatedly across MOT tests.",
     },
+    {
+      question: `Why should I run a registration check on this ${modelRow.make} ${modelRow.model}?`,
+      answer: `Because general advisory guidance is not enough on its own. A registration check helps you see the exact MOT pattern, price context and risk signals for the specific ${modelRow.make} ${modelRow.model} you are considering.`,
+    },
   ];
 
   const breadcrumbs = breadcrumbSchema([
@@ -93,6 +147,10 @@ export default async function AdvisoryModelPage({ params }: Props) {
       name: `${modelRow.make} ${modelRow.model}`,
       item: `/cars/${modelRow.make_slug}/${modelRow.model_slug}`,
     },
+    {
+      name: `${modelRow.make} ${modelRow.model} advisory`,
+      item: path,
+    },
   ]);
 
   const article = articleSchema({
@@ -102,7 +160,7 @@ export default async function AdvisoryModelPage({ params }: Props) {
   });
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10">
+    <main className="mx-auto max-w-5xl px-4 py-10">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
@@ -118,50 +176,86 @@ export default async function AdvisoryModelPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema(faqs)) }}
       />
 
-      <h1 className="text-3xl font-bold tracking-tight">
-        {modelRow.make} {modelRow.model}: {advisoryRow.advisory_label} Advisory
-      </h1>
+      <section className="overflow-hidden rounded-3xl border bg-white shadow-sm">
+        <div className="grid gap-0 lg:grid-cols-2">
+          <div className="relative min-h-[280px] lg:min-h-full">
+            <Image
+              src="/hero-car-road.png"
+              alt={`${modelRow.make} ${modelRow.model} ${advisoryRow.advisory_label} advisory guide`}
+              fill
+              priority
+              className="object-cover"
+            />
+          </div>
 
-      <p className="mt-4 text-lg text-slate-700">
-        This page explains what the{" "}
-        <span className="font-medium">{advisoryRow.advisory_label}</span> MOT
-        advisory means when it appears on a {modelRow.make} {modelRow.model}.
-      </p>
+          <div className="p-6 sm:p-8 lg:p-10">
+            <div className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
+              MOT advisory on a specific model
+            </div>
 
-      <section className="mt-8 rounded-2xl border p-6">
-        <h2 className="text-xl font-semibold">
-          Check a specific {modelRow.make} {modelRow.model}
-        </h2>
+            <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+              {modelRow.make} {modelRow.model}: {advisoryRow.advisory_label}
+            </h1>
 
-        <p className="mt-2 text-slate-700">
-          Enter the registration to check the exact vehicle history rather than
-          relying on general model guidance.
-        </p>
+            <p className="mt-4 text-lg text-slate-700">
+              If you have seen this advisory on a {modelRow.make} {modelRow.model},
+              this page explains what it usually means, why it matters to a used
+              car buyer and why you should check the exact registration before
+              making a decision.
+            </p>
 
-        <form
-          action="/check"
-          method="GET"
-          className="mt-4 flex flex-col gap-3 sm:flex-row"
-        >
-          <input
-            type="text"
-            name="registration"
-            placeholder={`Enter ${modelRow.make} ${modelRow.model} registration`}
-            required
-            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-base uppercase"
-          />
+            <div className="mt-6 rounded-2xl border-2 border-slate-900 bg-slate-50 p-5">
+              <h2 className="text-xl font-semibold">
+                Check this {modelRow.make} {modelRow.model} now
+              </h2>
+              <p className="mt-2 text-slate-700">
+                Do not rely on a generic advisory description alone. Enter the
+                registration to see whether this issue appears once, repeatedly
+                or alongside other warning signs.
+              </p>
 
-          <button
-            type="submit"
-            className="rounded-xl bg-slate-900 px-6 py-3 text-white"
-          >
-            Check this car
-          </button>
-        </form>
+              <form
+                action="/check"
+                method="GET"
+                className="mt-4 flex flex-col gap-3 sm:flex-row"
+              >
+                <input
+                  type="text"
+                  name="registration"
+                  placeholder={`Enter ${modelRow.make} ${modelRow.model} registration`}
+                  required
+                  className="w-full rounded-xl border border-slate-300 px-4 py-3 text-base uppercase tracking-[0.2em]"
+                />
+
+                <button
+                  type="submit"
+                  className="rounded-xl bg-slate-900 px-6 py-3 text-base font-semibold text-white shadow-sm"
+                >
+                  Check this car
+                </button>
+              </form>
+
+              <p className="mt-3 text-sm font-medium text-slate-600">
+                Free preview • MOT history • Repair risk estimate • Market value
+              </p>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section className="mt-10 space-y-4">
-        <h2 className="text-2xl font-semibold">Why this advisory appears</h2>
+        <h2 className="text-2xl font-semibold">Why people land on this page</h2>
+        <p className="text-slate-700">
+          Most buyers reach a page like this after spotting an MOT advisory on a
+          listing, MOT history report or seller screenshot. The real question is
+          not just what the advisory means in theory, but whether the exact{" "}
+          {modelRow.make} {modelRow.model} you are considering looks like a
+          maintenance risk.
+        </p>
+      </section>
+
+      <section className="mt-10 space-y-4">
+        <h2 className="text-2xl font-semibold">Why this advisory matters</h2>
 
         <p className="text-slate-700">
           MOT advisories highlight developing problems that could become more
@@ -172,18 +266,80 @@ export default async function AdvisoryModelPage({ params }: Props) {
         <p className="text-slate-700">
           On the {modelRow.make} {modelRow.model}, this advisory can indicate
           age-related wear, environmental exposure or repeated stress on the
-          affected component.
+          affected component. A one-off advisory may be manageable. Repeated
+          advisories can be a stronger warning sign.
         </p>
       </section>
 
       <section className="mt-10 space-y-4">
-        <h2 className="text-2xl font-semibold">Buyer guidance</h2>
+        <h2 className="text-2xl font-semibold">What buyers should do next</h2>
 
         <ul className="list-disc pl-6 text-slate-700">
-          <li>Ask the seller whether this issue has already been repaired.</li>
-          <li>Check whether the same advisory appears on multiple MOT tests.</li>
-          <li>Estimate the likely repair cost and factor it into your offer.</li>
+          {buyerGuidance.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
         </ul>
+      </section>
+
+      <section className="mt-10 rounded-3xl border bg-slate-900 p-6 text-white">
+        <h2 className="text-2xl font-semibold">
+          Found this on a car already? Run the registration check now.
+        </h2>
+        <p className="mt-3 max-w-2xl text-slate-200">
+          One advisory line is not enough to judge a used car properly. Enter
+          the registration to see MOT history, repeat issues, pricing context
+          and whether this {modelRow.make} {modelRow.model} looks riskier than
+          it first appears.
+        </p>
+
+        <form
+          action="/check"
+          method="GET"
+          className="mt-5 flex flex-col gap-3 sm:flex-row"
+        >
+          <input
+            type="text"
+            name="registration"
+            placeholder={`Enter ${modelRow.make} ${modelRow.model} registration`}
+            required
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-base uppercase tracking-[0.2em] text-slate-900"
+          />
+          <button
+            type="submit"
+            className="rounded-xl bg-white px-6 py-3 text-base font-semibold text-slate-900"
+          >
+            Start free check
+          </button>
+        </form>
+      </section>
+
+      <section className="mt-10 space-y-4">
+        <h2 className="text-2xl font-semibold">Related guides</h2>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Link
+            href={`/mot-advisories/${advisory}`}
+            className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
+          >
+            <h3 className="font-medium">
+              {advisoryRow.advisory_label}: general advisory guide
+            </h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Read the broader meaning and buyer impact of this advisory
+            </p>
+          </Link>
+
+          <Link
+            href={`/cars/${modelRow.make_slug}/${modelRow.model_slug}/common-problems`}
+            className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
+          >
+            <h3 className="font-medium">
+              {modelRow.make} {modelRow.model} common problems
+            </h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Read the model guide and common used buying risks
+            </p>
+          </Link>
+        </div>
       </section>
 
       <section className="mt-10 space-y-4">
