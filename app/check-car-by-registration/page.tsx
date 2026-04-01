@@ -75,7 +75,7 @@ export default function CheckCarByRegistrationPage() {
   ]);
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10">
+    <main className="mx-auto max-w-5xl px-4 py-6">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -97,7 +97,7 @@ export default function CheckCarByRegistrationPage() {
 
       <section className="overflow-hidden rounded-3xl border bg-white shadow-sm">
         <div className="grid gap-0 lg:grid-cols-2">
-          <div className="relative min-h-[280px] lg:min-h-full">
+          <div className="relative min-h-[260px] lg:min-h-full">
             <Image
               src="/hero-car-road.png"
               alt="Used car driving on an open road"
@@ -107,26 +107,22 @@ export default function CheckCarByRegistrationPage() {
             />
           </div>
 
-          <div className="p-6 sm:p-8 lg:p-10">
-            <div className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
-              UK used car check
-            </div>
-
-            <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+          <div className="p-5 sm:p-6 lg:p-7">
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
               Check a Car by Registration Before You Buy
             </h1>
 
-            <p className="mt-4 text-lg text-slate-700">
+            <p className="mt-3 text-base text-slate-700">
               Run a UK car check by registration to spot MOT warning signs,
               repair risk, market value issues and hidden buying mistakes before
               you hand over any money.
             </p>
 
-            <div className="mt-6 rounded-2xl border-2 border-slate-900 bg-slate-50 p-5">
-              <h2 className="text-xl font-semibold">
+            <div className="mt-4 rounded-2xl border-2 border-slate-900 bg-slate-50 p-4">
+              <h2 className="text-lg font-semibold sm:text-xl">
                 Enter the registration now
               </h2>
-              <p className="mt-2 text-slate-700">
+              <p className="mt-2 text-sm text-slate-700 sm:text-base">
                 Get a free snapshot first. If the car looks risky or overpriced,
                 you will know before you commit.
               </p>
@@ -242,9 +238,9 @@ export default function CheckCarByRegistrationPage() {
           Found a car already? Run the check now.
         </h2>
         <p className="mt-3 max-w-2xl text-slate-200">
-          If you have the registration, you already have enough to start.
-          Check the car before the viewing, before the deposit and before you
-          talk yourself into a bad deal.
+          If you have the registration, you already have enough to start. Check
+          the car before the viewing, before the deposit and before you talk
+          yourself into a bad deal.
         </p>
 
         <form
