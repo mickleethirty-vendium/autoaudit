@@ -55,6 +55,8 @@ function getGenericIssueBullets(make: string, model: string) {
     "clio",
     "fabia",
     "ibiza",
+    "aygo",
+    "hatch",
   ];
 
   const suvKeywords = [
@@ -124,6 +126,99 @@ function getNegotiationPoints(make: string, model: string) {
   ];
 }
 
+function getUsedBuyerVerdict(make: string, model: string) {
+  const normalizedMake = make.toLowerCase();
+  const normalizedModel = model.toLowerCase();
+
+  const premiumMakes = [
+    "audi",
+    "bmw",
+    "mercedes-benz",
+    "mercedes",
+    "jaguar",
+    "land rover",
+    "lexus",
+    "volvo",
+  ];
+
+  const cityCarsAndSuperminis = [
+    "a1",
+    "a3",
+    "fiesta",
+    "corsa",
+    "polo",
+    "yaris",
+    "micra",
+    "208",
+    "clio",
+    "fabia",
+    "ibiza",
+    "aygo",
+    "hatch",
+  ];
+
+  const suvKeywords = [
+    "qashqai",
+    "tucson",
+    "sportage",
+    "kuga",
+    "tiguan",
+    "xc40",
+    "xc60",
+    "x1",
+    "x3",
+    "q3",
+    "q5",
+    "range rover",
+    "discovery",
+    "captur",
+    "2008",
+    "3008",
+  ];
+
+  if (premiumMakes.includes(normalizedMake)) {
+    return {
+      summary: `A used ${make} ${model} can be a strong buy if it has clear maintenance history and a sensible asking price, but neglected premium cars can become expensive quickly.`,
+      bullets: [
+        "Favour cars with evidence of servicing, brake work and suspension upkeep",
+        "Be more cautious where there are repeat MOT advisories or electrical warnings",
+        "Budget-sensitive buyers should be careful with cheap examples that look under-maintained",
+      ],
+    };
+  }
+
+  if (cityCarsAndSuperminis.includes(normalizedModel)) {
+    return {
+      summary: `A used ${make} ${model} often makes sense as a practical buy, especially if the MOT history is clean and consumable items have been looked after.`,
+      bullets: [
+        "Usually a safer buy where tyres, brakes and clutch condition all look consistent",
+        "Be cautious of heavily town-driven examples with repeated brake, tyre or suspension notes",
+        "Small used cars can still become poor value if the price does not reflect upcoming maintenance",
+      ],
+    };
+  }
+
+  if (suvKeywords.includes(normalizedModel)) {
+    return {
+      summary: `A used ${make} ${model} can be a good family buy, but heavier vehicles tend to hide more expensive brake, tyre and suspension costs if maintenance has been delayed.`,
+      bullets: [
+        "Check for repeat suspension, alignment and steering-related advisories",
+        "Make sure the asking price reflects tyre, brake and servicing condition",
+        "Load carrying, towing and mixed use can make the exact vehicle history especially important",
+      ],
+    };
+  }
+
+  return {
+    summary: `A used ${make} ${model} can still be a sensible purchase if the exact car shows a clean pattern of maintenance, sensible mileage and no obvious unresolved warning signs.`,
+    bullets: [
+      "A tidy MOT history is usually a better signal than reputation alone",
+      "Repeated advisories matter more than one isolated note",
+      "Always compare condition and maintenance evidence with the asking price",
+    ],
+  };
+}
+
 function matchesKeywords(
   advisory: (typeof allMotAdvisoryTypes)[number],
   keywords: string[]
@@ -190,7 +285,7 @@ function getRelatedAdvisoryGuides(make: string, model: string) {
       "Understand what electrical warnings can imply"
     );
   } else if (
-    ["a1", "a3", "fiesta", "corsa", "polo", "yaris", "micra"].includes(
+    ["a1", "a3", "fiesta", "corsa", "polo", "yaris", "micra", "aygo"].includes(
       normalizedModel
     )
   ) {
@@ -298,8 +393,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const title = `${row.make} ${row.model} Common Problems | AutoAudit`;
-  const description = `Read common problems, buyer risks and reliability pointers for the ${row.make} ${row.model}, then check a specific car by registration.`;
+  const title = `${row.make} ${row.model} Common Problems – What to Check Before Buying Used | AutoAudit`;
+  const description = `Read common problems, reliability pointers and used buyer warning signs for the ${row.make} ${row.model}, then check a specific car by registration.`;
   const path = buildModelCommonProblemsPath(make, model);
 
   return {
@@ -326,6 +421,7 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
   const buyerSummary = getBuyerSummary(row.make, row.model);
   const negotiationPoints = getNegotiationPoints(row.make, row.model);
   const relatedAdvisoryGuides = getRelatedAdvisoryGuides(row.make, row.model);
+  const usedBuyerVerdict = getUsedBuyerVerdict(row.make, row.model);
 
   const faqs = [
     {
@@ -340,6 +436,10 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
       question: `What should I look for when buying a used ${row.make} ${row.model}?`,
       answer: `Focus on MOT history, repeat advisories, maintenance evidence, tyre and brake condition, signs of leaks and whether the asking price reflects the car's condition and history.`,
     },
+    {
+      question: `Should I buy a used ${row.make} ${row.model}?`,
+      answer: `That depends on the exact car rather than the model name alone. A used ${row.make} ${row.model} with a clean MOT pattern, sensible maintenance evidence and realistic pricing can be a much better buy than a cheaper example with repeated warnings or unresolved advisories.`,
+    },
   ];
 
   const breadcrumbs = breadcrumbSchema([
@@ -351,7 +451,7 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
   ]);
 
   const article = articleSchema({
-    headline: `${row.make} ${row.model} Common Problems`,
+    headline: `${row.make} ${row.model} Common Problems – What to Check Before Buying Used`,
     description: `Common problems, reliability pointers and buyer guidance for the ${row.make} ${row.model}.`,
     path,
   });
@@ -393,18 +493,18 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
             </h1>
 
             <p className="mt-3 text-base text-slate-700">
-              Research the common problems, ownership risks and buying warning
+              Research the common problems, ownership risks and used-car warning
               signs for the {row.make} {row.model}, then check the exact car by
               registration before you commit.
             </p>
 
             <div className="mt-4 rounded-2xl border-2 border-slate-900 bg-slate-50 p-4">
               <h2 className="text-lg font-semibold sm:text-xl">
-                Check a specific {row.make} {row.model} now
+                Check a specific used {row.make} {row.model} now
               </h2>
               <p className="mt-2 text-sm text-slate-700 sm:text-base">
                 General model advice is useful, but the real question is whether
-                the exact car you are viewing looks like a risk.
+                the exact used car you are viewing looks like a risk.
               </p>
 
               <form
@@ -466,6 +566,11 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
           That does not mean every {row.make} {row.model} is risky. It means the
           exact vehicle history matters much more than the badge alone.
         </p>
+        <p className="text-slate-700">
+          These issues can show up on used hatchbacks, estates, saloons and SUVs
+          alike. Body style matters far less than maintenance history, mileage
+          and how the exact car has been looked after.
+        </p>
       </section>
 
       <section className="mt-10 space-y-4">
@@ -475,6 +580,24 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
           The best used examples are usually the ones with steady servicing,
           clean MOT patterns and an asking price that makes sense against age,
           mileage and condition.
+        </p>
+      </section>
+
+      <section className="mt-10 space-y-4">
+        <h2 className="text-2xl font-semibold">
+          Should you buy a used {row.make} {row.model}?
+        </h2>
+        <p className="text-slate-700">{usedBuyerVerdict.summary}</p>
+        <ul className="list-disc pl-6 text-slate-700">
+          {usedBuyerVerdict.bullets.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+        <p className="text-slate-700">
+          In practice, most buyers are better off judging the exact used{" "}
+          {row.make} {row.model} in front of them rather than relying on generic
+          reputation alone. Clean history and sensible maintenance usually
+          matter more than forum noise.
         </p>
       </section>
 
@@ -515,9 +638,10 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
           Looking at one right now? Run the registration check.
         </h2>
         <p className="mt-3 max-w-2xl text-slate-200">
-          A model guide can only take you so far. Enter the registration to see
-          whether the exact {row.make} {row.model} you are considering shows MOT
-          warning signs, price risk or likely repair exposure.
+          A used {row.make} {row.model} guide can only take you so far. Enter
+          the registration to see whether the exact {row.make} {row.model} you
+          are considering shows MOT warning signs, price risk or likely repair
+          exposure.
         </p>
 
         <form
