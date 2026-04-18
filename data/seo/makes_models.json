@@ -966,7 +966,7 @@
     "model_slug": "sandero",
     "full_slug": "dacia/sandero",
     "priority_tier": 3,
-    "launch_wave": 3,
+    "launch_wave": 1,
     "market_status": "current",
     "seed_source_type": "starter-seed",
     "source_url": "https://www.autotrader.co.uk/cars/brands"
@@ -978,7 +978,7 @@
     "model_slug": "duster",
     "full_slug": "dacia/duster",
     "priority_tier": 3,
-    "launch_wave": 3,
+    "launch_wave": 1,
     "market_status": "current",
     "seed_source_type": "starter-seed",
     "source_url": "https://www.autotrader.co.uk/cars/brands"
@@ -1698,7 +1698,7 @@
     "model_slug": "xe",
     "full_slug": "jaguar/xe",
     "priority_tier": 3,
-    "launch_wave": 3,
+    "launch_wave": 1,
     "market_status": "current",
     "seed_source_type": "starter-seed",
     "source_url": "https://www.autotrader.co.uk/cars/brands"
@@ -1710,7 +1710,7 @@
     "model_slug": "xf",
     "full_slug": "jaguar/xf",
     "priority_tier": 3,
-    "launch_wave": 3,
+    "launch_wave": 1,
     "market_status": "current",
     "seed_source_type": "starter-seed",
     "source_url": "https://www.autotrader.co.uk/cars/brands"
