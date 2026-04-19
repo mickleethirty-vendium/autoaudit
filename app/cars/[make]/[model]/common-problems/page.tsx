@@ -397,7 +397,8 @@ function getRelatedModelGuides(
 
   const fallback = wave1Models.filter(
     (item) =>
-      !(item.make_slug === currentMakeSlug && item.model_slug === currentModelSlug) &&
+      !(item.make_slug === currentMakeSlug &&
+        item.model_slug === currentModelSlug) &&
       (item.priority_tier === 1 || item.launch_wave === 1)
   );
 
@@ -488,9 +489,7 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
   const breadcrumbs = breadcrumbSchema([
     { name: "Home", item: "/" },
     { name: "Cars", item: "/cars" },
-    { name: row.make, item: `/cars/${row.make_slug}` },
-    { name: row.model, item: `/cars/${row.make_slug}/${row.model_slug}` },
-    { name: "Common problems", item: path },
+    { name: `${row.make} ${row.model}`, item: path },
   ]);
 
   const article = articleSchema({
