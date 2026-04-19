@@ -36,8 +36,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
+  const makeSlugs = [...new Set(wave1Models.map((row) => row.make_slug))];
+
+  const makePages: MetadataRoute.Sitemap = makeSlugs.map((makeSlug) => ({
+    url: absoluteUrl(`/cars/${makeSlug}`),
+    lastModified,
+    changeFrequency: "weekly" as const,
+    priority: 0.8,
+  }));
+
   const modelPages: MetadataRoute.Sitemap = wave1Models.map((row) => ({
-    url: absoluteUrl(buildModelCommonProblemsPath(row.make_slug, row.model_slug)),
+    url: absoluteUrl(
+      buildModelCommonProblemsPath(row.make_slug, row.model_slug)
+    ),
     lastModified,
     changeFrequency: "monthly" as const,
     priority:
@@ -48,12 +59,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
           : 0.55,
   }));
 
-  const advisoryPages: MetadataRoute.Sitemap = allMotAdvisoryTypes.map((row) => ({
-    url: absoluteUrl(buildAdvisoryHubPath(row.advisory_slug)),
-    lastModified,
-    changeFrequency: "monthly" as const,
-    priority: 0.7,
-  }));
+  const advisoryPages: MetadataRoute.Sitemap = allMotAdvisoryTypes.map(
+    (row) => ({
+      url: absoluteUrl(buildAdvisoryHubPath(row.advisory_slug)),
+      lastModified,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })
+  );
 
-  return [...staticPages, ...modelPages, ...advisoryPages];
+  return [
+    ...staticPages,
+    ...makePages,
+    ...modelPages,
+    ...advisoryPages,
+  ];
 }
