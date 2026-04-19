@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAdvisoryBySlug, wave1Models } from "@/lib/seo/data";
+import {
+  allMotAdvisoryTypes,
+  getAdvisoryBySlug,
+  wave1Models,
+} from "@/lib/seo/data";
 import {
   absoluteUrl,
   buildAdvisoryHubPath,
@@ -22,6 +26,12 @@ type Props = {
 };
 
 type ModelGuideCard = {
+  href: string;
+  label: string;
+  description: string;
+};
+
+type AdvisoryGuideCard = {
   href: string;
   label: string;
   description: string;
@@ -77,6 +87,17 @@ function buildModelGuideCard(
   return {
     href: buildModelCommonProblemsPath(model.make_slug, model.model_slug),
     label: `${model.make} ${model.model} common problems`,
+    description,
+  };
+}
+
+function buildAdvisoryGuideCard(
+  advisory: (typeof allMotAdvisoryTypes)[number],
+  description: string
+): AdvisoryGuideCard {
+  return {
+    href: buildAdvisoryHubPath(advisory.advisory_slug),
+    label: `${advisory.advisory_label} advisory meaning`,
     description,
   };
 }
@@ -198,6 +219,25 @@ function getRelatedModelGuides(advisoryLabel: string) {
   return cards;
 }
 
+function getRelatedAdvisoryGuides(currentAdvisorySlug: string) {
+  const cards: AdvisoryGuideCard[] = [];
+
+  for (const advisory of allMotAdvisoryTypes) {
+    if (advisory.advisory_slug === currentAdvisorySlug) continue;
+
+    cards.push(
+      buildAdvisoryGuideCard(
+        advisory,
+        "Read another MOT advisory guide and compare the likely buyer impact"
+      )
+    );
+
+    if (cards.length === 4) break;
+  }
+
+  return cards;
+}
+
 export async function generateStaticParams() {
   const { allMotAdvisoryTypes } = await import("@/lib/seo/data");
   return allMotAdvisoryTypes.map((row) => ({
@@ -237,6 +277,7 @@ export default async function AdvisoryHubPage({ params }: Props) {
   const path = buildAdvisoryHubPath(advisory);
   const buyerGuidance = getBuyerGuidance(row.advisory_label);
   const relatedModelGuides = getRelatedModelGuides(row.advisory_label);
+  const relatedAdvisoryGuides = getRelatedAdvisoryGuides(row.advisory_slug);
 
   const faqs = [
     {
@@ -286,6 +327,21 @@ export default async function AdvisoryHubPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema()) }}
       />
+
+      <nav
+        aria-label="Breadcrumb"
+        className="mb-6 flex flex-wrap items-center gap-2 text-sm text-slate-600"
+      >
+        <Link href="/" className="transition hover:text-slate-900">
+          Home
+        </Link>
+        <span>/</span>
+        <Link href="/mot-advisories" className="transition hover:text-slate-900">
+          MOT advisories
+        </Link>
+        <span>/</span>
+        <span className="text-slate-900">{row.advisory_label}</span>
+      </nav>
 
       <section className="overflow-hidden rounded-3xl border bg-white shadow-sm">
         <div className="grid gap-0 lg:grid-cols-2">
@@ -352,6 +408,37 @@ export default async function AdvisoryHubPage({ params }: Props) {
         </div>
       </section>
 
+      <section className="mt-6 rounded-2xl border bg-slate-50 p-4">
+        <h2 className="text-lg font-semibold text-slate-900">
+          Browse more used car research
+        </h2>
+        <p className="mt-2 text-sm text-slate-700">
+          Explore more MOT advisory guides, compare with model-specific common
+          problem pages, or run a registration check on the exact car you are
+          considering.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <Link
+            href="/mot-advisories"
+            className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 transition hover:border-slate-400 hover:bg-slate-100"
+          >
+            Browse MOT advisory guides
+          </Link>
+          <Link
+            href="/cars"
+            className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 transition hover:border-slate-400 hover:bg-slate-100"
+          >
+            Browse car guides
+          </Link>
+          <Link
+            href="/check-car-by-registration"
+            className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 transition hover:border-slate-400 hover:bg-slate-100"
+          >
+            Check a car by registration
+          </Link>
+        </div>
+      </section>
+
       <section className="mt-10 space-y-4">
         <h2 className="text-2xl font-semibold">Why people land on this page</h2>
         <p className="text-slate-700">
@@ -392,6 +479,28 @@ export default async function AdvisoryHubPage({ params }: Props) {
         </p>
         <div className="grid gap-4 sm:grid-cols-2">
           {relatedModelGuides.map((guide) => (
+            <Link
+              key={guide.href}
+              href={guide.href}
+              className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
+            >
+              <h3 className="font-medium">{guide.label}</h3>
+              <p className="mt-1 text-sm text-slate-600">
+                {guide.description}
+              </p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-10 space-y-4">
+        <h2 className="text-2xl font-semibold">Related advisory guides</h2>
+        <p className="text-slate-700">
+          Browse other advisory explainers to compare likely causes, buyer risk
+          and what different MOT warning signs can mean in practice.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {relatedAdvisoryGuides.map((guide) => (
             <Link
               key={guide.href}
               href={guide.href}

@@ -63,6 +63,20 @@ export default async function RootLayout({
 
               <nav className="hidden items-center gap-4 sm:flex">
                 <Link
+                  href="/cars"
+                  className="text-sm text-slate-600 hover:text-slate-900"
+                >
+                  Cars
+                </Link>
+
+                <Link
+                  href="/mot-advisories"
+                  className="text-sm text-slate-600 hover:text-slate-900"
+                >
+                  MOT Advisories
+                </Link>
+
+                <Link
                   href="/terms"
                   className="text-sm text-slate-600 hover:text-slate-900"
                 >
@@ -114,6 +128,15 @@ export default async function RootLayout({
               <p>© {new Date().getFullYear()} AutoAudit. All rights reserved.</p>
 
               <div className="flex flex-wrap items-center gap-4">
+                <Link href="/check-car-by-registration" className="hover:text-slate-900">
+                  Check by registration
+                </Link>
+                <Link href="/cars" className="hover:text-slate-900">
+                  Cars
+                </Link>
+                <Link href="/mot-advisories" className="hover:text-slate-900">
+                  MOT Advisories
+                </Link>
                 <Link href="/terms" className="hover:text-slate-900">
                   Terms
                 </Link>

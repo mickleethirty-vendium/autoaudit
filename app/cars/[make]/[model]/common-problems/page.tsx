@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { allMotAdvisoryTypes, getModelByParams } from "@/lib/seo/data";
+import {
+  allMotAdvisoryTypes,
+  getModelByParams,
+  wave1Models,
+} from "@/lib/seo/data";
 import {
   absoluteUrl,
   buildAdvisoryHubPath,
@@ -23,6 +27,12 @@ type Props = {
 };
 
 type AdvisoryGuideCard = {
+  href: string;
+  label: string;
+  description: string;
+};
+
+type RelatedModelGuideCard = {
   href: string;
   label: string;
   description: string;
@@ -374,6 +384,35 @@ function getRelatedAdvisoryGuides(make: string, model: string) {
   return cards;
 }
 
+function getRelatedModelGuides(
+  currentMakeSlug: string,
+  currentModelSlug: string
+): RelatedModelGuideCard[] {
+  const sameMake = wave1Models.filter(
+    (item) =>
+      item.make_slug === currentMakeSlug &&
+      item.model_slug !== currentModelSlug &&
+      (item.priority_tier === 1 || item.launch_wave === 1)
+  );
+
+  const fallback = wave1Models.filter(
+    (item) =>
+      !(item.make_slug === currentMakeSlug && item.model_slug === currentModelSlug) &&
+      (item.priority_tier === 1 || item.launch_wave === 1)
+  );
+
+  const selected = [...sameMake, ...fallback].slice(0, 4);
+
+  return selected.map((item) => ({
+    href: buildModelCommonProblemsPath(item.make_slug, item.model_slug),
+    label: `${item.make} ${item.model} common problems`,
+    description:
+      item.make_slug === currentMakeSlug
+        ? `See how other used ${item.make} models compare on common issues and buyer risk`
+        : `Compare this guide with another popular used car problem page`,
+  }));
+}
+
 export async function generateStaticParams() {
   const { wave1Models } = await import("@/lib/seo/data");
 
@@ -421,6 +460,10 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
   const buyerSummary = getBuyerSummary(row.make, row.model);
   const negotiationPoints = getNegotiationPoints(row.make, row.model);
   const relatedAdvisoryGuides = getRelatedAdvisoryGuides(row.make, row.model);
+  const relatedModelGuides = getRelatedModelGuides(
+    row.make_slug,
+    row.model_slug
+  );
   const usedBuyerVerdict = getUsedBuyerVerdict(row.make, row.model);
 
   const faqs = [
@@ -474,6 +517,23 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema()) }}
       />
+
+      <nav
+        aria-label="Breadcrumb"
+        className="mb-6 flex flex-wrap items-center gap-2 text-sm text-slate-600"
+      >
+        <Link href="/" className="transition hover:text-slate-900">
+          Home
+        </Link>
+        <span>/</span>
+        <Link href="/cars" className="transition hover:text-slate-900">
+          Cars
+        </Link>
+        <span>/</span>
+        <span className="text-slate-900">
+          {row.make} {row.model} common problems
+        </span>
+      </nav>
 
       <section className="overflow-hidden rounded-3xl border bg-white shadow-sm">
         <div className="grid gap-0 lg:grid-cols-2">
@@ -532,6 +592,36 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="mt-6 rounded-2xl border bg-slate-50 p-4">
+        <h2 className="text-lg font-semibold text-slate-900">
+          Browse more used car research
+        </h2>
+        <p className="mt-2 text-sm text-slate-700">
+          Explore other model problem guides, MOT advisory explainers, or run a
+          registration check on the exact car you are considering.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <Link
+            href="/cars"
+            className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 transition hover:border-slate-400 hover:bg-slate-100"
+          >
+            Browse all car guides
+          </Link>
+          <Link
+            href="/mot-advisories"
+            className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 transition hover:border-slate-400 hover:bg-slate-100"
+          >
+            Browse MOT advisory guides
+          </Link>
+          <Link
+            href="/check-car-by-registration"
+            className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 transition hover:border-slate-400 hover:bg-slate-100"
+          >
+            Check a car by registration
+          </Link>
         </div>
       </section>
 
@@ -619,6 +709,28 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
         </p>
         <div className="grid gap-4 sm:grid-cols-2">
           {relatedAdvisoryGuides.map((guide) => (
+            <Link
+              key={guide.href}
+              href={guide.href}
+              className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
+            >
+              <h3 className="font-medium">{guide.label}</h3>
+              <p className="mt-1 text-sm text-slate-600">
+                {guide.description}
+              </p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-10 space-y-4">
+        <h2 className="text-2xl font-semibold">Related model guides</h2>
+        <p className="text-slate-700">
+          Compare this guide with other popular model pages to build a better
+          view of used car risk, ownership patterns and common buyer concerns.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {relatedModelGuides.map((guide) => (
             <Link
               key={guide.href}
               href={guide.href}
