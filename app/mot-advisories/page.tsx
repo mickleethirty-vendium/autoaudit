@@ -6,11 +6,7 @@ import {
   buildAdvisoryHubPath,
   buildModelCommonProblemsPath,
 } from "@/lib/seo/routes";
-import {
-  breadcrumbSchema,
-  faqSchema,
-  productSchema,
-} from "@/lib/seo/schema";
+import { breadcrumbSchema, faqSchema } from "@/lib/seo/schema";
 
 export const metadata: Metadata = {
   title: "MOT Advisory Guides | AutoAudit",
@@ -110,7 +106,7 @@ export default function MotAdvisoriesHubPage() {
   ]);
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-6">
+    <div className="mx-auto max-w-6xl px-4 py-6">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
@@ -118,10 +114,6 @@ export default function MotAdvisoriesHubPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema(faqs)) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema()) }}
       />
 
       <nav
@@ -272,6 +264,6 @@ export default function MotAdvisoriesHubPage() {
           </div>
         ))}
       </section>
-    </main>
+    </div>
   );
 }
