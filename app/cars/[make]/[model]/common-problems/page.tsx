@@ -16,7 +16,6 @@ import {
   articleSchema,
   breadcrumbSchema,
   faqSchema,
-  productSchema,
 } from "@/lib/seo/schema";
 
 type Props = {
@@ -499,7 +498,7 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
   });
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-6">
+    <div className="mx-auto max-w-5xl px-4 py-6">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
@@ -511,10 +510,6 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema(faqs)) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema()) }}
       />
 
       <nav
@@ -821,6 +816,6 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
           </div>
         ))}
       </section>
-    </main>
+    </div>
   );
 }
