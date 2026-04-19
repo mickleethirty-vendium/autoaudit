@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import {
   allMotAdvisoryTypes,
   getAdvisoryBySlug,
+  highPriorityModels,
   wave1Models,
 } from "@/lib/seo/data";
 import {
@@ -31,6 +32,12 @@ type ModelGuideCard = {
 };
 
 type AdvisoryGuideCard = {
+  href: string;
+  label: string;
+  description: string;
+};
+
+type RelatedRouteCard = {
   href: string;
   label: string;
   description: string;
@@ -101,16 +108,33 @@ function buildAdvisoryGuideCard(
   };
 }
 
+function matchesKeywords(
+  advisory: (typeof allMotAdvisoryTypes)[number],
+  keywords: string[]
+) {
+  const haystack = [
+    advisory.advisory_label,
+    advisory.advisory_slug,
+    advisory.category,
+    advisory.mot_section,
+    advisory.notes || "",
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  return keywords.some((keyword) => haystack.includes(keyword.toLowerCase()));
+}
+
 function getRelatedModelGuides(advisoryLabel: string) {
   const normalized = advisoryLabel.toLowerCase();
   const cards: ModelGuideCard[] = [];
   const usedFullSlugs = new Set<string>();
 
   const pushIfExists = (
-    matcher: (row: (typeof wave1Models)[number]) => boolean,
+    matcher: (row: (typeof highPriorityModels)[number]) => boolean,
     description: string
   ) => {
-    const match = wave1Models.find(
+    const match = highPriorityModels.find(
       (row) => !usedFullSlugs.has(row.full_slug) && matcher(row)
     );
 
@@ -126,16 +150,16 @@ function getRelatedModelGuides(advisoryLabel: string) {
       "A strong example of a high-volume used model where brake history matters"
     );
     pushIfExists(
-      (row) => row.make_slug === "audi" && row.model_slug === "a3",
-      "Useful if you are researching brake wear on a premium hatchback"
+      (row) => row.make_slug === "volkswagen" && row.model_slug === "golf",
+      "Useful if you are comparing brake wear on a mainstream used hatchback"
     );
     pushIfExists(
       (row) => row.make_slug === "bmw" && row.model_slug === "3-series",
       "See broader ownership risks and negotiation points"
     );
     pushIfExists(
-      (row) => row.make_slug === "audi" && row.model_slug === "a1",
-      "Helpful for buyers comparing brake-related warnings on smaller cars"
+      (row) => row.make_slug === "vauxhall" && row.model_slug === "corsa",
+      "Helpful for buyers checking common brake-related warnings on everyday cars"
     );
   } else if (
     normalized.includes("oil") ||
@@ -151,12 +175,12 @@ function getRelatedModelGuides(advisoryLabel: string) {
       "Read the broader used buying guide for a high-volume premium model"
     );
     pushIfExists(
-      (row) => row.make_slug === "audi" && row.model_slug === "a1",
-      "Helpful if you are comparing leak-related warnings on smaller cars"
+      (row) => row.make_slug === "volkswagen" && row.model_slug === "golf",
+      "Helpful for comparing leak-related warnings on a popular used hatchback"
     );
     pushIfExists(
-      (row) => row.make_slug === "ford" && row.model_slug === "fiesta",
-      "A useful benchmark for common used-car warning signs"
+      (row) => row.make_slug === "ford" && row.model_slug === "focus",
+      "A useful benchmark for common used-car engine warning signs"
     );
   } else if (
     normalized.includes("suspension") ||
@@ -169,38 +193,59 @@ function getRelatedModelGuides(advisoryLabel: string) {
       "Suspension and wear-related issues are common on urban-driven examples"
     );
     pushIfExists(
-      (row) => row.make_slug === "audi" && row.model_slug === "a1",
-      "Useful if you are comparing advisory patterns on smaller premium cars"
+      (row) => row.make_slug === "nissan" && row.model_slug === "qashqai",
+      "Useful if you are comparing advisory patterns on a popular family car"
     );
     pushIfExists(
-      (row) => row.make_slug === "bmw" && row.model_slug === "3-series",
+      (row) => row.make_slug === "kia" && row.model_slug === "sportage",
       "Helpful for broader context on wear, mileage and repair exposure"
     );
     pushIfExists(
-      (row) => row.make_slug === "audi" && row.model_slug === "a3",
-      "Read the wider buyer guide for a common used hatchback"
+      (row) => row.make_slug === "volkswagen" && row.model_slug === "golf",
+      "Read the wider buyer guide for a common used model"
+    );
+  } else if (
+    normalized.includes("tyre") ||
+    normalized.includes("wheel") ||
+    normalized.includes("alignment")
+  ) {
+    pushIfExists(
+      (row) => row.make_slug === "vauxhall" && row.model_slug === "corsa",
+      "Tyre wear and alignment issues often matter on hard-used everyday cars"
+    );
+    pushIfExists(
+      (row) => row.make_slug === "ford" && row.model_slug === "focus",
+      "Useful for comparing broader wear patterns on a popular hatchback"
+    );
+    pushIfExists(
+      (row) => row.make_slug === "nissan" && row.model_slug === "qashqai",
+      "Helpful where larger vehicles may show tyre and alignment-related wear"
+    );
+    pushIfExists(
+      (row) => row.make_slug === "volkswagen" && row.model_slug === "polo",
+      "A good comparison point for common smaller-car buying risks"
     );
   } else {
     pushIfExists(
-      (row) => row.make_slug === "audi" && row.model_slug === "a1",
-      "Read the used buying guide for a popular smaller premium hatchback"
+      (row) => row.make_slug === "volkswagen" && row.model_slug === "golf",
+      "See the wider used buying guide for a mainstream high-volume model"
     );
     pushIfExists(
-      (row) => row.make_slug === "audi" && row.model_slug === "a3",
-      "See broader reliability pointers and buyer warnings"
+      (row) => row.make_slug === "ford" && row.model_slug === "fiesta",
+      "A useful benchmark for common used-car buying risks"
     );
     pushIfExists(
       (row) => row.make_slug === "bmw" && row.model_slug === "3-series",
       "Helpful for understanding ownership risk on a popular used model"
     );
     pushIfExists(
-      (row) => row.make_slug === "ford" && row.model_slug === "fiesta",
-      "A useful benchmark for common used-car buying risks"
+      (row) => row.make_slug === "nissan" && row.model_slug === "qashqai",
+      "Useful if you are comparing broader family-car warning signs"
     );
   }
 
   if (cards.length < 4) {
-    for (const model of wave1Models) {
+    for (const model of highPriorityModels) {
       if (usedFullSlugs.has(model.full_slug)) continue;
 
       usedFullSlugs.add(model.full_slug);
@@ -219,22 +264,150 @@ function getRelatedModelGuides(advisoryLabel: string) {
 }
 
 function getRelatedAdvisoryGuides(currentAdvisorySlug: string) {
+  const current = getAdvisoryBySlug(currentAdvisorySlug);
+  if (!current) return [];
+
   const cards: AdvisoryGuideCard[] = [];
+  const usedSlugs = new Set<string>([currentAdvisorySlug]);
 
-  for (const advisory of allMotAdvisoryTypes) {
-    if (advisory.advisory_slug === currentAdvisorySlug) continue;
-
-    cards.push(
-      buildAdvisoryGuideCard(
-        advisory,
-        "Read another MOT advisory guide and compare the likely buyer impact"
-      )
+  const pushFirstMatch = (keywords: string[], description: string) => {
+    const match = allMotAdvisoryTypes.find(
+      (advisory) =>
+        !usedSlugs.has(advisory.advisory_slug) &&
+        matchesKeywords(advisory, keywords)
     );
 
-    if (cards.length === 4) break;
+    if (!match) return;
+
+    usedSlugs.add(match.advisory_slug);
+    cards.push(buildAdvisoryGuideCard(match, description));
+  };
+
+  const normalized = current.advisory_label.toLowerCase();
+
+  if (normalized.includes("brake")) {
+    pushFirstMatch(
+      ["brake", "pad", "disc"],
+      "Compare another brake-related advisory and its likely buyer impact"
+    );
+    pushFirstMatch(
+      ["tyre", "wheel", "alignment"],
+      "Tyre and brake wear often appear together on used cars"
+    );
+    pushFirstMatch(
+      ["suspension", "bush", "shock", "strut"],
+      "Suspension wear can sit alongside repeated braking and handling issues"
+    );
+    pushFirstMatch(
+      ["steering", "joint", "rack", "track rod"],
+      "Steering-related wear can affect safety, feel and negotiation"
+    );
+  } else if (
+    normalized.includes("oil") ||
+    normalized.includes("leak") ||
+    normalized.includes("engine")
+  ) {
+    pushFirstMatch(
+      ["oil", "leak", "engine"],
+      "Compare another engine or leak-related warning sign"
+    );
+    pushFirstMatch(
+      ["emission", "exhaust"],
+      "Engine issues can sometimes sit alongside exhaust or emissions warnings"
+    );
+    pushFirstMatch(
+      ["brake", "pad", "disc"],
+      "See another common advisory buyers often compare during research"
+    );
+    pushFirstMatch(
+      ["suspension", "bush", "shock", "strut"],
+      "Check another common wear-related advisory for context"
+    );
+  } else if (
+    normalized.includes("suspension") ||
+    normalized.includes("steering") ||
+    normalized.includes("bush") ||
+    normalized.includes("shock")
+  ) {
+    pushFirstMatch(
+      ["suspension", "bush", "shock", "strut"],
+      "Compare another suspension-related advisory"
+    );
+    pushFirstMatch(
+      ["steering", "joint", "rack", "track rod"],
+      "Steering and suspension wear often overlap in buyer research"
+    );
+    pushFirstMatch(
+      ["tyre", "wheel", "alignment"],
+      "Alignment and tyre wear can be linked to suspension condition"
+    );
+    pushFirstMatch(
+      ["brake", "pad", "disc"],
+      "Brake and handling issues are often reviewed together"
+    );
+  } else if (
+    normalized.includes("tyre") ||
+    normalized.includes("wheel") ||
+    normalized.includes("alignment")
+  ) {
+    pushFirstMatch(
+      ["tyre", "wheel", "alignment"],
+      "Compare another tyre or alignment-related advisory"
+    );
+    pushFirstMatch(
+      ["suspension", "bush", "shock", "strut"],
+      "Suspension wear can contribute to abnormal tyre wear"
+    );
+    pushFirstMatch(
+      ["steering", "joint", "rack", "track rod"],
+      "Steering condition often affects tyre wear and road feel"
+    );
+    pushFirstMatch(
+      ["brake", "pad", "disc"],
+      "Brake wear is another common cost item buyers often compare"
+    );
+  }
+
+  if (cards.length < 4) {
+    for (const advisory of allMotAdvisoryTypes) {
+      if (usedSlugs.has(advisory.advisory_slug)) continue;
+
+      usedSlugs.add(advisory.advisory_slug);
+      cards.push(
+        buildAdvisoryGuideCard(
+          advisory,
+          "Read another MOT advisory guide and compare the likely buyer impact"
+        )
+      );
+
+      if (cards.length === 4) break;
+    }
   }
 
   return cards;
+}
+
+function getRelatedRoutes(advisoryLabel: string): RelatedRouteCard[] {
+  return [
+    {
+      href: "/check-car-by-registration",
+      label: "Check the exact car by registration",
+      description:
+        "Move from a generic advisory explanation to vehicle-specific risk checks",
+    },
+    {
+      href: "/mot-advisories",
+      label: "Browse more MOT advisory guides",
+      description:
+        "Compare other advisory meanings, likely repair impact and negotiation value",
+    },
+    {
+      href: "/cars",
+      label: `Compare model-specific car guides`,
+      description:
+        "See how advisory warnings fit into wider used-car buying risk on popular models",
+    },
+  ];
 }
 
 export async function generateStaticParams() {
@@ -277,6 +450,7 @@ export default async function AdvisoryHubPage({ params }: Props) {
   const buyerGuidance = getBuyerGuidance(row.advisory_label);
   const relatedModelGuides = getRelatedModelGuides(row.advisory_label);
   const relatedAdvisoryGuides = getRelatedAdvisoryGuides(row.advisory_slug);
+  const relatedRoutes = getRelatedRoutes(row.advisory_label);
 
   const faqs = [
     {
@@ -405,32 +579,28 @@ export default async function AdvisoryHubPage({ params }: Props) {
 
       <section className="mt-6 rounded-2xl border bg-slate-50 p-4">
         <h2 className="text-lg font-semibold text-slate-900">
-          Browse more used car research
+          Continue your used car research
         </h2>
         <p className="mt-2 text-sm text-slate-700">
-          Explore more MOT advisory guides, compare with model-specific common
-          problem pages, or run a registration check on the exact car you are
-          considering.
+          Use this advisory page as one step in the buying journey: understand
+          the warning, compare model guides, then run a registration check on
+          the exact car.
         </p>
-        <div className="mt-4 flex flex-wrap gap-3">
-          <Link
-            href="/mot-advisories"
-            className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 transition hover:border-slate-400 hover:bg-slate-100"
-          >
-            Browse MOT advisory guides
-          </Link>
-          <Link
-            href="/cars"
-            className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 transition hover:border-slate-400 hover:bg-slate-100"
-          >
-            Browse car guides
-          </Link>
-          <Link
-            href="/check-car-by-registration"
-            className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 transition hover:border-slate-400 hover:bg-slate-100"
-          >
-            Check a car by registration
-          </Link>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          {relatedRoutes.map((route) => (
+            <Link
+              key={route.href}
+              href={route.href}
+              className="rounded-xl border border-slate-300 bg-white p-4 transition hover:border-slate-400 hover:bg-slate-100"
+            >
+              <h3 className="text-sm font-semibold text-slate-900">
+                {route.label}
+              </h3>
+              <p className="mt-1 text-sm text-slate-600">
+                {route.description}
+              </p>
+            </Link>
+          ))}
         </div>
       </section>
 
@@ -441,6 +611,23 @@ export default async function AdvisoryHubPage({ params }: Props) {
           MOT history report or a seller screenshot. The real question is not
           just what the advisory means in theory, but whether the exact car you
           are considering looks like a maintenance risk.
+        </p>
+        <p className="text-slate-700">
+          The next sensible step is usually to compare this warning with other{" "}
+          <Link
+            href="/mot-advisories"
+            className="font-medium underline underline-offset-2"
+          >
+            MOT advisory guides
+          </Link>{" "}
+          and then move on to a{" "}
+          <Link
+            href="/check-car-by-registration"
+            className="font-medium underline underline-offset-2"
+          >
+            registration-based check
+          </Link>{" "}
+          on the specific vehicle.
         </p>
       </section>
 
@@ -539,6 +726,44 @@ export default async function AdvisoryHubPage({ params }: Props) {
             Start free check
           </button>
         </form>
+      </section>
+
+      <section className="mt-10 space-y-4">
+        <h2 className="text-2xl font-semibold">Buyer research path</h2>
+        <p className="text-slate-700">
+          A sensible used car buying journey is usually: understand the MOT
+          warning, compare likely model-level risks, then run a registration
+          check on the exact vehicle before relying on seller reassurance alone.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Link
+            href="/mot-advisories"
+            className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
+          >
+            <h3 className="font-medium">Compare advisory meanings</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Read more MOT warning guides before deciding how serious this looks
+            </p>
+          </Link>
+          <Link
+            href="/cars"
+            className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
+          >
+            <h3 className="font-medium">Compare model problem guides</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              See how advisory warnings connect with broader ownership risks
+            </p>
+          </Link>
+          <Link
+            href="/check-car-by-registration"
+            className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
+          >
+            <h3 className="font-medium">Check the exact car</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Move from generic explanation to vehicle-specific risk checks
+            </p>
+          </Link>
+        </div>
       </section>
 
       <section className="mt-10 space-y-4">

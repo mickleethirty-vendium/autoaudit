@@ -3,8 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
+  allMakesModels,
   allMotAdvisoryTypes,
   getModelByParams,
+  highPriorityModels,
   wave1Models,
 } from "@/lib/seo/data";
 import {
@@ -32,6 +34,12 @@ type AdvisoryGuideCard = {
 };
 
 type RelatedModelGuideCard = {
+  href: string;
+  label: string;
+  description: string;
+};
+
+type RelatedRouteCard = {
   href: string;
   label: string;
   description: string;
@@ -387,30 +395,87 @@ function getRelatedModelGuides(
   currentMakeSlug: string,
   currentModelSlug: string
 ): RelatedModelGuideCard[] {
-  const sameMake = wave1Models.filter(
+  const sameMakePriority = allMakesModels.filter(
     (item) =>
       item.make_slug === currentMakeSlug &&
       item.model_slug !== currentModelSlug &&
-      (item.priority_tier === 1 || item.launch_wave === 1)
+      item.priority_tier <= 2
   );
 
-  const fallback = wave1Models.filter(
+  const sameMakeWave = wave1Models.filter(
+    (item) =>
+      item.make_slug === currentMakeSlug && item.model_slug !== currentModelSlug
+  );
+
+  const fallback = highPriorityModels.filter(
     (item) =>
       !(item.make_slug === currentMakeSlug &&
-        item.model_slug === currentModelSlug) &&
-      (item.priority_tier === 1 || item.launch_wave === 1)
+        item.model_slug === currentModelSlug)
   );
 
-  const selected = [...sameMake, ...fallback].slice(0, 4);
+  const selected: typeof allMakesModels = [];
+  const used = new Set<string>();
+
+  for (const item of [...sameMakePriority, ...sameMakeWave, ...fallback]) {
+    const key = `${item.make_slug}/${item.model_slug}`;
+    if (used.has(key)) continue;
+
+    used.add(key);
+    selected.push(item);
+
+    if (selected.length === 4) break;
+  }
 
   return selected.map((item) => ({
     href: buildModelCommonProblemsPath(item.make_slug, item.model_slug),
     label: `${item.make} ${item.model} common problems`,
     description:
       item.make_slug === currentMakeSlug
-        ? `See how other used ${item.make} models compare on common issues and buyer risk`
-        : `Compare this guide with another popular used car problem page`,
+        ? `See how another used ${item.make} model compares on common issues and buyer risk`
+        : `Compare this guide with another high-priority used car problem page`,
   }));
+}
+
+function getSameMakeGuides(
+  currentMakeSlug: string,
+  currentModelSlug: string
+): RelatedModelGuideCard[] {
+  return allMakesModels
+    .filter(
+      (item) =>
+        item.make_slug === currentMakeSlug &&
+        item.model_slug !== currentModelSlug &&
+        item.priority_tier <= 2
+    )
+    .slice(0, 4)
+    .map((item) => ({
+      href: buildModelCommonProblemsPath(item.make_slug, item.model_slug),
+      label: `${item.make} ${item.model} used buying guide`,
+      description: `Research another ${item.make} model before deciding which used car to buy`,
+    }));
+}
+
+function getRelatedRoutes(make: string, model: string): RelatedRouteCard[] {
+  return [
+    {
+      href: "/check-car-by-registration",
+      label: `Check a ${make} ${model} by registration`,
+      description:
+        "Run a free preview to see MOT history, repair risk and pricing context on the exact car",
+    },
+    {
+      href: "/cars",
+      label: "Browse all used car problem guides",
+      description:
+        "Compare other popular makes and models before narrowing down your shortlist",
+    },
+    {
+      href: "/mot-advisories",
+      label: "Browse MOT advisory explainers",
+      description:
+        "Understand the warning signs that often sit behind failed negotiations or risky used buys",
+    },
+  ];
 }
 
 export async function generateStaticParams() {
@@ -456,6 +521,7 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
   if (!row) notFound();
 
   const path = buildModelCommonProblemsPath(make, model);
+  const makeHubPath = `/cars/${row.make_slug}`;
   const issueBullets = getGenericIssueBullets(row.make, row.model);
   const buyerSummary = getBuyerSummary(row.make, row.model);
   const negotiationPoints = getNegotiationPoints(row.make, row.model);
@@ -464,6 +530,8 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
     row.make_slug,
     row.model_slug
   );
+  const sameMakeGuides = getSameMakeGuides(row.make_slug, row.model_slug);
+  const relatedRoutes = getRelatedRoutes(row.make, row.model);
   const usedBuyerVerdict = getUsedBuyerVerdict(row.make, row.model);
 
   const faqs = [
@@ -488,6 +556,7 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
   const breadcrumbs = breadcrumbSchema([
     { name: "Home", item: "/" },
     { name: "Cars", item: "/cars" },
+    { name: row.make, item: makeHubPath },
     { name: `${row.make} ${row.model}`, item: path },
   ]);
 
@@ -522,6 +591,10 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
         <span>/</span>
         <Link href="/cars" className="transition hover:text-slate-900">
           Cars
+        </Link>
+        <span>/</span>
+        <Link href={makeHubPath} className="transition hover:text-slate-900">
+          {row.make}
         </Link>
         <span>/</span>
         <span className="text-slate-900">
@@ -591,31 +664,28 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
 
       <section className="mt-6 rounded-2xl border bg-slate-50 p-4">
         <h2 className="text-lg font-semibold text-slate-900">
-          Browse more used car research
+          Continue your used car research
         </h2>
         <p className="mt-2 text-sm text-slate-700">
-          Explore other model problem guides, MOT advisory explainers, or run a
-          registration check on the exact car you are considering.
+          Use this page as one step in the buying journey: compare model guides,
+          understand MOT warning signs, then run a registration check on the
+          exact car.
         </p>
-        <div className="mt-4 flex flex-wrap gap-3">
-          <Link
-            href="/cars"
-            className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 transition hover:border-slate-400 hover:bg-slate-100"
-          >
-            Browse all car guides
-          </Link>
-          <Link
-            href="/mot-advisories"
-            className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 transition hover:border-slate-400 hover:bg-slate-100"
-          >
-            Browse MOT advisory guides
-          </Link>
-          <Link
-            href="/check-car-by-registration"
-            className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 transition hover:border-slate-400 hover:bg-slate-100"
-          >
-            Check a car by registration
-          </Link>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          {relatedRoutes.map((route) => (
+            <Link
+              key={route.href}
+              href={route.href}
+              className="rounded-xl border border-slate-300 bg-white p-4 transition hover:border-slate-400 hover:bg-slate-100"
+            >
+              <h3 className="text-sm font-semibold text-slate-900">
+                {route.label}
+              </h3>
+              <p className="mt-1 text-sm text-slate-600">
+                {route.description}
+              </p>
+            </Link>
+          ))}
         </div>
       </section>
 
@@ -628,6 +698,14 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
           already looking at a specific used car and want to know whether it is
           likely to become expensive, troublesome or overpriced. This page helps
           you spot the usual warning signs before you buy.
+        </p>
+        <p className="text-slate-700">
+          If you are still deciding between models, it also helps to compare
+          this guide with other <Link href={makeHubPath} className="font-medium underline underline-offset-2">{row.make}</Link> and{" "}
+          <Link href="/cars" className="font-medium underline underline-offset-2">
+            other popular used car guides
+          </Link>{" "}
+          before checking the exact vehicle.
         </p>
       </section>
 
@@ -693,6 +771,33 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
           ))}
         </ul>
       </section>
+
+      {sameMakeGuides.length > 0 ? (
+        <section className="mt-10 space-y-4">
+          <h2 className="text-2xl font-semibold">
+            More {row.make} used car guides
+          </h2>
+          <p className="text-slate-700">
+            If you are comparing similar cars from the same brand, these guides
+            help build a better picture of common buyer risks, likely weak
+            points and ownership patterns.
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {sameMakeGuides.map((guide) => (
+              <Link
+                key={guide.href}
+                href={guide.href}
+                className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
+              >
+                <h3 className="font-medium">{guide.label}</h3>
+                <p className="mt-1 text-sm text-slate-600">
+                  {guide.description}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="mt-10 space-y-4">
         <h2 className="text-2xl font-semibold">Related MOT advisory guides</h2>
@@ -781,6 +886,44 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
           pricing risk or signs of neglected maintenance. That is where an
           AutoAudit check becomes more useful than a generic article.
         </p>
+      </section>
+
+      <section className="mt-10 space-y-4">
+        <h2 className="text-2xl font-semibold">Buyer research path</h2>
+        <p className="text-slate-700">
+          A sensible used car buying journey is usually: compare a few model
+          guides, understand likely MOT warning signs, then run a registration
+          check on the exact vehicle before money changes hands.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Link
+            href="/cars"
+            className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
+          >
+            <h3 className="font-medium">Compare more model guides</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Explore other used car pages before narrowing your shortlist
+            </p>
+          </Link>
+          <Link
+            href="/mot-advisories"
+            className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
+          >
+            <h3 className="font-medium">Read MOT advisory explainers</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Learn what repeated advisories can mean before you buy
+            </p>
+          </Link>
+          <Link
+            href="/check-car-by-registration"
+            className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
+          >
+            <h3 className="font-medium">Check the exact car by registration</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Move from generic advice to vehicle-specific risk checks
+            </p>
+          </Link>
+        </div>
       </section>
 
       <section className="mt-10 space-y-4">
