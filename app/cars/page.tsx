@@ -6,11 +6,7 @@ import {
   buildAdvisoryHubPath,
   buildModelCommonProblemsPath,
 } from "@/lib/seo/routes";
-import {
-  breadcrumbSchema,
-  faqSchema,
-  productSchema,
-} from "@/lib/seo/schema";
+import { breadcrumbSchema, faqSchema } from "@/lib/seo/schema";
 
 export const metadata: Metadata = {
   title: "Common Car Problems by Make and Model | AutoAudit",
@@ -114,7 +110,7 @@ export default function CarsHubPage() {
   ]);
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-6">
+    <div className="mx-auto max-w-6xl px-4 py-6">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
@@ -122,10 +118,6 @@ export default function CarsHubPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema(faqs)) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema()) }}
       />
 
       <nav
@@ -276,6 +268,6 @@ export default function CarsHubPage() {
           </div>
         ))}
       </section>
-    </main>
+    </div>
   );
 }
