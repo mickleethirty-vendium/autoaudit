@@ -4,7 +4,7 @@ import {
   buildAdvisoryHubPath,
   buildModelCommonProblemsPath,
 } from "@/lib/seo/routes";
-import { allMotAdvisoryTypes, wave1Models } from "@/lib/seo/data";
+import { allMakesModels, allMotAdvisoryTypes, wave1Models } from "@/lib/seo/data";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
@@ -32,17 +32,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: absoluteUrl("/mot-advisories"),
       lastModified,
       changeFrequency: "weekly",
-      priority: 0.9,
+      priority: 0.88,
     },
   ];
 
-  const makeSlugs = [...new Set(wave1Models.map((row) => row.make_slug))];
+  const makeSlugs = [...new Set(allMakesModels.map((row) => row.make_slug))];
 
   const makePages: MetadataRoute.Sitemap = makeSlugs.map((makeSlug) => ({
     url: absoluteUrl(`/cars/${makeSlug}`),
     lastModified,
     changeFrequency: "weekly" as const,
-    priority: 0.8,
+    priority: 0.72,
   }));
 
   const modelPages: MetadataRoute.Sitemap = wave1Models.map((row) => ({
@@ -55,7 +55,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       row.priority_tier === 1 || row.launch_wave === 1
         ? 0.8
         : row.priority_tier === 2 || row.launch_wave === 2
-          ? 0.65
+          ? 0.66
           : 0.55,
   }));
 
@@ -64,7 +64,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: absoluteUrl(buildAdvisoryHubPath(row.advisory_slug)),
       lastModified,
       changeFrequency: "monthly" as const,
-      priority: 0.7,
+      priority: 0.68,
     })
   );
 
