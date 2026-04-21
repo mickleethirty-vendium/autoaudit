@@ -21,6 +21,21 @@ export const metadata: Metadata = {
       "Browse MOT advisory guides to understand what common advisory notes mean, why they matter, and how to check the exact car by registration before you buy.",
     url: absoluteUrl("/mot-advisories"),
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "MOT advisory guides | AutoAudit",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MOT Advisory Guides | AutoAudit",
+    description:
+      "Browse MOT advisory guides to understand what common advisory notes mean, why they matter, and how to check the exact car by registration before you buy.",
+    images: ["/og-image.png"],
   },
 };
 

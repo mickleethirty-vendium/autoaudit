@@ -500,16 +500,33 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = `${row.make} ${row.model} Common Problems – What to Check Before Buying Used | AutoAudit`;
   const description = `Read common problems, reliability pointers and used buyer warning signs for the ${row.make} ${row.model}, then check a specific car by registration.`;
   const path = buildModelCommonProblemsPath(make, model);
+  const canonicalUrl = absoluteUrl(path);
 
   return {
     title,
     description,
-    alternates: { canonical: absoluteUrl(path) },
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
       title,
       description,
-      url: absoluteUrl(path),
+      url: canonicalUrl,
       type: "article",
+      images: [
+        {
+          url: "/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: `${row.make} ${row.model} common problems | AutoAudit`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/og-image.png"],
     },
   };
 }
@@ -701,8 +718,18 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
         </p>
         <p className="text-slate-700">
           If you are still deciding between models, it also helps to compare
-          this guide with other <Link href={makeHubPath} className="font-medium underline underline-offset-2">{row.make}</Link> and{" "}
-          <Link href="/cars" className="font-medium underline underline-offset-2">
+          this guide with other{" "}
+          <Link
+            href={makeHubPath}
+            className="font-medium underline underline-offset-2"
+          >
+            {row.make}
+          </Link>{" "}
+          and{" "}
+          <Link
+            href="/cars"
+            className="font-medium underline underline-offset-2"
+          >
             other popular used car guides
           </Link>{" "}
           before checking the exact vehicle.

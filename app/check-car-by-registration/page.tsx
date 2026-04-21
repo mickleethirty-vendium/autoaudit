@@ -8,15 +8,33 @@ export const metadata: Metadata = {
   title: "Check a Used Car by Registration UK | AutoAudit",
   description:
     "Check a used car by registration in the UK. See MOT history, repair risk, price context and buyer warnings before you buy.",
+
   alternates: {
     canonical: absoluteUrl("/check-car-by-registration"),
   },
+
   openGraph: {
     title: "Check a Used Car by Registration UK | AutoAudit",
     description:
-      "Run a UK used car check by registration and see MOT history, repair risk, market value and buyer warnings.",
+      "Run a UK used car check by registration. See MOT history, repair risk, market value and buyer warnings before you buy.",
     url: absoluteUrl("/check-car-by-registration"),
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Check a used car by registration UK - AutoAudit",
+      },
+    ],
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Check a Used Car by Registration UK | AutoAudit",
+    description:
+      "Run a UK used car check by registration. See MOT history, repair risk, market value and buyer warnings before you buy.",
+    images: ["/og-image.png"],
   },
 };
 

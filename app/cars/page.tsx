@@ -21,6 +21,21 @@ export const metadata: Metadata = {
       "Browse common car problems by make and model in the UK, compare used car reliability patterns, and check a specific vehicle by registration before you buy.",
     url: absoluteUrl("/cars"),
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Common car problems by make and model | AutoAudit",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Common Car Problems UK by Make and Model | AutoAudit",
+    description:
+      "Browse common car problems by make and model in the UK, compare used car reliability patterns, and check a specific vehicle by registration before you buy.",
+    images: ["/og-image.png"],
   },
 };
 

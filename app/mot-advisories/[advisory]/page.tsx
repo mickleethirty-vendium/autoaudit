@@ -403,7 +403,7 @@ function getRelatedRoutes(advisoryLabel: string): RelatedRouteCard[] {
     },
     {
       href: "/cars",
-      label: `Compare model-specific car guides`,
+      label: "Compare model-specific car guides",
       description:
         "See how advisory warnings fit into wider used-car buying risk on popular models",
     },
@@ -421,21 +421,42 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { advisory } = await params;
   const row = getAdvisoryBySlug(advisory);
 
-  if (!row) return { title: "Not found | AutoAudit" };
+  if (!row) {
+    return {
+      title: "Not found | AutoAudit",
+    };
+  }
 
   const title = `${row.advisory_label} MOT Advisory Meaning | AutoAudit`;
   const description = `Understand what ${row.advisory_label} means on an MOT, why it matters, likely repair impact and how to check the exact car by registration.`;
   const path = buildAdvisoryHubPath(advisory);
+  const canonicalUrl = absoluteUrl(path);
 
   return {
     title,
     description,
-    alternates: { canonical: absoluteUrl(path) },
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
       title,
       description,
-      url: absoluteUrl(path),
+      url: canonicalUrl,
       type: "article",
+      images: [
+        {
+          url: "/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: `${row.advisory_label} MOT advisory meaning | AutoAudit`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/og-image.png"],
     },
   };
 }
