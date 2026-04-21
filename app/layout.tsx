@@ -12,7 +12,7 @@ import MobileMenu from "@/app/components/MobileMenu";
 export const metadata: Metadata = {
   metadataBase: new URL("https://autoaudit.uk"),
   title: {
-    default: "Used Car Check by Registration UK | Avoid Hidden Costs | AutoAudit",
+    default: "Used Car Check UK | Avoid Hidden Costs | AutoAudit",
     template: "%s | AutoAudit",
   },
   description: "Don’t overpay for your next used car",
