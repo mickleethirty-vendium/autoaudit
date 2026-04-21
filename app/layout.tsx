@@ -16,6 +16,35 @@ export const metadata: Metadata = {
     template: "%s | AutoAudit",
   },
   description: "Don’t overpay for your next used car",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Used Car Check UK | Avoid Hidden Costs | AutoAudit",
+    description: "Don’t overpay for your next used car",
+    url: "https://autoaudit.uk",
+    siteName: "AutoAudit",
+    locale: "en_GB",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "AutoAudit used car checks UK",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Used Car Check UK | Avoid Hidden Costs | AutoAudit",
+    description: "Don’t overpay for your next used car",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   icons: {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
