@@ -5,16 +5,16 @@ import { absoluteUrl } from "@/lib/seo/routes";
 import { breadcrumbSchema, faqSchema, productSchema } from "@/lib/seo/schema";
 
 export const metadata: Metadata = {
-  title: "Check a Car by Registration | AutoAudit",
+  title: "Check a Used Car by Registration UK | AutoAudit",
   description:
-    "Check a used car by registration to see MOT history, repair risk, market value and buyer warnings before you buy.",
+    "Check a used car by registration in the UK. See MOT history, repair risk, price context and buyer warnings before you buy.",
   alternates: {
     canonical: absoluteUrl("/check-car-by-registration"),
   },
   openGraph: {
-    title: "Check a Car by Registration | AutoAudit",
+    title: "Check a Used Car by Registration UK | AutoAudit",
     description:
-      "Run a UK car check by registration and see MOT history, repair risk and market value.",
+      "Run a UK used car check by registration and see MOT history, repair risk, market value and buyer warnings.",
     url: absoluteUrl("/check-car-by-registration"),
     type: "website",
   },
@@ -24,7 +24,7 @@ const faqs = [
   {
     question: "What do I see in the free preview?",
     answer:
-      "The free preview is designed to show a snapshot of risk, including repair exposure, pricing context and selected report highlights before you unlock the full report.",
+      "The free preview shows an initial snapshot of risk, including likely repair exposure, pricing context and selected report highlights before you decide whether to unlock the full report.",
   },
   {
     question: "What is included in the paid report?",
@@ -34,7 +34,17 @@ const faqs = [
   {
     question: "Do you offer HPI-style checks?",
     answer:
-      "Yes. AutoAudit offers a full bundle that adds finance, write-off and related history checks.",
+      "Yes. AutoAudit offers a full bundle that adds finance, write-off, stolen, mileage and related vehicle history checks.",
+  },
+  {
+    question: "Can I check a car before I view it?",
+    answer:
+      "Yes. Many buyers use AutoAudit before a viewing so they can spot likely issues, assess the price and decide whether the car is worth travelling to see.",
+  },
+  {
+    question: "Is this only for people already buying a specific car?",
+    answer:
+      "No. You can use the registration check when comparing shortlist cars as well. It can help you quickly rule out risky or overpriced options before you commit.",
   },
 ];
 
@@ -118,6 +128,13 @@ export default function CheckCarByRegistrationPage() {
               you hand over any money.
             </p>
 
+            <p className="mt-3 text-sm leading-6 text-slate-700">
+              If you already have the number plate, you already have enough to
+              start. AutoAudit helps used car buyers check the vehicle before a
+              viewing, before a deposit and before agreeing to a price that may
+              not reflect the real risk.
+            </p>
+
             <div className="mt-4 rounded-2xl border-2 border-slate-900 bg-slate-50 p-4">
               <h2 className="text-lg font-semibold sm:text-xl">
                 Enter the registration now
@@ -156,11 +173,18 @@ export default function CheckCarByRegistrationPage() {
       </section>
 
       <section className="mt-10 space-y-4">
-        <h2 className="text-2xl font-semibold">Why people land on this page</h2>
+        <h2 className="text-2xl font-semibold">Why buyers use a registration check</h2>
         <p className="text-slate-700">
-          Most buyers search for a car check when they are already looking at a
-          specific vehicle and want to know one thing: is this car likely to be
-          a mistake? AutoAudit helps answer that before you buy.
+          Most people land on this page when they are already looking at a
+          specific used car and want to answer one question quickly: does this
+          car look like a sensible buy, or is it more likely to become an
+          expensive mistake?
+        </p>
+        <p className="text-slate-700">
+          A seller can present a car well, but hidden costs, neglected
+          maintenance and repeat MOT issues are not always obvious from photos
+          or a short viewing. That is where a registration-based check becomes
+          useful.
         </p>
         <ul className="list-disc pl-6 text-slate-700">
           <li>Check whether the MOT history suggests repeat problems</li>
@@ -197,8 +221,35 @@ export default function CheckCarByRegistrationPage() {
           <div className="rounded-2xl border p-4">
             <h3 className="font-medium">Known issues and history checks</h3>
             <p className="mt-2 text-slate-700">
-              Highlight known model issues, plus finance and write-off checks on
-              the bundle plan.
+              Highlight known model issues, plus finance, write-off, stolen,
+              mileage and related checks on the bundle plan.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-10 space-y-4">
+        <h2 className="text-2xl font-semibold">Who this page is for</h2>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl border p-4">
+            <h3 className="font-medium">Buyers with a shortlist</h3>
+            <p className="mt-2 text-slate-700">
+              Compare cars more quickly and focus your time on the options that
+              look cleaner and better priced.
+            </p>
+          </div>
+          <div className="rounded-2xl border p-4">
+            <h3 className="font-medium">Buyers about to view a car</h3>
+            <p className="mt-2 text-slate-700">
+              Go into the viewing with a clearer idea of likely risk and the
+              questions worth asking the seller.
+            </p>
+          </div>
+          <div className="rounded-2xl border p-4">
+            <h3 className="font-medium">Buyers ready to negotiate</h3>
+            <p className="mt-2 text-slate-700">
+              Use the findings to support a lower offer or to walk away from a
+              bad-value car before it costs you more.
             </p>
           </div>
         </div>
@@ -268,7 +319,7 @@ export default function CheckCarByRegistrationPage() {
         <h2 className="text-2xl font-semibold">Popular reliability guides</h2>
         <p className="text-slate-700">
           Explore some of the most searched model reliability guides, then check
-          the exact car by registration.
+          the exact vehicle by registration once you narrow your shortlist.
         </p>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -289,6 +340,10 @@ export default function CheckCarByRegistrationPage() {
 
       <section className="mt-10 space-y-4">
         <h2 className="text-2xl font-semibold">Related checks and guides</h2>
+        <p className="text-slate-700">
+          You can also use AutoAudit to understand MOT warning signs and
+          research common issues before committing to a specific used car.
+        </p>
         <ul className="list-disc pl-6 text-slate-700">
           {advisoryGuides.map((guide) => (
             <li key={guide.href}>

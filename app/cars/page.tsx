@@ -9,16 +9,16 @@ import {
 import { breadcrumbSchema, faqSchema } from "@/lib/seo/schema";
 
 export const metadata: Metadata = {
-  title: "Common Car Problems by Make and Model | AutoAudit",
+  title: "Common Car Problems UK by Make and Model | AutoAudit",
   description:
-    "Browse common car problems by make and model, compare used car risk patterns, and check a specific vehicle by registration before you buy.",
+    "Browse common car problems by make and model in the UK, compare used car reliability patterns, and check a specific vehicle by registration before you buy.",
   alternates: {
     canonical: absoluteUrl("/cars"),
   },
   openGraph: {
-    title: "Common Car Problems by Make and Model | AutoAudit",
+    title: "Common Car Problems UK by Make and Model | AutoAudit",
     description:
-      "Browse common car problems by make and model, compare used car risk patterns, and check a specific vehicle by registration before you buy.",
+      "Browse common car problems by make and model in the UK, compare used car reliability patterns, and check a specific vehicle by registration before you buy.",
     url: absoluteUrl("/cars"),
     type: "website",
   },
@@ -90,7 +90,7 @@ export default function CarsHubPage() {
     {
       question: "What is this cars page for?",
       answer:
-        "This page helps you browse common car problems by make and model so you can research likely weak points before buying used.",
+        "This page helps you browse common car problems by make and model so you can research likely weak points, reliability themes and ownership risks before buying used.",
     },
     {
       question: "Does this replace checking a car by registration?",
@@ -101,6 +101,16 @@ export default function CarsHubPage() {
       question: "Why browse by make and model first?",
       answer:
         "Because it helps you spot common risk patterns, likely maintenance themes and areas to question before you commit to a viewing or purchase.",
+    },
+    {
+      question: "Can this help if I am comparing several cars?",
+      answer:
+        "Yes. These guides are useful when narrowing a shortlist because they help you compare common faults and reliability patterns across different makes and models.",
+    },
+    {
+      question: "What should I do after reading a model guide?",
+      answer:
+        "Once you have identified a car worth looking at, use the registration check to review MOT history, likely repair exposure and price context for the exact vehicle.",
     },
   ];
 
@@ -140,6 +150,12 @@ export default function CarsHubPage() {
           likely ownership risks and buying points worth checking before you
           commit.
         </p>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-700">
+          This page is designed for buyers researching reliability, comparing
+          shortlist vehicles and trying to understand where hidden used car
+          costs often come from. Use it to explore known faults by model, then
+          move to a registration check when you want to assess a specific car.
+        </p>
 
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
@@ -155,6 +171,23 @@ export default function CarsHubPage() {
             Browse MOT advisory guides
           </Link>
         </div>
+      </section>
+
+      <section className="mt-10 space-y-4">
+        <h2 className="text-2xl font-semibold">How to use this cars hub</h2>
+        <p className="text-slate-700">
+          Start by exploring the make and model pages most relevant to the cars
+          you are considering. Each guide is intended to help you understand the
+          kinds of problems that often matter to used buyers, from reliability
+          concerns to recurring weak points and ownership risk themes.
+        </p>
+        <p className="text-slate-700">
+          Once you find a car that still looks promising, move from model-level
+          research to the exact vehicle by using its registration. That is where
+          AutoAudit becomes more specific, helping you judge MOT history,
+          repair-cost exposure and price context for the actual car in front of
+          you.
+        </p>
       </section>
 
       <section className="mt-10 space-y-4">
@@ -181,7 +214,9 @@ export default function CarsHubPage() {
         <h2 className="text-2xl font-semibold">Popular MOT advisory guides</h2>
         <p className="text-slate-700">
           These advisory pages help explain the warning signs that often sit
-          alongside model-specific buying risks.
+          alongside model-specific buying risks. They are useful when you want
+          to understand what a recorded MOT issue may mean in practical buyer
+          terms.
         </p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {popularAdvisories.map((item) => (
@@ -200,13 +235,19 @@ export default function CarsHubPage() {
       <section className="mt-10 space-y-6">
         <h2 className="text-2xl font-semibold">Browse by make</h2>
         <p className="text-slate-700">
-          Explore model-level used car guides grouped by manufacturer.
+          Explore model-level used car guides grouped by manufacturer. This is a
+          useful way to compare known faults, reliability concerns and buyer
+          warnings across the makes you are considering.
         </p>
 
         <div className="space-y-6">
           {groupedModels.map((group) => (
             <section key={group.make} className="rounded-2xl border bg-white p-5">
               <h3 className="text-xl font-semibold">{group.make}</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-700">
+                Browse common problems and used car warning signs for popular{" "}
+                {group.make} models.
+              </p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {group.models.map((model) => (
                   <Link
@@ -257,6 +298,23 @@ export default function CarsHubPage() {
             Start free check
           </button>
         </form>
+      </section>
+
+      <section className="mt-10 space-y-4">
+        <h2 className="text-2xl font-semibold">Why model guides matter for used buyers</h2>
+        <p className="text-slate-700">
+          Used car buyers often start with a make or model they like, then work
+          backwards to understand whether there are recurring problems worth
+          watching for. A good guide does not replace an inspection, but it does
+          help you go into the buying process with better questions and more
+          realistic expectations.
+        </p>
+        <ul className="list-disc pl-6 text-slate-700">
+          <li>Understand likely weak points before you travel to view a car</li>
+          <li>Spot patterns that may explain future maintenance costs</li>
+          <li>Compare similar cars with a little more confidence</li>
+          <li>Move to a registration check once you find a serious option</li>
+        </ul>
       </section>
 
       <section className="mt-10 space-y-4">
