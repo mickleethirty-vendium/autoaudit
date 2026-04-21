@@ -36,13 +36,37 @@ export default function MobileMenu({
       {open ? (
         <div
           id="mobile-menu-panel"
-          className="absolute right-0 z-[60] mt-2 w-52 rounded-xl border border-slate-200 bg-white p-3 shadow-lg"
+          className="absolute right-0 z-[60] mt-2 w-56 rounded-xl border border-slate-200 bg-white p-3 shadow-lg"
         >
           <div className="mb-3">
             <DailyReportCountPill compact />
           </div>
 
           <div className="flex flex-col gap-3 text-sm text-slate-700">
+            <Link
+              href="/check-car-by-registration"
+              onClick={closeMenu}
+              className="hover:text-slate-900"
+            >
+              Check by registration
+            </Link>
+
+            <Link
+              href="/cars"
+              onClick={closeMenu}
+              className="hover:text-slate-900"
+            >
+              Common problems by make
+            </Link>
+
+            <Link
+              href="/mot-advisories"
+              onClick={closeMenu}
+              className="hover:text-slate-900"
+            >
+              MOT advisory guides
+            </Link>
+
             <Link
               href="/terms"
               onClick={closeMenu}
@@ -73,11 +97,11 @@ export default function MobileMenu({
                 onClick={closeMenu}
                 className="hover:text-slate-900"
               >
-                Dashboard
+                View saved reports
               </Link>
             ) : (
               <Link
-                href="/auth?mode=login"
+                href="/auth"
                 onClick={closeMenu}
                 className="hover:text-slate-900"
               >

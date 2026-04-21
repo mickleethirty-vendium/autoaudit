@@ -53,12 +53,15 @@ function AuthPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const searchMode = searchParams.get("mode") === "login" ? "login" : "signup";
-  const [mode, setMode] = useState<"login" | "signup">(searchMode);
+  const searchMode = searchParams.get("mode");
+  const resolvedMode: "login" | "signup" =
+    searchMode === "signup" ? "signup" : "login";
+
+  const [mode, setMode] = useState<"login" | "signup">(resolvedMode);
 
   useEffect(() => {
-    setMode(searchMode);
-  }, [searchMode]);
+    setMode(resolvedMode);
+  }, [resolvedMode]);
 
   const nextUrl = useMemo(
     () => getSafeNext(searchParams.get("next")),

@@ -1,4 +1,5 @@
 import "./globals.css";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { cookies } from "next/headers";
@@ -8,9 +9,17 @@ import LogoutButton from "@/app/components/LogoutButton";
 import DailyReportCountPill from "@/app/components/DailyReportCountPill";
 import MobileMenu from "@/app/components/MobileMenu";
 
-export const metadata = {
-  title: "AutoAudit",
+export const metadata: Metadata = {
+  metadataBase: new URL("https://autoaudit.uk"),
+  title: {
+    default: "Used Car Check by Registration UK | Avoid Hidden Costs | AutoAudit",
+    template: "%s | AutoAudit",
+  },
   description: "Don’t overpay for your next used car",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default async function RootLayout({
@@ -109,7 +118,7 @@ export default async function RootLayout({
                   </>
                 ) : (
                   <Link
-                    href="/auth?mode=login"
+                    href="/auth"
                     className="text-sm text-slate-600 hover:text-slate-900"
                   >
                     Sign in
@@ -128,7 +137,10 @@ export default async function RootLayout({
               <p>© {new Date().getFullYear()} AutoAudit. All rights reserved.</p>
 
               <div className="flex flex-wrap items-center gap-4">
-                <Link href="/check-car-by-registration" className="hover:text-slate-900">
+                <Link
+                  href="/check-car-by-registration"
+                  className="hover:text-slate-900"
+                >
                   Check by registration
                 </Link>
                 <Link href="/cars" className="hover:text-slate-900">

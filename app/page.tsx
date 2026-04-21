@@ -211,7 +211,7 @@ export default function HomePage() {
                   </Link>
 
                   <Link
-                    href="/check"
+                    href="/check-car-by-registration"
                     className="btn-outline w-full text-center sm:w-auto"
                   >
                     Start a new check
@@ -250,6 +250,14 @@ export default function HomePage() {
                 A clearer buying decision, faster
               </h2>
 
+              <p className="mt-3 text-sm leading-6 text-slate-700">
+                Buying a used car can be risky, especially when hidden faults,
+                repeat MoT advisories or poor value are easy to miss. AutoAudit
+                helps you know the risks before you buy a used car by turning a
+                registration into a fast, structured view of repair exposure,
+                red flags and price context.
+              </p>
+
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 <ChecklistItem text="Near-term repair exposure estimate" />
                 <ChecklistItem text="Detailed flagged findings" />
@@ -260,8 +268,8 @@ export default function HomePage() {
               </div>
 
               <div className="mt-4">
-                <Link href="/check" className="btn-primary">
-                  Start your check
+                <Link href="/check-car-by-registration" className="btn-primary">
+                  Check a used car by registration
                 </Link>
               </div>
             </div>
@@ -305,20 +313,149 @@ export default function HomePage() {
           </div>
         </section>
 
+        <section className="mx-auto mt-4 max-w-7xl px-3 sm:px-4">
+          <div className="rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+            <div className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-700">
+              How AutoAudit works
+            </div>
+
+            <h2 className="mt-3 text-xl font-extrabold tracking-tight text-slate-950">
+              Check first, then decide whether to proceed, negotiate or walk away
+            </h2>
+
+            <div className="mt-3 grid gap-4 lg:grid-cols-3">
+              <InfoBlock
+                title="Enter a registration"
+                text="Start with the number plate and we use it to build a fast used car risk check. This gives buyers an immediate starting point before spending more time, money or effort."
+              />
+              <InfoBlock
+                title="Review the snapshot"
+                text="See early warning signs such as likely repair exposure, price context and MoT-based concerns. This is designed to help you quickly spot cars that deserve closer inspection."
+              />
+              <InfoBlock
+                title="Unlock the deeper report"
+                text="Go further with detailed findings, advisory patterns, seller questions and optional vehicle history checks covering finance, write-off, stolen, mileage and keeper signals."
+              />
+            </div>
+
+            <p className="mt-4 text-sm leading-6 text-slate-700">
+              A clean-looking car can still hide recurring faults, neglected
+              maintenance and future repair bills. That is why AutoAudit focuses
+              on practical buying signals rather than glossy listings. The goal
+              is simple: help you avoid overpaying for a used car and spot the
+              risks before you commit.
+            </p>
+          </div>
+        </section>
+
+        <section className="mx-auto mt-4 max-w-7xl px-3 sm:px-4">
+          <div className="grid gap-3 lg:grid-cols-[1fr_1fr]">
+            <div className="rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+              <div className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-700">
+                What we check before you buy
+              </div>
+
+              <h2 className="mt-3 text-xl font-extrabold tracking-tight text-slate-950">
+                Better context for a used car buying decision
+              </h2>
+
+              <p className="mt-3 text-sm leading-6 text-slate-700">
+                AutoAudit is built to give buyers a clearer view of what sits
+                behind a registration. Instead of relying only on photos,
+                seller wording or surface condition, you can review signals that
+                point to hidden costs, repeated issues or poor buying value.
+              </p>
+
+              <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+                <li>
+                  Repair-cost exposure so you can understand whether a cheap car
+                  may become an expensive one.
+                </li>
+                <li>
+                  MoT advisory history to help identify recurring patterns,
+                  repeated neglect and warning signs that keep returning.
+                </li>
+                <li>
+                  Price-versus-market context so you can judge whether the
+                  asking price looks fair, optimistic or too high.
+                </li>
+                <li>
+                  Optional history checks for finance, write-off, stolen,
+                  mileage and keeper-related concerns.
+                </li>
+              </ul>
+
+              <p className="mt-4 text-sm leading-6 text-slate-700">
+                For buyers comparing several cars, this can save time by helping
+                you filter out poor options earlier and focus on vehicles worth
+                inspecting properly.
+              </p>
+            </div>
+
+            <div className="rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+              <div className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-700">
+                Browse buyer guides and advisory help
+              </div>
+
+              <h2 className="mt-3 text-xl font-extrabold tracking-tight text-slate-950">
+                Explore model problems and MoT advisory meanings
+              </h2>
+
+              <p className="mt-3 text-sm leading-6 text-slate-700">
+                If you are still researching, you can use AutoAudit’s content
+                pages to understand common faults before choosing a vehicle. Our
+                make and model pages help buyers explore recurring weak points,
+                while our advisory pages explain what common MoT advisories may
+                actually mean in real buying terms.
+              </p>
+
+              <div className="mt-4 grid gap-2">
+                <Link
+                  href="/cars"
+                  className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 transition hover:border-slate-300 hover:bg-white hover:text-slate-950"
+                >
+                  Browse common problems by make and model
+                </Link>
+
+                <Link
+                  href="/mot-advisories"
+                  className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 transition hover:border-slate-300 hover:bg-white hover:text-slate-950"
+                >
+                  Learn what MoT advisories can mean
+                </Link>
+
+                <Link
+                  href="/check-car-by-registration"
+                  className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 transition hover:border-slate-300 hover:bg-white hover:text-slate-950"
+                >
+                  Start a registration check
+                </Link>
+              </div>
+
+              <p className="mt-4 text-sm leading-6 text-slate-700">
+                Whether you already have a number plate or are still narrowing
+                down your shortlist, these pages help you research risk before
+                buying a used car.
+              </p>
+            </div>
+          </div>
+        </section>
+
         <section className="mx-auto mt-4 max-w-7xl px-3 pb-6 sm:px-4 sm:pb-8">
           <div className="rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
             <div className="text-sm font-semibold text-slate-950">
               Before you buy any used car
             </div>
-            <p className="mt-1.5 text-sm leading-5 text-slate-700">
-              Start with the reg. Get a fast snapshot. Then decide whether the
-              vehicle looks clean enough to proceed, negotiate harder, or walk
-              away.
+            <p className="mt-1.5 text-sm leading-6 text-slate-700">
+              Start with the registration. Get a fast snapshot. Then decide
+              whether the vehicle looks clean enough to move forward, whether
+              the price needs stronger negotiation, or whether the car shows too
+              many warning signs to be worth the risk.
             </p>
 
             <div className="mt-4 flex flex-col gap-2 sm:flex-row">
               <Link
-                href="/check"
+                href="/check-car-by-registration"
                 className="btn-primary w-full text-center sm:w-auto"
               >
                 Check a registration
@@ -389,6 +526,21 @@ function ChecklistItem({ text }: { text: string }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800">
       {text}
+    </div>
+  );
+}
+
+function InfoBlock({
+  title,
+  text,
+}: {
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <div className="text-sm font-bold text-slate-950">{title}</div>
+      <p className="mt-1.5 text-sm leading-6 text-slate-700">{text}</p>
     </div>
   );
 }
