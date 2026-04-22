@@ -51,6 +51,12 @@ type AdvisoryCard = {
   description: string;
 };
 
+type MakeCard = {
+  href: string;
+  label: string;
+  description: string;
+};
+
 function getPriorityModels(): ModelCard[] {
   const priorityRows = wave1Models
     .filter((row) => row.priority_tier === 1 || row.launch_wave === 1)
@@ -73,6 +79,31 @@ function getPopularAdvisories(): AdvisoryCard[] {
   }));
 }
 
+function getPopularMakes(): MakeCard[] {
+  const preferredMakeOrder = [
+    "ford",
+    "bmw",
+    "audi",
+    "volkswagen",
+    "vauxhall",
+    "toyota",
+  ];
+
+  const rowsByMake = new Map(
+    wave1Models.map((row) => [row.make_slug, row.make] as const)
+  );
+
+  return preferredMakeOrder
+    .filter((makeSlug) => rowsByMake.has(makeSlug))
+    .map((makeSlug) => ({
+      href: `/cars/${makeSlug}`,
+      label: rowsByMake.get(makeSlug) || makeSlug,
+      description: `Browse ${
+        rowsByMake.get(makeSlug) || makeSlug
+      } models and common used car problems.`,
+    }));
+}
+
 function getGroupedModels() {
   const priorityRows = wave1Models.filter(
     (row) => row.priority_tier === 1 || row.launch_wave === 1
@@ -90,6 +121,7 @@ function getGroupedModels() {
     .sort((a, b) => a[0].localeCompare(b[0]))
     .map(([make, rows]) => ({
       make,
+      makeSlug: rows[0]?.make_slug,
       models: rows
         .sort((a, b) => a.model.localeCompare(b.model))
         .slice(0, 12),
@@ -100,6 +132,7 @@ export default function CarsHubPage() {
   const priorityModels = getPriorityModels();
   const popularAdvisories = getPopularAdvisories();
   const groupedModels = getGroupedModels();
+  const popularMakes = getPopularMakes();
 
   const faqs = [
     {
@@ -171,6 +204,38 @@ export default function CarsHubPage() {
           costs often come from. Use it to explore known faults by model, then
           move to a registration check when you want to assess a specific car.
         </p>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-700">
+          Start by exploring popular makes such as{" "}
+          <Link
+            href="/cars/ford"
+            className="font-medium underline underline-offset-2"
+          >
+            Ford
+          </Link>
+          ,{" "}
+          <Link
+            href="/cars/bmw"
+            className="font-medium underline underline-offset-2"
+          >
+            BMW
+          </Link>
+          ,{" "}
+          <Link
+            href="/cars/volkswagen"
+            className="font-medium underline underline-offset-2"
+          >
+            Volkswagen
+          </Link>{" "}
+          and{" "}
+          <Link
+            href="/cars/audi"
+            className="font-medium underline underline-offset-2"
+          >
+            Audi
+          </Link>
+          , then drill into model-level guides before checking a specific car by
+          registration.
+        </p>
 
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
@@ -203,6 +268,37 @@ export default function CarsHubPage() {
           repair-cost exposure and price context for the actual car in front of
           you.
         </p>
+        <p className="text-slate-700">
+          Many of these issues first appear as{" "}
+          <Link
+            href="/mot-advisories"
+            className="font-medium underline underline-offset-2"
+          >
+            MOT advisories
+          </Link>
+          , which can help you spot early warning signs before buying.
+        </p>
+      </section>
+
+      <section className="mt-10 space-y-4">
+        <h2 className="text-2xl font-semibold">Popular makes</h2>
+        <p className="text-slate-700">
+          Start with high-volume manufacturers to compare common used car
+          problems and reliability patterns before narrowing your shortlist.
+        </p>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {popularMakes.map((make) => (
+            <Link
+              key={make.href}
+              href={make.href}
+              className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
+            >
+              <h3 className="font-medium">{make.label}</h3>
+              <p className="mt-1 text-sm text-slate-600">{make.description}</p>
+            </Link>
+          ))}
+        </div>
       </section>
 
       <section className="mt-10 space-y-4">
@@ -258,10 +354,31 @@ export default function CarsHubPage() {
         <div className="space-y-6">
           {groupedModels.map((group) => (
             <section key={group.make} className="rounded-2xl border bg-white p-5">
-              <h3 className="text-xl font-semibold">{group.make}</h3>
+              <h3 className="text-xl font-semibold">
+                {group.makeSlug ? (
+                  <Link
+                    href={`/cars/${group.makeSlug}`}
+                    className="transition hover:text-slate-700"
+                  >
+                    {group.make}
+                  </Link>
+                ) : (
+                  group.make
+                )}
+              </h3>
               <p className="mt-2 text-sm leading-6 text-slate-700">
                 Browse common problems and used car warning signs for popular{" "}
-                {group.make} models.
+                {group.makeSlug ? (
+                  <Link
+                    href={`/cars/${group.makeSlug}`}
+                    className="font-medium underline underline-offset-2"
+                  >
+                    {group.make}
+                  </Link>
+                ) : (
+                  group.make
+                )}{" "}
+                models.
               </p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {group.models.map((model) => (
@@ -279,6 +396,16 @@ export default function CarsHubPage() {
                   </Link>
                 ))}
               </div>
+              {group.makeSlug ? (
+                <div className="mt-4">
+                  <Link
+                    href={`/cars/${group.makeSlug}`}
+                    className="text-sm font-medium text-slate-700 underline underline-offset-2 hover:text-slate-900"
+                  >
+                    View all {group.make} guides
+                  </Link>
+                </div>
+              ) : null}
             </section>
           ))}
         </div>
@@ -316,7 +443,9 @@ export default function CarsHubPage() {
       </section>
 
       <section className="mt-10 space-y-4">
-        <h2 className="text-2xl font-semibold">Why model guides matter for used buyers</h2>
+        <h2 className="text-2xl font-semibold">
+          Why model guides matter for used buyers
+        </h2>
         <p className="text-slate-700">
           Used car buyers often start with a make or model they like, then work
           backwards to understand whether there are recurring problems worth

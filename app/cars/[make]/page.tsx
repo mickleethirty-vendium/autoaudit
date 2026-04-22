@@ -62,14 +62,25 @@ function getRelatedAdvisories(): AdvisoryCard[] {
 function getMakeIntro(makeName: string) {
   const normalized = makeName.toLowerCase();
 
-  if (["audi", "bmw", "mercedes-benz", "jaguar", "land rover", "volvo"].includes(normalized)) {
+  if (
+    ["audi", "bmw", "mercedes-benz", "jaguar", "land rover", "volvo"].includes(
+      normalized
+    )
+  ) {
     return `${makeName} buyers often care just as much about maintenance history and MOT patterns as they do about badge appeal. A tidy, well-maintained example can still be a good used buy, but neglected cars can become expensive quickly.`;
   }
 
   if (
-    ["ford", "vauxhall", "toyota", "hyundai", "kia", "renault", "peugeot", "nissan"].includes(
-      normalized
-    )
+    [
+      "ford",
+      "vauxhall",
+      "toyota",
+      "hyundai",
+      "kia",
+      "renault",
+      "peugeot",
+      "nissan",
+    ].includes(normalized)
   ) {
     return `${makeName} covers a wide mix of popular used cars, so the exact model, mileage and maintenance history matter more than the make name alone. This hub helps you compare common issues before checking a specific car by registration.`;
   }
@@ -99,18 +110,33 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = `${makeName} Common Problems by Model | AutoAudit`;
   const description = `Browse ${makeName} common problems by model, compare used car warning signs, and check a specific ${makeName} by registration before you buy.`;
   const path = `/cars/${make}`;
+  const canonicalUrl = absoluteUrl(path);
 
   return {
     title,
     description,
     alternates: {
-      canonical: absoluteUrl(path),
+      canonical: canonicalUrl,
     },
     openGraph: {
       title,
       description,
-      url: absoluteUrl(path),
+      url: canonicalUrl,
       type: "website",
+      images: [
+        {
+          url: "/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: `${makeName} common problems by model | AutoAudit`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/og-image.png"],
     },
   };
 }
@@ -125,6 +151,10 @@ export default async function MakeHubPage({ params }: Props) {
   const modelCards = getPriorityModels(make);
   const relatedAdvisories = getRelatedAdvisories();
   const intro = getMakeIntro(makeName);
+  const primaryModel = modelCards[0];
+  const secondaryModel = modelCards[1];
+  const primaryAdvisory = relatedAdvisories[0];
+  const secondaryAdvisory = relatedAdvisories[1];
 
   const faqs = [
     {
@@ -179,6 +209,17 @@ export default async function MakeHubPage({ params }: Props) {
           {makeName} common problems by model
         </h1>
         <p className="mt-4 max-w-3xl text-base text-slate-700">{intro}</p>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-700">
+          Use this make hub to compare likely weak points across popular{" "}
+          {makeName} models, then move from general research to a{" "}
+          <Link
+            href="/check-car-by-registration"
+            className="font-medium underline underline-offset-2"
+          >
+            registration-based vehicle check
+          </Link>{" "}
+          once you are looking at a specific car.
+        </p>
 
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
@@ -204,6 +245,33 @@ export default async function MakeHubPage({ params }: Props) {
           Compare common problems, likely weak points and used buyer warnings
           across the most relevant {makeName} models.
         </p>
+
+        {primaryModel ? (
+          <p className="text-slate-700">
+            Good starting points are usually guides such as{" "}
+            <Link
+              href={primaryModel.href}
+              className="font-medium underline underline-offset-2"
+            >
+              {primaryModel.label}
+            </Link>
+            {secondaryModel ? (
+              <>
+                {" "}
+                and{" "}
+                <Link
+                  href={secondaryModel.href}
+                  className="font-medium underline underline-offset-2"
+                >
+                  {secondaryModel.label}
+                </Link>
+              </>
+            ) : null}
+            , especially if you are narrowing a shortlist before checking the
+            exact car.
+          </p>
+        ) : null}
+
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {modelCards.map((item) => (
             <Link
@@ -231,6 +299,17 @@ export default async function MakeHubPage({ params }: Props) {
           comparing model guides can help you understand what issues are more
           likely to matter during a viewing or negotiation.
         </p>
+        <p className="text-slate-700">
+          It also helps to cross-reference model research with{" "}
+          <Link
+            href="/mot-advisories"
+            className="font-medium underline underline-offset-2"
+          >
+            MOT advisory guides
+          </Link>{" "}
+          so you can understand how issues first show up in real test history
+          before they become expensive ownership problems.
+        </p>
       </section>
 
       <section className="mt-10 space-y-4">
@@ -239,6 +318,34 @@ export default async function MakeHubPage({ params }: Props) {
           These MOT advisory pages help explain warning signs that often appear
           alongside common used car buying risks.
         </p>
+
+        {primaryAdvisory ? (
+          <p className="text-slate-700">
+            For example, issues covered in guides like{" "}
+            <Link
+              href={primaryAdvisory.href}
+              className="font-medium underline underline-offset-2"
+            >
+              {primaryAdvisory.label}
+            </Link>
+            {secondaryAdvisory ? (
+              <>
+                {" "}
+                and{" "}
+                <Link
+                  href={secondaryAdvisory.href}
+                  className="font-medium underline underline-offset-2"
+                >
+                  {secondaryAdvisory.label}
+                </Link>
+              </>
+            ) : null}
+            {" "}
+            can add useful context when you are deciding whether a used {makeName}{" "}
+            looks like a sensible buy.
+          </p>
+        ) : null}
+
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {relatedAdvisories.map((item) => (
             <Link
@@ -283,6 +390,45 @@ export default async function MakeHubPage({ params }: Props) {
             Start free check
           </button>
         </form>
+      </section>
+
+      <section className="mt-10 space-y-4">
+        <h2 className="text-2xl font-semibold">Buyer research path</h2>
+        <p className="text-slate-700">
+          A sensible used car buying journey is usually: compare make-level
+          guides, narrow down to a few models, understand likely MOT warning
+          signs, then run a registration check on the exact vehicle before money
+          changes hands.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Link
+            href="/cars"
+            className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
+          >
+            <h3 className="font-medium">Browse all makes</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Compare more used car guides across other manufacturers
+            </p>
+          </Link>
+          <Link
+            href="/mot-advisories"
+            className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
+          >
+            <h3 className="font-medium">Read MOT advisory explainers</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Learn what repeated advisories can mean before you buy
+            </p>
+          </Link>
+          <Link
+            href="/check-car-by-registration"
+            className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
+          >
+            <h3 className="font-medium">Check the exact car</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Move from model research to vehicle-specific risk checks
+            </p>
+          </Link>
+        </div>
       </section>
 
       <section className="mt-10 space-y-4">

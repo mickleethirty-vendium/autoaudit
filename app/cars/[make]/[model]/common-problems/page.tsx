@@ -550,6 +550,8 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
   const sameMakeGuides = getSameMakeGuides(row.make_slug, row.model_slug);
   const relatedRoutes = getRelatedRoutes(row.make, row.model);
   const usedBuyerVerdict = getUsedBuyerVerdict(row.make, row.model);
+  const primaryAdvisoryGuide = relatedAdvisoryGuides[0];
+  const secondaryAdvisoryGuide = relatedAdvisoryGuides[1];
 
   const faqs = [
     {
@@ -742,15 +744,48 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
         </h2>
         <p className="text-slate-700">
           Like many used cars, the {row.make} {row.model} can develop age and
-          mileage-related faults over time. These often show up first as MOT
-          advisories, repeat maintenance items or negotiation points during a
-          viewing.
+          mileage-related faults over time. These often show up first as{" "}
+          <Link
+            href="/mot-advisories"
+            className="font-medium underline underline-offset-2"
+          >
+            MOT advisories
+          </Link>
+          , repeat maintenance items or negotiation points during a viewing.
         </p>
         <ul className="list-disc pl-6 text-slate-700">
           {issueBullets.map((item) => (
             <li key={item}>{item}</li>
           ))}
         </ul>
+
+        {primaryAdvisoryGuide ? (
+          <p className="text-slate-700">
+            On many used {row.make} {row.model} examples, these problems first
+            surface through MOT history items such as{" "}
+            <Link
+              href={primaryAdvisoryGuide.href}
+              className="font-medium underline underline-offset-2"
+            >
+              {primaryAdvisoryGuide.label}
+            </Link>
+            {secondaryAdvisoryGuide ? (
+              <>
+                {" "}
+                or{" "}
+                <Link
+                  href={secondaryAdvisoryGuide.href}
+                  className="font-medium underline underline-offset-2"
+                >
+                  {secondaryAdvisoryGuide.label}
+                </Link>
+              </>
+            ) : null}
+            . Those advisory patterns can help you spot developing risk before
+            you buy.
+          </p>
+        ) : null}
+
         <p className="text-slate-700">
           That does not mean every {row.make} {row.model} is risky. It means the
           exact vehicle history matters much more than the badge alone.
@@ -797,6 +832,32 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
             <li key={item}>{item}</li>
           ))}
         </ul>
+        {primaryAdvisoryGuide ? (
+          <p className="text-slate-700">
+            It is also worth comparing the exact car’s MOT history against
+            guides such as{" "}
+            <Link
+              href={primaryAdvisoryGuide.href}
+              className="font-medium underline underline-offset-2"
+            >
+              {primaryAdvisoryGuide.label}
+            </Link>
+            {secondaryAdvisoryGuide ? (
+              <>
+                {" "}
+                and{" "}
+                <Link
+                  href={secondaryAdvisoryGuide.href}
+                  className="font-medium underline underline-offset-2"
+                >
+                  {secondaryAdvisoryGuide.label}
+                </Link>
+              </>
+            ) : null}
+            {" "}
+            before deciding how serious the warning signs really look.
+          </p>
+        ) : null}
       </section>
 
       {sameMakeGuides.length > 0 ? (
