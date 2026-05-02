@@ -236,6 +236,72 @@ function getUsedBuyerVerdict(make: string, model: string) {
   };
 }
 
+function getYearsToAvoidGuidance(make: string, model: string) {
+  return {
+    summary: `There is rarely one single ${make} ${model} year that every buyer should avoid. The safer approach is to treat neglected examples, repeated MOT advisory patterns and unusually cheap cars as the bigger warning signs.`,
+    bullets: [
+      `Avoid any ${make} ${model} with repeat MOT advisories that have not been resolved`,
+      "Be cautious of cars with long gaps in maintenance history or unclear servicing evidence",
+      "Watch for examples priced well below similar cars without a clear reason",
+      "Compare the exact car’s MOT history against the asking price before deciding",
+    ],
+  };
+}
+
+function getMostExpensiveFaults(make: string, model: string) {
+  const normalizedMake = make.toLowerCase();
+  const normalizedModel = model.toLowerCase();
+
+  if (
+    [
+      "audi",
+      "bmw",
+      "mercedes-benz",
+      "mercedes",
+      "jaguar",
+      "land rover",
+      "volvo",
+    ].includes(normalizedMake)
+  ) {
+    return [
+      "Suspension faults, worn bushes, shocks or control arms",
+      "Oil leaks, coolant leaks or engine bay seepage",
+      "Electrical faults, sensors, warning lights or module-related issues",
+      "Brake discs, pads and tyre replacement on higher-spec examples",
+    ];
+  }
+
+  if (
+    ["aygo", "fiesta", "corsa", "polo", "yaris", "micra", "clio"].includes(
+      normalizedModel
+    )
+  ) {
+    return [
+      "Clutch wear on town-driven manual examples",
+      "Brake discs, pads and tyres needing replacement together",
+      "Suspension knocks, drop links or worn bushes",
+      "Exhaust corrosion, oil leaks or age-related underbody issues",
+    ];
+  }
+
+  return [
+    "Suspension and steering wear that has been ignored across MOTs",
+    "Brake and tyre replacement if several consumables are due together",
+    "Oil leaks, coolant leaks or engine-related warning signs",
+    "Corrosion, exhaust issues or underbody deterioration on older cars",
+  ];
+}
+
+function getCommonMotFailureAreas(make: string, model: string) {
+  return [
+    `Brake wear or imbalance on used ${make} ${model} examples`,
+    "Tyre condition, tread depth, sidewall damage or uneven wear",
+    "Suspension wear, bushes, joints, springs or shock absorbers",
+    "Lights, electrical items, warning lamps and visibility issues",
+    "Oil leaks, exhaust condition or emissions-related warnings",
+  ];
+}
+
 function matchesKeywords(
   advisory: (typeof allMotAdvisoryTypes)[number],
   keywords: string[]
@@ -287,19 +353,19 @@ function getRelatedAdvisoryGuides(make: string, model: string) {
   if (["audi", "bmw", "mercedes-benz", "mercedes"].includes(normalizedMake)) {
     pushFirstMatch(
       ["oil", "leak", "engine"],
-      "Useful where engine bay seepage or leaks can become costly"
+      "Check whether oil leaks or engine-bay seepage could become an MOT fail or repair-cost risk"
     );
     pushFirstMatch(
       ["brake", "disc", "pad"],
-      "Brake advisories are common and can affect negotiation"
+      "Understand brake wear advisories before using them as a negotiation point"
     );
     pushFirstMatch(
       ["suspension", "bush", "shock", "strut"],
-      "Helpful for spotting age and mileage-related wear"
+      "See what suspension wear can mean for safety, repair cost and buyer risk"
     );
     pushFirstMatch(
-      ["electrical", "lamp", "wiring", "battery"],
-      "Understand what electrical warnings can imply"
+      ["tyre", "wheel", "alignment"],
+      "Check whether tyre wear points to alignment, suspension or usage problems"
     );
   } else if (
     ["a1", "a3", "fiesta", "corsa", "polo", "yaris", "micra", "aygo"].includes(
@@ -312,15 +378,15 @@ function getRelatedAdvisoryGuides(make: string, model: string) {
     );
     pushFirstMatch(
       ["tyre", "wheel", "alignment"],
-      "Helpful for spotting alignment or usage issues"
+      "Check whether tyre wear is just consumables or a sign of alignment problems"
     );
     pushFirstMatch(
       ["suspension", "drop link", "bush", "shock"],
-      "Useful for knocks, links and worn suspension components"
+      "Understand knocks, links and worn suspension components before buying"
     );
     pushFirstMatch(
-      ["exhaust", "corrosion", "emission"],
-      "Common on older cars and worth checking before purchase"
+      ["oil", "leak", "engine"],
+      "See when an oil leak is advisory-level and when it becomes more serious"
     );
   } else if (
     [
@@ -367,12 +433,21 @@ function getRelatedAdvisoryGuides(make: string, model: string) {
       "Check what suspension-related advisories usually signal"
     );
     pushFirstMatch(
-      ["steering", "joint", "rack", "track rod"],
-      "Learn what steering-related advisories can mean for safety"
+      ["tyre", "wheel", "alignment"],
+      "Compare tyre wear, tracking and alignment-related warning signs"
     );
   }
 
-  if (cards.length < 4) {
+  pushFirstMatch(
+    ["exhaust", "corrosion", "emission"],
+    "Check whether exhaust deterioration or corrosion could become a repair bill"
+  );
+  pushFirstMatch(
+    ["corrosion", "rust", "underseal", "underbody"],
+    "Understand corrosion and underbody warnings before trusting a used car"
+  );
+
+  if (cards.length < 6) {
     for (const advisory of allMotAdvisoryTypes) {
       if (usedSlugs.has(advisory.advisory_slug)) continue;
 
@@ -384,7 +459,7 @@ function getRelatedAdvisoryGuides(make: string, model: string) {
         )
       );
 
-      if (cards.length === 4) break;
+      if (cards.length === 6) break;
     }
   }
 
@@ -497,8 +572,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const title = `${row.make} ${row.model} Common Problems – What to Check Before Buying Used | AutoAudit`;
-  const description = `Read common problems, reliability pointers and used buyer warning signs for the ${row.make} ${row.model}, then check a specific car by registration.`;
+  const title = `${row.make} ${row.model} Common Problems (UK) – Faults, Costs & What to Check Before Buying`;
+  const description = `Discover common ${row.make} ${row.model} faults, UK repair-cost signals, reliability issues and MOT warning signs before you buy. Check the exact car by registration.`;
   const path = buildModelCommonProblemsPath(make, model);
   const canonicalUrl = absoluteUrl(path);
 
@@ -518,7 +593,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           url: "/og-image.png",
           width: 1200,
           height: 630,
-          alt: `${row.make} ${row.model} common problems | AutoAudit`,
+          alt: `${row.make} ${row.model} common problems, faults and used buyer risks | AutoAudit`,
         },
       ],
     },
@@ -550,6 +625,9 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
   const sameMakeGuides = getSameMakeGuides(row.make_slug, row.model_slug);
   const relatedRoutes = getRelatedRoutes(row.make, row.model);
   const usedBuyerVerdict = getUsedBuyerVerdict(row.make, row.model);
+  const yearsToAvoidGuidance = getYearsToAvoidGuidance(row.make, row.model);
+  const mostExpensiveFaults = getMostExpensiveFaults(row.make, row.model);
+  const commonMotFailureAreas = getCommonMotFailureAreas(row.make, row.model);
   const primaryAdvisoryGuide = relatedAdvisoryGuides[0];
   const secondaryAdvisoryGuide = relatedAdvisoryGuides[1];
 
@@ -557,6 +635,18 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
     {
       question: `Is the ${row.make} ${row.model} reliable?`,
       answer: `Reliability depends on age, maintenance history, mileage and MOT pattern. A well-maintained ${row.make} ${row.model} can be a better buy than a neglected example with a stronger reputation on paper.`,
+    },
+    {
+      question: `Which ${row.make} ${row.model} years should I avoid?`,
+      answer: `Rather than avoiding one year blindly, look for the exact ${row.make} ${row.model} with the weakest history. Repeated MOT advisories, unresolved defects, poor maintenance evidence and suspiciously low pricing are stronger warning signs than the year alone.`,
+    },
+    {
+      question: `What are the most expensive ${row.make} ${row.model} faults to watch for?`,
+      answer: `The most expensive risks are usually ignored suspension wear, oil or coolant leaks, electrical faults, corrosion and several consumable items such as brakes and tyres becoming due at the same time.`,
+    },
+    {
+      question: `What are common ${row.make} ${row.model} MOT failures?`,
+      answer: `Common MOT risk areas include brakes, tyres, suspension, lights, visibility issues, leaks, exhaust condition and emissions-related warnings. The exact pattern matters more than a single isolated advisory.`,
     },
     {
       question: `Should I check a ${row.make} ${row.model} by registration?`,
@@ -580,8 +670,8 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
   ]);
 
   const article = articleSchema({
-    headline: `${row.make} ${row.model} Common Problems – What to Check Before Buying Used`,
-    description: `Common problems, reliability pointers and buyer guidance for the ${row.make} ${row.model}.`,
+    headline: `${row.make} ${row.model} Common Problems (UK) – Faults, Costs & Buyer Risks`,
+    description: `Common faults, MOT warning signs, repair-cost risks and used buyer guidance for the ${row.make} ${row.model}.`,
     path,
   });
 
@@ -635,13 +725,13 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
 
           <div className="p-5 sm:p-6 lg:p-7">
             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              {row.make} {row.model} Common Problems
+              {row.make} {row.model} Common Problems (UK)
             </h1>
 
             <p className="mt-3 text-base text-slate-700">
-              Research the common problems, ownership risks and used-car warning
-              signs for the {row.make} {row.model}, then check the exact car by
-              registration before you commit.
+              Before buying a used {row.make} {row.model}, check the common
+              faults, MOT warning signs, reliability issues and repair-cost
+              risks that could turn a cheap car into an expensive one.
             </p>
 
             <div className="mt-4 rounded-2xl border-2 border-slate-900 bg-slate-50 p-4">
@@ -797,6 +887,100 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
         </p>
       </section>
 
+      <section className="mt-10 rounded-2xl border bg-slate-50 p-5">
+        <h2 className="text-2xl font-semibold">
+          Common MOT advisory patterns on the {row.make} {row.model}
+        </h2>
+        <p className="mt-3 text-slate-700">
+          When checking a used {row.make} {row.model}, pay close attention to
+          whether the same types of advisories appear more than once. A single
+          note may be minor, but repeated brake, tyre, suspension, oil leak,
+          exhaust or corrosion warnings can suggest delayed maintenance.
+        </p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {relatedAdvisoryGuides.map((guide) => (
+            <Link
+              key={guide.href}
+              href={guide.href}
+              className="rounded-xl border border-slate-300 bg-white p-4 transition hover:border-slate-400 hover:bg-slate-100"
+            >
+              <h3 className="text-sm font-semibold text-slate-900">
+                {guide.label}
+              </h3>
+              <p className="mt-1 text-sm text-slate-600">
+                {guide.description}
+              </p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-10 grid gap-4 lg:grid-cols-2">
+        <div className="rounded-2xl border bg-white p-5">
+          <h2 className="text-2xl font-semibold">
+            Which {row.make} {row.model} years should you avoid?
+          </h2>
+          <p className="mt-3 text-slate-700">{yearsToAvoidGuidance.summary}</p>
+          <ul className="mt-3 list-disc pl-6 text-slate-700">
+            {yearsToAvoidGuidance.bullets.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="rounded-2xl border bg-white p-5">
+          <h2 className="text-2xl font-semibold">
+            Most expensive {row.make} {row.model} faults
+          </h2>
+          <p className="mt-3 text-slate-700">
+            The biggest buying risk is usually not one small advisory. It is a
+            cluster of issues that suggests delayed maintenance or several
+            repair bills arriving close together.
+          </p>
+          <ul className="mt-3 list-disc pl-6 text-slate-700">
+            {mostExpensiveFaults.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section className="mt-10 grid gap-4 lg:grid-cols-2">
+        <div className="rounded-2xl border bg-white p-5">
+          <h2 className="text-2xl font-semibold">
+            Common {row.make} {row.model} MOT failures
+          </h2>
+          <p className="mt-3 text-slate-700">
+            MOT history is one of the clearest ways to spot whether a used{" "}
+            {row.make} {row.model} has been looked after properly. Look for
+            repeat themes rather than judging one test in isolation.
+          </p>
+          <ul className="mt-3 list-disc pl-6 text-slate-700">
+            {commonMotFailureAreas.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="rounded-2xl border bg-white p-5">
+          <h2 className="text-2xl font-semibold">
+            Is the {row.make} {row.model} reliable?
+          </h2>
+          <p className="mt-3 text-slate-700">
+            The {row.make} {row.model} can be reliable when it has been serviced
+            properly and previous advisories have been dealt with. A car with a
+            tidy MOT pattern, sensible mileage and clear maintenance evidence is
+            usually a better bet than a cheaper one with unresolved warning
+            signs.
+          </p>
+          <p className="mt-3 text-slate-700">
+            For buyers, reliability is less about the model name and more about
+            the exact registration, MOT history, mileage, price and visible
+            condition.
+          </p>
+        </div>
+      </section>
+
       <section className="mt-10 space-y-4">
         <h2 className="text-2xl font-semibold">Buyer summary</h2>
         <p className="text-slate-700">{buyerSummary}</p>
@@ -853,8 +1037,7 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
                   {secondaryAdvisoryGuide.label}
                 </Link>
               </>
-            ) : null}
-            {" "}
+            ) : null}{" "}
             before deciding how serious the warning signs really look.
           </p>
         ) : null}
@@ -886,29 +1069,6 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
           </div>
         </section>
       ) : null}
-
-      <section className="mt-10 space-y-4">
-        <h2 className="text-2xl font-semibold">Related MOT advisory guides</h2>
-        <p className="text-slate-700">
-          These advisory guides help explain the kinds of warning signs buyers
-          often see alongside common ownership issues on used {row.make}{" "}
-          {row.model} examples.
-        </p>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {relatedAdvisoryGuides.map((guide) => (
-            <Link
-              key={guide.href}
-              href={guide.href}
-              className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
-            >
-              <h3 className="font-medium">{guide.label}</h3>
-              <p className="mt-1 text-sm text-slate-600">
-                {guide.description}
-              </p>
-            </Link>
-          ))}
-        </div>
-      </section>
 
       <section className="mt-10 space-y-4">
         <h2 className="text-2xl font-semibold">Related model guides</h2>
