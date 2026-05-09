@@ -4,7 +4,11 @@ import {
   buildAdvisoryHubPath,
   buildModelCommonProblemsPath,
 } from "@/lib/seo/routes";
-import { allMakesModels, allMotAdvisoryTypes, wave1Models } from "@/lib/seo/data";
+import {
+  allMakesModels,
+  allMotAdvisoryTypes,
+  wave1Models,
+} from "@/lib/seo/data";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
@@ -34,6 +38,100 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.88,
     },
+
+    // 🔥 SCALE PAGES (BUDGET CLUSTER)
+    {
+      url: absoluteUrl("/best-cars-under-3000"),
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: absoluteUrl("/best-cars-under-5000"),
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.92,
+    },
+    {
+      url: absoluteUrl("/best-cars-under-7000"),
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: absoluteUrl("/best-cars-under-10000"),
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.93,
+    },
+    {
+      url: absoluteUrl("/best-cars-under-12000"),
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.89,
+    },
+    {
+      url: absoluteUrl("/best-cars-under-15000"),
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.91,
+    },
+    {
+      url: absoluteUrl("/best-cars-under-20000"),
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+
+    // 🔥 INTENT / AUDIENCE PAGES
+    {
+      url: absoluteUrl("/best-first-car-uk"),
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.92,
+    },
+    {
+      url: absoluteUrl("/best-used-cars-for-families-uk"),
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.91,
+    },
+    {
+      url: absoluteUrl("/cheap-cars-with-low-maintenance-costs-uk"),
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.89,
+    },
+    {
+      url: absoluteUrl("/best-cars-for-new-drivers-uk"),
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: absoluteUrl("/cheapest-cars-to-insure-uk"),
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: absoluteUrl("/small-cars-uk"),
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.88,
+    },
+    {
+      url: absoluteUrl("/reliable-used-cars-uk"),
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.88,
+    },
+    {
+      url: absoluteUrl("/family-cars-uk"),
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.88,
+    },
   ];
 
   const makeSlugs = [...new Set(allMakesModels.map((row) => row.make_slug))];
@@ -55,8 +153,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       row.priority_tier === 1 || row.launch_wave === 1
         ? 0.8
         : row.priority_tier === 2 || row.launch_wave === 2
-          ? 0.66
-          : 0.55,
+        ? 0.66
+        : 0.55,
   }));
 
   const advisoryPages: MetadataRoute.Sitemap = allMotAdvisoryTypes.map(

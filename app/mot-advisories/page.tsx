@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import HeroCtaTextPanel from "@/components/seo/HeroCtaTextPanel";
+import RegLookupCta from "@/components/seo/RegLookupCta";
 import { allMotAdvisoryTypes, wave1Models } from "@/lib/seo/data";
 import {
   absoluteUrl,
@@ -142,31 +144,33 @@ export default function MotAdvisoriesHubPage() {
         <span className="text-slate-900">MOT advisories</span>
       </nav>
 
-      <section className="rounded-3xl border bg-white p-6 shadow-sm sm:p-8">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-          MOT advisory guides
-        </h1>
-        <p className="mt-4 max-w-3xl text-base text-slate-700">
-          Browse common MOT advisory guides to understand what warning notes
-          mean, why buyers should care and when an issue may be worth
-          negotiating or investigating further.
-        </p>
-
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Link
-            href="/check-car-by-registration"
-            className="rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
-          >
-            Check a car by registration
-          </Link>
-          <Link
-            href="/cars"
-            className="rounded-full border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-400 hover:bg-slate-50"
-          >
-            Browse car guides
-          </Link>
-        </div>
-      </section>
+      <HeroCtaTextPanel
+        heroImageSrc="/hero-car-road.png"
+        heroAlt="MOT advisory guides"
+        title="MOT advisory guides"
+        subtitle="Used car buyer guide"
+        ctaComponent={
+          <RegLookupCta
+            title="Check the exact car by registration"
+            subtitle="See whether its MOT advisories are isolated, repeated or part of a bigger repair-risk pattern."
+            variant="light"
+          />
+        }
+        bodyContent={
+          <div className="space-y-3">
+            <p>
+              Browse common MOT advisory guides to understand what warning notes
+              mean, why buyers should care and when an issue may be worth
+              negotiating or investigating further.
+            </p>
+            <p>
+              Advisory guides are useful for context, but the real buying risk
+              depends on the exact car. Use the registration check once you are
+              looking at a specific vehicle.
+            </p>
+          </div>
+        }
+      />
 
       <section className="mt-10 space-y-4">
         <h2 className="text-2xl font-semibold">Popular MOT advisory guides</h2>
@@ -186,6 +190,24 @@ export default function MotAdvisoriesHubPage() {
             </Link>
           ))}
         </div>
+      </section>
+
+      <section className="mt-10 rounded-2xl border bg-slate-50 p-5">
+        <h2 className="text-2xl font-semibold">
+          How to use MOT advisories when buying a used car
+        </h2>
+        <p className="mt-3 text-slate-700">
+          An MOT advisory is not automatically a reason to walk away, but it is
+          a signal to look deeper. A single old advisory with repair evidence is
+          very different from the same warning appearing year after year with no
+          sign it was fixed.
+        </p>
+        <ul className="mt-3 list-disc pl-6 text-slate-700">
+          <li>Check whether the advisory appears once or repeatedly</li>
+          <li>Look for related warnings across the same MOT history</li>
+          <li>Ask the seller for repair invoices or proof of work</li>
+          <li>Use unresolved advisories as negotiation leverage</li>
+        </ul>
       </section>
 
       <section className="mt-10 space-y-4">
@@ -239,35 +261,50 @@ export default function MotAdvisoriesHubPage() {
         </div>
       </section>
 
-      <section className="mt-10 rounded-3xl border bg-slate-900 p-6 text-white">
-        <h2 className="text-2xl font-semibold">
-          Reading an advisory is useful. Checking the exact car is better.
+      <section className="mt-10 rounded-2xl border bg-slate-50 p-5">
+        <h2 className="text-xl font-semibold">
+          Advisory guides explain the wording. A registration check shows the
+          pattern.
         </h2>
-        <p className="mt-3 max-w-2xl text-slate-200">
-          An advisory guide can explain what a note usually means, but it cannot
-          tell you whether the exact car has repeated issues, suspicious gaps or
-          wider price risk. Use the registration check for that.
+        <p className="mt-2 text-slate-700">
+          The same advisory can be low risk on one car and a major warning sign
+          on another. What matters is whether it is repeated, whether related
+          issues appear nearby and whether the seller can prove the work has
+          been done. Use the checker above when you have a specific registration.
         </p>
+      </section>
 
-        <form
-          action="/check"
-          method="GET"
-          className="mt-5 flex flex-col gap-3 sm:flex-row"
-        >
-          <input
-            type="text"
-            name="registration"
-            placeholder="Enter registration"
-            required
-            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-base uppercase tracking-[0.2em] text-slate-900"
-          />
-          <button
-            type="submit"
-            className="rounded-xl bg-white px-6 py-3 text-base font-semibold text-slate-900"
+      <section className="mt-10 space-y-4">
+        <h2 className="text-2xl font-semibold">Buyer research path</h2>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Link
+            href="/cars"
+            className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
           >
-            Start free check
-          </button>
-        </form>
+            <h3 className="font-medium">Browse car problem guides</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Compare common problems by make and model
+            </p>
+          </Link>
+          <Link
+            href="/check-car-by-registration"
+            className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
+          >
+            <h3 className="font-medium">Check the exact car</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Move from advisory research to vehicle-specific risk checks
+            </p>
+          </Link>
+          <Link
+            href="/cars/ford"
+            className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
+          >
+            <h3 className="font-medium">Start with popular makes</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Explore high-volume used car guides
+            </p>
+          </Link>
+        </div>
       </section>
 
       <section className="mt-10 space-y-4">

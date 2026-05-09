@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import HeroCtaTextPanel from "@/components/seo/HeroCtaTextPanel";
+import RegLookupCta from "@/components/seo/RegLookupCta";
 import { allMotAdvisoryTypes, wave1Models } from "@/lib/seo/data";
 import {
   absoluteUrl,
@@ -204,38 +206,30 @@ export default async function MakeHubPage({ params }: Props) {
         <span className="text-slate-900">{makeName}</span>
       </nav>
 
-      <section className="rounded-3xl border bg-white p-6 shadow-sm sm:p-8">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-          {makeName} common problems by model
-        </h1>
-        <p className="mt-4 max-w-3xl text-base text-slate-700">{intro}</p>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-700">
-          Use this make hub to compare likely weak points across popular{" "}
-          {makeName} models, then move from general research to a{" "}
-          <Link
-            href="/check-car-by-registration"
-            className="font-medium underline underline-offset-2"
-          >
-            registration-based vehicle check
-          </Link>{" "}
-          once you are looking at a specific car.
-        </p>
-
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Link
-            href="/check-car-by-registration"
-            className="rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
-          >
-            Check a car by registration
-          </Link>
-          <Link
-            href="/mot-advisories"
-            className="rounded-full border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-400 hover:bg-slate-50"
-          >
-            Browse MOT advisory guides
-          </Link>
-        </div>
-      </section>
+      <HeroCtaTextPanel
+        heroImageSrc="/hero-car-road.png"
+        heroAlt={`${makeName} common problems by model`}
+        title={`${makeName} common problems by model`}
+        subtitle="Used car make hub"
+        ctaComponent={
+          <RegLookupCta
+            title={`Check a specific ${makeName} by registration`}
+            subtitle="See MOT history, recurring advisories and hidden repair-cost risks on the exact car before you buy."
+            variant="light"
+          />
+        }
+        bodyContent={
+          <div className="space-y-3">
+            <p>{intro}</p>
+            <p>
+              Use this make hub to compare likely weak points across popular{" "}
+              {makeName} models, then move from general research to a
+              registration-based vehicle check once you are looking at a
+              specific car.
+            </p>
+          </div>
+        }
+      />
 
       <section className="mt-10 space-y-4">
         <h2 className="text-2xl font-semibold">
@@ -339,10 +333,9 @@ export default async function MakeHubPage({ params }: Props) {
                   {secondaryAdvisory.label}
                 </Link>
               </>
-            ) : null}
-            {" "}
-            can add useful context when you are deciding whether a used {makeName}{" "}
-            looks like a sensible buy.
+            ) : null}{" "}
+            can add useful context when you are deciding whether a used{" "}
+            {makeName} looks like a sensible buy.
           </p>
         ) : null}
 
@@ -358,38 +351,6 @@ export default async function MakeHubPage({ params }: Props) {
             </Link>
           ))}
         </div>
-      </section>
-
-      <section className="mt-10 rounded-3xl border bg-slate-900 p-6 text-white">
-        <h2 className="text-2xl font-semibold">
-          Research is useful. Checking the exact {makeName} is better.
-        </h2>
-        <p className="mt-3 max-w-2xl text-slate-200">
-          Model guides can help you compare likely risks, but they cannot tell
-          you whether the exact {makeName} you are viewing has repeat
-          advisories, suspicious gaps or price risk. Use the registration check
-          for that.
-        </p>
-
-        <form
-          action="/check"
-          method="GET"
-          className="mt-5 flex flex-col gap-3 sm:flex-row"
-        >
-          <input
-            type="text"
-            name="registration"
-            placeholder={`Enter ${makeName} registration`}
-            required
-            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-base uppercase tracking-[0.2em] text-slate-900"
-          />
-          <button
-            type="submit"
-            className="rounded-xl bg-white px-6 py-3 text-base font-semibold text-slate-900"
-          >
-            Start free check
-          </button>
-        </form>
       </section>
 
       <section className="mt-10 space-y-4">

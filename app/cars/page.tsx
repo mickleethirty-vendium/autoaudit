@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import HeroCtaTextPanel from "@/components/seo/HeroCtaTextPanel";
+import RegLookupCta from "@/components/seo/RegLookupCta";
 import { wave1Models, allMotAdvisoryTypes } from "@/lib/seo/data";
 import {
   absoluteUrl,
@@ -189,69 +191,60 @@ export default function CarsHubPage() {
         <span className="text-slate-900">Cars</span>
       </nav>
 
-      <section className="rounded-3xl border bg-white p-6 shadow-sm sm:p-8">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-          Common car problems by make and model
-        </h1>
-        <p className="mt-4 max-w-3xl text-base text-slate-700">
-          Browse used car guides by make and model to see common warning signs,
-          likely ownership risks and buying points worth checking before you
-          commit.
-        </p>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-700">
-          This page is designed for buyers researching reliability, comparing
-          shortlist vehicles and trying to understand where hidden used car
-          costs often come from. Use it to explore known faults by model, then
-          move to a registration check when you want to assess a specific car.
-        </p>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-700">
-          Start by exploring popular makes such as{" "}
-          <Link
-            href="/cars/ford"
-            className="font-medium underline underline-offset-2"
-          >
-            Ford
-          </Link>
-          ,{" "}
-          <Link
-            href="/cars/bmw"
-            className="font-medium underline underline-offset-2"
-          >
-            BMW
-          </Link>
-          ,{" "}
-          <Link
-            href="/cars/volkswagen"
-            className="font-medium underline underline-offset-2"
-          >
-            Volkswagen
-          </Link>{" "}
-          and{" "}
-          <Link
-            href="/cars/audi"
-            className="font-medium underline underline-offset-2"
-          >
-            Audi
-          </Link>
-          , then drill into model-level guides before checking a specific car by
-          registration.
-        </p>
-
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Link
-            href="/check-car-by-registration"
-            className="rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
-          >
-            Check a car by registration
-          </Link>
-          <Link
-            href="/mot-advisories"
-            className="rounded-full border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-400 hover:bg-slate-50"
-          >
-            Browse MOT advisory guides
-          </Link>
-        </div>
-      </section>
+      <HeroCtaTextPanel
+        heroImageSrc="/hero-car-road.png"
+        heroAlt="Used cars lined up for comparison before buying"
+        subtitle="Used car buyer guides"
+        title="Common car problems by make and model"
+        ctaComponent={<RegLookupCta variant="light" />}
+        bodyContent={
+          <div className="space-y-3">
+            <p>
+              Browse used car guides by make and model to understand common
+              warning signs, likely ownership risks and buying points worth
+              checking before you commit.
+            </p>
+            <p>
+              Use this hub to research reliability patterns, compare shortlist
+              cars and spot where hidden used car costs often come from. When
+              you find a specific car worth viewing, check it by registration
+              for vehicle-level risk signals.
+            </p>
+            <p>
+              Start with popular makes such as{" "}
+              <Link
+                href="/cars/ford"
+                className="font-medium underline underline-offset-2"
+              >
+                Ford
+              </Link>
+              ,{" "}
+              <Link
+                href="/cars/bmw"
+                className="font-medium underline underline-offset-2"
+              >
+                BMW
+              </Link>
+              ,{" "}
+              <Link
+                href="/cars/volkswagen"
+                className="font-medium underline underline-offset-2"
+              >
+                Volkswagen
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/cars/audi"
+                className="font-medium underline underline-offset-2"
+              >
+                Audi
+              </Link>
+              , then drill into model-level guides before checking the exact car
+              by registration.
+            </p>
+          </div>
+        }
+      />
 
       <section className="mt-10 space-y-4">
         <h2 className="text-2xl font-semibold">How to use this cars hub</h2>
@@ -409,37 +402,6 @@ export default function CarsHubPage() {
             </section>
           ))}
         </div>
-      </section>
-
-      <section className="mt-10 rounded-3xl border bg-slate-900 p-6 text-white">
-        <h2 className="text-2xl font-semibold">
-          Research is useful. Checking the exact car is better.
-        </h2>
-        <p className="mt-3 max-w-2xl text-slate-200">
-          Model guides can help you understand typical risks, but they cannot
-          tell you whether the exact car you are viewing has repeat advisories,
-          suspicious gaps or price risk. Use the registration check for that.
-        </p>
-
-        <form
-          action="/check"
-          method="GET"
-          className="mt-5 flex flex-col gap-3 sm:flex-row"
-        >
-          <input
-            type="text"
-            name="registration"
-            placeholder="Enter registration"
-            required
-            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-base uppercase tracking-[0.2em] text-slate-900"
-          />
-          <button
-            type="submit"
-            className="rounded-xl bg-white px-6 py-3 text-base font-semibold text-slate-900"
-          >
-            Start free check
-          </button>
-        </form>
       </section>
 
       <section className="mt-10 space-y-4">
