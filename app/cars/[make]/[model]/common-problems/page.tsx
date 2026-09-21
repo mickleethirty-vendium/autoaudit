@@ -11,8 +11,11 @@ import {
 import {
   absoluteUrl,
   buildAdvisoryHubPath,
+  buildMakeHubPath,
   buildModelCommonProblemsPath,
+  buildModelHubPath,
 } from "@/lib/seo/routes";
+import { breadcrumbSchema } from "@/lib/seo/schema";
 
 type Props = {
   params: Promise<{
@@ -120,7 +123,9 @@ function getGenericIssueBullets(make: string, model: string) {
 
 function getRelatedModels(makeSlug: string, modelSlug: string): RelatedModel[] {
   return wave1Models
-    .filter((item) => item.make_slug === makeSlug && item.model_slug !== modelSlug)
+    .filter(
+      (item) => item.make_slug === makeSlug && item.model_slug !== modelSlug,
+    )
     .sort((a, b) => {
       const aPriority = a.priority_tier === 1 || a.launch_wave === 1 ? 0 : 1;
       const bPriority = b.priority_tier === 1 || b.launch_wave === 1 ? 0 : 1;
@@ -131,10 +136,10 @@ function getRelatedModels(makeSlug: string, modelSlug: string): RelatedModel[] {
     })
     .slice(0, 6)
     .map((item) => ({
-      href: buildModelCommonProblemsPath(item.make_slug, item.model_slug),
-      label: `${item.make} ${item.model} common problems`,
+      href: buildModelHubPath(item.make_slug, item.model_slug),
+      label: `${item.make} ${item.model} used buying guide`,
       description:
-        "Compare another model from the same make before narrowing your shortlist.",
+        "Compare reliability, common problems and MOT risk for another model from the same make.",
     }));
 }
 
@@ -203,20 +208,59 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
 
   if (!row) notFound();
 
+  const modelName = `${row.make} ${row.model}`;
+  const makeHubPath = buildMakeHubPath(row.make_slug);
+  const modelHubPath = buildModelHubPath(row.make_slug, row.model_slug);
   const issueBullets = getGenericIssueBullets(row.make, row.model);
   const relatedModels = getRelatedModels(row.make_slug, row.model_slug);
   const relatedAdvisories = getRelatedAdvisories();
 
+  const breadcrumbs = breadcrumbSchema([
+    { name: "Home", item: "/" },
+    { name: "Cars", item: "/cars" },
+    { name: row.make, item: makeHubPath },
+    { name: row.model, item: modelHubPath },
+    { name: "Common problems", item: buildModelCommonProblemsPath(row.make_slug, row.model_slug) },
+  ]);
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
+      />
+
+      <nav
+        aria-label="Breadcrumb"
+        className="mb-6 flex flex-wrap items-center gap-2 text-sm text-slate-600"
+      >
+        <Link href="/" className="transition hover:text-slate-900">
+          Home
+        </Link>
+        <span>/</span>
+        <Link href="/cars" className="transition hover:text-slate-900">
+          Cars
+        </Link>
+        <span>/</span>
+        <Link href={makeHubPath} className="transition hover:text-slate-900">
+          {row.make}
+        </Link>
+        <span>/</span>
+        <Link href={modelHubPath} className="transition hover:text-slate-900">
+          {row.model}
+        </Link>
+        <span>/</span>
+        <span className="text-slate-900">Common problems</span>
+      </nav>
+
       <HeroCtaTextPanel
         heroImageSrc="/hero-car-road.png"
-        heroAlt={`${row.make} ${row.model} common problems`}
-        title={`${row.make} ${row.model} Common Problems`}
+        heroAlt={`${modelName} common problems`}
+        title={`${modelName} Common Problems`}
         subtitle="Used car buyer guide"
         ctaComponent={
           <RegLookupCta
-            title={`Check this ${row.make} ${row.model} before you buy`}
+            title={`Check this ${modelName} before you buy`}
             subtitle="See MOT history, recurring advisories and hidden repair-cost risks for the exact car you’re considering."
             variant="light"
           />
@@ -224,14 +268,24 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
         bodyContent={
           <div className="space-y-3">
             <p>
-              If you’re considering a used {row.make} {row.model}, understanding
-              the most common faults and MOT warning signs can help you avoid
-              expensive surprises.
+              If you’re considering a used {modelName}, understanding the most
+              common faults and MOT warning signs can help you avoid expensive
+              surprises.
             </p>
             <p>
               This guide highlights typical issues, repair-cost risks and
               patterns seen across MOT history — but the most important step is
               checking the exact car you’re about to buy.
+            </p>
+            <p>
+              For a broader overview, start with the{" "}
+              <Link
+                href={modelHubPath}
+                className="font-medium underline underline-offset-2"
+              >
+                {modelName} used buying guide
+              </Link>
+              .
             </p>
           </div>
         }
@@ -239,13 +293,13 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
 
       <section className="mt-10 space-y-4">
         <h2 className="text-2xl font-semibold">
-          Common {row.make} {row.model} problems
+          Common {modelName} problems
         </h2>
 
         <p className="text-slate-700">
-          Like many used cars, the {row.make} {row.model} tends to develop
-          certain patterns of wear and faults over time. These often show up
-          first as MOT advisories before becoming more serious issues.
+          Like many used cars, the {modelName} tends to develop certain patterns
+          of wear and faults over time. These often show up first as MOT
+          advisories before becoming more serious issues.
         </p>
 
         <ul className="list-disc pl-6 text-slate-700">
@@ -253,6 +307,24 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
             <li key={item}>{item}</li>
           ))}
         </ul>
+      </section>
+
+      <section className="mt-10 rounded-2xl border bg-slate-50 p-5">
+        <h2 className="text-xl font-semibold">
+          Check whether the car already shows these warning signs
+        </h2>
+        <p className="mt-2 text-slate-700">
+          General common-problem guides help you know what to look for. A
+          registration check helps show whether the actual {modelName} you are
+          considering has repeated advisories, mileage concerns or repair-risk
+          signals in its own history.
+        </p>
+        <div className="mt-4">
+          <RegLookupCta
+            title={`Run a ${modelName} registration check`}
+            subtitle="Check the actual vehicle before you arrange a viewing, leave a deposit or agree a price."
+          />
+        </div>
       </section>
 
       <section className="mt-10 space-y-4">
@@ -265,9 +337,9 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
         </p>
 
         <p className="text-slate-700">
-          When viewing a used {row.make} {row.model}, always compare the asking
-          price with the condition, MOT history and whether these common issues
-          have already been addressed.
+          When viewing a used {modelName}, always compare the asking price with
+          the condition, MOT history and whether these common issues have already
+          been addressed.
         </p>
       </section>
 
@@ -277,9 +349,9 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
             Compare other {row.make} model guides
           </h2>
           <p className="text-slate-700">
-            If you are still building a shortlist, compare the {row.make}{" "}
-            {row.model} with other {row.make} models before checking the exact
-            car by registration.
+            If you are still building a shortlist, compare the {modelName} with
+            other {row.make} models before checking the exact car by
+            registration.
           </p>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -321,15 +393,22 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
         </div>
       </section>
 
-      <section className="mt-10 rounded-2xl border bg-slate-50 p-5">
+      <section className="mt-10 rounded-2xl border bg-slate-950 p-5 text-white">
         <h2 className="text-xl font-semibold">
-          Ready to check a specific {row.make} {row.model}?
+          Ready to check a specific {modelName}?
         </h2>
-        <p className="mt-2 text-slate-700">
+        <p className="mt-2 text-slate-200">
           Model guides are useful for research, but the exact registration tells
-          you far more about the car in front of you. Use the checker above to
-          review MOT history, advisory patterns and vehicle-specific risk.
+          you far more about the car in front of you. Use AutoAudit to review
+          MOT history, advisory patterns and vehicle-specific risk.
         </p>
+        <div className="mt-4">
+          <RegLookupCta
+            title={`Check this ${modelName} by registration`}
+            subtitle="Get a clearer view of the exact car before you commit."
+            variant="dark"
+          />
+        </div>
       </section>
     </div>
   );

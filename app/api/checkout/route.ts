@@ -14,8 +14,7 @@ function mustGetEnv(name: string) {
 
 function appUrl() {
   const explicit =
-    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
-    process.env.APP_URL?.trim();
+    process.env.NEXT_PUBLIC_APP_URL?.trim() || process.env.APP_URL?.trim();
 
   if (explicit) {
     return explicit.replace(/\/+$/, "");
@@ -59,20 +58,20 @@ function getStripePriceIdForTier(tier: CheckoutTier) {
   if (tier === "hpi_upgrade") {
     return assertValidStripePriceId(
       mustGetEnv("STRIPE_HPI_UPGRADE_PRICE_ID"),
-      "STRIPE_HPI_UPGRADE_PRICE_ID"
+      "STRIPE_HPI_UPGRADE_PRICE_ID",
     );
   }
 
   if (tier === "report_plus_hpi") {
     return assertValidStripePriceId(
       mustGetEnv("STRIPE_REPORT_PLUS_HPI_PRICE_ID"),
-      "STRIPE_REPORT_PLUS_HPI_PRICE_ID"
+      "STRIPE_REPORT_PLUS_HPI_PRICE_ID",
     );
   }
 
   return assertValidStripePriceId(
     mustGetEnv("STRIPE_REPORT_PRICE_ID"),
-    "STRIPE_REPORT_PRICE_ID"
+    "STRIPE_REPORT_PRICE_ID",
   );
 }
 
@@ -80,8 +79,8 @@ function getSuccessUrl(reportId: string, tier: CheckoutTier) {
   return `${appUrl()}/report/${reportId}?session_id={CHECKOUT_SESSION_ID}&tier=${tier}`;
 }
 
-function getCancelUrl(reportId: string) {
-  return `${appUrl()}/report/${reportId}`;
+function getCancelUrl(reportId: string, tier: CheckoutTier) {
+  return `${appUrl()}/preview/${reportId}?checkout_cancelled=1&tier=${tier}`;
 }
 
 function getProductName(tier: CheckoutTier) {
@@ -90,15 +89,32 @@ function getProductName(tier: CheckoutTier) {
   return "Core Report";
 }
 
+function getFunnelProductKey(tier: CheckoutTier) {
+  if (tier === "hpi_upgrade") return "hpi_upgrade";
+  if (tier === "report_plus_hpi") return "full_bundle";
+  return "core_report";
+}
+
 function getUnlockFlags(tier: CheckoutTier) {
   return {
     unlock_report:
       tier === "report" ||
       tier === "hpi_upgrade" ||
       tier === "report_plus_hpi",
-    unlock_hpi:
-      tier === "hpi_upgrade" || tier === "report_plus_hpi",
+    unlock_hpi: tier === "hpi_upgrade" || tier === "report_plus_hpi",
   };
+}
+
+function parseSource(value: string | null) {
+  const cleaned = value?.trim().toLowerCase();
+
+  if (!cleaned) return "unknown";
+  if (cleaned === "preview") return "preview";
+  if (cleaned === "report") return "report";
+  if (cleaned === "sample_report") return "sample_report";
+  if (cleaned === "pricing") return "pricing";
+
+  return "unknown";
 }
 
 export async function GET(req: NextRequest) {
@@ -106,18 +122,21 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const reportId = searchParams.get("report_id")?.trim() ?? null;
     const tier = parseTier(searchParams.get("tier"));
+    const source = parseSource(searchParams.get("source"));
 
     if (!isLikelyValidReportId(reportId)) {
       return NextResponse.json(
         { error: "Missing or invalid report_id" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const successUrl = getSuccessUrl(reportId, tier);
-    const cancelUrl = getCancelUrl(reportId);
+    const cancelUrl = getCancelUrl(reportId, tier);
     const priceId = getStripePriceIdForTier(tier);
     const flags = getUnlockFlags(tier);
+    const productName = getProductName(tier);
+    const funnelProductKey = getFunnelProductKey(tier);
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -133,7 +152,9 @@ export async function GET(req: NextRequest) {
       metadata: {
         report_id: reportId,
         checkout_tier: tier,
-        product_name: getProductName(tier),
+        product_name: productName,
+        funnel_product_key: funnelProductKey,
+        checkout_source: source,
         unlock_report: String(flags.unlock_report),
         unlock_hpi: String(flags.unlock_hpi),
       },
@@ -143,12 +164,13 @@ export async function GET(req: NextRequest) {
       console.error("Stripe checkout session created without URL", {
         reportId,
         tier,
+        source,
         sessionId: session.id,
       });
 
       return NextResponse.json(
         { error: "Failed to create Stripe checkout session" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -163,7 +185,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(
       { error: "Unable to start checkout" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

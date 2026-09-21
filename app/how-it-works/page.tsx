@@ -1,9 +1,60 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import RegLookupCta from "@/components/seo/RegLookupCta";
 import ShieldIcon from "@/app/components/ShieldIcon";
+import { absoluteUrl } from "@/lib/seo/routes";
+import { faqSchema } from "@/lib/seo/schema";
+
+export const metadata: Metadata = {
+  title: "How AutoAudit Works | Used Car Risk Checks",
+  description:
+    "See how AutoAudit checks MOT history, advisories and repair-risk signals before you buy a used car.",
+  alternates: {
+    canonical: absoluteUrl("/how-it-works"),
+  },
+  openGraph: {
+    title: "How AutoAudit Works | Used Car Risk Checks",
+    description:
+      "See how AutoAudit checks MOT history, advisories and repair-risk signals before you buy a used car.",
+    url: absoluteUrl("/how-it-works"),
+    type: "website",
+    images: ["/og-image.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "How AutoAudit Works | Used Car Risk Checks",
+    description:
+      "See how AutoAudit checks MOT history, advisories and repair-risk signals before you buy a used car.",
+    images: ["/og-image.png"],
+  },
+};
 
 export default function HowItWorks() {
+  const faqs = [
+    {
+      question: "How does AutoAudit work?",
+      answer:
+        "AutoAudit checks the vehicle registration, reviews MOT history and advisory patterns, then presents buyer-focused risk signals before you buy.",
+    },
+    {
+      question: "Do I need the registration number?",
+      answer:
+        "Yes. The registration number allows AutoAudit to check the specific vehicle rather than only giving generic model advice.",
+    },
+    {
+      question: "Does AutoAudit replace a mechanical inspection?",
+      answer:
+        "No. AutoAudit is buyer guidance based on available vehicle data and MOT signals. It does not replace a physical inspection.",
+    },
+  ];
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema(faqs)) }}
+      />
+
       <div className="overflow-hidden rounded-3xl border border-[var(--aa-silver)] bg-white shadow-sm">
         <div className="border-b border-[var(--aa-silver)] bg-[var(--aa-black)] px-6 py-10 text-white sm:px-8 sm:py-12">
           <div className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/90">
@@ -16,77 +67,79 @@ export default function HowItWorks() {
 
           <p className="mt-4 max-w-3xl text-base leading-7 text-white/85 sm:text-lg">
             AutoAudit helps you spot likely repair exposure, warning signs in
-            the MoT history, and hidden ownership risks before you buy. Start
+            the MOT history and hidden ownership risks before you buy. Start
             with a free snapshot, then unlock more detail only if you need it.
           </p>
+
+          <div className="mt-7 max-w-2xl">
+            <RegLookupCta
+              title="Start with a registration check"
+              subtitle="Enter the reg to see vehicle-specific MOT history, advisories and buyer-risk signals."
+              variant="dark"
+            />
+          </div>
         </div>
 
         <div className="px-6 py-8 sm:px-8 sm:py-10">
           <div className="grid gap-4 lg:grid-cols-3">
-            <div className="rounded-2xl border border-[var(--aa-silver)] bg-slate-50/70 p-5">
-              <div className="text-sm font-semibold uppercase tracking-wide text-black">
-                1. Start a vehicle check
+            {[
+              {
+                title: "1. Enter the registration",
+                text: "Start with the car you are actually considering, not just generic model advice.",
+              },
+              {
+                title: "2. Review the free snapshot",
+                text: "See initial MOT-backed warning signs, risk indicators and buyer confidence signals.",
+              },
+              {
+                title: "3. Unlock more detail if needed",
+                text: "Use the full report to understand advisory patterns, likely repair exposure and questions to ask the seller.",
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="rounded-2xl border border-[var(--aa-silver)] bg-slate-50/70 p-5"
+              >
+                <div className="text-sm font-semibold uppercase tracking-wide text-black">
+                  {item.title}
+                </div>
+                <p className="mt-2 text-sm leading-6 text-slate-700">
+                  {item.text}
+                </p>
               </div>
-              <p className="mt-2 text-sm leading-6 text-slate-700">
-                Enter the registration or basic vehicle details such as year,
-                mileage, fuel type and transmission.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-[var(--aa-silver)] bg-slate-50/70 p-5">
-              <div className="text-sm font-semibold uppercase tracking-wide text-black">
-                2. Review the free snapshot
-              </div>
-              <p className="mt-2 text-sm leading-6 text-slate-700">
-                See estimated near-term repair exposure, confidence indicators
-                and MoT-backed warning signals straight away.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-[var(--aa-silver)] bg-slate-50/70 p-5">
-              <div className="text-sm font-semibold uppercase tracking-wide text-black">
-                3. Unlock more detail if needed
-              </div>
-              <p className="mt-2 text-sm leading-6 text-slate-700">
-                Get the Core Report for detailed findings and MoT analysis, or
-                choose the Full Bundle for added HPI-style history checks.
-              </p>
-            </div>
+            ))}
           </div>
 
           <div className="mt-10 grid gap-4 md:grid-cols-3">
-            <div className="flex items-start gap-4 rounded-2xl border border-[var(--aa-silver)] bg-white p-5">
-              <ShieldIcon className="mt-0.5 h-10 w-10 shrink-0" />
-              <div>
-                <div className="text-lg font-bold text-black">Free Snapshot</div>
-                <p className="mt-1 text-sm leading-6 text-slate-700">
-                  Instant repair exposure range, risk indicators and confidence
-                  score before paying.
-                </p>
+            {[
+              {
+                title: "Free Snapshot",
+                text: "Initial buyer-risk indicators before paying.",
+              },
+              {
+                title: "MOT Insights",
+                text: "MOT history helps surface failures, advisories and repeated warning patterns.",
+              },
+              {
+                title: "History Checks",
+                text: "The Full Bundle can add HPI-style checks for finance, write-off, theft, mileage and keeper history.",
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="flex items-start gap-4 rounded-2xl border border-[var(--aa-silver)] bg-white p-5"
+              >
+                <ShieldIcon className="mt-0.5 h-10 w-10 shrink-0" />
+                <div>
+                  <div className="text-lg font-bold text-black">
+                    {item.title}
+                  </div>
+                  <p className="mt-1 text-sm leading-6 text-slate-700">
+                    {item.text}
+                  </p>
+                </div>
               </div>
-            </div>
-
-            <div className="flex items-start gap-4 rounded-2xl border border-[var(--aa-silver)] bg-white p-5">
-              <ShieldIcon className="mt-0.5 h-10 w-10 shrink-0" />
-              <div>
-                <div className="text-lg font-bold text-black">MoT Insights</div>
-                <p className="mt-1 text-sm leading-6 text-slate-700">
-                  DVSA-backed MoT history helps surface failures, advisories and
-                  repeated warning patterns.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4 rounded-2xl border border-[var(--aa-silver)] bg-white p-5">
-              <ShieldIcon className="mt-0.5 h-10 w-10 shrink-0" />
-              <div>
-                <div className="text-lg font-bold text-black">History Checks</div>
-                <p className="mt-1 text-sm leading-6 text-slate-700">
-                  The Full Bundle adds HPI-style checks for finance, write-off,
-                  theft, mileage and keeper history.
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
 
           <div className="mt-10 grid gap-4 md:grid-cols-2">
@@ -98,14 +151,14 @@ export default function HowItWorks() {
                 £4.99
               </div>
               <div className="mt-2 text-sm font-semibold text-slate-900">
-                Detailed findings and MoT analysis
+                Detailed findings and MOT analysis
               </div>
 
               <ul className="mt-5 space-y-2 text-sm text-slate-700">
                 <li>✔ Detailed findings and likely cost drivers</li>
                 <li>✔ Itemised repair exposure guidance</li>
                 <li>✔ Seller questions and negotiation guidance</li>
-                <li>✔ MoT failures and advisory analysis</li>
+                <li>✔ MOT failures and advisory analysis</li>
               </ul>
             </div>
 
@@ -138,13 +191,30 @@ export default function HowItWorks() {
             </p>
           </div>
 
+          <div className="mt-10 rounded-2xl border bg-slate-950 p-6 text-white">
+            <h2 className="text-2xl font-semibold">
+              Ready to check a specific car?
+            </h2>
+            <p className="mt-2 text-slate-200">
+              Enter the registration and move from general research to
+              vehicle-specific buyer-risk insight.
+            </p>
+            <div className="mt-5">
+              <RegLookupCta
+                title="Start your AutoAudit check"
+                subtitle="Check MOT history, advisory patterns and repair-risk signals before you buy."
+                variant="dark"
+              />
+            </div>
+          </div>
+
           <div className="mt-10 flex flex-wrap gap-3">
-            <Link href="/check" className="btn-primary">
-              Start a check
+            <Link href="/sample-report" className="btn-primary">
+              View sample report
             </Link>
 
-            <Link href="/" className="btn-outline">
-              Back home
+            <Link href="/pricing" className="btn-outline">
+              View pricing
             </Link>
           </div>
         </div>

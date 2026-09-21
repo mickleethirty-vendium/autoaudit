@@ -14,6 +14,14 @@ export function absoluteUrl(path: string) {
   return `${siteUrl}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
+export function buildMakeHubPath(make: string) {
+  return `/cars/${make}`;
+}
+
+export function buildModelHubPath(make: string, model: string) {
+  return `/cars/${make}/${model}`;
+}
+
 export function buildModelCommonProblemsPath(make: string, model: string) {
   return `/cars/${make}/${model}/common-problems`;
 }

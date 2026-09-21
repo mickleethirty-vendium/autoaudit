@@ -3,6 +3,7 @@ import {
   absoluteUrl,
   buildAdvisoryHubPath,
   buildModelCommonProblemsPath,
+  buildModelHubPath,
 } from "@/lib/seo/routes";
 import {
   allMakesModels,
@@ -25,6 +26,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified,
       changeFrequency: "weekly",
       priority: 0.95,
+    },
+    {
+      url: absoluteUrl("/sample-report"),
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.86,
+    },
+    {
+      url: absoluteUrl("/pricing"),
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.84,
+    },
+    {
+      url: absoluteUrl("/how-it-works"),
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.84,
     },
     {
       url: absoluteUrl("/cars"),
@@ -143,19 +162,33 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.72,
   }));
 
-  const modelPages: MetadataRoute.Sitemap = wave1Models.map((row) => ({
-    url: absoluteUrl(
-      buildModelCommonProblemsPath(row.make_slug, row.model_slug)
-    ),
+  const modelHubPages: MetadataRoute.Sitemap = wave1Models.map((row) => ({
+    url: absoluteUrl(buildModelHubPath(row.make_slug, row.model_slug)),
     lastModified,
     changeFrequency: "monthly" as const,
     priority:
       row.priority_tier === 1 || row.launch_wave === 1
-        ? 0.8
+        ? 0.82
         : row.priority_tier === 2 || row.launch_wave === 2
-        ? 0.66
-        : 0.55,
+        ? 0.68
+        : 0.56,
   }));
+
+  const modelCommonProblemPages: MetadataRoute.Sitemap = wave1Models.map(
+    (row) => ({
+      url: absoluteUrl(
+        buildModelCommonProblemsPath(row.make_slug, row.model_slug),
+      ),
+      lastModified,
+      changeFrequency: "monthly" as const,
+      priority:
+        row.priority_tier === 1 || row.launch_wave === 1
+          ? 0.8
+          : row.priority_tier === 2 || row.launch_wave === 2
+          ? 0.66
+          : 0.55,
+    }),
+  );
 
   const advisoryPages: MetadataRoute.Sitemap = allMotAdvisoryTypes.map(
     (row) => ({
@@ -163,13 +196,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified,
       changeFrequency: "monthly" as const,
       priority: 0.68,
-    })
+    }),
   );
 
   return [
     ...staticPages,
     ...makePages,
-    ...modelPages,
+    ...modelHubPages,
+    ...modelCommonProblemPages,
     ...advisoryPages,
   ];
 }

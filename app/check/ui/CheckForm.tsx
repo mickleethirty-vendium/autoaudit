@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getModelsForMake, vehicleMakes } from "@/lib/vehicleOptions";
+import { AnalyticsEvents, trackEvent } from "@/lib/analytics";
 
 type LookupVehicle = {
   registration: string;
@@ -42,7 +43,7 @@ function titleCase(value?: string | null) {
 }
 
 function normaliseFuel(
-  value?: string | null
+  value?: string | null,
 ): "petrol" | "diesel" | "hybrid" | "ev" | null {
   if (!value) return null;
 
@@ -57,7 +58,7 @@ function normaliseFuel(
 }
 
 function normaliseTransmission(
-  value: string
+  value: string,
 ): "manual" | "automatic" | "cvt" | "dct" | null {
   const v = value.trim().toLowerCase();
 
@@ -124,7 +125,7 @@ function normaliseMakeForOptions(value?: string | null): string | null {
 
 function normaliseModelForOptions(
   make?: string | null,
-  model?: string | null
+  model?: string | null,
 ): string | null {
   const normalisedMake = normaliseMakeForOptions(make);
   const cleanedModel = cleanText(model);
@@ -135,7 +136,7 @@ function normaliseModelForOptions(
   if (!availableModels.length) return null;
 
   const direct = availableModels.find(
-    (option) => cleanText(option) === cleanedModel
+    (option) => cleanText(option) === cleanedModel,
   );
   if (direct) return direct;
 
@@ -184,13 +185,7 @@ function FieldHint({
   );
 }
 
-function DetailBox({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function DetailBox({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
       <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
@@ -227,23 +222,35 @@ export default function CheckForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const hasAutoLookupRef = useRef(false);
+  const hasTrackedViewRef = useRef(false);
 
   const canonicalVehicleMake = useMemo(
     () => normaliseMakeForOptions(vehicle?.make),
-    [vehicle?.make]
+    [vehicle?.make],
   );
 
   const availableModelsForVehicle = useMemo(
     () => getModelsForMake(canonicalVehicleMake),
-    [canonicalVehicleMake]
+    [canonicalVehicleMake],
   );
 
   const canonicalVehicleModel = useMemo(
     () => normaliseModelForOptions(canonicalVehicleMake, vehicle?.model),
-    [canonicalVehicleMake, vehicle?.model]
+    [canonicalVehicleMake, vehicle?.model],
   );
 
   const resolvedModel = selectedModel || canonicalVehicleModel || "";
+
+  useEffect(() => {
+    if (hasTrackedViewRef.current) return;
+    hasTrackedViewRef.current = true;
+
+    trackEvent("lookup_details_viewed", {
+      page: "check",
+      has_prefilled_reg: !!initialReg,
+      has_prefilled_asking_price: !!initialAskingPrice,
+    });
+  }, [initialReg, initialAskingPrice]);
 
   useEffect(() => {
     if (!initialReg) return;
@@ -273,8 +280,19 @@ export default function CheckForm() {
 
     if (!cleaned) {
       setLookupError("Enter a valid registration.");
+
+      trackEvent("lookup_failed", {
+        page: "check",
+        reason: "empty_registration",
+      });
+
       return;
     }
+
+    trackEvent("lookup_started", {
+      page: "check",
+      source: hasAutoLookupRef.current ? "auto_prefilled_reg" : "manual_submit",
+    });
 
     setLookupLoading(true);
     setLookupError(null);
@@ -297,7 +315,8 @@ export default function CheckForm() {
 
       if (!response.ok) {
         throw new Error(
-          data?.error || "We couldn’t find vehicle details for that registration."
+          data?.error ||
+            "We couldn’t find vehicle details for that registration.",
         );
       }
 
@@ -321,6 +340,14 @@ export default function CheckForm() {
         motStatus: data?.motStatus ?? null,
         taxStatus: data?.taxStatus ?? null,
       });
+
+      trackEvent("lookup_completed", {
+        page: "check",
+        has_make: !!mappedMake,
+        has_model: !!mappedModel,
+        has_year: !!(data?.year ?? data?.yearOfManufacture),
+        has_mot_status: !!data?.motStatus,
+      });
     } catch (err) {
       const message =
         err instanceof Error
@@ -328,6 +355,11 @@ export default function CheckForm() {
           : "Something went wrong while looking up that registration.";
 
       setLookupError(message);
+
+      trackEvent("lookup_failed", {
+        page: "check",
+        reason: "lookup_error",
+      });
     } finally {
       setLookupLoading(false);
     }
@@ -343,25 +375,49 @@ export default function CheckForm() {
 
     if (!vehicle) {
       setContinueError("Vehicle details are missing.");
+
+      trackEvent("lookup_details_failed", {
+        page: "check",
+        reason: "missing_vehicle",
+      });
+
       return;
     }
 
     const year = Number(vehicle.year);
     if (!Number.isFinite(year)) {
       setContinueError(
-        "We couldn’t determine the vehicle year from the registration lookup."
+        "We couldn’t determine the vehicle year from the registration lookup.",
       );
+
+      trackEvent("lookup_details_failed", {
+        page: "check",
+        reason: "missing_year",
+      });
+
       return;
     }
 
     if (!mileage.trim()) {
       setContinueError("Please enter the vehicle mileage.");
+
+      trackEvent("lookup_details_failed", {
+        page: "check",
+        reason: "missing_mileage",
+      });
+
       return;
     }
 
     const parsedMileage = Number(mileage.replace(/,/g, ""));
     if (!Number.isFinite(parsedMileage) || parsedMileage < 0) {
       setContinueError("Please enter a valid mileage.");
+
+      trackEvent("lookup_details_failed", {
+        page: "check",
+        reason: "invalid_mileage",
+      });
+
       return;
     }
 
@@ -371,18 +427,36 @@ export default function CheckForm() {
       (parsedAskingPrice === null || parsedAskingPrice > 1000000)
     ) {
       setContinueError("Please enter a valid asking price.");
+
+      trackEvent("lookup_details_failed", {
+        page: "check",
+        reason: "invalid_asking_price",
+      });
+
       return;
     }
 
     const fuel = normaliseFuel(vehicle.fuelType);
     if (!fuel) {
       setContinueError("We couldn’t match the fuel type for this vehicle.");
+
+      trackEvent("lookup_details_failed", {
+        page: "check",
+        reason: "fuel_not_matched",
+      });
+
       return;
     }
 
     const transmission = normaliseTransmission(gearbox);
     if (!transmission) {
       setContinueError("Please select a supported gearbox type.");
+
+      trackEvent("lookup_details_failed", {
+        page: "check",
+        reason: "missing_transmission",
+      });
+
       return;
     }
 
@@ -392,8 +466,23 @@ export default function CheckForm() {
 
     if (canonicalVehicleMake && availableModelsForVehicle.length && !modelForPayload) {
       setContinueError("Please confirm the vehicle model before continuing.");
+
+      trackEvent("lookup_details_failed", {
+        page: "check",
+        reason: "missing_model_confirmation",
+      });
+
       return;
     }
+
+    trackEvent("lookup_details_submitted", {
+      page: "check",
+      has_asking_price: parsedAskingPrice !== null,
+      has_model: !!modelForPayload,
+      has_engine_size: !!engineSize,
+      transmission,
+      fuel,
+    });
 
     setIsSubmitting(true);
     setContinueError(null);
@@ -428,6 +517,12 @@ export default function CheckForm() {
         throw new Error("Preview ID was not returned.");
       }
 
+      trackEvent("free_preview_created", {
+        page: "check",
+        has_asking_price: parsedAskingPrice !== null,
+        has_model: !!modelForPayload,
+      });
+
       router.push(`/preview/${data.report_id}`);
     } catch (err) {
       const message =
@@ -437,6 +532,11 @@ export default function CheckForm() {
 
       setContinueError(message);
       setIsSubmitting(false);
+
+      trackEvent("lookup_details_failed", {
+        page: "check",
+        reason: "create_report_error",
+      });
     }
   }
 
@@ -447,6 +547,10 @@ export default function CheckForm() {
     setMileage("");
     setGearbox("");
     setSelectedModel("");
+
+    trackEvent("lookup_vehicle_reset", {
+      page: "check",
+    });
   }
 
   useEffect(() => {
@@ -514,6 +618,12 @@ export default function CheckForm() {
             <div className="mt-2.5">
               <Link
                 href="/manual-check"
+                onClick={() =>
+                  trackEvent(AnalyticsEvents.MANUAL_CHECK_CLICKED, {
+                    page: "check",
+                    source: "lookup_step",
+                  })
+                }
                 className="text-sm font-medium text-[var(--aa-red)] transition hover:text-[var(--aa-red-strong)] hover:underline"
               >
                 Or check manually

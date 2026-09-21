@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import ExposureBar from "@/app/components/ExposureBar";
 import ReportDisclaimer from "@/app/components/ReportDisclaimer";
+import { trackEvent } from "@/lib/analytics";
 
 type RiskItem = {
   item_id?: string;
@@ -1206,6 +1207,23 @@ export default function ReportClient({
   const [activeTab, setActiveTab] = useState<ReportTab>("overview");
   const [sellerSummaryOpen, setSellerSummaryOpen] = useState(false);
 
+  useEffect(() => {
+    trackEvent("paid_report_viewed", {
+      page: "report",
+      registration_present: !!reg,
+      hpi_unlocked: hpiUnlocked,
+      just_unlocked_report: justUnlockedReport,
+      just_unlocked_hpi: justUnlockedHpi,
+      exposure_high: baseExposureHigh ?? -1,
+    });
+  }, [
+    reg,
+    hpiUnlocked,
+    justUnlockedReport,
+    justUnlockedHpi,
+    baseExposureHigh,
+  ]);
+
   const knownModelIssues = useMemo<KnownModelIssue[]>(
     () => parseKnownModelIssues(fullSummary),
     [fullSummary]
@@ -1461,8 +1479,30 @@ export default function ReportClient({
     }));
   }
 
+  function handleOpenSellerSummary() {
+    trackEvent("seller_summary_clicked", {
+      page: "report",
+      registration_present: !!reg,
+    });
+
+    setSellerSummaryOpen(true);
+  }
+
   function handleDownloadPdf() {
+    trackEvent("pdf_downloaded", {
+      page: "report",
+      registration_present: !!reg,
+    });
+
     window.print();
+  }
+
+  function handleHpiUpgradeClick(location: string) {
+    trackEvent("hpi_upgrade_clicked", {
+      page: "report",
+      location,
+      registration_present: !!reg,
+    });
   }
 
   return (
@@ -1590,7 +1630,7 @@ export default function ReportClient({
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
-                    onClick={() => setSellerSummaryOpen(true)}
+                    onClick={handleOpenSellerSummary}
                     className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
                   >
                     Summary to send seller
@@ -1836,6 +1876,7 @@ export default function ReportClient({
                       <div className="mt-3">
                         <a
                           href={hpiUpgradeCheckoutUrl}
+                          onClick={() => handleHpiUpgradeClick("overview_card")}
                           className="btn-primary block w-full text-center sm:inline-flex sm:w-auto"
                         >
                           Add HPI check · {hpiUpgradePriceLabel}
@@ -2299,6 +2340,7 @@ export default function ReportClient({
                     <div className="mt-3">
                       <a
                         href={hpiUpgradeCheckoutUrl}
+                        onClick={() => handleHpiUpgradeClick("history_tab")}
                         className="btn-primary block w-full text-center sm:inline-flex sm:w-auto"
                       >
                         Add HPI check · {hpiUpgradePriceLabel}

@@ -3,11 +3,13 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { cookies } from "next/headers";
+import { Analytics } from "@vercel/analytics/react";
 import { createServerClient } from "@supabase/ssr";
 import { mustGetEnv } from "@/lib/env";
 import LogoutButton from "@/app/components/LogoutButton";
 import DailyReportCountPill from "@/app/components/DailyReportCountPill";
 import MobileMenu from "@/app/components/MobileMenu";
+import FloatingContactButton from "@/app/components/FloatingContactButton";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://autoaudit.uk"),
@@ -69,7 +71,7 @@ export default async function RootLayout({
         set() {},
         remove() {},
       },
-    }
+    },
   );
 
   const {
@@ -178,6 +180,15 @@ export default async function RootLayout({
                 <Link href="/mot-advisories" className="hover:text-slate-900">
                   MOT Advisories
                 </Link>
+                <Link href="/sample-report" className="hover:text-slate-900">
+                  Sample report
+                </Link>
+                <Link href="/pricing" className="hover:text-slate-900">
+                  Pricing
+                </Link>
+                <Link href="/how-it-works" className="hover:text-slate-900">
+                  How it works
+                </Link>
                 <Link href="/terms" className="hover:text-slate-900">
                   Terms
                 </Link>
@@ -194,13 +205,10 @@ export default async function RootLayout({
             </div>
           </footer>
 
-          <a
-            href="mailto:support@autoaudit.uk"
-            className="fixed bottom-4 right-4 z-50 inline-flex items-center rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-lg transition hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900"
-          >
-            Contact us
-          </a>
+          <FloatingContactButton />
         </div>
+
+        <Analytics />
       </body>
     </html>
   );

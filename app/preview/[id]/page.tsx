@@ -4,6 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase";
 import RiskGauge from "@/app/components/RiskGauge";
+import PreviewAnalytics from "./PreviewAnalytics";
 
 function titleCase(s: string) {
   return s
@@ -286,11 +287,7 @@ function CompactStat({
   );
 }
 
-export default async function Page({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function Page({ params }: { params: { id: string } }) {
   const { data, error } = await supabaseAdmin
     .from("reports")
     .select(
@@ -305,7 +302,7 @@ export default async function Page({
         mot_payload,
         preview_payload,
         is_paid
-      `
+      `,
     )
     .eq("id", params.id)
     .maybeSingle();
@@ -437,7 +434,9 @@ export default async function Page({
                 {year ? `${year} · ` : ""}
                 {fuel ? `${fuel} · ` : ""}
                 {transmission ? `${transmission} · ` : ""}
-                {typeof mileage === "number" ? `${mileage.toLocaleString()} miles` : ""}
+                {typeof mileage === "number"
+                  ? `${mileage.toLocaleString()} miles`
+                  : ""}
               </div>
 
               <h2 className="mt-3 text-lg font-extrabold leading-tight tracking-tight text-slate-950 sm:text-xl">
@@ -482,18 +481,17 @@ export default async function Page({
                 </div>
               </div>
 
-              <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-                <a href={reportCheckoutUrl} className="btn-primary w-full text-center sm:w-auto">
-                  Unlock core report · {reportPriceLabel}
-                </a>
-
-                <a
-                  href={reportPlusHpiCheckoutUrl}
-                  className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
-                >
-                  Full bundle · {tier2TotalLabel}
-                </a>
-              </div>
+              <PreviewAnalytics
+                reportId={data.id}
+                coreCheckoutUrl={reportCheckoutUrl}
+                bundleCheckoutUrl={reportPlusHpiCheckoutUrl}
+                reportPriceLabel={reportPriceLabel}
+                tier2TotalLabel={tier2TotalLabel}
+                location="hero"
+                exposureHigh={exposureHigh}
+                marketPosition={marketPosition}
+                variant="light"
+              />
             </div>
 
             <div className="flex justify-center lg:justify-end">
@@ -544,14 +542,18 @@ export default async function Page({
 
       <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-[1.15fr_0.85fr]">
         <div className="space-y-3">
-          {(askingPrice !== null || marketLow !== null || marketHigh !== null) && (
+          {(askingPrice !== null ||
+            marketLow !== null ||
+            marketHigh !== null) && (
             <section
               id="price"
               className="scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4"
             >
               <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                 <div className="min-w-0">
-                  <div className="text-sm font-semibold text-black">Price position</div>
+                  <div className="text-sm font-semibold text-black">
+                    Price position
+                  </div>
                   <div className="mt-0.5 text-xs leading-5 text-slate-600">
                     {marketSummaryText ||
                       "We’ve compared the asking price with typical market value."}
@@ -560,7 +562,7 @@ export default async function Page({
 
                 <div
                   className={`inline-flex w-fit items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${valuePillStyles(
-                    marketPosition
+                    marketPosition,
                   )}`}
                 >
                   {valuePillLabel(marketPosition)}
@@ -586,16 +588,22 @@ export default async function Page({
                 />
               </div>
 
-              {(valuationDate || valuationMileage !== null || marketDelta !== null) && (
+              {(valuationDate ||
+                valuationMileage !== null ||
+                marketDelta !== null) && (
                 <div className="mt-2 text-[11px] leading-5 text-slate-500">
-                  {valuationDate ? `Valuation date: ${formatDate(valuationDate)}` : ""}
+                  {valuationDate
+                    ? `Valuation date: ${formatDate(valuationDate)}`
+                    : ""}
                   {valuationDate && valuationMileage !== null ? " · " : ""}
                   {valuationMileage !== null
                     ? `Valuation mileage: ${valuationMileage.toLocaleString()}`
                     : ""}
                   {marketDelta !== null ? " · " : ""}
                   {marketDelta !== null
-                    ? `Difference vs typical value: ${marketDelta > 0 ? "+" : ""}${money(marketDelta)}`
+                    ? `Difference vs typical value: ${
+                        marketDelta > 0 ? "+" : ""
+                      }${money(marketDelta)}`
                     : ""}
                 </div>
               )}
@@ -608,7 +616,9 @@ export default async function Page({
           >
             <div className="flex items-center justify-between gap-3">
               <div>
-                <div className="text-sm font-semibold text-black">Risk breakdown</div>
+                <div className="text-sm font-semibold text-black">
+                  Risk breakdown
+                </div>
                 <div className="mt-0.5 text-xs leading-5 text-slate-600">
                   Where the estimated repair exposure is most likely to sit.
                 </div>
@@ -619,7 +629,10 @@ export default async function Page({
               {buckets.length ? (
                 buckets.map((bucket: any) => {
                   const high = Number(bucket.exposure_high || 0);
-                  const width = Math.max(18, Math.min(100, Math.round(high / 18)));
+                  const width = Math.max(
+                    18,
+                    Math.min(100, Math.round(high / 18)),
+                  );
 
                   return (
                     <div
@@ -633,7 +646,8 @@ export default async function Page({
                           </div>
                         </div>
                         <div className="shrink-0 text-right text-sm font-semibold text-slate-800">
-                          {money(Number(bucket.exposure_low || 0))} – {money(high)}
+                          {money(Number(bucket.exposure_low || 0))} –{" "}
+                          {money(high)}
                         </div>
                       </div>
 
@@ -705,8 +719,8 @@ export default async function Page({
                       Repeat advisory patterns
                     </div>
                     <div className="mt-1 text-sm leading-5 text-amber-950">
-                      Repeated wording appears in the MoT history, which can point
-                      to recurring unresolved issues.
+                      Repeated wording appears in the MoT history, which can
+                      point to recurring unresolved issues.
                     </div>
                   </div>
                 ) : null}
@@ -728,28 +742,29 @@ export default async function Page({
 
             <p className="mt-1.5 text-sm leading-5 text-slate-300">
               Unlock the full report to view the detailed findings, likely repair
-              items, seller questions, negotiation guidance, full MoT analysis and
-              optional vehicle history checks.
+              items, seller questions, negotiation guidance, full MoT analysis
+              and optional vehicle history checks.
             </p>
 
-            <div className="mt-3 grid grid-cols-1 gap-2">
-              <a href={reportCheckoutUrl} className="btn-primary block w-full text-center">
-                Core report · {reportPriceLabel}
-              </a>
-
-              <a
-                href={reportPlusHpiCheckoutUrl}
-                className="block w-full rounded-lg border border-white/15 bg-white/10 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-white/15"
-              >
-                Full bundle · {tier2TotalLabel}
-              </a>
-            </div>
+            <PreviewAnalytics
+              reportId={data.id}
+              coreCheckoutUrl={reportCheckoutUrl}
+              bundleCheckoutUrl={reportPlusHpiCheckoutUrl}
+              reportPriceLabel={reportPriceLabel}
+              tier2TotalLabel={tier2TotalLabel}
+              location="unlock_panel"
+              exposureHigh={exposureHigh}
+              marketPosition={marketPosition}
+              variant="dark"
+            />
 
             <div className="mt-3 grid gap-1 text-xs text-slate-300">
               <div>• Detailed findings and itemised repair exposure</div>
               <div>• Seller questions and negotiation guidance</div>
               <div>• Known model issues and fuller MoT context</div>
-              <div>• Full bundle adds finance, write-off, stolen and mileage checks</div>
+              <div>
+                • Full bundle adds finance, write-off, stolen and mileage checks
+              </div>
             </div>
           </section>
         </div>

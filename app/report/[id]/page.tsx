@@ -356,6 +356,122 @@ function buildFallbackUkvdMatcherInput(args: {
   };
 }
 
+function buildPurchaseAnalyticsScript(args: {
+  reportId: string;
+  tier: CheckoutTier;
+  registrationPresent: boolean;
+  hpiUnlocked: boolean;
+  exposureHigh: number | null;
+}) {
+  const events = [
+    {
+      name: "purchase_completed",
+      data: {
+        page: "report",
+        report_id: args.reportId,
+        tier: args.tier,
+        registration_present: args.registrationPresent,
+        hpi_unlocked: args.hpiUnlocked,
+        exposure_high: args.exposureHigh ?? -1,
+      },
+    },
+  ];
+
+  if (args.tier === "report" || args.tier === "report_plus_hpi") {
+    events.push({
+      name: "core_report_unlocked",
+      data: {
+        page: "report",
+        report_id: args.reportId,
+        tier: args.tier,
+        registration_present: args.registrationPresent,
+        hpi_unlocked: args.hpiUnlocked,
+        exposure_high: args.exposureHigh ?? -1,
+      },
+    });
+  }
+
+  if (args.tier === "hpi_upgrade" || args.tier === "report_plus_hpi") {
+    events.push({
+      name: "hpi_unlocked",
+      data: {
+        page: "report",
+        report_id: args.reportId,
+        tier: args.tier,
+        registration_present: args.registrationPresent,
+        hpi_unlocked: args.hpiUnlocked,
+        exposure_high: args.exposureHigh ?? -1,
+      },
+    });
+  }
+
+  if (args.tier === "report_plus_hpi") {
+    events.push({
+      name: "bundle_unlocked",
+      data: {
+        page: "report",
+        report_id: args.reportId,
+        tier: args.tier,
+        registration_present: args.registrationPresent,
+        hpi_unlocked: args.hpiUnlocked,
+        exposure_high: args.exposureHigh ?? -1,
+      },
+    });
+  }
+
+  return `
+    (function () {
+      var storageKey = ${JSON.stringify(
+        `aa_purchase_analytics_${args.reportId}_${args.tier}`
+      )};
+      var events = ${JSON.stringify(events)};
+
+      try {
+        if (window.localStorage && window.localStorage.getItem(storageKey)) {
+          return;
+        }
+      } catch (error) {}
+
+      var attempts = 0;
+      var maxAttempts = 30;
+
+      function markTracked() {
+        try {
+          if (window.localStorage) {
+            window.localStorage.setItem(storageKey, "1");
+          }
+        } catch (error) {}
+      }
+
+      function sendEvents() {
+        attempts += 1;
+
+        if (typeof window !== "undefined" && typeof window.va === "function") {
+          events.forEach(function (event) {
+            window.va("event", {
+              name: event.name,
+              data: event.data
+            });
+          });
+
+          markTracked();
+          return;
+        }
+
+        if (attempts < maxAttempts) {
+          window.setTimeout(sendEvents, 250);
+        }
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", sendEvents);
+      } else {
+        sendEvents();
+      }
+    })();
+  `;
+}
+
 export default async function Page({
   params,
   searchParams,
@@ -974,39 +1090,60 @@ export default async function Page({
     },
   };
 
+  const purchaseAnalyticsScript =
+    paymentJustVerified && justUnlockedTier
+      ? buildPurchaseAnalyticsScript({
+          reportId: data.id,
+          tier: justUnlockedTier,
+          registrationPresent: !!reg,
+          hpiUnlocked,
+          exposureHigh: paidExposureHigh,
+        })
+      : null;
+
   if (isPaid) {
     return (
-      <ReportClient
-        reg={reg}
-        make={make}
-        year={year}
-        mileage={mileage}
-        fuel={fuel}
-        transmission={transmission}
-        fullSummary={fullPayload}
-        confidenceDisplay={confidenceDisplay}
-        baseExposureLow={paidExposureLow}
-        baseExposureHigh={paidExposureHigh}
-        negotiationSuggested={negotiationSuggested}
-        motPanel={motPanel}
-        motPayload={motPayload}
-        hpiUnlocked={hpiUnlocked}
-        hpiStatus={hpiStatus}
-        hpiChecks={hpiChecks}
-        hpiUpgradeCheckoutUrl={hpiUpgradeCheckoutUrl}
-        hpiUpgradePriceLabel={hpiUpgradePriceLabel}
-        justUnlockedReport={justUnlockedReport}
-        justUnlockedHpi={justUnlockedHpi}
-        ownerUserId={ownerUserId}
-        userId={user?.id ?? null}
-        registerUrl={registerUrl}
-        loginUrl={loginUrl}
-        expiresAtLabel={expiresAtLabel}
-        serviceRiskItems={serviceRiskItems}
-        motRiskItems={motRiskItems}
-        askingPrice={askingPrice}
-        marketValue={marketValue}
-      />
+      <>
+        {purchaseAnalyticsScript ? (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: purchaseAnalyticsScript,
+            }}
+          />
+        ) : null}
+
+        <ReportClient
+          reg={reg}
+          make={make}
+          year={year}
+          mileage={mileage}
+          fuel={fuel}
+          transmission={transmission}
+          fullSummary={fullPayload}
+          confidenceDisplay={confidenceDisplay}
+          baseExposureLow={paidExposureLow}
+          baseExposureHigh={paidExposureHigh}
+          negotiationSuggested={negotiationSuggested}
+          motPanel={motPanel}
+          motPayload={motPayload}
+          hpiUnlocked={hpiUnlocked}
+          hpiStatus={hpiStatus}
+          hpiChecks={hpiChecks}
+          hpiUpgradeCheckoutUrl={hpiUpgradeCheckoutUrl}
+          hpiUpgradePriceLabel={hpiUpgradePriceLabel}
+          justUnlockedReport={justUnlockedReport}
+          justUnlockedHpi={justUnlockedHpi}
+          ownerUserId={ownerUserId}
+          userId={user?.id ?? null}
+          registerUrl={registerUrl}
+          loginUrl={loginUrl}
+          expiresAtLabel={expiresAtLabel}
+          serviceRiskItems={serviceRiskItems}
+          motRiskItems={motRiskItems}
+          askingPrice={askingPrice}
+          marketValue={marketValue}
+        />
+      </>
     );
   }
 

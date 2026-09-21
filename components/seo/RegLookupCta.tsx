@@ -14,7 +14,7 @@ export default function RegLookupCta({
   title = "Check the exact car by registration",
   subtitle = "See MOT history, recurring advisories and hidden repair-cost risks for the actual car you’re considering.",
   className = "",
-  variant = "dark",
+  variant = "light",
 }: Props) {
   const [reg, setReg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);

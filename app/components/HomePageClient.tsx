@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
 import ShieldIcon from "@/app/components/ShieldIcon";
+import { AnalyticsEvents, trackEvent } from "@/lib/analytics";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -25,7 +26,7 @@ export default function HomePageClient() {
 
   const supabase = useMemo(
     () => createBrowserClient(supabaseUrl, supabaseAnonKey),
-    []
+    [],
   );
 
   const [registration, setRegistration] = useState("");
@@ -44,7 +45,7 @@ export default function HomePageClient() {
       setUserEmail(
         typeof user?.email === "string" && user.email.trim()
           ? user.email.trim()
-          : null
+          : null,
       );
     }
 
@@ -73,8 +74,27 @@ export default function HomePageClient() {
     const cleaned = cleanRegistration(registration.trim());
     if (!cleaned) return;
 
+    trackEvent(AnalyticsEvents.HOMEPAGE_REG_SUBMITTED, {
+      source: "homepage_hero",
+      has_user: !!userEmail,
+    });
+
     setLoading(true);
     router.push(`/check?registration=${encodeURIComponent(cleaned)}`);
+  }
+
+  function trackSampleReportClick(source: string) {
+    trackEvent(AnalyticsEvents.SAMPLE_REPORT_CTA_CLICKED, {
+      source,
+      page: "homepage",
+    });
+  }
+
+  function trackManualCheckClick(source: string) {
+    trackEvent(AnalyticsEvents.MANUAL_CHECK_CLICKED, {
+      source,
+      page: "homepage",
+    });
   }
 
   return (
@@ -103,7 +123,7 @@ export default function HomePageClient() {
                 vehicle history checks from a registration.
               </p>
 
-              <div className="mt-4 grid w-full max-w-3xl grid-cols-1 gap-1.5 sm:mt-5 sm:gap-2 sm:grid-cols-3">
+              <div className="mt-4 grid w-full max-w-3xl grid-cols-1 gap-1.5 sm:mt-5 sm:grid-cols-3 sm:gap-2">
                 <QuickStep
                   number="1"
                   title="Enter reg"
@@ -155,12 +175,23 @@ export default function HomePageClient() {
                     Instant snapshot first. Full report available after.
                   </div>
 
-                  <Link
-                    href="/manual-check"
-                    className="text-sm font-medium text-[var(--aa-red)] transition hover:text-[var(--aa-red-strong)] hover:underline"
-                  >
-                    Or check manually
-                  </Link>
+                  <div className="flex flex-wrap justify-center gap-3 sm:justify-end">
+                    <Link
+                      href="/sample-report"
+                      onClick={() => trackSampleReportClick("homepage_hero")}
+                      className="text-sm font-medium text-[var(--aa-red)] transition hover:text-[var(--aa-red-strong)] hover:underline"
+                    >
+                      See a sample report
+                    </Link>
+
+                    <Link
+                      href="/manual-check"
+                      onClick={() => trackManualCheckClick("homepage_hero")}
+                      className="text-sm font-medium text-[var(--aa-red)] transition hover:text-[var(--aa-red-strong)] hover:underline"
+                    >
+                      Or check manually
+                    </Link>
+                  </div>
                 </div>
               </div>
 
@@ -267,9 +298,20 @@ export default function HomePageClient() {
                 <ChecklistItem text="Optional HPI-style history checks" />
               </div>
 
-              <div className="mt-4">
-                <Link href="/check-car-by-registration" className="btn-primary">
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                <Link
+                  href="/check-car-by-registration"
+                  className="btn-primary text-center"
+                >
                   Check a used car by registration
+                </Link>
+
+                <Link
+                  href="/sample-report"
+                  onClick={() => trackSampleReportClick("homepage_what_you_get")}
+                  className="btn-outline text-center"
+                >
+                  See a sample report
                 </Link>
               </div>
             </div>
@@ -361,9 +403,9 @@ export default function HomePageClient() {
 
               <p className="mt-3 text-sm leading-6 text-slate-700">
                 AutoAudit is built to give buyers a clearer view of what sits
-                behind a registration. Instead of relying only on photos,
-                seller wording or surface condition, you can review signals that
-                point to hidden costs, repeated issues or poor buying value.
+                behind a registration. Instead of relying only on photos, seller
+                wording or surface condition, you can review signals that point
+                to hidden costs, repeated issues or poor buying value.
               </p>
 
               <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
@@ -425,6 +467,16 @@ export default function HomePageClient() {
                 </Link>
 
                 <Link
+                  href="/sample-report"
+                  onClick={() =>
+                    trackSampleReportClick("homepage_buyer_guides")
+                  }
+                  className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 transition hover:border-slate-300 hover:bg-white hover:text-slate-950"
+                >
+                  See a sample AutoAudit report
+                </Link>
+
+                <Link
                   href="/check-car-by-registration"
                   className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 transition hover:border-slate-300 hover:bg-white hover:text-slate-950"
                 >
@@ -461,7 +513,15 @@ export default function HomePageClient() {
                 Check a registration
               </Link>
               <Link
+                href="/sample-report"
+                onClick={() => trackSampleReportClick("homepage_final_cta")}
+                className="btn-outline w-full text-center sm:w-auto"
+              >
+                See sample report
+              </Link>
+              <Link
                 href="/manual-check"
+                onClick={() => trackManualCheckClick("homepage_final_cta")}
                 className="btn-outline w-full text-center sm:w-auto"
               >
                 Check manually
@@ -530,13 +590,7 @@ function ChecklistItem({ text }: { text: string }) {
   );
 }
 
-function InfoBlock({
-  title,
-  text,
-}: {
-  title: string;
-  text: string;
-}) {
+function InfoBlock({ title, text }: { title: string; text: string }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
       <div className="text-sm font-bold text-slate-950">{title}</div>

@@ -7,7 +7,7 @@ import { allMotAdvisoryTypes, wave1Models } from "@/lib/seo/data";
 import {
   absoluteUrl,
   buildAdvisoryHubPath,
-  buildModelCommonProblemsPath,
+  buildModelHubPath,
 } from "@/lib/seo/routes";
 import { breadcrumbSchema, faqSchema } from "@/lib/seo/schema";
 
@@ -39,16 +39,16 @@ function getPriorityModels(makeSlug: string): ModelCard[] {
   const rows = getMakeRows(makeSlug);
 
   const priorityRows = rows.filter(
-    (row) => row.priority_tier === 1 || row.launch_wave === 1
+    (row) => row.priority_tier === 1 || row.launch_wave === 1,
   );
 
   const selected = (priorityRows.length ? priorityRows : rows).slice(0, 18);
 
   return selected.map((row) => ({
-    href: buildModelCommonProblemsPath(row.make_slug, row.model_slug),
-    label: `${row.make} ${row.model} common problems`,
+    href: buildModelHubPath(row.make_slug, row.model_slug),
+    label: `${row.make} ${row.model}`,
     description:
-      "Used buyer guide covering common warning signs, ownership risks and what to check before you buy.",
+      "Used buyer guide covering reliability, common problems, MOT advisory patterns and what to check before you buy.",
   }));
 }
 
@@ -66,7 +66,7 @@ function getMakeIntro(makeName: string) {
 
   if (
     ["audi", "bmw", "mercedes-benz", "jaguar", "land rover", "volvo"].includes(
-      normalized
+      normalized,
     )
   ) {
     return `${makeName} buyers often care just as much about maintenance history and MOT patterns as they do about badge appeal. A tidy, well-maintained example can still be a good used buy, but neglected cars can become expensive quickly.`;
@@ -236,8 +236,8 @@ export default async function MakeHubPage({ params }: Props) {
           Popular {makeName} model guides
         </h2>
         <p className="text-slate-700">
-          Compare common problems, likely weak points and used buyer warnings
-          across the most relevant {makeName} models.
+          Compare reliability, common problems, likely weak points and used
+          buyer warnings across the most relevant {makeName} models.
         </p>
 
         {primaryModel ? (
