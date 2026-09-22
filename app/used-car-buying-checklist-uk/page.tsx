@@ -44,9 +44,8 @@ export default function UsedCarBuyingChecklistUkPage() {
         title="Used car buying checklist (UK)"
         subtitle="Step-by-step buyer guide"
         ctaComponent={
-          <RegLookupCta
+          <RegLookupCta intent="buying-guide" position="early"
             title="Checking a car now?"
-            subtitle="Enter the registration to see MOT history, repeated advisories and hidden repair-cost risks before you buy."
             variant="light"
           />
         }
@@ -192,6 +191,7 @@ export default function UsedCarBuyingChecklistUkPage() {
           </Link>
         </div>
       </section>
+      <RegLookupCta intent="buying-guide" position="end" className="mt-10" />
     </div>
   );
 }

@@ -1,7 +1,5 @@
-"use client";
-
-import Image from "next/image";
 import React from "react";
+import { getImageProps } from "next/image";
 
 type HeroCtaTextPanelProps = {
   heroImageSrc: string;
@@ -15,7 +13,6 @@ type HeroCtaTextPanelProps = {
 
 export default function HeroCtaTextPanel({
   heroImageSrc,
-  heroAlt = "Hero image",
   title,
   subtitle,
   ctaComponent,
@@ -26,22 +23,6 @@ export default function HeroCtaTextPanel({
     <section
       className={`overflow-hidden rounded-3xl border bg-white shadow-lg ${className}`}
     >
-      <div className="grid lg:grid-cols-2">
-        <div className="relative min-h-[280px] sm:min-h-[340px] lg:min-h-[380px]">
-          <Image
-            src={heroImageSrc}
-            alt={heroAlt}
-            fill
-            priority
-            className="object-cover"
-          />
-        </div>
-
-        <div className="flex items-center justify-center bg-slate-50 p-5 sm:p-6 lg:p-8">
-          {ctaComponent}
-        </div>
-      </div>
-
       <div className="border-t border-slate-200 p-5 sm:p-6 lg:p-8">
         {subtitle ? (
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -59,6 +40,39 @@ export default function HeroCtaTextPanel({
           </div>
         ) : null}
       </div>
+      <div className="grid lg:grid-cols-2">
+        <DecorativeHero src={heroImageSrc} />
+
+        <div className="flex items-center justify-center bg-slate-50 p-5 sm:p-6 lg:p-8">
+          {ctaComponent}
+        </div>
+      </div>
+
     </section>
+  );
+}
+// A mobile <Image priority> still preloads when hidden by CSS. A media-selected
+// source keeps Next's desktop image optimisation without downloading it mobile.
+export function DecorativeHero({ src, className = "min-h-[240px]" }: {
+  src: string;
+  className?: string;
+}) {
+  const { props } = getImageProps({ src, alt: "", width: 1400, height: 900, sizes: "50vw" });
+  return (
+    <div aria-hidden="true" className={`relative hidden lg:block ${className}`}>
+      <picture>
+        <source media="(min-width: 1024px)" srcSet={props.srcSet} sizes={props.sizes} />
+        {/* eslint-disable-next-line @next/next/no-img-element -- media source uses Next-optimised srcSet; mobile uses an inline empty image. */}
+        <img
+          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/%3E"
+          alt=""
+          width={1400}
+          height={900}
+          loading="lazy"
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      </picture>
+    </div>
   );
 }

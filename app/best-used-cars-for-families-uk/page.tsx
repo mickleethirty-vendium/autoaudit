@@ -77,9 +77,8 @@ export default function BestUsedCarsForFamiliesUkPage() {
         title="Best used cars for families in the UK"
         subtitle="Used car buyer guide"
         ctaComponent={
-          <RegLookupCta
+          <RegLookupCta intent="buying-guide" position="early"
             title="Found a family car you like?"
-            subtitle="Check the exact registration to see MOT history, repeated advisories, and repair-cost risks."
             variant="light"
           />
         }
@@ -127,9 +126,8 @@ export default function BestUsedCarsForFamiliesUkPage() {
       </section>
 
       <section className="mt-10">
-        <RegLookupCta
+        <RegLookupCta intent="buying-guide" position="end"
           title="Check the registration for peace of mind"
-          subtitle="See MOT history, repeated advisories, and likely repair-cost risks."
         />
       </section>
 

@@ -1,5 +1,9 @@
+import { checkoutReturnPath, checkoutSource } from "@/lib/checkout";
+import { funnelParams } from "@/lib/vehicleCheck";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+import { supabaseAdmin } from "@/lib/supabase";
+import { checkoutEligibility } from "@/lib/paymentPolicy";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,6 +34,8 @@ function appUrl() {
 
 const stripe = new Stripe(mustGetEnv("STRIPE_SECRET_KEY"), {
   apiVersion: "2024-06-20",
+  timeout: 20000,
+  maxNetworkRetries: 0,
 });
 
 type CheckoutTier = "report" | "hpi_upgrade" | "report_plus_hpi";
@@ -80,7 +86,7 @@ function getSuccessUrl(reportId: string, tier: CheckoutTier) {
 }
 
 function getCancelUrl(reportId: string, tier: CheckoutTier) {
-  return `${appUrl()}/preview/${reportId}?checkout_cancelled=1&tier=${tier}`;
+  return `${appUrl()}${checkoutReturnPath(reportId, tier)}`;
 }
 
 function getProductName(tier: CheckoutTier) {
@@ -105,24 +111,13 @@ function getUnlockFlags(tier: CheckoutTier) {
   };
 }
 
-function parseSource(value: string | null) {
-  const cleaned = value?.trim().toLowerCase();
-
-  if (!cleaned) return "unknown";
-  if (cleaned === "preview") return "preview";
-  if (cleaned === "report") return "report";
-  if (cleaned === "sample_report") return "sample_report";
-  if (cleaned === "pricing") return "pricing";
-
-  return "unknown";
-}
-
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const reportId = searchParams.get("report_id")?.trim() ?? null;
     const tier = parseTier(searchParams.get("tier"));
-    const source = parseSource(searchParams.get("source"));
+    const source = checkoutSource(searchParams.get("source"));
+    const funnel = funnelParams(searchParams);
 
     if (!isLikelyValidReportId(reportId)) {
       return NextResponse.json(
@@ -131,8 +126,20 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const successUrl = getSuccessUrl(reportId, tier);
-    const cancelUrl = getCancelUrl(reportId, tier);
+    const { data: report, error: reportError } = await supabaseAdmin
+      .from("reports")
+      .select("registration, is_paid")
+      .eq("id", reportId)
+      .abortSignal(AbortSignal.timeout(10000))
+      .maybeSingle();
+    if (reportError) return NextResponse.json({ error: "Unable to check report eligibility. Please try again." }, { status: 503 });
+    if (!report) return NextResponse.json({ error: "Report not found" }, { status: 404 });
+    const eligibilityError = checkoutEligibility(tier, report);
+    if (eligibilityError) return NextResponse.json({ error: eligibilityError }, { status: 400 });
+
+    const suffix = funnel.size ? `&${funnel}` : "";
+    const successUrl = getSuccessUrl(reportId, tier) + suffix;
+    const cancelUrl = getCancelUrl(reportId, tier) + suffix;
     const priceId = getStripePriceIdForTier(tier);
     const flags = getUnlockFlags(tier);
     const productName = getProductName(tier);
@@ -155,6 +162,10 @@ export async function GET(req: NextRequest) {
         product_name: productName,
         funnel_product_key: funnelProductKey,
         checkout_source: source,
+        funnel_source: funnel.get("f_source") || "unknown",
+        landing_type: funnel.get("f_landing") || "unknown",
+        entry_variant: funnel.get("f_variant") || "unknown",
+        entry_position: funnel.get("f_position") || "unknown",
         unlock_report: String(flags.unlock_report),
         unlock_hpi: String(flags.unlock_hpi),
       },
@@ -174,6 +185,9 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    if (req.headers.get("accept")?.includes("application/json")) {
+      return NextResponse.json({ url: session.url, created: true }, { headers: { "Cache-Control": "no-store" } });
+    }
     return NextResponse.redirect(session.url);
   } catch (error: any) {
     console.error("Stripe checkout error:", {

@@ -83,9 +83,8 @@ export default function BestLowMileageUsedCarsUkPage() {
         title="Best low mileage used cars in the UK"
         subtitle="Used car buying guide"
         ctaComponent={
-          <RegLookupCta
+          <RegLookupCta intent="buying-guide" position="early"
             title="Found a low-mileage used car?"
-            subtitle="Check the exact registration for MOT history, mileage patterns, repeated advisories and hidden repair-cost risks before you buy."
             variant="light"
           />
         }
@@ -196,6 +195,7 @@ export default function BestLowMileageUsedCarsUkPage() {
           </Link>
         </div>
       </section>
+      <RegLookupCta intent="buying-guide" position="end" className="mt-10" />
     </div>
   );
 }

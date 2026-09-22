@@ -1,112 +1,108 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { FormEvent, useId, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { AnalyticsEvents, trackEvent, landingType } from "@/lib/analytics";
+import { buildCheckUrl, formatRegistration, isLikelyUkRegistration, Intent, Position, pageTypeForPath } from "@/lib/vehicleCheck";
+import ViewEvent from "@/components/conversion/ViewEvent";
 
-type Props = {
+export default function RegLookupCta({ title, subtitle, className = "", variant = "light", intent = "general", position = "early", make, model, compact = false }: {
   title?: string;
   subtitle?: string;
   className?: string;
   variant?: "dark" | "light";
-};
-
-export default function RegLookupCta({
-  title = "Check the exact car by registration",
-  subtitle = "See MOT history, recurring advisories and hidden repair-cost risks for the actual car you’re considering.",
-  className = "",
-  variant = "light",
-}: Props) {
+  intent?: Intent;
+  position?: Position;
+  make?: string;
+  model?: string;
+  compact?: boolean;
+}) {
   const [reg, setReg] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
   const router = useRouter();
-
-  const isLight = variant === "light";
-
-  function normaliseReg(input: string) {
-    return input.replace(/\s+/g, "").toUpperCase();
+  const pathname = usePathname();
+  const id = useId();
+  const vehicle = [make, model].filter(Boolean).join(" ");
+  const copy = {
+    general: ["Check the car you’re considering", "Enter the registration to see what AutoAudit finds.", "Check this car"],
+    "common-problems": [`Thinking of buying ${vehicle ? `this ${vehicle}` : "one"}?`, "Generic fault lists tell you what might go wrong. Check the history and available warning signs for the actual car.", "Check this car"],
+    "mot-advisory": ["Seen this advisory on a car you’re considering?", "Check its wider MOT history, repeat advisories and other available warning signs.", "Check its history"],
+    "buying-guide": ["Found one you like? Check it before you buy it.", "Move from your shortlist to the history and available buyer-risk signals for the actual car.", "Check the car"],
+    diagnostic: ["Put the symptom in context", "A registration check can show available MOT history and recorded advisories. It does not diagnose the cause of a current fault.", "Check its history"],
+  }[intent];
+  const data = { page_type: pageTypeForPath(pathname), cta_variant: intent, cta_position: position, ...(make ? { make } : {}), ...(model ? { model } : {}) };
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    if (busy) return;
+    trackEvent(AnalyticsEvents.CTA_CLICK, data);
+    if (!isLikelyUkRegistration(reg)) {
+      setError("Enter a UK registration, for example AB12 CDE.");
+      return;
+    }
+    const params = new URLSearchParams(window.location.search);
+    params.set("f_landing", landingType(data.page_type));
+    params.set("f_source", data.page_type);
+    params.set("f_variant", intent);
+    params.set("f_position", position);
+    setBusy(true);
+    router.push(buildCheckUrl(reg, params));
   }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
-    const cleaned = normaliseReg(reg);
-
-    if (!cleaned || cleaned.length < 2) return;
-
-    setIsSubmitting(true);
-    router.push(`/check-car-by-registration?vrm=${cleaned}`);
-  }
-
+  const light = variant === "light";
   return (
-    <div
-      className={`w-full rounded-2xl border p-6 shadow-lg ${
-        isLight
-          ? "border-slate-200 bg-white text-slate-900"
-          : "border-white/10 bg-gradient-to-br from-white/5 to-white/0 text-white"
-      } ${className}`}
+    <ViewEvent
+      event={AnalyticsEvents.CTA_VIEW}
+      data={data}
+      visible
+      className={`w-full min-w-0 rounded-2xl border p-4 text-left sm:p-5 ${light ? "border-slate-200 bg-white text-slate-950" : "border-white/20 bg-slate-950 text-white"} ${className}`}
     >
-      <div className="max-w-2xl">
-        <h2
-          className={`text-xl font-semibold md:text-2xl ${
-            isLight ? "text-slate-900" : "text-white"
-          }`}
-        >
-          {title}
-        </h2>
-
-        <p
-          className={`mt-2 text-sm md:text-base ${
-            isLight ? "text-slate-600" : "text-white/70"
-          }`}
-        >
-          {subtitle}
-        </p>
-
-        <form
-          onSubmit={handleSubmit}
-          className="mt-5 flex flex-col gap-3 sm:flex-row"
-        >
+      {!compact && (
+        <>
+          <h2 className={`text-xl font-bold tracking-tight ${light ? "text-slate-950" : "text-white"}`}>{title || copy[0]}</h2>
+          <p className={`mt-2 text-sm leading-6 ${light ? "text-slate-600" : "text-slate-200"}`}>{subtitle || copy[1]}</p>
+        </>
+      )}
+      <form action="/check" method="get" onSubmit={submit} className={compact ? "" : "mt-4"}>
+        <input type="hidden" name="f_landing" value={data.page_type} />
+        <input type="hidden" name="f_source" value={data.page_type} />
+        <input type="hidden" name="f_variant" value={intent} />
+        <input type="hidden" name="f_position" value={position} />
+        <label htmlFor={id} className="mb-2 block text-sm font-semibold">UK registration</label>
+        <div className="flex flex-col gap-3 sm:flex-row">
           <input
-            type="text"
-            placeholder="Enter registration"
+            id={id}
+            name="registration"
             value={reg}
-            onChange={(e) => setReg(e.target.value)}
-            className={`w-full rounded-lg border px-4 py-3 uppercase tracking-[0.18em] focus:outline-none ${
-              isLight
-                ? "border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:border-slate-600"
-                : "border-white/15 bg-black/40 text-white placeholder:text-white/40 focus:border-white/30"
-            }`}
+            onChange={(event) => {
+              setReg(formatRegistration(event.target.value));
+              setError("");
+            }}
+            autoCapitalize="characters"
+            autoCorrect="off"
+            autoComplete="off"
+            spellCheck={false}
+            maxLength={10}
+            placeholder="AB12 CDE"
+            aria-invalid={!!error}
+            aria-describedby={`${id}-hint${error ? ` ${id}-error` : ""}`}
+            disabled={busy}
+            className="h-14 min-h-[56px] w-full min-w-0 sm:flex-1 rounded-xl border-2 border-slate-300 bg-white px-4 text-lg font-bold uppercase tracking-wider text-slate-950 focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-red-700"
           />
-
           <button
+            disabled={busy}
             type="submit"
-            disabled={isSubmitting}
-            className={`rounded-lg px-6 py-3 font-semibold transition disabled:opacity-60 ${
-              isLight
-                ? "bg-slate-900 text-white hover:bg-slate-800"
-                : "bg-white text-black hover:bg-white/90"
-            }`}
+            className="min-h-14 shrink-0 rounded-xl bg-[var(--aa-red)] px-5 py-3 font-bold text-white hover:bg-[var(--aa-red-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60"
           >
-            {isSubmitting ? "Checking..." : "Check this car"}
+            {busy ? "Starting check…" : `${copy[2]} →`}
           </button>
-        </form>
-
-        <div
-          className={`mt-4 space-y-2 text-xs ${
-            isLight ? "text-slate-500" : "text-white/60"
-          }`}
-        >
-          <div className="flex flex-wrap items-center gap-4">
-            <span>✓ DVSA MOT history</span>
-            <span>✓ Known model issues</span>
-            <span>✓ Repair cost signals</span>
-          </div>
-
-          <div>
-            Example: <span className="font-medium">AB12 CDE</span>
-          </div>
         </div>
-      </div>
-    </div>
+        {error && (
+          <p id={`${id}-error`} role="alert" className={`mt-2 text-sm ${light ? "text-red-700" : "text-red-200"}`}>{error}</p>
+        )}
+        <p id={`${id}-hint`} className={`mt-3 text-xs leading-5 ${light ? "text-slate-600" : "text-slate-200"}`}>
+          Free snapshot first. No payment details needed. Add mileage and gearbox after lookup.
+        </p>
+      </form>
+    </ViewEvent>
   );
 }

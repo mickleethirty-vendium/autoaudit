@@ -1,30 +1,30 @@
 "use client";
-
-import { useEffect } from "react";
-import Link from "next/link";
-import { AnalyticsEvents, trackEvent } from "@/lib/analytics";
-
+import { useEffect, useState } from "react";
+import ViewEvent from "@/components/conversion/ViewEvent";
+import { trackEvent } from "@/lib/analytics";
 export default function SampleReportAnalytics() {
+  const [dismissed, setDismissed] = useState(false);
+  const [formVisible, setFormVisible] = useState(true);
   useEffect(() => {
-    trackEvent(AnalyticsEvents.SAMPLE_REPORT_VIEWED, {
-      page: "sample-report",
+    const forms = Array.from(document.querySelectorAll('[data-sample-check]'));
+    if (!("IntersectionObserver" in window)) return;
+    const visible = new Set<Element>();
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) { if (entry.isIntersecting) visible.add(entry.target); else visible.delete(entry.target); }
+      setFormVisible(visible.size > 0);
     });
+    forms.forEach((form) => observer.observe(form));
+    return () => observer.disconnect();
   }, []);
-
-  return (
-    <div className="fixed bottom-0 left-0 right-0 z-[70] border-t border-slate-300 bg-white/95 px-3 py-2.5 backdrop-blur sm:bottom-5 sm:left-auto sm:right-5 sm:w-auto sm:rounded-2xl sm:border sm:shadow-lg">
-      <Link
-        href="/check-car-by-registration"
-        onClick={() =>
-          trackEvent(AnalyticsEvents.SAMPLE_REPORT_CTA_CLICKED, {
-            page: "sample-report",
-            source: "sticky_cta",
-          })
-        }
-        className="btn-primary block w-full text-center sm:w-auto"
-      >
-        Check a real car
-      </Link>
-    </div>
-  );
+  const data = { page_type: "sample_report", cta_variant: "general", cta_position: "sticky", sample: true };
+  return <>
+    <ViewEvent event="sample_report_viewed" data={{ page_type: "sample_report", sample: true }} />
+    {!dismissed && !formVisible && <ViewEvent event="cta_view" data={data} visible className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-slate-300 bg-white p-3 pb-[max(12px,env(safe-area-inset-bottom))] shadow-lg print:hidden sm:left-auto sm:right-5 sm:bottom-5 sm:rounded-2xl sm:border">
+      <a href="#sample-check" className="btn-primary flex min-h-[48px] flex-1 items-center justify-center text-center" onClick={() => {
+        trackEvent("cta_click", data);
+        document.querySelector<HTMLInputElement>('#sample-check input[name="registration"]')?.focus();
+      }}>Check a real car →</a>
+      <button type="button" aria-label="Dismiss check a car bar" onClick={() => setDismissed(true)} className="min-h-[48px] min-w-[48px] rounded-lg text-xl text-slate-700 focus-visible:outline">×</button>
+    </ViewEvent>}
+  </>;
 }

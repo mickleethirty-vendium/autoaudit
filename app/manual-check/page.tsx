@@ -2,7 +2,12 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import useRequestTask from "@/components/conversion/useRequestTask";
+import { isRequestCancelled } from "@/lib/request";
+import { useRouter, useSearchParams } from "next/navigation";
+import { trackEvent } from "@/lib/analytics";
+import { funnelParams } from "@/lib/vehicleCheck";
+import ViewEvent from "@/components/conversion/ViewEvent";
 import ShieldIcon from "@/app/components/ShieldIcon";
 import { getModelsForMake, vehicleMakes } from "@/lib/vehicleOptions";
 
@@ -68,6 +73,8 @@ function FeatureCard({
 
 export default function ManualCheckPage() {
   const router = useRouter();
+  const createTask = useRequestTask();
+  const searchParams = useSearchParams();
 
   const [make, setMake] = useState("");
   const [model, setModel] = useState("");
@@ -96,6 +103,7 @@ export default function ManualCheckPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (createTask.pending) return;
 
     const cleanedMake = normaliseText(make);
     const cleanedModel = normaliseText(model);
@@ -167,8 +175,10 @@ export default function ManualCheckPage() {
     setError(null);
     setIsSubmitting(true);
 
+    trackEvent("lookup_details_submitted", { page_type: "manual_check", source: "manual_check" });
+
     try {
-      const response = await fetch("/api/create-report", {
+      const { response, data } = await createTask.run("/api/create-report", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -186,7 +196,6 @@ export default function ManualCheckPage() {
         }),
       });
 
-      const data = await response.json().catch(() => null);
 
       if (!response.ok) {
         throw new Error(
@@ -198,20 +207,26 @@ export default function ManualCheckPage() {
         throw new Error("Preview ID was not returned.");
       }
 
-      router.push(`/preview/${data.report_id}`);
+      trackEvent("free_preview_created", { page_type: "manual_check", source: "manual_check" });
+      const context = funnelParams(new URLSearchParams(searchParams.toString()));
+      if (!context.has("f_source")) context.set("f_source", "manual_check");
+      router.push(`/preview/${data.report_id}?${context}`);
     } catch (err) {
+      if (isRequestCancelled(err)) return;
       const message =
         err instanceof Error
           ? err.message
           : "Something went wrong while creating your preview.";
 
       setError(message);
+      trackEvent("lookup_details_failed", { page_type: "manual_check", reason: "create_report_error" });
       setIsSubmitting(false);
     }
   }
 
   return (
     <div className="min-h-screen bg-[var(--aa-bg)]">
+      <ViewEvent event="lookup_details_viewed" data={{ page_type: "manual_check" }} />
       <main>
         <section className="mx-auto mt-3 max-w-7xl px-3 sm:px-4">
           <div className="relative overflow-hidden rounded-[1.6rem] bg-[var(--aa-black)] shadow-[0_16px_48px_rgba(15,23,42,0.12)]">
@@ -279,10 +294,10 @@ export default function ManualCheckPage() {
 
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div>
-                        <label className="mb-1.5 block text-sm font-semibold text-slate-800">
+                        <label htmlFor="manual-make" className="mb-1.5 block text-sm font-semibold text-slate-800">
                           Make
                         </label>
-                        <select
+                        <select id="manual-make"
                           value={make}
                           onChange={(e) => {
                             const nextMake = e.target.value;
@@ -291,7 +306,7 @@ export default function ManualCheckPage() {
                             if (error) setError(null);
                           }}
                           disabled={isSubmitting}
-                          className="h-13 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 focus:border-[var(--aa-red)]"
+                          className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 focus:border-[var(--aa-red)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700"
                         >
                           <option value="">Select make</option>
                           {vehicleMakes.map((option) => (
@@ -310,17 +325,17 @@ export default function ManualCheckPage() {
                       </div>
 
                       <div>
-                        <label className="mb-1.5 block text-sm font-semibold text-slate-800">
+                        <label htmlFor="manual-model" className="mb-1.5 block text-sm font-semibold text-slate-800">
                           Model
                         </label>
-                        <select
+                        <select id="manual-model"
                           value={model}
                           onChange={(e) => {
                             setModel(e.target.value);
                             if (error) setError(null);
                           }}
                           disabled={isSubmitting || !normalisedMake}
-                          className="h-13 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 focus:border-[var(--aa-red)] disabled:bg-slate-100 disabled:text-slate-500"
+                          className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 focus:border-[var(--aa-red)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:bg-slate-100 disabled:text-slate-500"
                         >
                           <option value="">
                             {normalisedMake ? "Select model" : "Select make first"}
@@ -341,10 +356,10 @@ export default function ManualCheckPage() {
                       </div>
 
                       <div>
-                        <label className="mb-1.5 block text-sm font-semibold text-slate-800">
+                        <label htmlFor="manual-year" className="mb-1.5 block text-sm font-semibold text-slate-800">
                           Year
                         </label>
-                        <input
+                        <input id="manual-year"
                           type="text"
                           inputMode="numeric"
                           value={year}
@@ -354,23 +369,23 @@ export default function ManualCheckPage() {
                           }}
                           placeholder="e.g. 2018"
                           disabled={isSubmitting}
-                          className="h-13 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)]"
+                          className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700"
                         />
                         <FieldHint tone="required">Required</FieldHint>
                       </div>
 
                       <div>
-                        <label className="mb-1.5 block text-sm font-semibold text-slate-800">
+                        <label htmlFor="manual-fuelType" className="mb-1.5 block text-sm font-semibold text-slate-800">
                           Fuel type
                         </label>
-                        <select
+                        <select id="manual-fuelType"
                           value={fuelType}
                           onChange={(e) => {
                             setFuelType(e.target.value as FuelOption);
                             if (error) setError(null);
                           }}
                           disabled={isSubmitting}
-                          className="h-13 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 focus:border-[var(--aa-red)]"
+                          className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 focus:border-[var(--aa-red)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700"
                         >
                           <option value="">Select fuel type</option>
                           <option value="petrol">Petrol</option>
@@ -382,10 +397,10 @@ export default function ManualCheckPage() {
                       </div>
 
                       <div>
-                        <label className="mb-1.5 block text-sm font-semibold text-slate-800">
+                        <label htmlFor="manual-engineSize" className="mb-1.5 block text-sm font-semibold text-slate-800">
                           Engine size
                         </label>
-                        <input
+                        <input id="manual-engineSize"
                           type="text"
                           inputMode="decimal"
                           value={engineSize}
@@ -395,7 +410,7 @@ export default function ManualCheckPage() {
                           }}
                           placeholder="e.g. 1.0 or 999"
                           disabled={isSubmitting}
-                          className="h-13 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)]"
+                          className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700"
                         />
                         <FieldHint tone="required">
                           Required — litres or cc both work.
@@ -403,10 +418,10 @@ export default function ManualCheckPage() {
                       </div>
 
                       <div>
-                        <label className="mb-1.5 block text-sm font-semibold text-slate-800">
+                        <label htmlFor="manual-bodyType" className="mb-1.5 block text-sm font-semibold text-slate-800">
                           Body type
                         </label>
-                        <input
+                        <input id="manual-bodyType"
                           type="text"
                           value={bodyType}
                           onChange={(e) => {
@@ -415,7 +430,7 @@ export default function ManualCheckPage() {
                           }}
                           placeholder="e.g. Hatchback"
                           disabled={isSubmitting}
-                          className="h-13 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)]"
+                          className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700"
                         />
                         <FieldHint>Optional</FieldHint>
                       </div>
@@ -434,10 +449,10 @@ export default function ManualCheckPage() {
 
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div>
-                        <label className="mb-1.5 block text-sm font-semibold text-slate-800">
+                        <label htmlFor="manual-mileage" className="mb-1.5 block text-sm font-semibold text-slate-800">
                           Current mileage
                         </label>
-                        <input
+                        <input id="manual-mileage"
                           type="text"
                           inputMode="numeric"
                           value={mileage}
@@ -447,23 +462,23 @@ export default function ManualCheckPage() {
                           }}
                           placeholder="e.g. 62,000"
                           disabled={isSubmitting}
-                          className="h-13 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)]"
+                          className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--aa-red)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700"
                         />
                         <FieldHint tone="required">Required</FieldHint>
                       </div>
 
                       <div>
-                        <label className="mb-1.5 block text-sm font-semibold text-slate-800">
+                        <label htmlFor="manual-gearbox" className="mb-1.5 block text-sm font-semibold text-slate-800">
                           Gearbox type
                         </label>
-                        <select
+                        <select id="manual-gearbox"
                           value={gearbox}
                           onChange={(e) => {
                             setGearbox(e.target.value as GearboxOption);
                             if (error) setError(null);
                           }}
                           disabled={isSubmitting}
-                          className="h-13 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 focus:border-[var(--aa-red)]"
+                          className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 focus:border-[var(--aa-red)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700"
                         >
                           <option value="">Select gearbox</option>
                           <option value="manual">Manual</option>
@@ -498,14 +513,14 @@ export default function ManualCheckPage() {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="inline-flex h-13 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-6 text-sm font-semibold text-white transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:opacity-50"
+                      className="inline-flex h-14 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-6 text-sm font-semibold text-white transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:opacity-50"
                     >
                       {isSubmitting ? "Building preview…" : "Continue to free preview"}
                     </button>
 
                     <Link
                       href="/"
-                      className="inline-flex h-13 items-center justify-center rounded-xl border border-slate-300 bg-white px-6 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
+                      className="inline-flex h-14 items-center justify-center rounded-xl border border-slate-300 bg-white px-6 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
                     >
                       Back to registration check
                     </Link>

@@ -196,7 +196,7 @@ export default function CarsHubPage() {
         heroAlt="Used cars lined up for comparison before buying"
         subtitle="Used car buyer guides"
         title="Common car problems by make and model"
-        ctaComponent={<RegLookupCta variant="light" />}
+        ctaComponent={<RegLookupCta intent="general" position="early" variant="light" />}
         bodyContent={
           <div className="space-y-3">
             <p>
@@ -432,6 +432,7 @@ export default function CarsHubPage() {
           </div>
         ))}
       </section>
+      <RegLookupCta intent="general" position="end" className="mt-10" />
     </div>
   );
 }

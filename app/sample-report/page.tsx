@@ -1,3 +1,5 @@
+import RegLookupCta from "@/components/seo/RegLookupCta";
+import ProductComparison from "@/components/conversion/ProductComparison";
 import type { Metadata } from "next";
 import ReportClient from "@/app/report/[id]/ReportClient";
 import { absoluteUrl } from "@/lib/seo/routes";
@@ -296,15 +298,14 @@ const marketValue = {
 
 export default function SampleReportPage() {
   return (
-    <main className="pb-20 sm:pb-0">
+    <main className="pb-28">
       <section className="mx-auto max-w-7xl px-3 pt-6 sm:px-4 lg:px-5">
         <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
           <p className="text-sm font-semibold text-amber-900">
             Sample AutoAudit report
           </p>
           <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-slate-950">
-            This is an example of the report a buyer sees after unlocking
-            AutoAudit.
+            Explore an example Full Bundle, including HPI history checks.
           </h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700">
             The registration and vehicle details below are example data, but the
@@ -314,7 +315,14 @@ export default function SampleReportPage() {
         </div>
       </section>
 
+      <section className="mx-auto max-w-7xl px-3 pb-5 sm:px-4">
+        <h2 className="mb-3 text-xl font-bold">Which parts are included?</h2>
+        <ProductComparison />
+        <p className="my-4 text-sm text-slate-600">The findings, MOT analysis, seller questions and negotiation guidance demonstrate Core. Vehicle history panels demonstrate the additional Full Bundle checks. All results below are illustrative, not a live vehicle check.</p>
+        <div id="sample-check" data-sample-check className="scroll-mt-24"><RegLookupCta position="early" title="Now check the car you’re considering" /></div>
+      </section>
       <ReportClient
+        sample
         reg="AB12 CDE"
         make="Ford Fiesta"
         year={2017}
@@ -355,6 +363,7 @@ export default function SampleReportPage() {
         marketValue={marketValue}
       />
 
+      <section data-sample-check className="mx-auto max-w-7xl px-3 py-6 sm:px-4"><RegLookupCta position="end" title="See what AutoAudit finds for your car" /></section>
       <SampleReportAnalytics />
     </main>
   );

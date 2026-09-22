@@ -83,9 +83,8 @@ export default function BestCarsForLongDistanceDrivingUkPage() {
         title="Best cars for long distance driving in the UK"
         subtitle="Used car buying guide"
         ctaComponent={
-          <RegLookupCta
+          <RegLookupCta intent="buying-guide" position="early"
             title="Found a long-distance car?"
-            subtitle="Check the exact registration for MOT history, repeated advisories and hidden repair-cost risks before you buy."
             variant="light"
           />
         }
@@ -196,6 +195,7 @@ export default function BestCarsForLongDistanceDrivingUkPage() {
           </Link>
         </div>
       </section>
+      <RegLookupCta intent="buying-guide" position="end" className="mt-10" />
     </div>
   );
 }

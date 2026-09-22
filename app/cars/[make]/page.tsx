@@ -212,7 +212,7 @@ export default async function MakeHubPage({ params }: Props) {
         title={`${makeName} common problems by model`}
         subtitle="Used car make hub"
         ctaComponent={
-          <RegLookupCta
+          <RegLookupCta intent="general" position="early" make={makeName}
             title={`Check a specific ${makeName} by registration`}
             subtitle="See MOT history, recurring advisories and hidden repair-cost risks on the exact car before you buy."
             variant="light"
@@ -401,6 +401,7 @@ export default async function MakeHubPage({ params }: Props) {
           </div>
         ))}
       </section>
+      <RegLookupCta intent="general" position="end" make={makeName} className="mt-10" />
     </div>
   );
 }

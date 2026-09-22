@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { paidEntitlements } from "@/lib/paymentPolicy";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { mustGetEnv } from "@/lib/env";
@@ -321,7 +322,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    if (event.type !== "checkout.session.completed") {
+    if (event.type !== "checkout.session.completed" && event.type !== "checkout.session.async_payment_succeeded") {
       return NextResponse.json({ received: true, ignored: true });
     }
 
@@ -341,7 +342,7 @@ export async function POST(req: Request) {
     }
 
     const isSessionPaid =
-      session.payment_status === "paid" || session.status === "complete";
+      paidEntitlements(session, reportId) !== null;
 
     if (!isSessionPaid) {
       return NextResponse.json({

@@ -1,36 +1,22 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
+import RegLookupCta from "@/components/seo/RegLookupCta";
 import ShieldIcon from "@/app/components/ShieldIcon";
 import { AnalyticsEvents, trackEvent } from "@/lib/analytics";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-function cleanRegistration(reg: string) {
-  return reg.replace(/\s/g, "").toUpperCase();
-}
-
-function formatRegistrationInput(value: string) {
-  const cleaned = value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
-
-  if (cleaned.length <= 4) return cleaned;
-  return `${cleaned.slice(0, 4)} ${cleaned.slice(4, 7)}`;
-}
-
 export default function HomePageClient() {
-  const router = useRouter();
 
   const supabase = useMemo(
     () => createBrowserClient(supabaseUrl, supabaseAnonKey),
     [],
   );
 
-  const [registration, setRegistration] = useState("");
-  const [loading, setLoading] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
@@ -68,21 +54,6 @@ export default function HomePageClient() {
     };
   }, [supabase]);
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-
-    const cleaned = cleanRegistration(registration.trim());
-    if (!cleaned) return;
-
-    trackEvent(AnalyticsEvents.HOMEPAGE_REG_SUBMITTED, {
-      source: "homepage_hero",
-      has_user: !!userEmail,
-    });
-
-    setLoading(true);
-    router.push(`/check?registration=${encodeURIComponent(cleaned)}`);
-  }
-
   function trackSampleReportClick(source: string) {
     trackEvent(AnalyticsEvents.SAMPLE_REPORT_CTA_CLICKED, {
       source,
@@ -107,7 +78,7 @@ export default function HomePageClient() {
               style={{ backgroundImage: "url('/hero-car-road.png')" }}
             />
 
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,10,10,0.48)_0%,rgba(10,10,10,0.18)_34%,rgba(10,10,10,0.34)_100%)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,10,10,0.48)_0%,rgba(10,10,10,0.58)_34%,rgba(10,10,10,0.34)_100%)]" />
 
             <div className="relative mx-auto flex min-h-[320px] max-w-7xl flex-col items-center justify-center px-4 py-8 text-center sm:min-h-[360px] sm:py-10 lg:min-h-[400px]">
               <div className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white/85">
@@ -115,15 +86,15 @@ export default function HomePageClient() {
               </div>
 
               <h1 className="mt-3 max-w-5xl text-3xl font-extrabold tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)] sm:text-4xl lg:text-5xl">
-                Know the risks before you buy a used car
+                Don’t overpay for your next used car
               </h1>
 
-              <p className="mt-3 max-w-3xl text-base leading-6 text-white/92 drop-shadow-[0_2px_8px_rgba(0,0,0,0.25)] sm:text-lg">
+              <p className="mt-3 max-w-3xl text-base leading-6 text-white/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.25)] sm:text-lg">
                 Get instant repair-cost signals, MoT-based warnings and optional
                 vehicle history checks from a registration.
               </p>
 
-              <div className="mt-4 grid w-full max-w-3xl grid-cols-1 gap-1.5 sm:mt-5 sm:grid-cols-3 sm:gap-2">
+              <div className="mt-4 grid w-full max-w-3xl grid-cols-3 gap-2 sm:mt-5">
                 <QuickStep
                   number="1"
                   title="Enter reg"
@@ -132,43 +103,17 @@ export default function HomePageClient() {
                 <QuickStep
                   number="2"
                   title="See snapshot"
-                  text="Get fast risk and price context"
+                  text="See initial vehicle risk signals"
                 />
                 <QuickStep
                   number="3"
-                  title="Unlock full report"
+                  title="Choose more detail"
                   text="View findings, MoT analysis and checks"
                 />
               </div>
 
-              <div className="mt-4 w-full max-w-3xl rounded-2xl border border-white/20 bg-white/94 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.18)] backdrop-blur sm:mt-5">
-                <form
-                  onSubmit={handleSubmit}
-                  className="flex flex-col gap-2.5 sm:flex-row"
-                >
-                  <input
-                    type="text"
-                    name="registration"
-                    value={registration}
-                    onChange={(e) =>
-                      setRegistration(formatRegistrationInput(e.target.value))
-                    }
-                    placeholder="ENTER REGISTRATION"
-                    autoCapitalize="characters"
-                    autoCorrect="off"
-                    spellCheck={false}
-                    disabled={loading}
-                    className="h-14 flex-1 rounded-xl border-2 border-slate-300 bg-white px-4 text-lg font-bold uppercase tracking-[0.12em] text-slate-900 placeholder:text-slate-400 shadow-[0_6px_18px_rgba(15,23,42,0.08)] focus:border-[var(--aa-red)] sm:h-14 sm:border sm:text-lg sm:font-semibold sm:shadow-none"
-                  />
-
-                  <button
-                    type="submit"
-                    disabled={!registration.trim() || loading}
-                    className="inline-flex h-14 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-6 text-base font-bold text-white shadow-[0_10px_24px_rgba(193,18,31,0.22)] transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:opacity-50 sm:h-14 sm:text-lg sm:shadow-none"
-                  >
-                    {loading ? "Continuing…" : "Check my car"}
-                  </button>
-                </form>
+              <div className="mt-4 w-full max-w-3xl rounded-2xl border border-white/20 bg-white/95 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.18)] backdrop-blur sm:mt-5">
+                <RegLookupCta compact position="hero" />
 
                 <div className="mt-2.5 flex flex-col gap-1.5 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
                   <div className="text-xs text-slate-500">
@@ -372,7 +317,7 @@ export default function HomePageClient() {
               />
               <InfoBlock
                 title="Review the snapshot"
-                text="See early warning signs such as likely repair exposure, price context and MoT-based concerns. This is designed to help you quickly spot cars that deserve closer inspection."
+                text="See early warning signs such as likely repair exposure and MoT-based concerns. This is designed to help you quickly spot cars that deserve closer inspection."
               />
               <InfoBlock
                 title="Unlock the deeper report"
@@ -544,14 +489,14 @@ function QuickStep({
   text: string;
 }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/8 px-3 py-2 text-left text-white/92 backdrop-blur sm:rounded-xl sm:border-white/15 sm:bg-white/10 sm:px-3 sm:py-2.5 sm:text-white">
+    <div className="rounded-lg border border-white/10 bg-white/8 px-3 py-2 text-left text-white/90 backdrop-blur sm:rounded-xl sm:border-white/15 sm:bg-white/10 sm:px-3 sm:py-2.5 sm:text-white">
       <div className="inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-white/15 px-1.5 text-[9px] font-bold sm:h-5 sm:min-w-[1.25rem] sm:bg-white/20 sm:text-[10px]">
         {number}
       </div>
       <div className="mt-0.5 text-[12px] font-semibold leading-4 sm:mt-1 sm:text-sm sm:leading-normal">
         {title}
       </div>
-      <div className="mt-0.5 text-[11px] leading-4 text-white/75 sm:text-xs sm:leading-5 sm:text-white/80">
+      <div className="hidden mt-0.5 text-[11px] leading-4 text-white/75 sm:block sm:text-xs sm:leading-5 sm:text-white/80">
         {text}
       </div>
     </div>

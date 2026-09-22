@@ -28,7 +28,7 @@ export default function MobileMenu({
         onClick={() => setOpen((prev) => !prev)}
         aria-expanded={open}
         aria-controls="mobile-menu-panel"
-        className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+        className="inline-flex items-center rounded-lg border border-slate-300 bg-white min-h-[44px] px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
       >
         Menu
       </button>
@@ -46,7 +46,7 @@ export default function MobileMenu({
             <Link
               href="/check-car-by-registration"
               onClick={closeMenu}
-              className="hover:text-slate-900"
+              className="flex min-h-[44px] items-center hover:text-slate-900"
             >
               Check by registration
             </Link>
@@ -54,7 +54,7 @@ export default function MobileMenu({
             <Link
               href="/cars"
               onClick={closeMenu}
-              className="hover:text-slate-900"
+              className="flex min-h-[44px] items-center hover:text-slate-900"
             >
               Common problems by make
             </Link>
@@ -62,7 +62,7 @@ export default function MobileMenu({
             <Link
               href="/mot-advisories"
               onClick={closeMenu}
-              className="hover:text-slate-900"
+              className="flex min-h-[44px] items-center hover:text-slate-900"
             >
               MOT advisory guides
             </Link>
@@ -70,7 +70,7 @@ export default function MobileMenu({
             <Link
               href="/terms"
               onClick={closeMenu}
-              className="hover:text-slate-900"
+              className="flex min-h-[44px] items-center hover:text-slate-900"
             >
               Terms
             </Link>
@@ -78,7 +78,7 @@ export default function MobileMenu({
             <Link
               href="/privacy"
               onClick={closeMenu}
-              className="hover:text-slate-900"
+              className="flex min-h-[44px] items-center hover:text-slate-900"
             >
               Privacy
             </Link>
@@ -86,7 +86,7 @@ export default function MobileMenu({
             <a
               href="mailto:support@autoaudit.uk"
               onClick={closeMenu}
-              className="hover:text-slate-900"
+              className="flex min-h-[44px] items-center hover:text-slate-900"
             >
               Contact us
             </a>
@@ -95,7 +95,7 @@ export default function MobileMenu({
               <Link
                 href="/reports"
                 onClick={closeMenu}
-                className="hover:text-slate-900"
+                className="flex min-h-[44px] items-center hover:text-slate-900"
               >
                 View saved reports
               </Link>
@@ -103,7 +103,7 @@ export default function MobileMenu({
               <Link
                 href="/auth"
                 onClick={closeMenu}
-                className="hover:text-slate-900"
+                className="flex min-h-[44px] items-center hover:text-slate-900"
               >
                 Sign in
               </Link>

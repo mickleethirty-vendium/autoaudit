@@ -1,14 +1,7 @@
+import { normaliseRegistration as cleanRegistration, isLikelyUkRegistration } from "@/lib/vehicleCheck";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
-
-function cleanRegistration(reg: string): string {
-  return reg.replace(/\s/g, "").toUpperCase();
-}
-
-function isLikelyUkRegistration(value: string) {
-  return /^[A-Z0-9]{2,8}$/.test(value);
-}
 
 function normalizeOptionalString(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -130,6 +123,7 @@ export async function POST(req: Request) {
         },
         body: JSON.stringify({ registrationNumber: cleanReg }),
         cache: "no-store",
+        signal: AbortSignal.timeout(15000),
       }
     );
 

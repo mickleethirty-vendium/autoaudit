@@ -83,9 +83,8 @@ export default function BestCarsForMotorwayDrivingUkPage() {
         title="Best cars for motorway driving in the UK"
         subtitle="Used car buying guide"
         ctaComponent={
-          <RegLookupCta
+          <RegLookupCta intent="buying-guide" position="early"
             title="Found a motorway car?"
-            subtitle="Check the exact registration for MOT history, repeated advisories and hidden repair-cost risks before you buy."
             variant="light"
           />
         }
@@ -197,6 +196,7 @@ export default function BestCarsForMotorwayDrivingUkPage() {
           </Link>
         </div>
       </section>
+      <RegLookupCta intent="buying-guide" position="end" className="mt-10" />
     </div>
   );
 }

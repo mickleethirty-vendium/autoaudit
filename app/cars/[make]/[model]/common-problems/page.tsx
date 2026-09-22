@@ -259,9 +259,8 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
         title={`${modelName} Common Problems`}
         subtitle="Used car buyer guide"
         ctaComponent={
-          <RegLookupCta
+          <RegLookupCta intent="common-problems" position="early" make={row.make} model={row.model}
             title={`Check this ${modelName} before you buy`}
-            subtitle="See MOT history, recurring advisories and hidden repair-cost risks for the exact car you’re considering."
             variant="light"
           />
         }
@@ -320,9 +319,8 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
           signals in its own history.
         </p>
         <div className="mt-4">
-          <RegLookupCta
+          <RegLookupCta intent="common-problems" position="midpoint" make={row.make} model={row.model}
             title={`Run a ${modelName} registration check`}
-            subtitle="Check the actual vehicle before you arrange a viewing, leave a deposit or agree a price."
           />
         </div>
       </section>
@@ -394,7 +392,7 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
       </section>
 
       <section className="mt-10 rounded-2xl border bg-slate-950 p-5 text-white">
-        <h2 className="text-xl font-semibold">
+        <h2 className="text-xl font-semibold text-white">
           Ready to check a specific {modelName}?
         </h2>
         <p className="mt-2 text-slate-200">
@@ -403,9 +401,8 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
           MOT history, advisory patterns and vehicle-specific risk.
         </p>
         <div className="mt-4">
-          <RegLookupCta
+          <RegLookupCta intent="common-problems" position="end" make={row.make} model={row.model}
             title={`Check this ${modelName} by registration`}
-            subtitle="Get a clearer view of the exact car before you commit."
             variant="dark"
           />
         </div>

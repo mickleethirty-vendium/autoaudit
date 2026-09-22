@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { paidEntitlements } from "@/lib/paymentPolicy";
 import { NextResponse } from "next/server";
 import { mustGetEnv } from "@/lib/env";
 import { supabaseAdmin } from "@/lib/supabase";
@@ -28,7 +29,8 @@ export async function GET(req: Request) {
       );
     }
 
-    if (session.payment_status !== "paid") {
+    const entitlements = paidEntitlements(session, reportId);
+    if (!entitlements) {
       return NextResponse.json(
         { error: `Session not paid: ${session.payment_status}`, report_id: reportId },
         { status: 400 }
@@ -37,7 +39,7 @@ export async function GET(req: Request) {
 
     const { error } = await supabaseAdmin
       .from("reports")
-      .update({ is_paid: true })
+      .update({ is_paid: true, ...(entitlements.history ? { hpi_unlocked: true } : {}) })
       .eq("id", reportId);
 
     if (error) {

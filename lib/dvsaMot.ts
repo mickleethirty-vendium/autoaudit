@@ -44,6 +44,7 @@ async function getAccessToken(): Promise<string> {
       },
       body: body.toString(),
       cache: "no-store",
+      signal: AbortSignal.timeout(10000),
     });
   } catch (error: any) {
     throw new Error(`DVSA token fetch failed: ${error?.message ?? "unknown error"}`);
@@ -98,6 +99,7 @@ export async function fetchDvsaMotHistory(
           Accept: "application/json+v6",
         },
         cache: "no-store",
+      signal: AbortSignal.timeout(10000),
       });
     } catch (error: any) {
       return {

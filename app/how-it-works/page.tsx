@@ -72,7 +72,7 @@ export default function HowItWorks() {
           </p>
 
           <div className="mt-7 max-w-2xl">
-            <RegLookupCta
+            <RegLookupCta intent="general" position="early"
               title="Start with a registration check"
               subtitle="Enter the reg to see vehicle-specific MOT history, advisories and buyer-risk signals."
               variant="dark"
@@ -192,7 +192,7 @@ export default function HowItWorks() {
           </div>
 
           <div className="mt-10 rounded-2xl border bg-slate-950 p-6 text-white">
-            <h2 className="text-2xl font-semibold">
+            <h2 className="text-2xl font-semibold text-white">
               Ready to check a specific car?
             </h2>
             <p className="mt-2 text-slate-200">
@@ -200,7 +200,7 @@ export default function HowItWorks() {
               vehicle-specific buyer-risk insight.
             </p>
             <div className="mt-5">
-              <RegLookupCta
+              <RegLookupCta intent="general" position="end"
                 title="Start your AutoAudit check"
                 subtitle="Check MOT history, advisory patterns and repair-risk signals before you buy."
                 variant="dark"

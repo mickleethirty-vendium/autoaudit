@@ -44,9 +44,8 @@ export default function QuestionsToAskUsedCarUkPage() {
         title="Questions to ask when buying a used car (UK)"
         subtitle="Used car buyer guide"
         ctaComponent={
-          <RegLookupCta
+          <RegLookupCta intent="buying-guide" position="early"
             title="Checking a car right now?"
-            subtitle="Enter the registration to see MOT history, repeat advisories and hidden repair-cost risks before you buy."
             variant="light"
           />
         }
@@ -151,9 +150,8 @@ export default function QuestionsToAskUsedCarUkPage() {
       </section>
 
       <section className="mt-10">
-        <RegLookupCta
+        <RegLookupCta intent="buying-guide" position="end"
           title="Check the car’s real history"
-          subtitle="Enter the registration to uncover MOT patterns, repeated advisories and hidden repair-cost risks."
         />
       </section>
 

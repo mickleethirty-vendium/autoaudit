@@ -1,3 +1,4 @@
+import ViewEvent from "@/components/conversion/ViewEvent";
 import type { Metadata } from "next";
 import Link from "next/link";
 import RegLookupCta from "@/components/seo/RegLookupCta";
@@ -49,6 +50,7 @@ export default function PricingPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
+      <ViewEvent event="pricing_viewed" data={{ page_type: "pricing" }} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema(faqs)) }}
@@ -58,7 +60,7 @@ export default function PricingPage() {
         <p className="text-sm font-semibold uppercase tracking-wide text-red-300">
           Pricing
         </p>
-        <h1 className="mt-3 max-w-3xl text-3xl font-bold tracking-tight md:text-5xl">
+        <h1 className="mt-3 max-w-3xl text-3xl font-bold tracking-tight md:text-5xl text-white">
           Check a used car before you buy it
         </h1>
         <p className="mt-4 max-w-3xl text-lg text-slate-200">
@@ -88,10 +90,7 @@ export default function PricingPage() {
           </ul>
 
           <div className="mt-6">
-            <RegLookupCta
-              title="Start with a free snapshot"
-              subtitle="Enter the registration to begin checking the car."
-            />
+            <a href="#pricing-check" className="btn-outline inline-flex min-h-[48px] items-center">Start with a free snapshot →</a>
           </div>
         </div>
 
@@ -99,7 +98,7 @@ export default function PricingPage() {
           <p className="text-sm font-semibold uppercase tracking-wide text-red-600">
             Most useful before buying
           </p>
-          <h2 className="mt-2 text-2xl font-bold">Full buyer-risk report</h2>
+          <h2 className="mt-2 text-2xl font-bold">Core Report</h2>
           <p className="mt-2 text-slate-700">
             Designed for buyers who are close to viewing, negotiating or paying
             for a used car.
@@ -115,14 +114,17 @@ export default function PricingPage() {
           </ul>
 
           <div className="mt-6">
-            <RegLookupCta
-              title="Check the actual car"
-              subtitle="Unlock the full report once you have entered the registration."
-            />
+            <a href="#pricing-check" className="btn-outline inline-flex min-h-[48px] items-center">Start with a free snapshot →</a>
           </div>
         </div>
       </section>
 
+      <section className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-6">
+        <h2 className="text-2xl font-bold">Full Bundle including HPI · £9.99</h2>
+        <p className="mt-3 text-slate-700">Everything in the £4.99 Core Report, plus available finance, write-off, stolen, mileage anomaly, keeper and plate-change checks. A one-off payment, with no subscription.</p>
+        <p className="mt-2 text-sm text-slate-600">Already have Core? Add HPI for £5 from your report. History checks reflect available records and do not replace an inspection.</p>
+        <a href="#pricing-check" className="mt-3 inline-flex min-h-[48px] items-center font-semibold underline">Start with the free snapshot →</a>
+      </section>
       <section className="mt-12 rounded-2xl border bg-slate-50 p-6">
         <h2 className="text-2xl font-semibold">Why pay for a report?</h2>
         <p className="mt-2 text-slate-700">
@@ -173,15 +175,15 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="mt-12 rounded-2xl border bg-slate-950 p-6 text-white">
-        <h2 className="text-2xl font-semibold">
+      <section id="pricing-check" className="mt-12 scroll-mt-24 rounded-2xl border bg-slate-950 p-6 text-white">
+        <h2 className="text-2xl font-semibold text-white">
           Check the car before you buy it
         </h2>
         <p className="mt-2 text-slate-200">
           Enter the registration and start with the free snapshot.
         </p>
         <div className="mt-5">
-          <RegLookupCta
+          <RegLookupCta intent="general" position="end"
             title="Start your AutoAudit check"
             subtitle="Move from guesswork to vehicle-specific buyer-risk insight."
             variant="dark"

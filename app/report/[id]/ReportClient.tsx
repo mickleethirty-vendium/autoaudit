@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import ExposureBar from "@/app/components/ExposureBar";
 import ReportDisclaimer from "@/app/components/ReportDisclaimer";
+import ViewEvent from "@/components/conversion/ViewEvent";
+import CheckoutLink from "@/components/conversion/CheckoutLink";
 import { trackEvent } from "@/lib/analytics";
 
 type RiskItem = {
@@ -1164,7 +1166,9 @@ export default function ReportClient({
   motRiskItems,
   askingPrice,
   marketValue,
+  sample = false,
 }: {
+  sample?: boolean;
   reg: string | null;
   make: string | null;
   year: number | null;
@@ -1207,22 +1211,7 @@ export default function ReportClient({
   const [activeTab, setActiveTab] = useState<ReportTab>("overview");
   const [sellerSummaryOpen, setSellerSummaryOpen] = useState(false);
 
-  useEffect(() => {
-    trackEvent("paid_report_viewed", {
-      page: "report",
-      registration_present: !!reg,
-      hpi_unlocked: hpiUnlocked,
-      just_unlocked_report: justUnlockedReport,
-      just_unlocked_hpi: justUnlockedHpi,
-      exposure_high: baseExposureHigh ?? -1,
-    });
-  }, [
-    reg,
-    hpiUnlocked,
-    justUnlockedReport,
-    justUnlockedHpi,
-    baseExposureHigh,
-  ]);
+
 
   const knownModelIssues = useMemo<KnownModelIssue[]>(
     () => parseKnownModelIssues(fullSummary),
@@ -1481,32 +1470,25 @@ export default function ReportClient({
 
   function handleOpenSellerSummary() {
     trackEvent("seller_summary_clicked", {
-      page: "report",
-      registration_present: !!reg,
+      page: sample ? "sample_report" : "report",
+      sample,
     });
 
     setSellerSummaryOpen(true);
   }
 
   function handleDownloadPdf() {
-    trackEvent("pdf_downloaded", {
-      page: "report",
-      registration_present: !!reg,
+    trackEvent("print_requested", {
+      page: sample ? "sample_report" : "report",
+      sample,
     });
 
     window.print();
   }
 
-  function handleHpiUpgradeClick(location: string) {
-    trackEvent("hpi_upgrade_clicked", {
-      page: "report",
-      location,
-      registration_present: !!reg,
-    });
-  }
-
   return (
     <div className="mx-auto w-full max-w-7xl px-3 py-3 sm:px-4 sm:py-4 lg:px-5">
+      {!sample && <ViewEvent event="paid_report_viewed" data={{ page_type: "report", hpi_unlocked: hpiUnlocked }} />}
       <SellerSummaryModal
         open={sellerSummaryOpen}
         onClose={() => setSellerSummaryOpen(false)}
@@ -1515,7 +1497,7 @@ export default function ReportClient({
 
       <div className="mb-4 hidden border-b border-slate-300 pb-2 print:block">
         <div className="text-base font-bold text-slate-950">
-          AutoAudit Vehicle Report
+          {sample ? "AutoAudit — sample Full Bundle" : "AutoAudit Vehicle Report"}
         </div>
         <div className="text-xs text-slate-600">
           Generated: {new Date().toLocaleDateString("en-GB")}
@@ -1580,7 +1562,7 @@ export default function ReportClient({
           <div className="max-w-4xl">
             <div className="flex flex-wrap items-center gap-2">
               <div className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-700 shadow-sm">
-                Paid report
+                {sample ? "Sample Full Bundle" : "Paid report"}
               </div>
 
               {adjustedTotals.addressedCount > 0 ? (
@@ -1862,7 +1844,7 @@ export default function ReportClient({
 
                 <div className="rounded-2xl border border-white/40 bg-white/92 p-3 shadow-[0_10px_28px_rgba(0,0,0,0.08)] backdrop-blur">
                   <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                    Vehicle history
+                    Vehicle history {sample ? "— Full Bundle example" : ""}
                   </div>
 
                   {!hpiUnlocked ? (
@@ -1874,13 +1856,12 @@ export default function ReportClient({
                         Finance, write-off, stolen, mileage anomaly, keeper and plate checks.
                       </p>
                       <div className="mt-3">
-                        <a
+                        {hpiUpgradeCheckoutUrl ? <CheckoutLink position="overview_upgrade"
                           href={hpiUpgradeCheckoutUrl}
-                          onClick={() => handleHpiUpgradeClick("overview_card")}
                           className="btn-primary block w-full text-center sm:inline-flex sm:w-auto"
                         >
                           Add HPI check · {hpiUpgradePriceLabel}
-                        </a>
+                        </CheckoutLink> : <p className="text-sm text-slate-700">History checks require a registration. Your Core Report remains available.</p>}
                       </div>
                     </div>
                   ) : hpiStatus === "error" ? (
@@ -2321,7 +2302,7 @@ export default function ReportClient({
               <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
                 <div className="mb-3">
                   <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
-                    Vehicle history
+                    Vehicle history {sample ? "— Full Bundle example" : ""}
                   </div>
                   <div className="mt-0.5 text-base font-bold text-slate-950">
                     History & provenance
@@ -2338,13 +2319,12 @@ export default function ReportClient({
                       mileage anomalies, keeper history and plate changes.
                     </p>
                     <div className="mt-3">
-                      <a
+                      {hpiUpgradeCheckoutUrl ? <CheckoutLink position="history_upgrade"
                         href={hpiUpgradeCheckoutUrl}
-                        onClick={() => handleHpiUpgradeClick("history_tab")}
                         className="btn-primary block w-full text-center sm:inline-flex sm:w-auto"
                       >
                         Add HPI check · {hpiUpgradePriceLabel}
-                      </a>
+                      </CheckoutLink> : <p className="text-sm text-slate-700">History checks require a registration. Your Core Report remains available.</p>}
                     </div>
                   </div>
                 ) : hpiStatus === "error" ? (

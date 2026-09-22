@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { buildCheckUrl, isLikelyUkRegistration } from "@/lib/vehicleCheck";
 import type { Metadata } from "next";
 import HeroCtaTextPanel from "@/components/seo/HeroCtaTextPanel";
 import RegLookupCta from "@/components/seo/RegLookupCta";
@@ -37,7 +39,15 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function CheckCarByRegistrationPage() {
+export default function CheckCarByRegistrationPage({ searchParams = {} }: { searchParams?: Record<string, string | string[] | undefined> }) {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(searchParams)) if (typeof value === "string") query.set(key, value);
+  const registration = query.get("registration") || query.get("vrm") || "";
+  if (isLikelyUkRegistration(registration)) {
+    if (!query.has("f_source")) query.set("f_source", "registration");
+    if (!query.has("f_landing")) query.set("f_landing", "registration");
+    redirect(buildCheckUrl(registration, query));
+  }
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
       <HeroCtaTextPanel
@@ -46,7 +56,7 @@ export default function CheckCarByRegistrationPage() {
         title="Check a car by registration"
         subtitle="Used car risk check"
         ctaComponent={
-          <RegLookupCta
+          <RegLookupCta intent="general" position="early"
             title="Enter the registration"
             subtitle="See MOT history, recurring advisories and hidden repair-cost risks instantly."
             variant="light"

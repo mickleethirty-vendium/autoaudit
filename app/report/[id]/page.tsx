@@ -1,7 +1,13 @@
+import { historyEligible } from "@/lib/paymentPolicy";
+import { funnelParams } from "@/lib/vehicleCheck";
+import { checkoutSource } from "@/lib/checkout";
+import PurchaseAnalytics from "@/components/conversion/PurchaseAnalytics";
+import CheckoutLink from "@/components/conversion/CheckoutLink";
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import Stripe from "stripe";
+import { paidEntitlements } from "@/lib/paymentPolicy";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { supabaseAdmin } from "@/lib/supabase";
@@ -356,128 +362,12 @@ function buildFallbackUkvdMatcherInput(args: {
   };
 }
 
-function buildPurchaseAnalyticsScript(args: {
-  reportId: string;
-  tier: CheckoutTier;
-  registrationPresent: boolean;
-  hpiUnlocked: boolean;
-  exposureHigh: number | null;
-}) {
-  const events = [
-    {
-      name: "purchase_completed",
-      data: {
-        page: "report",
-        report_id: args.reportId,
-        tier: args.tier,
-        registration_present: args.registrationPresent,
-        hpi_unlocked: args.hpiUnlocked,
-        exposure_high: args.exposureHigh ?? -1,
-      },
-    },
-  ];
-
-  if (args.tier === "report" || args.tier === "report_plus_hpi") {
-    events.push({
-      name: "core_report_unlocked",
-      data: {
-        page: "report",
-        report_id: args.reportId,
-        tier: args.tier,
-        registration_present: args.registrationPresent,
-        hpi_unlocked: args.hpiUnlocked,
-        exposure_high: args.exposureHigh ?? -1,
-      },
-    });
-  }
-
-  if (args.tier === "hpi_upgrade" || args.tier === "report_plus_hpi") {
-    events.push({
-      name: "hpi_unlocked",
-      data: {
-        page: "report",
-        report_id: args.reportId,
-        tier: args.tier,
-        registration_present: args.registrationPresent,
-        hpi_unlocked: args.hpiUnlocked,
-        exposure_high: args.exposureHigh ?? -1,
-      },
-    });
-  }
-
-  if (args.tier === "report_plus_hpi") {
-    events.push({
-      name: "bundle_unlocked",
-      data: {
-        page: "report",
-        report_id: args.reportId,
-        tier: args.tier,
-        registration_present: args.registrationPresent,
-        hpi_unlocked: args.hpiUnlocked,
-        exposure_high: args.exposureHigh ?? -1,
-      },
-    });
-  }
-
-  return `
-    (function () {
-      var storageKey = ${JSON.stringify(
-        `aa_purchase_analytics_${args.reportId}_${args.tier}`
-      )};
-      var events = ${JSON.stringify(events)};
-
-      try {
-        if (window.localStorage && window.localStorage.getItem(storageKey)) {
-          return;
-        }
-      } catch (error) {}
-
-      var attempts = 0;
-      var maxAttempts = 30;
-
-      function markTracked() {
-        try {
-          if (window.localStorage) {
-            window.localStorage.setItem(storageKey, "1");
-          }
-        } catch (error) {}
-      }
-
-      function sendEvents() {
-        attempts += 1;
-
-        if (typeof window !== "undefined" && typeof window.va === "function") {
-          events.forEach(function (event) {
-            window.va("event", {
-              name: event.name,
-              data: event.data
-            });
-          });
-
-          markTracked();
-          return;
-        }
-
-        if (attempts < maxAttempts) {
-          window.setTimeout(sendEvents, 250);
-        }
-      }
-
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", sendEvents);
-      } else {
-        sendEvents();
-      }
-    })();
-  `;
-}
-
 export default async function Page({
   params,
   searchParams,
 }: {
   params: { id: string };
-  searchParams?: { session_id?: string; tier?: string };
+  searchParams?: Record<string, string | undefined>;
 }) {
   const cookieStore = cookies();
 
@@ -544,6 +434,8 @@ export default async function Page({
 
   const sessionId = searchParams?.session_id;
   let paymentJustVerified = false;
+  let analyticsPaymentPaid = false;
+  let purchaseContext: Record<string, string> = {};
   let justUnlockedTier: CheckoutTier | null = null;
 
   if (sessionId) {
@@ -555,10 +447,17 @@ export default async function Page({
         session.metadata?.checkout_tier
       );
       const isSessionPaid =
-        session.payment_status === "paid" || session.status === "complete";
+        paidEntitlements(session, params.id) !== null;
 
       if (isSessionPaid && sessionReportId === params.id) {
         paymentJustVerified = true;
+        analyticsPaymentPaid = session.payment_status === "paid";
+        const purchaseFunnel = funnelParams(new URLSearchParams({ f_source: session.metadata?.funnel_source || "", f_landing: session.metadata?.landing_type || "", f_variant: session.metadata?.entry_variant || "", f_position: session.metadata?.entry_position || "" }));
+        purchaseContext = { source: checkoutSource(session.metadata?.checkout_source || null) };
+        if (purchaseFunnel.get("f_landing")) purchaseContext.landing_type = purchaseFunnel.get("f_landing")!;
+        if (purchaseFunnel.get("f_source")) purchaseContext.funnel_source = purchaseFunnel.get("f_source")!;
+        if (purchaseFunnel.get("f_variant")) purchaseContext.entry_variant = purchaseFunnel.get("f_variant")!;
+        if (purchaseFunnel.get("f_position")) purchaseContext.entry_position = purchaseFunnel.get("f_position")!;
         justUnlockedTier = sessionCheckoutTier;
 
         if (sessionCheckoutTier === "report") {
@@ -742,9 +641,16 @@ export default async function Page({
       ? previewKnownModelIssuesTeaser.message
       : null;
 
-  const reportCheckoutUrl = `/api/checkout?report_id=${data.id}&tier=report`;
-  const hpiUpgradeCheckoutUrl = `/api/checkout?report_id=${data.id}&tier=hpi_upgrade`;
-  const reportPlusHpiCheckoutUrl = `/api/checkout?report_id=${data.id}&tier=report_plus_hpi`;
+  const journeyInput = new URLSearchParams();
+  for (const [key, value] of Object.entries(searchParams || {})) {
+    if (typeof value === "string") journeyInput.set(key, value);
+  }
+  const journey = funnelParams(journeyInput);
+  const journeySuffix = journey.size ? `&${journey}` : "";
+  const canCheckHistory = historyEligible(reg);
+  const reportCheckoutUrl = `/api/checkout?report_id=${data.id}&tier=report&source=report${journeySuffix}`;
+  const hpiUpgradeCheckoutUrl = `/api/checkout?report_id=${data.id}&tier=hpi_upgrade&source=report${journeySuffix}`;
+  const reportPlusHpiCheckoutUrl = `/api/checkout?report_id=${data.id}&tier=report_plus_hpi&source=report${journeySuffix}`;
 
   const priceLabel = "£4.99";
   const hpiUpgradePriceLabel = "£5";
@@ -1090,27 +996,11 @@ export default async function Page({
     },
   };
 
-  const purchaseAnalyticsScript =
-    paymentJustVerified && justUnlockedTier
-      ? buildPurchaseAnalyticsScript({
-          reportId: data.id,
-          tier: justUnlockedTier,
-          registrationPresent: !!reg,
-          hpiUnlocked,
-          exposureHigh: paidExposureHigh,
-        })
-      : null;
-
   if (isPaid) {
     return (
       <>
-        {purchaseAnalyticsScript ? (
-          <script
-            dangerouslySetInnerHTML={{
-              __html: purchaseAnalyticsScript,
-            }}
-          />
-        ) : null}
+        {analyticsPaymentPaid && sessionId && justUnlockedTier ? <PurchaseAnalytics sessionId={sessionId} tier={justUnlockedTier} context={purchaseContext} /> : null}
+        {searchParams?.checkout_cancelled === "1" && <p role="status" className="mx-auto my-4 max-w-7xl rounded-xl border p-4 text-sm">Checkout was cancelled. Your Core Report remains available. You can add the history checks later.</p>}
 
         <ReportClient
           reg={reg}
@@ -1129,7 +1019,7 @@ export default async function Page({
           hpiUnlocked={hpiUnlocked}
           hpiStatus={hpiStatus}
           hpiChecks={hpiChecks}
-          hpiUpgradeCheckoutUrl={hpiUpgradeCheckoutUrl}
+          hpiUpgradeCheckoutUrl={canCheckHistory ? hpiUpgradeCheckoutUrl : ""}
           hpiUpgradePriceLabel={hpiUpgradePriceLabel}
           justUnlockedReport={justUnlockedReport}
           justUnlockedHpi={justUnlockedHpi}
@@ -1430,12 +1320,12 @@ export default async function Page({
                     Where the estimated repair exposure sits.
                   </p>
                 </div>
-                <a
+                <CheckoutLink position="exposure"
                   href={reportCheckoutUrl}
                   className="hidden rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 sm:inline-flex"
                 >
                   Unlock details
-                </a>
+                </CheckoutLink>
               </div>
 
               <div className="mt-3 space-y-2">
@@ -1525,21 +1415,21 @@ export default async function Page({
               </p>
 
               <div className="mt-3 grid grid-cols-1 gap-2">
-                <a
+                <CheckoutLink position="hero"
                   href={reportCheckoutUrl}
                   className="btn-primary block w-full text-center"
                   title="Unlock full report"
                 >
                   Unlock core report · {priceLabel}
-                </a>
+                </CheckoutLink>
 
-                <a
+                {canCheckHistory ? <CheckoutLink position="hero"
                   href={reportPlusHpiCheckoutUrl}
                   className="block w-full rounded-lg border border-white/15 bg-white/10 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-white/15"
                   title="Unlock complete bundle"
                 >
                   Get full bundle · {reportPlusHpiPriceLabel}
-                </a>
+                </CheckoutLink> : <p className="text-sm">History checks require a registration. Core remains available.</p>}
               </div>
 
               <div className="mt-3 grid grid-cols-1 gap-2 text-xs text-slate-300">
@@ -1592,12 +1482,12 @@ export default async function Page({
               </div>
 
               <div className="mt-4">
-                <a
+                <CheckoutLink position="unlock_panel"
                   href={reportCheckoutUrl}
                   className="btn-primary block w-full text-center"
                 >
                   Unlock full report · {priceLabel}
-                </a>
+                </CheckoutLink>
               </div>
             </section>
 
@@ -1640,12 +1530,12 @@ export default async function Page({
                 guidance, pricing context, MoT analysis and known model issues.
               </div>
               <div className="mt-3">
-                <a
+                <CheckoutLink position="core_card"
                   href={reportCheckoutUrl}
                   className="btn-primary block w-full text-center sm:inline-flex sm:w-auto"
                 >
                   Buy core report · {priceLabel}
-                </a>
+                </CheckoutLink>
               </div>
             </div>
 
@@ -1659,12 +1549,12 @@ export default async function Page({
                 mileage anomalies, keeper history and plate changes.
               </div>
               <div className="mt-3 flex flex-col gap-2.5">
-                <a
+                {canCheckHistory ? <CheckoutLink position="bundle_card"
                   href={reportPlusHpiCheckoutUrl}
                   className="btn-primary block w-full text-center sm:inline-flex sm:w-auto"
                 >
                   Buy complete bundle · {reportPlusHpiPriceLabel}
-                </a>
+                </CheckoutLink> : <p className="text-sm">History checks require a registration. Core remains available.</p>}
                 <span className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700">
                   Or start with core report and add history later for{" "}
                   {hpiUpgradePriceLabel}
@@ -1692,18 +1582,18 @@ export default async function Page({
           </div>
 
           <div className="flex w-full gap-2 sm:w-auto">
-            <a
-              href={reportCheckoutUrl}
+            <CheckoutLink position="report_sticky"
+                  href={reportCheckoutUrl}
               className="btn-primary block w-full text-center sm:w-auto"
             >
               Unlock report
-            </a>
-            <a
-              href={reportPlusHpiCheckoutUrl}
+            </CheckoutLink>
+            {canCheckHistory ? <CheckoutLink position="report_sticky"
+                  href={reportPlusHpiCheckoutUrl}
               className="block w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-center text-sm font-semibold text-slate-800 transition hover:bg-slate-100 sm:w-auto"
             >
               Full bundle
-            </a>
+            </CheckoutLink> : <p className="text-sm">History checks require a registration. Core remains available.</p>}
           </div>
         </div>
       </div>

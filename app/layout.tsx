@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { Analytics } from "@vercel/analytics/react";
+import AnalyticsProvider from "@/app/components/AnalyticsProvider";
 import { createServerClient } from "@supabase/ssr";
 import { mustGetEnv } from "@/lib/env";
 import LogoutButton from "@/app/components/LogoutButton";
@@ -12,6 +12,7 @@ import MobileMenu from "@/app/components/MobileMenu";
 import FloatingContactButton from "@/app/components/FloatingContactButton";
 
 export const metadata: Metadata = {
+  referrer: "strict-origin",
   metadataBase: new URL("https://autoaudit.uk"),
   title: {
     default: "Used Car Check UK | Avoid Hidden Costs | AutoAudit",
@@ -208,7 +209,7 @@ export default async function RootLayout({
           <FloatingContactButton />
         </div>
 
-        <Analytics />
+        <AnalyticsProvider />
       </body>
     </html>
   );

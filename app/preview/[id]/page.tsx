@@ -1,3 +1,7 @@
+import { historyEligible } from "@/lib/paymentPolicy";
+import { funnelParams } from "@/lib/vehicleCheck";
+import ViewEvent from "@/components/conversion/ViewEvent";
+import ProductComparison from "@/components/conversion/ProductComparison";
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
@@ -259,7 +263,7 @@ function snapshotTone(exposureHigh: number | null) {
     badgeLabel: "Lower repair exposure",
     title: "This one looks more manageable at first glance",
     description:
-      "The early signals look lighter, but a full report can still help rule out expensive surprises.",
+      "The early signals suggest lower repair exposure. The detailed report explains the findings and questions to check with the seller.",
   };
 }
 
@@ -287,7 +291,7 @@ function CompactStat({
   );
 }
 
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page({ params, searchParams }: { params: { id: string }; searchParams?: Record<string, string | undefined> }) {
   const { data, error } = await supabaseAdmin
     .from("reports")
     .select(
@@ -385,11 +389,16 @@ export default async function Page({ params }: { params: { id: string } }) {
       ? marketValue.valuation_mileage
       : null;
 
-  const reportCheckoutUrl = `/api/checkout?report_id=${data.id}&tier=report`;
-  const reportPlusHpiCheckoutUrl = `/api/checkout?report_id=${data.id}&tier=report_plus_hpi`;
+  const journeyInput = new URLSearchParams();
+  for (const [key, value] of Object.entries(searchParams || {})) {
+    if (typeof value === "string") journeyInput.set(key, value);
+  }
+  const journey = funnelParams(journeyInput);
+  const journeySuffix = journey.size ? `&${journey}` : "";
+  const canCheckHistory = historyEligible(reg);
+  const reportCheckoutUrl = `/api/checkout?report_id=${data.id}&tier=report&source=preview${journeySuffix}`;
+  const reportPlusHpiCheckoutUrl = `/api/checkout?report_id=${data.id}&tier=report_plus_hpi&source=preview${journeySuffix}`;
 
-  const reportPriceLabel = "£4.99";
-  const tier2TotalLabel = "£9.99";
 
   const motPayload: any = data.mot_payload ?? null;
   const mot = getMotSummary(motPayload);
@@ -397,6 +406,8 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-3 py-3 sm:px-4 sm:py-4 lg:px-5">
+      <ViewEvent event="snapshot_viewed" data={{ page_type: "preview" }} />
+      {searchParams?.checkout_cancelled === "1" && <p role="status" className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">Checkout was cancelled. Your free snapshot is still available below. You can choose a report whenever you’re ready.</p>}
       <section
         id="summary"
         className="relative overflow-hidden rounded-[1.5rem] border border-[var(--aa-silver)] bg-[var(--aa-black)] shadow-[0_16px_48px_rgba(15,23,42,0.12)]"
@@ -482,14 +493,9 @@ export default async function Page({ params }: { params: { id: string } }) {
               </div>
 
               <PreviewAnalytics
-                reportId={data.id}
                 coreCheckoutUrl={reportCheckoutUrl}
-                bundleCheckoutUrl={reportPlusHpiCheckoutUrl}
-                reportPriceLabel={reportPriceLabel}
-                tier2TotalLabel={tier2TotalLabel}
+                bundleCheckoutUrl={canCheckHistory ? reportPlusHpiCheckoutUrl : undefined}
                 location="hero"
-                exposureHigh={exposureHigh}
-                marketPosition={marketPosition}
                 variant="light"
               />
             </div>
@@ -540,6 +546,11 @@ export default async function Page({ params }: { params: { id: string } }) {
         </div>
       </div>
 
+      <section className="my-5" aria-labelledby="report-options">
+        <h2 id="report-options" className="mb-3 text-xl font-bold">Your snapshot is free. Choose more detail if it helps.</h2>
+        <ProductComparison historyAvailable={canCheckHistory} />
+        <p className="mt-3 text-xs text-slate-600">Estimates and available records are guidance, not a mechanical inspection or a guarantee of condition.</p>
+      </section>
       <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-[1.15fr_0.85fr]">
         <div className="space-y-3">
           {(askingPrice !== null ||
@@ -747,14 +758,9 @@ export default async function Page({ params }: { params: { id: string } }) {
             </p>
 
             <PreviewAnalytics
-              reportId={data.id}
               coreCheckoutUrl={reportCheckoutUrl}
-              bundleCheckoutUrl={reportPlusHpiCheckoutUrl}
-              reportPriceLabel={reportPriceLabel}
-              tier2TotalLabel={tier2TotalLabel}
+              bundleCheckoutUrl={canCheckHistory ? reportPlusHpiCheckoutUrl : undefined}
               location="unlock_panel"
-              exposureHigh={exposureHigh}
-              marketPosition={marketPosition}
               variant="dark"
             />
 

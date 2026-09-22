@@ -209,9 +209,8 @@ export default async function AdvisoryHubPage({ params }: Props) {
         title={`${row.advisory_label}: MOT advisory meaning`}
         subtitle="MOT advisory guide"
         ctaComponent={
-          <RegLookupCta
+          <RegLookupCta intent="mot-advisory" position="early"
             title="Check the exact car behind this advisory"
-            subtitle="See whether this warning is isolated, repeated or part of a bigger repair-risk pattern."
             variant="light"
           />
         }
@@ -380,6 +379,7 @@ export default async function AdvisoryHubPage({ params }: Props) {
           </div>
         ))}
       </section>
+      <RegLookupCta intent="mot-advisory" position="end" className="mt-10" />
     </div>
   );
 }

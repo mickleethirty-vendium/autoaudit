@@ -1,5 +1,6 @@
+import RegLookupCta from "@/components/seo/RegLookupCta";
 import type { Metadata } from "next";
-import Image from "next/image";
+import { DecorativeHero } from "@/components/seo/HeroCtaTextPanel";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAdvisoryBySlug, getModelByParams } from "@/lib/seo/data";
@@ -178,15 +179,7 @@ export default async function AdvisoryModelPage({ params }: Props) {
 
       <section className="overflow-hidden rounded-3xl border bg-white shadow-sm">
         <div className="grid gap-0 lg:grid-cols-2">
-          <div className="relative min-h-[260px] lg:min-h-full">
-            <Image
-              src="/hero-car-road.png"
-              alt={`${modelRow.make} ${modelRow.model} ${advisoryRow.advisory_label} advisory guide`}
-              fill
-              priority
-              className="object-cover"
-            />
-          </div>
+          <DecorativeHero src="/hero-car-road.png" className="min-h-[260px] lg:min-h-full" />
 
           <div className="p-5 sm:p-6 lg:p-7">
             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
@@ -210,29 +203,10 @@ export default async function AdvisoryModelPage({ params }: Props) {
                 or alongside other warning signs.
               </p>
 
-              <form
-                action="/check"
-                method="GET"
-                className="mt-4 flex flex-col gap-3 sm:flex-row"
-              >
-                <input
-                  type="text"
-                  name="registration"
-                  placeholder={`Enter ${modelRow.make} ${modelRow.model} registration`}
-                  required
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 text-base uppercase tracking-[0.2em]"
-                />
-
-                <button
-                  type="submit"
-                  className="rounded-xl bg-slate-900 px-6 py-3 text-base font-semibold text-white shadow-sm"
-                >
-                  Check this car
-                </button>
-              </form>
+              <RegLookupCta intent="mot-advisory" position="early" make={modelRow.make} model={modelRow.model} compact variant="light" />
 
               <p className="mt-3 text-sm font-medium text-slate-600">
-                Free preview • MOT history • Repair risk estimate • Market value
+                Free preview • Available MOT signals • Initial repair-risk estimate
               </p>
             </div>
           </div>
@@ -278,7 +252,7 @@ export default async function AdvisoryModelPage({ params }: Props) {
       </section>
 
       <section className="mt-10 rounded-3xl border bg-slate-900 p-6 text-white">
-        <h2 className="text-2xl font-semibold">
+        <h2 className="text-2xl font-semibold text-white">
           Found this on a car already? Run the registration check now.
         </h2>
         <p className="mt-3 max-w-2xl text-slate-200">
@@ -288,25 +262,7 @@ export default async function AdvisoryModelPage({ params }: Props) {
           it first appears.
         </p>
 
-        <form
-          action="/check"
-          method="GET"
-          className="mt-5 flex flex-col gap-3 sm:flex-row"
-        >
-          <input
-            type="text"
-            name="registration"
-            placeholder={`Enter ${modelRow.make} ${modelRow.model} registration`}
-            required
-            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-base uppercase tracking-[0.2em] text-slate-900"
-          />
-          <button
-            type="submit"
-            className="rounded-xl bg-white px-6 py-3 text-base font-semibold text-slate-900"
-          >
-            Start free check
-          </button>
-        </form>
+        <RegLookupCta intent="mot-advisory" position="end" make={modelRow.make} model={modelRow.model} variant="dark" />
       </section>
 
       <section className="mt-10 space-y-4">

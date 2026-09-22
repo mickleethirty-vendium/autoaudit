@@ -1,10 +1,14 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import useRequestTask from "@/components/conversion/useRequestTask";
+import { isRequestCancelled } from "@/lib/request";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getModelsForMake, vehicleMakes } from "@/lib/vehicleOptions";
 import { AnalyticsEvents, trackEvent } from "@/lib/analytics";
+
+import { normaliseRegistration, isLikelyUkRegistration, funnelParams } from "@/lib/vehicleCheck";
 
 type LookupVehicle = {
   registration: string;
@@ -18,10 +22,6 @@ type LookupVehicle = {
   motStatus?: string | null;
   taxStatus?: string | null;
 };
-
-function normaliseRegistration(value: string) {
-  return value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().trim();
-}
 
 function cleanText(value?: string | null) {
   if (!value) return "";
@@ -201,7 +201,7 @@ export default function CheckForm() {
   const searchParams = useSearchParams();
 
   const initialReg = useMemo(() => {
-    return normaliseRegistration(searchParams.get("registration") || "");
+    return normaliseRegistration(searchParams.get("registration") || searchParams.get("vrm") || "");
   }, [searchParams]);
 
   const initialAskingPrice = useMemo(() => {
@@ -221,7 +221,9 @@ export default function CheckForm() {
   const [continueError, setContinueError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const hasAutoLookupRef = useRef(false);
+  const hasAutoLookupRef = useRef("");
+  const lookupTask = useRequestTask();
+  const createTask = useRequestTask();
   const hasTrackedViewRef = useRef(false);
 
   const canonicalVehicleMake = useMemo(
@@ -250,7 +252,7 @@ export default function CheckForm() {
       has_prefilled_reg: !!initialReg,
       has_prefilled_asking_price: !!initialAskingPrice,
     });
-  }, [initialReg, initialAskingPrice]);
+  }, [initialReg, initialAskingPrice, searchParams]);
 
   useEffect(() => {
     if (!initialReg) return;
@@ -275,10 +277,11 @@ export default function CheckForm() {
     setSelectedModel("");
   }, [vehicle, canonicalVehicleModel]);
 
-  async function lookupVehicle(reg: string) {
+  const lookupVehicle = useCallback(async (reg: string, automatic = false) => {
+    if (lookupTask.pending) return;
     const cleaned = normaliseRegistration(reg);
 
-    if (!cleaned) {
+    if (!isLikelyUkRegistration(cleaned)) {
       setLookupError("Enter a valid registration.");
 
       trackEvent("lookup_failed", {
@@ -289,9 +292,13 @@ export default function CheckForm() {
       return;
     }
 
+    if (!automatic) {
+      trackEvent(AnalyticsEvents.CTA_CLICK, { page_type: "check", cta_variant: "general", cta_position: "lookup" });
+    }
+    trackEvent(AnalyticsEvents.VRM_SUBMITTED, { page_type: "check", source: automatic ? "auto_prefilled_reg" : "manual_submit" });
     trackEvent("lookup_started", {
       page: "check",
-      source: hasAutoLookupRef.current ? "auto_prefilled_reg" : "manual_submit",
+      source: automatic ? "auto_prefilled_reg" : "manual_submit",
     });
 
     setLookupLoading(true);
@@ -301,7 +308,7 @@ export default function CheckForm() {
     setSelectedModel("");
 
     try {
-      const response = await fetch("/api/lookup-reg", {
+      const { response, data } = await lookupTask.run("/api/lookup-reg", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -311,7 +318,6 @@ export default function CheckForm() {
         }),
       });
 
-      const data = await response.json().catch(() => null);
 
       if (!response.ok) {
         throw new Error(
@@ -341,7 +347,7 @@ export default function CheckForm() {
         taxStatus: data?.taxStatus ?? null,
       });
 
-      trackEvent("lookup_completed", {
+      trackEvent("vehicle_found", {
         page: "check",
         has_make: !!mappedMake,
         has_model: !!mappedModel,
@@ -349,6 +355,7 @@ export default function CheckForm() {
         has_mot_status: !!data?.motStatus,
       });
     } catch (err) {
+      if (isRequestCancelled(err)) return;
       const message =
         err instanceof Error
           ? err.message
@@ -361,9 +368,9 @@ export default function CheckForm() {
         reason: "lookup_error",
       });
     } finally {
-      setLookupLoading(false);
+      if (!lookupTask.pending) setLookupLoading(false);
     }
-  }
+  }, [lookupTask]);
 
   async function handleLookupSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -372,6 +379,7 @@ export default function CheckForm() {
 
   async function handleContinue(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (createTask.pending) return;
 
     if (!vehicle) {
       setContinueError("Vehicle details are missing.");
@@ -488,7 +496,7 @@ export default function CheckForm() {
     setContinueError(null);
 
     try {
-      const response = await fetch("/api/create-report", {
+      const { response, data } = await createTask.run("/api/create-report", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -507,7 +515,6 @@ export default function CheckForm() {
         }),
       });
 
-      const data = await response.json().catch(() => null);
 
       if (!response.ok) {
         throw new Error(data?.error || "We couldn’t build the preview right now.");
@@ -523,8 +530,12 @@ export default function CheckForm() {
         has_model: !!modelForPayload,
       });
 
-      router.push(`/preview/${data.report_id}`);
+      const context = funnelParams(new URLSearchParams(searchParams.toString()));
+      if (!context.has("f_source")) context.set("f_source", "check");
+      if (!context.has("f_landing")) context.set("f_landing", "check");
+      router.push(`/preview/${data.report_id}${context.size ? `?${context}` : ""}`);
     } catch (err) {
+      if (isRequestCancelled(err)) return;
       const message =
         err instanceof Error
           ? err.message
@@ -541,6 +552,9 @@ export default function CheckForm() {
   }
 
   function resetVehicleStep() {
+    lookupTask.cancel();
+    createTask.cancel();
+    setIsSubmitting(false);
     setVehicle(null);
     setLookupError(null);
     setContinueError(null);
@@ -555,11 +569,17 @@ export default function CheckForm() {
 
   useEffect(() => {
     if (!initialReg) return;
-    if (hasAutoLookupRef.current) return;
+    if (hasAutoLookupRef.current === initialReg) return;
 
-    hasAutoLookupRef.current = true;
-    void lookupVehicle(initialReg);
-  }, [initialReg]);
+    // Defer until after React's development effect replay so a cancelled
+    // probe mount cannot leave the real mount stuck or count two submissions.
+    const timer = setTimeout(() => {
+      lookupTask.cancel();
+      hasAutoLookupRef.current = initialReg;
+      void lookupVehicle(initialReg, true);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [initialReg, lookupTask, lookupVehicle]);
 
   return (
     <div className="w-full">
@@ -591,21 +611,23 @@ export default function CheckForm() {
                 autoCapitalize="characters"
                 autoCorrect="off"
                 spellCheck={false}
-                maxLength={8}
+                maxLength={10}
+                aria-invalid={!!lookupError}
+                aria-label="UK registration"
                 value={registration}
                 onChange={(e) => {
-                  setRegistration(normaliseRegistration(e.target.value));
+                  setRegistration(e.target.value.toUpperCase());
                   if (lookupError) setLookupError(null);
                 }}
                 disabled={lookupLoading}
                 placeholder="AB12CDE"
-                className="h-13 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-semibold tracking-[0.14em] text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[var(--aa-red)]"
+                className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-semibold tracking-[0.14em] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 transition placeholder:text-slate-400 focus:border-[var(--aa-red)]"
               />
 
               <button
                 type="submit"
                 disabled={lookupLoading}
-                className="inline-flex h-13 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-5 text-sm font-semibold text-white transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:cursor-not-allowed disabled:opacity-70 sm:min-w-[160px]"
+                className="inline-flex h-14 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-5 text-sm font-semibold text-white transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:cursor-not-allowed disabled:opacity-70 sm:min-w-[160px]"
               >
                 {lookupLoading ? "Looking up…" : "Find vehicle"}
               </button>
@@ -617,7 +639,7 @@ export default function CheckForm() {
 
             <div className="mt-2.5">
               <Link
-                href="/manual-check"
+                href={`/manual-check?${funnelParams(new URLSearchParams(searchParams.toString()))}`}
                 onClick={() =>
                   trackEvent(AnalyticsEvents.MANUAL_CHECK_CLICKED, {
                     page: "check",
@@ -712,7 +734,7 @@ export default function CheckForm() {
                   if (continueError) setContinueError(null);
                 }}
                 disabled={isSubmitting}
-                className="h-13 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 outline-none transition focus:border-[var(--aa-red)]"
+                className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 transition focus:border-[var(--aa-red)]"
               >
                 <option value="">Select model</option>
                 {availableModelsForVehicle.map((option) => (
@@ -758,7 +780,7 @@ export default function CheckForm() {
                     }}
                     placeholder="e.g. 62,000"
                     disabled={isSubmitting}
-                    className="h-13 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[var(--aa-red)]"
+                    className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 transition placeholder:text-slate-400 focus:border-[var(--aa-red)]"
                   />
                   <FieldHint tone="required">
                     Required — used in risk and valuation estimates.
@@ -781,7 +803,7 @@ export default function CheckForm() {
                       if (continueError) setContinueError(null);
                     }}
                     disabled={isSubmitting}
-                    className="h-13 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 outline-none transition focus:border-[var(--aa-red)]"
+                    className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 transition focus:border-[var(--aa-red)]"
                   >
                     <option value="">Select gearbox</option>
                     <option value="manual">Manual</option>
@@ -796,11 +818,11 @@ export default function CheckForm() {
               </div>
 
               <div className="mt-3 rounded-xl border border-[var(--aa-red)]/15 bg-[var(--aa-red)]/5 p-3">
-                <div className="text-sm font-semibold text-slate-900">
+                <label htmlFor="askingPrice" className="block text-sm font-semibold text-slate-900">
                   Asking price
-                </div>
+                </label>
                 <div className="mt-0.5 text-sm text-slate-700">
-                  Optional, but recommended for price-vs-market guidance.
+                  Optional — used for market comparison in the paid Core Report where available.
                 </div>
                 <div className="mt-2.5">
                   <input
@@ -815,7 +837,7 @@ export default function CheckForm() {
                     }}
                     placeholder="Optional, e.g. 7,495"
                     disabled={isSubmitting}
-                    className="h-13 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[var(--aa-red)]"
+                    className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 transition placeholder:text-slate-400 focus:border-[var(--aa-red)]"
                   />
                 </div>
               </div>
@@ -834,7 +856,7 @@ export default function CheckForm() {
               <div className="mt-1 grid gap-1 text-sm leading-5 text-slate-700">
                 <div>• Free risk snapshot</div>
                 <div>• Repair exposure estimate</div>
-                <div>• Price context if asking price is entered</div>
+                <div>• Optional asking price saved for paid market comparison</div>
                 <div>• Option to unlock the full report afterwards</div>
               </div>
             </div>
@@ -843,7 +865,7 @@ export default function CheckForm() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="inline-flex h-13 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-6 text-sm font-semibold text-white transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:cursor-not-allowed disabled:opacity-70"
+                className="inline-flex h-14 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-6 text-sm font-semibold text-white transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {isSubmitting ? "Building preview…" : "Continue to free preview"}
               </button>
@@ -852,7 +874,7 @@ export default function CheckForm() {
                 type="button"
                 onClick={resetVehicleStep}
                 disabled={isSubmitting}
-                className="inline-flex h-13 items-center justify-center rounded-xl border border-slate-300 bg-white px-6 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+                className="inline-flex h-14 items-center justify-center rounded-xl border border-slate-300 bg-white px-6 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 Change registration
               </button>

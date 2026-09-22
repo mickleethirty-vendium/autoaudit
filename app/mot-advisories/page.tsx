@@ -150,9 +150,8 @@ export default function MotAdvisoriesHubPage() {
         title="MOT advisory guides"
         subtitle="Used car buyer guide"
         ctaComponent={
-          <RegLookupCta
+          <RegLookupCta intent="mot-advisory" position="early"
             title="Check the exact car by registration"
-            subtitle="See whether its MOT advisories are isolated, repeated or part of a bigger repair-risk pattern."
             variant="light"
           />
         }
@@ -316,6 +315,7 @@ export default function MotAdvisoriesHubPage() {
           </div>
         ))}
       </section>
+      <RegLookupCta intent="mot-advisory" position="end" className="mt-10" />
     </div>
   );
 }

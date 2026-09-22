@@ -19,12 +19,12 @@ export default function CheckPage() {
               </div>
 
               <h1 className="mt-3 max-w-5xl text-3xl font-extrabold tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)] sm:text-4xl lg:text-5xl">
-                Add a few more details
+                Start your free vehicle snapshot
               </h1>
 
-              <p className="mt-3 max-w-3xl text-base leading-6 text-white/92 drop-shadow-[0_2px_8px_rgba(0,0,0,0.25)] sm:text-lg">
-                We’ve got the registration. Now add mileage, gearbox type and
-                asking price so we can build a more useful snapshot.
+              <p className="mt-3 max-w-3xl text-base leading-6 text-white/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.25)] sm:text-lg">
+                We’ll look up the registration, then ask for mileage and gearbox.
+                An optional asking price prepares market comparison in the paid report. No payment details needed for the snapshot.
               </p>
 
               <div className="mt-5 grid w-full max-w-3xl grid-cols-1 gap-2 sm:grid-cols-3">
@@ -38,11 +38,11 @@ export default function CheckPage() {
                 />
                 <QuickInfo
                   title="Asking price"
-                  text="Lets us compare it with market value"
+                  text="Prepares price comparison in the paid report"
                 />
               </div>
 
-              <div className="mt-5 w-full max-w-3xl rounded-2xl border border-white/20 bg-white/94 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.18)] backdrop-blur">
+              <div className="mt-5 w-full max-w-3xl rounded-2xl border border-white/20 bg-white/95 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.18)] backdrop-blur">
                 <div className="mb-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-left">
                   <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
                     Before you continue

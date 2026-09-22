@@ -171,9 +171,8 @@ export default async function ModelHubPage({ params }: Props) {
         title={`${modelName} used buying guide`}
         subtitle="Reliability, common problems and MOT risk"
         ctaComponent={
-          <RegLookupCta
+          <RegLookupCta intent="buying-guide" position="early" make={row.make} model={row.model}
             title={`Check a specific ${modelName} by registration`}
-            subtitle="See MOT history, recurring advisories and repair-risk signals before you buy."
             variant="light"
           />
         }
@@ -216,9 +215,8 @@ export default async function ModelHubPage({ params }: Props) {
           warning signs in its MOT history.
         </p>
         <div className="mt-4">
-          <RegLookupCta
+          <RegLookupCta intent="buying-guide" position="midpoint" make={row.make} model={row.model}
             title={`Run a ${modelName} registration check`}
-            subtitle="Move from general buying advice to vehicle-specific risk before money changes hands."
           />
         </div>
       </section>
@@ -341,7 +339,7 @@ export default async function ModelHubPage({ params }: Props) {
       </section>
 
       <section className="mt-10 rounded-2xl border bg-slate-950 p-5 text-white">
-        <h2 className="text-2xl font-semibold">
+        <h2 className="text-2xl font-semibold text-white">
           Ready to check a specific {modelName}?
         </h2>
         <p className="mt-2 text-slate-200">
@@ -349,9 +347,8 @@ export default async function ModelHubPage({ params }: Props) {
           vehicle-specific repair-risk signals before you buy.
         </p>
         <div className="mt-4">
-          <RegLookupCta
+          <RegLookupCta intent="buying-guide" position="end" make={row.make} model={row.model}
             title={`Check this ${modelName} by registration`}
-            subtitle="Get a clearer view of the exact car before you commit."
             variant="dark"
           />
         </div>

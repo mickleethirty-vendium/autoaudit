@@ -83,9 +83,8 @@ export default function BestUsedCarsForTallDriversUkPage() {
         title="Best used cars for tall drivers in the UK"
         subtitle="Used car buying guide"
         ctaComponent={
-          <RegLookupCta
+          <RegLookupCta intent="buying-guide" position="early"
             title="Found a car that fits?"
-            subtitle="Check the exact registration for MOT history, repeated advisories and hidden repair-cost risks before you buy."
             variant="light"
           />
         }
@@ -196,6 +195,7 @@ export default function BestUsedCarsForTallDriversUkPage() {
           </Link>
         </div>
       </section>
+      <RegLookupCta intent="buying-guide" position="end" className="mt-10" />
     </div>
   );
 }

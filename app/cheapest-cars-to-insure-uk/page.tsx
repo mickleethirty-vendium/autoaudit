@@ -77,9 +77,8 @@ export default function CheapestCarsToInsureUkPage() {
         title="Cheapest cars to insure in the UK"
         subtitle="Used car buyer guide"
         ctaComponent={
-          <RegLookupCta
+          <RegLookupCta intent="buying-guide" position="early"
             title="Found a car to check?"
-            subtitle="Enter the registration to see MOT history, advisories, and repair-cost risks instantly."
             variant="light"
           />
         }
@@ -129,9 +128,8 @@ export default function CheapestCarsToInsureUkPage() {
       </section>
 
       <section className="mt-10">
-        <RegLookupCta
+        <RegLookupCta intent="buying-guide" position="end"
           title="Check the car’s registration now"
-          subtitle="See MOT history, repeat advisories, and repair-cost risk before you buy."
         />
       </section>
 
