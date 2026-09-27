@@ -2486,6 +2486,33 @@ export default function ReportClient({
 
           {activeTab === "all" ? (
             <div className="mt-3 space-y-3 print:hidden">
+              {hpiUnlocked ? (
+                <section aria-labelledby="all-history-heading" className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                  <h2 id="all-history-heading" className="text-base font-bold text-slate-950">
+                    Vehicle history findings
+                  </h2>
+                  {hpiStatus === "success" && hpiChecks.length ? (
+                    <>
+                      <p className="mt-1 text-sm leading-5 text-slate-700">
+                        These are the same available history checks shown in History &amp; provenance. Investigate any flagged records before buying.
+                      </p>
+                      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                        {hpiChecks.map((item) => (
+                          <SummaryMetric
+                            key={item.label}
+                            label={item.label}
+                            value={renderHpiDisplayValue(item.value)}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <p className="mt-2 text-sm leading-5 text-slate-700">
+                      Vehicle history results are unavailable. This does not mean the checks are clear. The rest of your report remains available.
+                    </p>
+                  )}
+                </section>
+              ) : null}
               <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
                 <div className="mb-3">
                   <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">

@@ -423,14 +423,9 @@ export default async function Page({ params, searchParams }: { params: { id: str
             <div className="inline-flex items-center rounded-full border border-[var(--aa-silver)] bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-700 shadow-sm">
               Free snapshot
             </div>
-            <div
-              className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${tone.badgeClass}`}
-            >
-              {tone.badgeLabel}
-            </div>
           </div>
 
-          <div className="mt-3 grid gap-3 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
+          <div className="mt-3">
             <div className="min-w-0">
               <h1 className="text-[1.7rem] font-extrabold leading-none tracking-tight text-black sm:text-[2rem]">
                 {reg ? reg : "Vehicle snapshot"}
@@ -450,13 +445,28 @@ export default async function Page({ params, searchParams }: { params: { id: str
                   : ""}
               </div>
 
-              <h2 className="mt-3 text-lg font-extrabold leading-tight tracking-tight text-slate-950 sm:text-xl">
-                {tone.title}
-              </h2>
-
-              <p className="mt-1.5 max-w-3xl text-sm leading-5 text-slate-700">
-                {tone.description}
-              </p>
+              <section aria-labelledby="snapshot-verdict" className="mt-3 rounded-2xl border border-slate-200 bg-white/95 p-3">
+                <h2 id="snapshot-verdict" className="text-lg font-extrabold leading-tight tracking-tight text-slate-950">
+                  Overall risk / exposure
+                </h2>
+                <div className="mt-2 flex flex-wrap items-center gap-3 sm:gap-5">
+                  <RiskGauge riskLevel={riskLevel} exposureHigh={exposureHigh} />
+                  <div className="min-w-0 flex-1 basis-24">
+                    <p className="text-xs font-semibold text-slate-600">Estimated repairs</p>
+                    <p className="mt-1 text-lg font-bold text-slate-950">
+                      {exposureLow !== null && exposureHigh !== null
+                        ? `${money(exposureLow)} – ${money(exposureHigh)}`
+                        : "Unavailable"}
+                    </p>
+                    <p className="mt-2 text-xs leading-5 text-slate-600">
+                      Lower · Moderate · Higher risk
+                    </p>
+                  </div>
+                </div>
+                <p className="mt-3 max-w-3xl text-sm leading-5 text-slate-700">
+                  {tone.description}
+                </p>
+              </section>
 
               <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
                 <CompactStat
@@ -498,12 +508,6 @@ export default async function Page({ params, searchParams }: { params: { id: str
                 location="hero"
                 variant="light"
               />
-            </div>
-
-            <div className="flex justify-center lg:justify-end">
-              <div className="rounded-[1.6rem] border border-white/45 bg-white/88 px-4 py-4 shadow-[0_14px_36px_rgba(0,0,0,0.10)] backdrop-blur">
-                <RiskGauge riskLevel={riskLevel} exposureHigh={exposureHigh} />
-              </div>
             </div>
           </div>
         </div>

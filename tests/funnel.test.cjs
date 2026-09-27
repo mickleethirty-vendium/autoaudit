@@ -247,3 +247,26 @@ test('analytics reads only current bounded journey categories, ignoring old stor
     assert.deepEqual(analytics.readFunnel(new URLSearchParams()),{});
   } finally {global.window=previous;}
 });
+const { buildUkvdHpiSummary } = require('../lib/hpi.ts');
+const { getHpiChecks } = require('../lib/hpiChecks.ts');
+
+test('provider finance, write-off, stolen and mileage flags reach the report display unchanged', () => {
+  for (const flagged of [true, false]) {
+    const summary = buildUkvdHpiSummary({ Results: {
+      FinanceDetails: { FinanceRecordList: flagged ? [{}] : [] },
+      MiaftrDetails: { WriteOffRecordList: flagged ? [{ Category: 'S' }] : [] },
+      PncDetails: { IsStolen: flagged },
+      MileageCheckDetails: { MileageAnomalyDetected: flagged },
+    } });
+    const checks = Object.fromEntries(getHpiChecks(summary).map(item => [item.label, item.value]));
+    for (const label of ['Finance', 'Write-off', 'Stolen', 'Mileage']) assert.equal(checks[label], flagged, label);
+  }
+});
+
+test('history display preserves legacy values, canonical false and unavailable data', () => {
+  assert.deepEqual(getHpiChecks(null), []);
+  assert.deepEqual(getHpiChecks({}), []);
+  assert.deepEqual(getHpiChecks({ mileage_anomaly: 'Review records' }), [{ label: 'Mileage', value: 'Review records' }]);
+  assert.deepEqual(getHpiChecks({ mileageFlag: false, mileageAnomaly: true }), [{ label: 'Mileage', value: false }]);
+  assert.deepEqual(getHpiChecks({ finance: null }), [{ label: 'Finance', value: null }]);
+});

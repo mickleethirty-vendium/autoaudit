@@ -21,6 +21,12 @@ const backend = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost');
   if (url.pathname === '/rest/v1/reports') {
     if (['eq.manual-fixture','eq.manual-paid'].includes(url.searchParams.get('id'))) return res.end(JSON.stringify({...fixture, registration:null, is_paid:url.searchParams.get('id')==='eq.manual-paid', id:url.searchParams.get('id').slice(3)}));
+    if (url.searchParams.get('id') === 'eq.history-fixture') {
+      const data = { ...fixture, id: 'history-fixture', is_paid: true, hpi_unlocked: true,
+        hpi_checked: true, hpi_status: 'success', hpi_payload: { Results: {} },
+        hpi_summary: { finance: true, writeOff: true, stolen: true, mileageFlag: true } };
+      return res.end(JSON.stringify(req.headers.accept?.includes('vnd.pgrst.object') ? data : [data]));
+    }
     const data = url.searchParams.get('id') === 'eq.paid-fixture' ? { ...fixture, id: 'paid-fixture', is_paid: true } : fixture;
     return res.end(JSON.stringify(req.headers.accept?.includes('vnd.pgrst.object') ? data : [data]));
   }
@@ -84,6 +90,42 @@ async function main() {
     await page.waitForURL('**/preview/fixture-report**'); await page.getByText('Your snapshot is free. Choose more detail if it helps.').waitFor();
     assert.equal((await events()).filter(e => e.name === 'snapshot_viewed').length, 1);
     await page.screenshot({ path: path.join(out, 'mobile-snapshot.png'), fullPage: true });
+  });
+  await run('free verdict follows identity and precedes checkout in the initial mobile viewport', async () => {
+    for (const [width, height] of [[320, 640], [375, 667], [390, 844], [430, 932]]) {
+      await page.setViewportSize({ width, height });
+      await go('/preview/fixture-report');
+      const verdict = page.getByRole('region', { name: 'Overall risk / exposure' });
+      const label = verdict.getByText('Moderate risk', { exact: true });
+      const identityBox = await page.locator('h1').boundingBox();
+      const labelBox = await label.boundingBox();
+      const checkoutBox = await page.getByRole('link', { name: 'Unlock Core Report · £4.99' }).first().boundingBox();
+      assert.ok(labelBox.y > identityBox.y && labelBox.y + labelBox.height < height, `verdict above fold at ${width}`);
+      assert.ok(labelBox.y < checkoutBox.y, 'verdict before purchase options');
+      await verdict.getByText('£300 – £800', { exact: true }).waitFor();
+      await page.screenshot({ path: path.join(out, `snapshot-verdict-${width}.png`) });
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
+    // Restore the attributed journey used by the following checkout assertions.
+    await go('/preview/fixture-report?f_source=common_problems');
+  });
+  await run('Full Bundle history flags agree across Overview, History and All findings; Core stays gated', async () => {
+    await go('/report/history-fixture');
+    for (const tab of ['Overview', 'Vehicle history', 'All findings']) {
+      await page.getByRole('button', { name: tab, exact: true }).click();
+      const scope = tab === 'All findings'
+        ? page.getByRole('region', { name: 'Vehicle history findings' })
+        : page.locator('section:visible').filter({ has: page.getByText('Finance', { exact: true }) }).last();
+      for (const label of ['Finance', 'Write-off', 'Stolen', 'Mileage']) {
+        const metric = scope.getByText(label, { exact: true }).locator('..');
+        await metric.getByText('Flag found', { exact: true }).waitFor();
+      }
+    }
+    await page.screenshot({ path: path.join(out, 'all-history-findings.png'), fullPage: true });
+    await go('/report/paid-fixture');
+    await page.getByRole('button', { name: 'All findings', exact: true }).click();
+    assert.equal(await page.getByRole('region', { name: 'Vehicle history findings' }).count(), 0);
+    await go('/preview/fixture-report?f_source=common_problems');
   });
   await run('checkout failure is retryable and does not emit checkout_started', async () => {
     await clear(); await page.route('**/api/checkout?**', route=>route.fulfill({ status: 500, json: { error: 'fixture failure' } }));
