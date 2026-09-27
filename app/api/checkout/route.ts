@@ -40,6 +40,17 @@ const stripe = new Stripe(mustGetEnv("STRIPE_SECRET_KEY"), {
 
 type CheckoutTier = "report" | "hpi_upgrade" | "report_plus_hpi";
 
+type CheckoutRejectionCode =
+  | "INVALID_REPORT_REFERENCE"
+  | "REGISTRATION_REQUIRED"
+  | "CORE_PAYMENT_REQUIRED";
+
+function rejectCheckout(code: CheckoutRejectionCode, tier: CheckoutTier, error: string) {
+  // Fixed categories only: never log the request URL, report reference or vehicle data.
+  console.warn("Checkout rejected", { code, tier });
+  return NextResponse.json({ error, code }, { status: 400 });
+}
+
 function parseTier(value: string | null): CheckoutTier {
   if (value === "hpi_upgrade") return "hpi_upgrade";
   if (value === "report_plus_hpi") return "report_plus_hpi";
@@ -120,10 +131,7 @@ export async function GET(req: NextRequest) {
     const funnel = funnelParams(searchParams);
 
     if (!isLikelyValidReportId(reportId)) {
-      return NextResponse.json(
-        { error: "Missing or invalid report_id" },
-        { status: 400 },
-      );
+      return rejectCheckout("INVALID_REPORT_REFERENCE", tier, "Missing or invalid report_id");
     }
 
     const { data: report, error: reportError } = await supabaseAdmin
@@ -135,7 +143,9 @@ export async function GET(req: NextRequest) {
     if (reportError) return NextResponse.json({ error: "Unable to check report eligibility. Please try again." }, { status: 503 });
     if (!report) return NextResponse.json({ error: "Report not found" }, { status: 404 });
     const eligibilityError = checkoutEligibility(tier, report);
-    if (eligibilityError) return NextResponse.json({ error: eligibilityError }, { status: 400 });
+    if (eligibilityError) {
+      return rejectCheckout(eligibilityError.code, tier, eligibilityError.error);
+    }
 
     const suffix = funnel.size ? `&${funnel}` : "";
     const successUrl = getSuccessUrl(reportId, tier) + suffix;
