@@ -14,7 +14,7 @@ export const pageTypes = ["homepage", "common_problems", "model_guide", "make_hu
 export type PageType = typeof pageTypes[number];
 export const intents = ["general", "common-problems", "mot-advisory", "buying-guide", "diagnostic"] as const;
 export type Intent = typeof intents[number];
-export const positions = ["early", "midpoint", "end", "hero", "inline", "sticky", "unlock_panel", "lookup", "upgrade", "overview_upgrade", "history_upgrade", "exposure", "core_card", "bundle_card", "report_end", "report_sticky"] as const;
+export const positions = ["early", "midpoint", "end", "hero", "inline", "sticky", "unlock_panel", "lookup", "upgrade", "overview_upgrade", "history_upgrade", "exposure", "core_card", "bundle_card", "report_end", "report_sticky", "snapshot_primary", "snapshot_sidebar", "snapshot_mobile_sticky"] as const;
 export type Position = typeof positions[number];
 export function pageTypeForPath(path: string): PageType {
   if (path === "/") return "homepage";

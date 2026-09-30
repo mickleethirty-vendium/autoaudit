@@ -5,7 +5,11 @@ import { usePathname } from "next/navigation";
 export default function FloatingContactButton() {
   const pathname = usePathname();
 
-  if (pathname === "/sample-report" || pathname.startsWith("/report/")) return null;
+  if (
+    pathname === "/sample-report" ||
+    pathname.startsWith("/report/") ||
+    pathname.startsWith("/preview/")
+  ) return null;
 
   return (
     <a

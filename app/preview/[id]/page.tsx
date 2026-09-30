@@ -8,7 +8,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase";
 import RiskGauge from "@/app/components/RiskGauge";
-import PreviewAnalytics from "./PreviewAnalytics";
+import SnapshotPurchasePanel from "./SnapshotPurchasePanel";
+import styles from "./snapshot.module.css";
 
 function titleCase(s: string) {
   return s
@@ -408,9 +409,10 @@ export default async function Page({ params, searchParams }: { params: { id: str
     <div className="mx-auto w-full max-w-6xl px-3 py-3 sm:px-4 sm:py-4 lg:px-5">
       <ViewEvent event="snapshot_viewed" data={{ page_type: "preview" }} />
       {searchParams?.checkout_cancelled === "1" && <p role="status" className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">Checkout was cancelled. Your free snapshot is still available below. You can choose a report whenever you’re ready.</p>}
+      <div className={styles.layout}>
       <section
         id="summary"
-        className="relative overflow-hidden rounded-[1.5rem] border border-[var(--aa-silver)] bg-[var(--aa-black)] shadow-[0_16px_48px_rgba(15,23,42,0.12)]"
+        className={`${styles.summary} relative overflow-hidden rounded-[1.5rem] border border-[var(--aa-silver)] bg-[var(--aa-black)] shadow-[0_16px_48px_rgba(15,23,42,0.12)]`}
       >
         <div
           className="absolute inset-0 bg-cover bg-center"
@@ -450,7 +452,9 @@ export default async function Page({ params, searchParams }: { params: { id: str
                   Overall risk / exposure
                 </h2>
                 <div className="mt-2 flex flex-wrap items-center gap-3 sm:gap-5">
-                  <RiskGauge riskLevel={riskLevel} exposureHigh={exposureHigh} />
+                  <div className={styles.gauge}>
+                    <RiskGauge riskLevel={riskLevel} exposureHigh={exposureHigh} />
+                  </div>
                   <div className="min-w-0 flex-1 basis-24">
                     <p className="text-xs font-semibold text-slate-600">Estimated repairs</p>
                     <p className="mt-1 text-lg font-bold text-slate-950">
@@ -464,10 +468,20 @@ export default async function Page({ params, searchParams }: { params: { id: str
                   </div>
                 </div>
                 <p className="mt-3 max-w-3xl text-sm leading-5 text-slate-700">
-                  {tone.description}
+                  An initial estimate, not a mechanical inspection.
                 </p>
               </section>
+            </div>
+          </div>
+        </div>
+      </section>
 
+      <SnapshotPurchasePanel
+        coreCheckoutUrl={reportCheckoutUrl}
+        bundleCheckoutUrl={canCheckHistory ? reportPlusHpiCheckoutUrl : undefined}
+      />
+      <div className={styles.details}>
+        <p className="text-sm leading-5 text-slate-700">{tone.description}</p>
               <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
                 <CompactStat
                   label="Estimated repairs"
@@ -501,17 +515,6 @@ export default async function Page({ params, searchParams }: { params: { id: str
                   to unlock the full report.
                 </div>
               </div>
-
-              <PreviewAnalytics
-                coreCheckoutUrl={reportCheckoutUrl}
-                bundleCheckoutUrl={canCheckHistory ? reportPlusHpiCheckoutUrl : undefined}
-                location="hero"
-                variant="light"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
 
       <div className="sticky top-2 z-20 mt-3">
         <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white/95 px-2 py-2 shadow-sm backdrop-blur">
@@ -555,7 +558,7 @@ export default async function Page({ params, searchParams }: { params: { id: str
         <ProductComparison historyAvailable={canCheckHistory} />
         <p className="mt-3 text-xs text-slate-600">Estimates and available records are guidance, not a mechanical inspection or a guarantee of condition.</p>
       </section>
-      <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-[1.15fr_0.85fr]">
+      <div className="mt-3 grid grid-cols-1 gap-3 xl:grid-cols-[1.15fr_0.85fr]">
         <div className="space-y-3">
           {(askingPrice !== null ||
             marketLow !== null ||
@@ -761,12 +764,9 @@ export default async function Page({ params, searchParams }: { params: { id: str
               and optional vehicle history checks.
             </p>
 
-            <PreviewAnalytics
-              coreCheckoutUrl={reportCheckoutUrl}
-              bundleCheckoutUrl={canCheckHistory ? reportPlusHpiCheckoutUrl : undefined}
-              location="unlock_panel"
-              variant="dark"
-            />
+            <a href="#snapshot-purchase" className="mt-3 inline-flex min-h-[48px] items-center rounded-lg border border-white/30 px-4 py-3 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+              See report options · from £4.99
+            </a>
 
             <div className="mt-3 grid gap-1 text-xs text-slate-300">
               <div>• Detailed findings and itemised repair exposure</div>
@@ -778,6 +778,8 @@ export default async function Page({ params, searchParams }: { params: { id: str
             </div>
           </section>
         </div>
+      </div>
+      </div>
       </div>
     </div>
   );

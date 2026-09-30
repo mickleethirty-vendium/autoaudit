@@ -34,7 +34,7 @@ const backend = http.createServer((req, res) => {
 });
 let app, browser;
 const results = [];
-async function run(name, fn) { if (process.env.BROWSER_LAYOUT_ONLY && !name.startsWith('representative')) return; await fn(); results.push({ name, result: 'PASS' }); console.log(`PASS ${name}`); }
+async function run(name, fn) { if (process.env.BROWSER_PURCHASE_ONLY && !name.startsWith('snapshot purchase panel')) return; if (process.env.BROWSER_LAYOUT_ONLY && !name.startsWith('representative')) return; await fn(); results.push({ name, result: 'PASS' }); console.log(`PASS ${name}`); }
 const delay = ms => new Promise(r => setTimeout(r, ms));
 async function main() {
   await new Promise(resolve => backend.listen(54329, '127.0.0.1', resolve));
@@ -127,6 +127,91 @@ async function main() {
     assert.equal(await page.getByRole('region', { name: 'Vehicle history findings' }).count(), 0);
     await go('/preview/fixture-report?f_source=common_problems');
   });
+  await run('snapshot purchase panel is immediate, sticky and deduplicated without new checkout paths', async () => {
+    const sticky = page.getByRole('link', { name: 'Unlock full analysis — from £4.99', exact: true });
+    for (const [width, height] of [[320, 640], [375, 667], [390, 844], [430, 932], [768, 720]]) {
+      await page.setViewportSize({ width, height });
+      await go('/preview/fixture-report?f_source=common_problems&f_position=end');
+      const purchase = page.locator('#snapshot-purchase');
+      const core = purchase.getByRole('link', { name: 'Unlock Core Report · £4.99' });
+      const verdict = await page.getByRole('region', { name: 'Overall risk / exposure' }).boundingBox();
+      const box = await core.boundingBox();
+      assert.ok(box.y > verdict.y + verdict.height, `purchase follows verdict at ${width}`);
+      assert.ok(box.y + box.height <= height, `primary purchase visible initially at ${width}`);
+      assert.equal(await sticky.count(), 0);
+      assert.equal(await page.locator('a[href*="tier=report&"]').count(), 1);
+      const originalTop = await purchase.evaluate(el => el.getBoundingClientRect().top + scrollY);
+      await page.evaluate(() => window.scrollTo(0, document.querySelector('#snapshot-purchase').getBoundingClientRect().bottom + scrollY + 20));
+      await sticky.waitFor();
+      const stickyBox = await sticky.boundingBox();
+      assert.ok(stickyBox.y + stickyBox.height <= height, `sticky fits at ${width}`);
+      assert.equal(await purchase.evaluate(el => el.getBoundingClientRect().top + scrollY), originalTop, 'no layout jump');
+      await sticky.click();
+      await sticky.waitFor({ state: 'hidden' });
+      assert.equal(await purchase.evaluate(el => document.activeElement === el), true, 'return transfers focus');
+      for (let n = 0; n < 2; n++) {
+        await page.evaluate(() => window.scrollTo(0, document.querySelector('#snapshot-purchase').getBoundingClientRect().bottom + scrollY + 20));
+        await sticky.waitFor();
+        await sticky.click();
+      }
+      const seen = (await page.evaluate(() => window.__events)).filter(e => e.name === 'cta_view' && e.data.cta_position === 'snapshot_mobile_sticky');
+      assert.equal(seen.length, 1, 'sticky remounts do not recount impressions');
+      const click = (await page.evaluate(() => window.__events)).find(e => e.name === 'cta_click' && e.data.cta_position === 'snapshot_mobile_sticky');
+      assert.equal(click.data.funnel_source, 'common_problems');
+      await page.evaluate(() => window.scrollTo(0, document.querySelector('#snapshot-purchase').getBoundingClientRect().bottom + scrollY + 20));
+      await sticky.waitFor();
+      // This Edge build cannot emulate iOS env() insets; exercise a 34px inset
+      // through the same CSS sizing rule using its local override.
+      await sticky.locator('../..').evaluate(el => el.style.setProperty('--snapshot-bottom-inset', '34px'));
+      assert.equal(await sticky.locator('../..').evaluate(el => parseFloat(getComputedStyle(el).paddingBottom)), 34);
+      const insetBox = await sticky.boundingBox();
+      assert.ok(insetBox.y + insetBox.height <= height - 34);
+      await sticky.locator('../..').evaluate(el => el.style.removeProperty('--snapshot-bottom-inset'));
+      await page.evaluate(() => { const input = document.createElement('input'); input.id = 'focus-fixture'; document.body.append(input); input.focus({ preventScroll: true }); });
+      await sticky.waitFor({ state: 'hidden' });
+      await page.evaluate(() => { document.activeElement.blur(); document.querySelector('#focus-fixture').remove(); });
+      await sticky.waitFor();
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      await sticky.waitFor({ state: 'hidden' });
+      await page.evaluate(() => window.scrollTo(0, document.querySelector('#snapshot-purchase').getBoundingClientRect().bottom + scrollY + 20));
+      await sticky.waitFor();
+      await page.screenshot({ path: path.join(out, `snapshot-mobile-bar-${width}.png`) });
+      await page.getByRole('button', { name: 'Dismiss purchase options bar' }).click();
+      await sticky.waitFor({ state: 'hidden' });
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      await sticky.waitFor({ state: 'hidden' });
+      await go('/preview/fixture-report');
+      await page.screenshot({ path: path.join(out, `snapshot-purchase-${width}.png`) });
+    }
+    for (const [width, height] of [[1024, 600], [1440, 900], [1024, 400]]) {
+      await page.setViewportSize({ width, height });
+      await go('/preview/fixture-report?f_source=buying_guide');
+      const purchase = page.locator('#snapshot-purchase');
+      const initial = await purchase.boundingBox();
+      const summary = await page.locator('#summary').boundingBox();
+      assert.ok(initial.x >= summary.x + summary.width && Math.abs(initial.y - summary.y) < 2, 'sidebar aligned near top');
+      await page.screenshot({ path: path.join(out, `snapshot-sidebar-initial-${width}-${height}.png`) });
+      await page.evaluate(() => window.scrollTo(0, 500));
+      const scrolled = await purchase.boundingBox();
+      assert.ok(scrolled.y >= 15 && scrolled.y <= 17, 'CSS sticky offset');
+      assert.ok(scrolled.y + scrolled.height <= height, 'short-screen panel stays within viewport');
+      const bundle = purchase.getByRole('link', { name: 'Full Bundle including HPI · £9.99' });
+      await bundle.focus();
+      const bundleBox = await bundle.boundingBox();
+      assert.ok(bundleBox.y >= 0 && bundleBox.y + bundleBox.height <= height, 'keyboard can reach Bundle');
+      assert.equal(await sticky.count(), 0);
+      const views = (await page.evaluate(() => window.__events)).filter(e => e.name === 'cta_view');
+      assert.ok(views.some(e => e.data.cta_position === 'snapshot_sidebar'));
+      assert.ok(!views.some(e => e.data.cta_position === 'snapshot_primary'), 'no hydration impression under wrong position');
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      const final = await purchase.boundingBox();
+      const footer = await page.locator('footer').boundingBox();
+      assert.ok(final.y + final.height <= footer.y, 'sidebar does not overlap footer');
+      await page.screenshot({ path: path.join(out, `snapshot-sidebar-${width}-${height}.png`) });
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
+    await go('/preview/fixture-report?f_source=common_problems');
+  });
   await run('checkout failure is retryable and does not emit checkout_started', async () => {
     await clear(); await page.route('**/api/checkout?**', route=>route.fulfill({ status: 500, json: { error: 'fixture failure' } }));
     await page.getByRole('link', { name: 'Unlock Core Report · £4.99' }).first().click();
@@ -175,7 +260,7 @@ async function main() {
   await run('manual reports expose Core only and server rejects crafted Bundle/upgrade requests', async () => {
     await go('/preview/manual-fixture');
     assert.equal(await page.locator('a[href*="tier=report_plus_hpi"]').count(),0);
-    assert.equal(await page.locator('a[href*="tier=report&"]').count(),2);
+    assert.equal(await page.locator('a[href*="tier=report&"]').count(),1);
     await page.getByText('This manual check has no registration.',{exact:false}).first().waitFor();
     for(const [id,tier] of [['manual-fixture','report_plus_hpi'],['manual-paid','hpi_upgrade']]) {
       const response=await page.request.get(`http://127.0.0.1:3100/api/checkout?report_id=${id}&tier=${tier}`,{headers:{Accept:'application/json'}});

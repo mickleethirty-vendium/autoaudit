@@ -4,12 +4,12 @@ import CheckoutLink from "@/components/conversion/CheckoutLink";
 export default function PreviewAnalytics({ coreCheckoutUrl, bundleCheckoutUrl, location, variant }: {
   coreCheckoutUrl: string;
   bundleCheckoutUrl?: string;
-  location: "hero" | "unlock_panel";
+  location: "snapshot_primary" | "snapshot_sidebar";
   variant: "light" | "dark";
 }) {
   const explanation = `text-xs leading-5 ${variant === "dark" ? "text-slate-200" : "text-slate-600"}`;
   return (
-    <div className="mt-4 grid gap-3">
+    <div className="mt-3 grid gap-2">
       <CheckoutLink href={coreCheckoutUrl} position={location} className="btn-primary flex w-full items-center justify-center text-center">
         Unlock Core Report · £4.99
       </CheckoutLink>
