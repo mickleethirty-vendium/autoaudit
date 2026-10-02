@@ -1,8 +1,9 @@
+import { publishedModels } from "@/lib/seo/estate";
 import type { Metadata } from "next";
 import Link from "next/link";
 import HeroCtaTextPanel from "@/components/seo/HeroCtaTextPanel";
 import RegLookupCta from "@/components/seo/RegLookupCta";
-import { allMotAdvisoryTypes, wave1Models } from "@/lib/seo/data";
+import { allMotAdvisoryTypes } from "@/lib/seo/data";
 import {
   absoluteUrl,
   buildAdvisoryHubPath,
@@ -63,7 +64,7 @@ function getAdvisoryCards(): AdvisoryCard[] {
 }
 
 function getPriorityModelCards(): ModelCard[] {
-  return wave1Models
+  return publishedModels
     .filter((row) => row.priority_tier === 1 || row.launch_wave === 1)
     .slice(0, 12)
     .map((row) => ({
@@ -89,8 +90,7 @@ function getGroupedAdvisories() {
     .map(([category, advisories]) => ({
       category,
       advisories: advisories
-        .sort((a, b) => a.advisory_label.localeCompare(b.advisory_label))
-        .slice(0, 12),
+        .sort((a, b) => a.advisory_label.localeCompare(b.advisory_label)),
     }));
 }
 

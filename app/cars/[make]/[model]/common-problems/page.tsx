@@ -1,12 +1,12 @@
+import { generalAdvisoryGuides } from "@/lib/seo/relationships";
+import { publishedModels } from "@/lib/seo/estate";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import RegLookupCta from "@/components/seo/RegLookupCta";
 import HeroCtaTextPanel from "@/components/seo/HeroCtaTextPanel";
 import {
-  allMotAdvisoryTypes,
   getModelByParams,
-  wave1Models,
 } from "@/lib/seo/data";
 import {
   absoluteUrl,
@@ -122,7 +122,7 @@ function getGenericIssueBullets(make: string, model: string) {
 }
 
 function getRelatedModels(makeSlug: string, modelSlug: string): RelatedModel[] {
-  return wave1Models
+  return publishedModels
     .filter(
       (item) => item.make_slug === makeSlug && item.model_slug !== modelSlug,
     )
@@ -144,16 +144,16 @@ function getRelatedModels(makeSlug: string, modelSlug: string): RelatedModel[] {
 }
 
 function getRelatedAdvisories(): RelatedAdvisory[] {
-  return allMotAdvisoryTypes.slice(0, 6).map((item) => ({
+  return generalAdvisoryGuides.map((item) => ({
     href: buildAdvisoryHubPath(item.advisory_slug),
     label: `${item.advisory_label} advisory meaning`,
     description:
-      "Understand how this MOT advisory can affect used car buying risk.",
+      "General component guidance; not a model-specific failure-rate claim.",
   }));
 }
 
 export async function generateStaticParams() {
-  return wave1Models.map((row) => ({
+  return publishedModels.map((row) => ({
     make: row.make_slug,
     model: row.model_slug,
   }));
@@ -370,7 +370,7 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
       ) : null}
 
       <section className="mt-10 space-y-4">
-        <h2 className="text-2xl font-semibold">Related MOT advisory guides</h2>
+        <h2 className="text-2xl font-semibold">General MOT component guides</h2>
         <p className="text-slate-700">
           MOT advisories are often where early warning signs first appear. These
           guides help explain what common advisory wording can mean before you

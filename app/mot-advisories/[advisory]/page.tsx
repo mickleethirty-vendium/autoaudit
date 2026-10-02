@@ -1,3 +1,4 @@
+import { getRelatedAdvisories } from "@/lib/seo/relationships";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -6,12 +7,10 @@ import RegLookupCta from "@/components/seo/RegLookupCta";
 import {
   allMotAdvisoryTypes,
   getAdvisoryBySlug,
-  highPriorityModels,
 } from "@/lib/seo/data";
 import {
   absoluteUrl,
   buildAdvisoryHubPath,
-  buildModelCommonProblemsPath,
 } from "@/lib/seo/routes";
 import { articleSchema, breadcrumbSchema, faqSchema } from "@/lib/seo/schema";
 
@@ -58,19 +57,8 @@ function getBuyerGuidance(label: string) {
   ];
 }
 
-function getPriorityBuyerModels() {
-  return highPriorityModels.slice(0, 6).map((model) => ({
-    href: buildModelCommonProblemsPath(model.make_slug, model.model_slug),
-    label: `${model.make} ${model.model} common problems`,
-    description:
-      "Compare this advisory with model-specific used-car warning signs.",
-  }));
-}
-
 function getRelatedAdvisoryGuides(currentSlug: string) {
-  return allMotAdvisoryTypes
-    .filter((item) => item.advisory_slug !== currentSlug)
-    .slice(0, 6)
+  return getRelatedAdvisories(currentSlug)
     .map((item) => ({
       href: buildAdvisoryHubPath(item.advisory_slug),
       label: `${item.advisory_label} advisory meaning`,
@@ -135,7 +123,6 @@ export default async function AdvisoryHubPage({ params }: Props) {
   const failVsAdvisory = getFailVsAdvisoryGuidance(row.advisory_label);
   const costRisk = getTypicalCostRisk(row.advisory_label);
   const buyerGuidance = getBuyerGuidance(row.advisory_label);
-  const priorityBuyerModels = getPriorityBuyerModels();
   const relatedAdvisoryGuides = getRelatedAdvisoryGuides(advisory);
 
   const faqs = [
@@ -277,40 +264,25 @@ export default async function AdvisoryHubPage({ params }: Props) {
       </section>
 
       <section className="mt-10 space-y-4">
-        <h2 className="text-2xl font-semibold">
-          Common cars where this advisory appears
-        </h2>
+        <h2 className="text-2xl font-semibold">Research the model as well as the advisory</h2>
         <p className="text-slate-700">
-          This warning can appear across many used cars. Compare it with
-          model-specific buying guides to understand how MOT warnings fit into
-          wider ownership risk.
+          This guide explains the component, not how frequently it fails on a
+          particular model. <Link href="/cars" className="underline underline-offset-2">Browse model buying guides</Link>
+          {" "}for the next part of your research.
         </p>
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {priorityBuyerModels.map((guide) => (
-            <Link
-              key={guide.href}
-              href={guide.href}
-              className="rounded-xl border p-4 transition hover:border-slate-400 hover:bg-slate-50"
-            >
-              <h3 className="font-medium">{guide.label}</h3>
-              <p className="mt-1 text-sm text-slate-600">
-                {guide.description}
-              </p>
-            </Link>
-          ))}
-        </div>
       </section>
 
       <section className="mt-10 space-y-4">
         <h2 className="text-2xl font-semibold">Related MOT advisory guides</h2>
         <p className="text-slate-700">
-          Used cars often show more than one advisory over time. These related
-          guides help you understand other warning signs that may appear in the
-          same MOT history.
+          Used cars often show more than one advisory over time. These guides cover the same or closely related components; they do not
+          establish that the defects occur together.
         </p>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {relatedAdvisoryGuides.length === 0 && (
+            <Link href="/mot-advisories" className="underline underline-offset-2">Browse guides by component</Link>
+          )}
           {relatedAdvisoryGuides.map((guide) => (
             <Link
               key={guide.href}

@@ -421,6 +421,9 @@ async function main() {
       }
     }
   });
+  await run('SEO sitemap, parent directories, links, schema and responsive navigation', async () => {
+    await require('./seo-browser-checks.cjs')({ context, page, out });
+  });
   assert.equal(writes, 0, 'Fixture backend received an unexpected write');
   assert.ok(captured.every(event => !/AB12CDE|fixture-report|paid-fixture|session_id/.test(JSON.stringify(event))), 'Analytics included vehicle or record identifiers');
   assert.deepEqual(errors, [], 'Browser runtime errors');

@@ -1,8 +1,10 @@
+import { allMakesModels } from "@/lib/seo/data";
+import { generalAdvisoryGuides } from "@/lib/seo/relationships";
+import { publishedModels, editorialPages, getMakeEstate } from "@/lib/seo/estate";
 import type { Metadata } from "next";
 import Link from "next/link";
 import HeroCtaTextPanel from "@/components/seo/HeroCtaTextPanel";
 import RegLookupCta from "@/components/seo/RegLookupCta";
-import { wave1Models, allMotAdvisoryTypes } from "@/lib/seo/data";
 import {
   absoluteUrl,
   buildAdvisoryHubPath,
@@ -60,7 +62,7 @@ type MakeCard = {
 };
 
 function getPriorityModels(): ModelCard[] {
-  const priorityRows = wave1Models
+  const priorityRows = publishedModels
     .filter((row) => row.priority_tier === 1 || row.launch_wave === 1)
     .slice(0, 24);
 
@@ -73,7 +75,7 @@ function getPriorityModels(): ModelCard[] {
 }
 
 function getPopularAdvisories(): AdvisoryCard[] {
-  return allMotAdvisoryTypes.slice(0, 8).map((row) => ({
+  return generalAdvisoryGuides.map((row) => ({
     href: buildAdvisoryHubPath(row.advisory_slug),
     label: `${row.advisory_label} advisory meaning`,
     description:
@@ -92,7 +94,7 @@ function getPopularMakes(): MakeCard[] {
   ];
 
   const rowsByMake = new Map(
-    wave1Models.map((row) => [row.make_slug, row.make] as const)
+    publishedModels.map((row) => [row.make_slug, row.make] as const)
   );
 
   return preferredMakeOrder
@@ -107,7 +109,7 @@ function getPopularMakes(): MakeCard[] {
 }
 
 function getGroupedModels() {
-  const priorityRows = wave1Models.filter(
+  const priorityRows = publishedModels.filter(
     (row) => row.priority_tier === 1 || row.launch_wave === 1
   );
 
@@ -421,6 +423,31 @@ export default function CarsHubPage() {
           <li>Compare similar cars with a little more confidence</li>
           <li>Move to a registration check once you find a serious option</li>
         </ul>
+      </section>
+
+      <section className="mt-10 space-y-4" aria-labelledby="buying-guides-title">
+        <h2 id="buying-guides-title" className="text-2xl font-semibold">Buying guides by budget and use</h2>
+        <p className="text-slate-700">Compare a shortlist, then use the model guides to prepare your checks.</p>
+        {[
+          { title: "Budget guides", pages: editorialPages.filter((page) => page.path.startsWith("/best-cars-under-")) },
+          { title: "Buying advice and everyday needs", pages: editorialPages.filter((page) => !page.path.startsWith("/best-cars-under-")) },
+        ].map((group) => (
+          <details key={group.title} className="rounded-xl border p-4">
+            <summary className="cursor-pointer py-2 font-semibold focus-visible:outline focus-visible:outline-2">{group.title}</summary>
+            <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+              {group.pages.map((page) => <li key={page.path}><Link href={page.path} className="inline-block py-2 underline underline-offset-2">{page.title}</Link></li>)}
+            </ul>
+          </details>
+        ))}
+        <details className="rounded-xl border p-4">
+          <summary className="cursor-pointer py-2 font-semibold focus-visible:outline focus-visible:outline-2">More makes in the model directory</summary>
+          <p className="my-3 text-sm text-slate-600">Navigation to other existing model guides, without a make-level reliability ranking.</p>
+          <ul className="grid gap-2 sm:grid-cols-3">
+            {[...new Set(allMakesModels.map((row) => row.make_slug))]
+              .filter((make) => getMakeEstate(make).status === "directory")
+              .map((make) => <li key={make}><Link href={`/cars/${make}`} className="inline-block py-2 underline underline-offset-2">{getMakeEstate(make).models[0].make}</Link></li>)}
+          </ul>
+        </details>
       </section>
 
       <section className="mt-10 space-y-4">

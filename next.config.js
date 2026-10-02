@@ -15,6 +15,10 @@ const nextConfig = {
         destination: "https://autoaudit.uk/:path*",
         permanent: true,
       },
+      // These names were exposed in the production sitemap from 85abe6c.
+      { source: "/small-cars-uk", destination: "/best-small-cars-uk", permanent: true },
+      { source: "/reliable-used-cars-uk", destination: "/best-reliable-cars-uk", permanent: true },
+      { source: "/family-cars-uk", destination: "/best-family-cars-uk", permanent: true },
     ];
   },
 };

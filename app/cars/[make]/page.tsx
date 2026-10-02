@@ -1,9 +1,11 @@
+import { generalAdvisoryGuides } from "@/lib/seo/relationships";
+import { publishedModels, getMakeEstate } from "@/lib/seo/estate";
+import ModelDirectory from "@/components/seo/ModelDirectory";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import HeroCtaTextPanel from "@/components/seo/HeroCtaTextPanel";
 import RegLookupCta from "@/components/seo/RegLookupCta";
-import { allMotAdvisoryTypes, wave1Models } from "@/lib/seo/data";
 import {
   absoluteUrl,
   buildAdvisoryHubPath,
@@ -30,19 +32,11 @@ type AdvisoryCard = {
 };
 
 function getMakeRows(makeSlug: string) {
-  return wave1Models
-    .filter((row) => row.make_slug === makeSlug)
-    .sort((a, b) => a.model.localeCompare(b.model));
+  return getMakeEstate(makeSlug).models;
 }
 
 function getPriorityModels(makeSlug: string): ModelCard[] {
-  const rows = getMakeRows(makeSlug);
-
-  const priorityRows = rows.filter(
-    (row) => row.priority_tier === 1 || row.launch_wave === 1,
-  );
-
-  const selected = (priorityRows.length ? priorityRows : rows).slice(0, 18);
+  const selected = getMakeEstate(makeSlug).curated;
 
   return selected.map((row) => ({
     href: buildModelHubPath(row.make_slug, row.model_slug),
@@ -53,7 +47,7 @@ function getPriorityModels(makeSlug: string): ModelCard[] {
 }
 
 function getRelatedAdvisories(): AdvisoryCard[] {
-  return allMotAdvisoryTypes.slice(0, 8).map((row) => ({
+  return generalAdvisoryGuides.map((row) => ({
     href: buildAdvisoryHubPath(row.advisory_slug),
     label: `${row.advisory_label} advisory meaning`,
     description:
@@ -91,7 +85,7 @@ function getMakeIntro(makeName: string) {
 }
 
 export async function generateStaticParams() {
-  const uniqueMakeSlugs = [...new Set(wave1Models.map((row) => row.make_slug))];
+  const uniqueMakeSlugs = [...new Set(publishedModels.map((row) => row.make_slug))];
 
   return uniqueMakeSlugs.map((make) => ({
     make,
@@ -109,6 +103,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const makeName = rows[0].make;
+  if (getMakeEstate(make).status === "directory") {
+    return {
+      title: `${makeName} Model Directory | AutoAudit`,
+      description: `Find existing ${makeName} model guides and return to the used-car research hub.`,
+      alternates: { canonical: absoluteUrl(`/cars/${make}`) },
+      robots: { index: false, follow: true },
+    };
+  }
   const title = `${makeName} Common Problems by Model | AutoAudit`;
   const description = `Browse ${makeName} common problems by model, compare used car warning signs, and check a specific ${makeName} by registration before you buy.`;
   const path = `/cars/${make}`;
@@ -150,6 +152,26 @@ export default async function MakeHubPage({ params }: Props) {
   if (!rows.length) notFound();
 
   const makeName = rows[0].make;
+  const estate = getMakeEstate(make);
+  if (estate.status === "directory") {
+    return (
+      <div className="mx-auto max-w-6xl px-4 py-6">
+        <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap gap-2 text-sm">
+          <Link href="/" className="underline">Home</Link><span>/</span>
+          <Link href="/cars" className="underline">Cars</Link><span>/</span>
+          <span>{makeName}</span>
+        </nav>
+        <h1 className="text-3xl font-bold">{makeName} model directory</h1>
+        <p className="my-5 max-w-2xl text-slate-700">
+          Choose a model to continue your research. These links organise existing
+          buying guides; they are not a reliability ranking. Individual condition,
+          servicing and history still matter when considering a used car.
+        </p>
+        <ModelDirectory models={estate.models} />
+        <p className="mt-6"><Link href="/cars" className="underline">Browse the car research hub</Link></p>
+      </div>
+    );
+  }
   const modelCards = getPriorityModels(make);
   const relatedAdvisories = getRelatedAdvisories();
   const intro = getMakeIntro(makeName);
@@ -307,7 +329,7 @@ export default async function MakeHubPage({ params }: Props) {
       </section>
 
       <section className="mt-10 space-y-4">
-        <h2 className="text-2xl font-semibold">Related MOT advisory guides</h2>
+        <h2 className="text-2xl font-semibold">General MOT component guides</h2>
         <p className="text-slate-700">
           These MOT advisory pages help explain warning signs that often appear
           alongside common used car buying risks.
@@ -391,6 +413,16 @@ export default async function MakeHubPage({ params }: Props) {
           </Link>
         </div>
       </section>
+
+      {estate.models.length > estate.curated.length && (
+        <details className="mt-10 rounded-2xl border p-5">
+          <summary className="cursor-pointer py-2 text-lg font-semibold focus-visible:outline focus-visible:outline-2">
+            Other existing {makeName} model guides
+          </summary>
+          <p className="my-4 text-sm text-slate-600">Browse other model names in the directory. This is navigation, not a ranking of reliability.</p>
+          <ModelDirectory models={estate.models.filter((model) => !estate.curated.some((row) => row.full_slug === model.full_slug))} />
+        </details>
+      )}
 
       <section className="mt-10 space-y-4">
         <h2 className="text-2xl font-semibold">FAQ</h2>

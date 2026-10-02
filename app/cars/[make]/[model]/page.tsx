@@ -1,12 +1,12 @@
+import { generalAdvisoryGuides } from "@/lib/seo/relationships";
+import { publishedModels } from "@/lib/seo/estate";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import HeroCtaTextPanel from "@/components/seo/HeroCtaTextPanel";
 import RegLookupCta from "@/components/seo/RegLookupCta";
 import {
-  allMotAdvisoryTypes,
   getModelByParams,
-  wave1Models,
 } from "@/lib/seo/data";
 import {
   absoluteUrl,
@@ -31,11 +31,11 @@ type LinkCard = {
 };
 
 function getRelatedAdvisories(): LinkCard[] {
-  return allMotAdvisoryTypes.slice(0, 8).map((row) => ({
+  return generalAdvisoryGuides.map((row) => ({
     href: buildAdvisoryHubPath(row.advisory_slug),
     label: `${row.advisory_label} advisory meaning`,
     description:
-      "Understand what this MOT advisory can mean for used car buying risk.",
+      "General component guidance; not a model-specific failure-rate claim.",
   }));
 }
 
@@ -44,7 +44,7 @@ function getReliabilityIntro(make: string, model: string) {
 }
 
 export async function generateStaticParams() {
-  return wave1Models.map((row) => ({
+  return publishedModels.map((row) => ({
     make: row.make_slug,
     model: row.model_slug,
   }));
@@ -244,7 +244,7 @@ export default async function ModelHubPage({ params }: Props) {
       </section>
 
       <section className="mt-10 space-y-4">
-        <h2 className="text-2xl font-semibold">MOT advisory patterns to check</h2>
+        <h2 className="text-2xl font-semibold">General MOT checks before buying</h2>
         <p className="text-slate-700">
           MOT advisories are useful because they can show how a car has been
           looked after over time. One minor advisory is not always a concern,
