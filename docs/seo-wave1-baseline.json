@@ -1,0 +1,3771 @@
+{
+  "baselineCommit": "effd70da96f879330c4c2d61e9dab849f8fc0eca",
+  "baselineTag": "baseline/pre-seo-wave1-20261002",
+  "preparedOn": "2026-10-02",
+  "release": {
+    "status": "pending validation and deployment",
+    "commit": null,
+    "deployment": null,
+    "deployedAt": null
+  },
+  "sitemap": {
+    "before": 418,
+    "expectedAfter": 438
+  },
+  "caveats": [
+    "The supplied comparison period Aug 6–Sep 2 overlaps the latest period Sep 2–Sep 29 by one day. It is not an exact non-overlapping previous period.",
+    "Headline position is reconstructed from rounded daily positions, weighted by impressions.",
+    "Page and query exports are independent dimensions. Principal queries are thematic candidates, not proven page associations.",
+    "Missing page rows are null, not assumed zero.",
+    "Coverage ends Sep 21 and predates the Oct 2 estate repair; it cannot measure that repair."
+  ],
+  "headline": {
+    "latest7": {
+      "file": "1-autoaudit.uk-Performance-on-Search-2026-10-02.zip",
+      "sha256": "DC73EDBE49A2C2D35F11C8F48C87C4E50CDCAF1DCED627720BF6913857179ABD",
+      "start": "2026-09-23",
+      "end": "2026-09-29",
+      "clicks": 6,
+      "impressions": 1010,
+      "ctrPercent": 0.594059405940594,
+      "approximateWeightedPosition": 11.193069306930694,
+      "devices": [
+        {
+          "Device": "Mobile",
+          "Clicks": "5",
+          "Impressions": "699",
+          "CTR": "0.72%",
+          "Position": "10.24"
+        },
+        {
+          "Device": "Desktop",
+          "Clicks": "1",
+          "Impressions": "294",
+          "CTR": "0.34%",
+          "Position": "13.81"
+        },
+        {
+          "Device": "Tablet",
+          "Clicks": "0",
+          "Impressions": "17",
+          "CTR": "0%",
+          "Position": "5.06"
+        }
+      ],
+      "countries": [
+        {
+          "Country": "United Kingdom",
+          "Clicks": "6",
+          "Impressions": "848",
+          "CTR": "0.71%",
+          "Position": "11.29"
+        },
+        {
+          "Country": "Ireland",
+          "Clicks": "0",
+          "Impressions": "13",
+          "CTR": "0%",
+          "Position": "7.85"
+        },
+        {
+          "Country": "United States",
+          "Clicks": "0",
+          "Impressions": "12",
+          "CTR": "0%",
+          "Position": "14.83"
+        },
+        {
+          "Country": "Brazil",
+          "Clicks": "0",
+          "Impressions": "11",
+          "CTR": "0%",
+          "Position": "6"
+        },
+        {
+          "Country": "India",
+          "Clicks": "0",
+          "Impressions": "9",
+          "CTR": "0%",
+          "Position": "18.44"
+        },
+        {
+          "Country": "France",
+          "Clicks": "0",
+          "Impressions": "6",
+          "CTR": "0%",
+          "Position": "8.67"
+        },
+        {
+          "Country": "Indonesia",
+          "Clicks": "0",
+          "Impressions": "6",
+          "CTR": "0%",
+          "Position": "29.33"
+        },
+        {
+          "Country": "Poland",
+          "Clicks": "0",
+          "Impressions": "5",
+          "CTR": "0%",
+          "Position": "6.6"
+        },
+        {
+          "Country": "Netherlands",
+          "Clicks": "0",
+          "Impressions": "5",
+          "CTR": "0%",
+          "Position": "7.2"
+        },
+        {
+          "Country": "Bangladesh",
+          "Clicks": "0",
+          "Impressions": "5",
+          "CTR": "0%",
+          "Position": "13.6"
+        }
+      ]
+    },
+    "latest28": {
+      "file": "3-autoaudit.uk-Performance-on-Search-2026-10-02-2.zip",
+      "sha256": "FCAE44A77C475E7A303DDB03CF75CC884F251FA980101E75C2D46F492CE13A9B",
+      "start": "2026-09-02",
+      "end": "2026-09-29",
+      "clicks": 32,
+      "impressions": 4411,
+      "ctrPercent": 0.7254590795737927,
+      "approximateWeightedPosition": 15.827635456812514,
+      "devices": [
+        {
+          "Device": "Mobile",
+          "Clicks": "25",
+          "Impressions": "2987",
+          "CTR": "0.84%",
+          "Position": "13.27"
+        },
+        {
+          "Device": "Desktop",
+          "Clicks": "7",
+          "Impressions": "1371",
+          "CTR": "0.51%",
+          "Position": "21.72"
+        },
+        {
+          "Device": "Tablet",
+          "Clicks": "0",
+          "Impressions": "53",
+          "CTR": "0%",
+          "Position": "7.92"
+        }
+      ],
+      "countries": [
+        {
+          "Country": "United Kingdom",
+          "Clicks": "25",
+          "Impressions": "3665",
+          "CTR": "0.68%",
+          "Position": "16.04"
+        },
+        {
+          "Country": "Australia",
+          "Clicks": "1",
+          "Impressions": "65",
+          "CTR": "1.54%",
+          "Position": "34.97"
+        },
+        {
+          "Country": "Ireland",
+          "Clicks": "1",
+          "Impressions": "61",
+          "CTR": "1.64%",
+          "Position": "8"
+        },
+        {
+          "Country": "Italy",
+          "Clicks": "1",
+          "Impressions": "14",
+          "CTR": "7.14%",
+          "Position": "20.36"
+        },
+        {
+          "Country": "France",
+          "Clicks": "1",
+          "Impressions": "12",
+          "CTR": "8.33%",
+          "Position": "11.75"
+        },
+        {
+          "Country": "South Africa",
+          "Clicks": "1",
+          "Impressions": "10",
+          "CTR": "10%",
+          "Position": "10.9"
+        },
+        {
+          "Country": "Romania",
+          "Clicks": "1",
+          "Impressions": "8",
+          "CTR": "12.5%",
+          "Position": "7.88"
+        },
+        {
+          "Country": "Croatia",
+          "Clicks": "1",
+          "Impressions": "3",
+          "CTR": "33.33%",
+          "Position": "6"
+        },
+        {
+          "Country": "United States",
+          "Clicks": "0",
+          "Impressions": "104",
+          "CTR": "0%",
+          "Position": "17.41"
+        },
+        {
+          "Country": "India",
+          "Clicks": "0",
+          "Impressions": "64",
+          "CTR": "0%",
+          "Position": "7.17"
+        }
+      ]
+    },
+    "comparison28": {
+      "file": "4-autoaudit.uk-Performance-on-Search-2026-10-02-3.zip",
+      "sha256": "A0C60AD6BEA5398D6F5386078E05E7BA13EEA28C055C63BCB20DEE98ED4D3CBB",
+      "start": "2026-08-06",
+      "end": "2026-09-02",
+      "clicks": 23,
+      "impressions": 2792,
+      "ctrPercent": 0.8237822349570201,
+      "approximateWeightedPosition": 19.347922636103153,
+      "devices": [
+        {
+          "Device": "Mobile",
+          "Clicks": "17",
+          "Impressions": "1878",
+          "CTR": "0.91%",
+          "Position": "13.81"
+        },
+        {
+          "Device": "Desktop",
+          "Clicks": "6",
+          "Impressions": "888",
+          "CTR": "0.68%",
+          "Position": "31.37"
+        },
+        {
+          "Device": "Tablet",
+          "Clicks": "0",
+          "Impressions": "26",
+          "CTR": "0%",
+          "Position": "8.92"
+        }
+      ],
+      "countries": [
+        {
+          "Country": "United Kingdom",
+          "Clicks": "23",
+          "Impressions": "2526",
+          "CTR": "0.91%",
+          "Position": "18.78"
+        },
+        {
+          "Country": "United States",
+          "Clicks": "0",
+          "Impressions": "62",
+          "CTR": "0%",
+          "Position": "33.58"
+        },
+        {
+          "Country": "India",
+          "Clicks": "0",
+          "Impressions": "31",
+          "CTR": "0%",
+          "Position": "31.58"
+        },
+        {
+          "Country": "Netherlands",
+          "Clicks": "0",
+          "Impressions": "13",
+          "CTR": "0%",
+          "Position": "15.38"
+        },
+        {
+          "Country": "Ireland",
+          "Clicks": "0",
+          "Impressions": "12",
+          "CTR": "0%",
+          "Position": "12.5"
+        },
+        {
+          "Country": "Germany",
+          "Clicks": "0",
+          "Impressions": "11",
+          "CTR": "0%",
+          "Position": "7.36"
+        },
+        {
+          "Country": "Sweden",
+          "Clicks": "0",
+          "Impressions": "9",
+          "CTR": "0%",
+          "Position": "15.33"
+        },
+        {
+          "Country": "Ghana",
+          "Clicks": "0",
+          "Impressions": "8",
+          "CTR": "0%",
+          "Position": "10"
+        },
+        {
+          "Country": "Greece",
+          "Clicks": "0",
+          "Impressions": "7",
+          "CTR": "0%",
+          "Position": "6.43"
+        },
+        {
+          "Country": "Philippines",
+          "Clicks": "0",
+          "Impressions": "7",
+          "CTR": "0%",
+          "Position": "56.43"
+        }
+      ]
+    }
+  },
+  "coverage": {
+    "file": "2-autoaudit.uk-Coverage-2026-10-02.zip",
+    "sha256": "E3D94F616BD4EE74BB4BC87686E6686BCA4B555B5A31ADFB46E8AEBAD357118D",
+    "tables": {
+      "Non-critical issues.csv": [],
+      "Critical issues.csv": [
+        {
+          "Reason": "Not found (404)",
+          "Source": "Website",
+          "Validation": "Not Started",
+          "Pages": "6"
+        },
+        {
+          "Reason": "Duplicate without user-selected canonical",
+          "Source": "Website",
+          "Validation": "Not Started",
+          "Pages": "4"
+        },
+        {
+          "Reason": "Page with redirect",
+          "Source": "Website",
+          "Validation": "Not Started",
+          "Pages": "3"
+        },
+        {
+          "Reason": "Blocked by robots.txt",
+          "Source": "Website",
+          "Validation": "Not Started",
+          "Pages": "1"
+        },
+        {
+          "Reason": "Alternative page with proper canonical tag",
+          "Source": "Website",
+          "Validation": "Not Started",
+          "Pages": "1"
+        },
+        {
+          "Reason": "Crawled - currently not indexed",
+          "Source": "Google systems",
+          "Validation": "Not Started",
+          "Pages": "13"
+        },
+        {
+          "Reason": "Discovered – currently not indexed",
+          "Source": "Google systems",
+          "Validation": "Passed",
+          "Pages": "119"
+        }
+      ],
+      "Chart.csv": [
+        {
+          "Date": "2026-07-04",
+          "Not indexed": "",
+          "Indexed": "",
+          "Impressions": "14"
+        },
+        {
+          "Date": "2026-07-05",
+          "Not indexed": "",
+          "Indexed": "",
+          "Impressions": "14"
+        },
+        {
+          "Date": "2026-07-06",
+          "Not indexed": "",
+          "Indexed": "",
+          "Impressions": "30"
+        },
+        {
+          "Date": "2026-07-07",
+          "Not indexed": "",
+          "Indexed": "",
+          "Impressions": "21"
+        },
+        {
+          "Date": "2026-07-08",
+          "Not indexed": "",
+          "Indexed": "",
+          "Impressions": "16"
+        },
+        {
+          "Date": "2026-07-09",
+          "Not indexed": "",
+          "Indexed": "",
+          "Impressions": "16"
+        },
+        {
+          "Date": "2026-07-10",
+          "Not indexed": "262",
+          "Indexed": "50",
+          "Impressions": "31"
+        },
+        {
+          "Date": "2026-07-11",
+          "Not indexed": "190",
+          "Indexed": "126",
+          "Impressions": "21"
+        },
+        {
+          "Date": "2026-07-12",
+          "Not indexed": "190",
+          "Indexed": "126",
+          "Impressions": "23"
+        },
+        {
+          "Date": "2026-07-13",
+          "Not indexed": "190",
+          "Indexed": "126",
+          "Impressions": "20"
+        },
+        {
+          "Date": "2026-07-14",
+          "Not indexed": "190",
+          "Indexed": "126",
+          "Impressions": "30"
+        },
+        {
+          "Date": "2026-07-15",
+          "Not indexed": "190",
+          "Indexed": "126",
+          "Impressions": "16"
+        },
+        {
+          "Date": "2026-07-16",
+          "Not indexed": "190",
+          "Indexed": "126",
+          "Impressions": "17"
+        },
+        {
+          "Date": "2026-07-17",
+          "Not indexed": "190",
+          "Indexed": "126",
+          "Impressions": "28"
+        },
+        {
+          "Date": "2026-07-18",
+          "Not indexed": "190",
+          "Indexed": "126",
+          "Impressions": "53"
+        },
+        {
+          "Date": "2026-07-19",
+          "Not indexed": "190",
+          "Indexed": "126",
+          "Impressions": "35"
+        },
+        {
+          "Date": "2026-07-20",
+          "Not indexed": "190",
+          "Indexed": "126",
+          "Impressions": "104"
+        },
+        {
+          "Date": "2026-07-21",
+          "Not indexed": "190",
+          "Indexed": "126",
+          "Impressions": "106"
+        },
+        {
+          "Date": "2026-07-22",
+          "Not indexed": "190",
+          "Indexed": "126",
+          "Impressions": "74"
+        },
+        {
+          "Date": "2026-07-23",
+          "Not indexed": "190",
+          "Indexed": "126",
+          "Impressions": "76"
+        },
+        {
+          "Date": "2026-07-24",
+          "Not indexed": "190",
+          "Indexed": "126",
+          "Impressions": "70"
+        },
+        {
+          "Date": "2026-07-25",
+          "Not indexed": "188",
+          "Indexed": "128",
+          "Impressions": "50"
+        },
+        {
+          "Date": "2026-07-26",
+          "Not indexed": "188",
+          "Indexed": "128",
+          "Impressions": "56"
+        },
+        {
+          "Date": "2026-07-27",
+          "Not indexed": "188",
+          "Indexed": "128",
+          "Impressions": "80"
+        },
+        {
+          "Date": "2026-07-28",
+          "Not indexed": "188",
+          "Indexed": "128",
+          "Impressions": "74"
+        },
+        {
+          "Date": "2026-07-29",
+          "Not indexed": "188",
+          "Indexed": "128",
+          "Impressions": "68"
+        },
+        {
+          "Date": "2026-07-30",
+          "Not indexed": "188",
+          "Indexed": "128",
+          "Impressions": "49"
+        },
+        {
+          "Date": "2026-07-31",
+          "Not indexed": "188",
+          "Indexed": "128",
+          "Impressions": "66"
+        },
+        {
+          "Date": "2026-08-01",
+          "Not indexed": "188",
+          "Indexed": "128",
+          "Impressions": "71"
+        },
+        {
+          "Date": "2026-08-02",
+          "Not indexed": "188",
+          "Indexed": "128",
+          "Impressions": "45"
+        },
+        {
+          "Date": "2026-08-03",
+          "Not indexed": "188",
+          "Indexed": "128",
+          "Impressions": "52"
+        },
+        {
+          "Date": "2026-08-04",
+          "Not indexed": "188",
+          "Indexed": "128",
+          "Impressions": "55"
+        },
+        {
+          "Date": "2026-08-05",
+          "Not indexed": "188",
+          "Indexed": "128",
+          "Impressions": "77"
+        },
+        {
+          "Date": "2026-08-06",
+          "Not indexed": "188",
+          "Indexed": "128",
+          "Impressions": "62"
+        },
+        {
+          "Date": "2026-08-07",
+          "Not indexed": "188",
+          "Indexed": "128",
+          "Impressions": "63"
+        },
+        {
+          "Date": "2026-08-08",
+          "Not indexed": "185",
+          "Indexed": "132",
+          "Impressions": "39"
+        },
+        {
+          "Date": "2026-08-09",
+          "Not indexed": "185",
+          "Indexed": "132",
+          "Impressions": "65"
+        },
+        {
+          "Date": "2026-08-10",
+          "Not indexed": "185",
+          "Indexed": "132",
+          "Impressions": "77"
+        },
+        {
+          "Date": "2026-08-11",
+          "Not indexed": "185",
+          "Indexed": "132",
+          "Impressions": "110"
+        },
+        {
+          "Date": "2026-08-12",
+          "Not indexed": "185",
+          "Indexed": "132",
+          "Impressions": "82"
+        },
+        {
+          "Date": "2026-08-13",
+          "Not indexed": "185",
+          "Indexed": "132",
+          "Impressions": "100"
+        },
+        {
+          "Date": "2026-08-14",
+          "Not indexed": "185",
+          "Indexed": "132",
+          "Impressions": "90"
+        },
+        {
+          "Date": "2026-08-15",
+          "Not indexed": "183",
+          "Indexed": "134",
+          "Impressions": "104"
+        },
+        {
+          "Date": "2026-08-16",
+          "Not indexed": "183",
+          "Indexed": "134",
+          "Impressions": "117"
+        },
+        {
+          "Date": "2026-08-17",
+          "Not indexed": "183",
+          "Indexed": "134",
+          "Impressions": "128"
+        },
+        {
+          "Date": "2026-08-18",
+          "Not indexed": "176",
+          "Indexed": "141",
+          "Impressions": "100"
+        },
+        {
+          "Date": "2026-08-19",
+          "Not indexed": "176",
+          "Indexed": "141",
+          "Impressions": "123"
+        },
+        {
+          "Date": "2026-08-20",
+          "Not indexed": "176",
+          "Indexed": "141",
+          "Impressions": "120"
+        },
+        {
+          "Date": "2026-08-21",
+          "Not indexed": "176",
+          "Indexed": "141",
+          "Impressions": "125"
+        },
+        {
+          "Date": "2026-08-22",
+          "Not indexed": "171",
+          "Indexed": "146",
+          "Impressions": "91"
+        },
+        {
+          "Date": "2026-08-23",
+          "Not indexed": "171",
+          "Indexed": "146",
+          "Impressions": "83"
+        },
+        {
+          "Date": "2026-08-24",
+          "Not indexed": "171",
+          "Indexed": "146",
+          "Impressions": "125"
+        },
+        {
+          "Date": "2026-08-25",
+          "Not indexed": "171",
+          "Indexed": "146",
+          "Impressions": "146"
+        },
+        {
+          "Date": "2026-08-26",
+          "Not indexed": "171",
+          "Indexed": "146",
+          "Impressions": "111"
+        },
+        {
+          "Date": "2026-08-27",
+          "Not indexed": "171",
+          "Indexed": "146",
+          "Impressions": "92"
+        },
+        {
+          "Date": "2026-08-28",
+          "Not indexed": "171",
+          "Indexed": "146",
+          "Impressions": "132"
+        },
+        {
+          "Date": "2026-08-29",
+          "Not indexed": "144",
+          "Indexed": "173",
+          "Impressions": "109"
+        },
+        {
+          "Date": "2026-08-30",
+          "Not indexed": "144",
+          "Indexed": "173",
+          "Impressions": "80"
+        },
+        {
+          "Date": "2026-08-31",
+          "Not indexed": "144",
+          "Indexed": "173",
+          "Impressions": "107"
+        },
+        {
+          "Date": "2026-09-01",
+          "Not indexed": "144",
+          "Indexed": "173",
+          "Impressions": "94"
+        },
+        {
+          "Date": "2026-09-02",
+          "Not indexed": "144",
+          "Indexed": "173",
+          "Impressions": "117"
+        },
+        {
+          "Date": "2026-09-03",
+          "Not indexed": "144",
+          "Indexed": "173",
+          "Impressions": "125"
+        },
+        {
+          "Date": "2026-09-04",
+          "Not indexed": "144",
+          "Indexed": "173",
+          "Impressions": "186"
+        },
+        {
+          "Date": "2026-09-05",
+          "Not indexed": "143",
+          "Indexed": "175",
+          "Impressions": "263"
+        },
+        {
+          "Date": "2026-09-06",
+          "Not indexed": "143",
+          "Indexed": "175",
+          "Impressions": "169"
+        },
+        {
+          "Date": "2026-09-07",
+          "Not indexed": "143",
+          "Indexed": "175",
+          "Impressions": "172"
+        },
+        {
+          "Date": "2026-09-08",
+          "Not indexed": "143",
+          "Indexed": "175",
+          "Impressions": "187"
+        },
+        {
+          "Date": "2026-09-09",
+          "Not indexed": "143",
+          "Indexed": "175",
+          "Impressions": "188"
+        },
+        {
+          "Date": "2026-09-10",
+          "Not indexed": "143",
+          "Indexed": "175",
+          "Impressions": "130"
+        },
+        {
+          "Date": "2026-09-11",
+          "Not indexed": "143",
+          "Indexed": "175",
+          "Impressions": "123"
+        },
+        {
+          "Date": "2026-09-12",
+          "Not indexed": "143",
+          "Indexed": "175",
+          "Impressions": "108"
+        },
+        {
+          "Date": "2026-09-13",
+          "Not indexed": "143",
+          "Indexed": "175",
+          "Impressions": "144"
+        },
+        {
+          "Date": "2026-09-14",
+          "Not indexed": "143",
+          "Indexed": "175",
+          "Impressions": "179"
+        },
+        {
+          "Date": "2026-09-15",
+          "Not indexed": "145",
+          "Indexed": "173",
+          "Impressions": "176"
+        },
+        {
+          "Date": "2026-09-16",
+          "Not indexed": "145",
+          "Indexed": "173",
+          "Impressions": "177"
+        },
+        {
+          "Date": "2026-09-17",
+          "Not indexed": "145",
+          "Indexed": "173",
+          "Impressions": "123"
+        },
+        {
+          "Date": "2026-09-18",
+          "Not indexed": "145",
+          "Indexed": "173",
+          "Impressions": "216"
+        },
+        {
+          "Date": "2026-09-19",
+          "Not indexed": "147",
+          "Indexed": "171",
+          "Impressions": "168"
+        },
+        {
+          "Date": "2026-09-20",
+          "Not indexed": "147",
+          "Indexed": "171",
+          "Impressions": "125"
+        },
+        {
+          "Date": "2026-09-21",
+          "Not indexed": "147",
+          "Indexed": "171",
+          "Impressions": "195"
+        }
+      ],
+      "Metadata.csv": [
+        {
+          "Property": "Sitemap",
+          "Value": "All known pages"
+        }
+      ]
+    }
+  },
+  "existingPages": [
+    {
+      "url": "https://autoaudit.uk/cars/skoda/kodiaq/common-problems",
+      "family": "model",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 13,
+        "ctrPercent": 0,
+        "position": 10.54
+      },
+      "latest28": {
+        "clicks": 3,
+        "impressions": 196,
+        "ctrPercent": 1.530612244897959,
+        "position": 13.35
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 4,
+        "ctrPercent": 0,
+        "position": 24.75
+      },
+      "principalQueries": [
+        {
+          "query": "skoda kodiaq problems",
+          "clicks": 1,
+          "impressions": 54,
+          "ctrPercent": 1.8518518518518519,
+          "position": 21.91
+        },
+        {
+          "query": "skoda kodiaq common problems",
+          "clicks": 0,
+          "impressions": 15,
+          "ctrPercent": 0,
+          "position": 13.07
+        },
+        {
+          "query": "skoda kodiaq issues",
+          "clicks": 0,
+          "impressions": 11,
+          "ctrPercent": 0,
+          "position": 8.09
+        },
+        {
+          "query": "used skoda kodiaq common problems",
+          "clicks": 0,
+          "impressions": 6,
+          "ctrPercent": 0,
+          "position": 17
+        },
+        {
+          "query": "problems with skoda kodiaq",
+          "clicks": 0,
+          "impressions": 5,
+          "ctrPercent": 0,
+          "position": 13
+        },
+        {
+          "query": "skoda kodiaq known issues",
+          "clicks": 0,
+          "impressions": 4,
+          "ctrPercent": 0,
+          "position": 7.75
+        }
+      ],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "NEAR PAGE-ONE",
+        "MOMENTUM"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Skoda Kodiaq common problems: what to check before buying",
+      "evidence": [
+        {
+          "title": "Škoda: second-generation Kodiaq powertrains",
+          "url": "https://www.skoda-storyboard.com/en/press-kits/skoda-kodiaq-press-kit/the-all-new-skoda-kodiaq-more-spacious-functional-and-sustainable-than-ever-before/"
+        },
+        {
+          "title": "Škoda UK: model-specific owner's manuals",
+          "url": "https://www.skoda.co.uk/owners/your-skoda"
+        },
+        {
+          "title": "Škoda UK: servicing and maintenance",
+          "url": "https://www.skoda.co.uk/owners/servicing-maintenance-fixed-price"
+        },
+        {
+          "title": "AA: diesel particulate filters",
+          "url": "https://www.theaa.com/driving-advice/fuels-environment/diesel-particulate-filters"
+        },
+        {
+          "title": "RAC: test-drive inspection checklist",
+          "url": "https://www.rac.co.uk/pdfs/drive/test-drive-checklist.pdf"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/cars/citroen/berlingo/common-problems",
+      "family": "model",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 89,
+        "ctrPercent": 0,
+        "position": 14.65
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 190,
+        "ctrPercent": 0,
+        "position": 14.43
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 152,
+        "ctrPercent": 0,
+        "position": 15.67
+      },
+      "principalQueries": [
+        {
+          "query": "used citroen berlingo common problems",
+          "clicks": 0,
+          "impressions": 16,
+          "ctrPercent": 0,
+          "position": 14.94
+        },
+        {
+          "query": "citroen e berlingo common problems",
+          "clicks": 0,
+          "impressions": 13,
+          "ctrPercent": 0,
+          "position": 31.38
+        },
+        {
+          "query": "citroen berlingo common problems",
+          "clicks": 0,
+          "impressions": 8,
+          "ctrPercent": 0,
+          "position": 20.62
+        },
+        {
+          "query": "what should i check before buying a used citroën berlingo for sale in the \nuk?",
+          "clicks": 0,
+          "impressions": 7,
+          "ctrPercent": 0,
+          "position": 7.14
+        },
+        {
+          "query": "citroen berlingo mot",
+          "clicks": 0,
+          "impressions": 6,
+          "ctrPercent": 0,
+          "position": 11.67
+        },
+        {
+          "query": "used citroen berlingo multispace common problems",
+          "clicks": 0,
+          "impressions": 6,
+          "ctrPercent": 0,
+          "position": 21
+        }
+      ],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "NEAR PAGE-ONE",
+        "CTR OPPORTUNITY"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Citroën Berlingo common problems: what to check before buying",
+      "evidence": [
+        {
+          "title": "Citroën UK: 1.5 BlueHDi camshaft-chain information",
+          "url": "https://www.citroen.co.uk/owners/citroen-1-5-diesel-engine-key-information.html"
+        },
+        {
+          "title": "Citroën UK: PureTech support conditions",
+          "url": "https://www.citroen.co.uk/content/dam/citroen/uk/b2c/maintain/Puretech-Message-V-2-2025.pdf"
+        },
+        {
+          "title": "DVSA MOT manual: axles, wheels, tyres and suspension",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/5-axles-wheels-tyres-and-suspension"
+        },
+        {
+          "title": "DVSA MOT manual: body, structure and attachments",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/6-body-structure-and-attachments"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/cars/land-rover/range-rover-evoque/common-problems",
+      "family": "model",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 14,
+        "ctrPercent": 0,
+        "position": 24.86
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 87,
+        "ctrPercent": 0,
+        "position": 28.86
+      },
+      "comparison28": null,
+      "principalQueries": [
+        {
+          "query": "range rover evoque problems",
+          "clicks": 0,
+          "impressions": 11,
+          "ctrPercent": 0,
+          "position": 43.27
+        },
+        {
+          "query": "range rover evoque common problems",
+          "clicks": 0,
+          "impressions": 6,
+          "ctrPercent": 0,
+          "position": 43.5
+        },
+        {
+          "query": "land rover range rover evoque common problems",
+          "clicks": 0,
+          "impressions": 4,
+          "ctrPercent": 0,
+          "position": 49.5
+        },
+        {
+          "query": "common problems with range rover evoque",
+          "clicks": 0,
+          "impressions": 4,
+          "ctrPercent": 0,
+          "position": 54
+        },
+        {
+          "query": "range rover evoque issues",
+          "clicks": 0,
+          "impressions": 4,
+          "ctrPercent": 0,
+          "position": 59.25
+        },
+        {
+          "query": "used range rover evoque common problems",
+          "clicks": 0,
+          "impressions": 3,
+          "ctrPercent": 0,
+          "position": 44
+        }
+      ],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "Meaningful existing impressions within the top 30; differentiated buyer guidance needed"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Range Rover Evoque common problems: what to check before buying",
+      "evidence": [
+        {
+          "title": "JLR UK: Evoque plug-in hybrid introduction",
+          "url": "https://media.jlr.com/range-rover/en-gb/news/2020/04/evoque-and-discovery-sport-now-available-plug-hybrids-all-electric-range-34-miles"
+        },
+        {
+          "title": "RAC: interpreting unusual vehicle noises",
+          "url": "https://www.rac.co.uk/drive/advice/know-how/guide-to-unusual-vehicle-noises/"
+        },
+        {
+          "title": "AA: diesel particulate filters",
+          "url": "https://www.theaa.com/driving-advice/fuels-environment/diesel-particulate-filters"
+        },
+        {
+          "title": "RAC: test-drive inspection checklist",
+          "url": "https://www.rac.co.uk/pdfs/drive/test-drive-checklist.pdf"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/cars/citroen/c3-aircross/common-problems",
+      "family": "model",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 9,
+        "ctrPercent": 0,
+        "position": 6.67
+      },
+      "latest28": {
+        "clicks": 1,
+        "impressions": 84,
+        "ctrPercent": 1.1904761904761905,
+        "position": 17.61
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 1,
+        "ctrPercent": 0,
+        "position": 69
+      },
+      "principalQueries": [
+        {
+          "query": "citroen c3 aircross problems",
+          "clicks": 0,
+          "impressions": 13,
+          "ctrPercent": 0,
+          "position": 21.69
+        },
+        {
+          "query": "used citroen c3 aircross common problems",
+          "clicks": 0,
+          "impressions": 9,
+          "ctrPercent": 0,
+          "position": 22.22
+        },
+        {
+          "query": "citroen c3 aircross common problems",
+          "clicks": 0,
+          "impressions": 7,
+          "ctrPercent": 0,
+          "position": 27.86
+        },
+        {
+          "query": "citroen e c3 aircross common problems",
+          "clicks": 0,
+          "impressions": 6,
+          "ctrPercent": 0,
+          "position": 33.17
+        },
+        {
+          "query": "citroen c3 aircross 2026 problems",
+          "clicks": 0,
+          "impressions": 2,
+          "ctrPercent": 0,
+          "position": 5.5
+        },
+        {
+          "query": "citroen c3 aircross issues",
+          "clicks": 0,
+          "impressions": 2,
+          "ctrPercent": 0,
+          "position": 10
+        }
+      ],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "NEAR PAGE-ONE",
+        "CTR OPPORTUNITY",
+        "MOMENTUM"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Citroën C3 Aircross common problems: what to check before buying",
+      "evidence": [
+        {
+          "title": "Citroën UK: PureTech support conditions",
+          "url": "https://www.citroen.co.uk/content/dam/citroen/uk/b2c/maintain/Puretech-Message-V-2-2025.pdf"
+        },
+        {
+          "title": "Citroën UK: 1.5 BlueHDi camshaft-chain information",
+          "url": "https://www.citroen.co.uk/owners/citroen-1-5-diesel-engine-key-information.html"
+        },
+        {
+          "title": "RAC: test-drive inspection checklist",
+          "url": "https://www.rac.co.uk/pdfs/drive/test-drive-checklist.pdf"
+        },
+        {
+          "title": "DVSA MOT manual: axles, wheels, tyres and suspension",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/5-axles-wheels-tyres-and-suspension"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/cars/suzuki/vitara/common-problems",
+      "family": "model",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 5,
+        "ctrPercent": 0,
+        "position": 15.2
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 84,
+        "ctrPercent": 0,
+        "position": 21.04
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 2,
+        "ctrPercent": 0,
+        "position": 4
+      },
+      "principalQueries": [
+        {
+          "query": "used suzuki vitara common problems",
+          "clicks": 0,
+          "impressions": 7,
+          "ctrPercent": 0,
+          "position": 26.86
+        },
+        {
+          "query": "suzuki vitara common problems",
+          "clicks": 0,
+          "impressions": 4,
+          "ctrPercent": 0,
+          "position": 31.25
+        },
+        {
+          "query": "suzuki vitara turbo problems",
+          "clicks": 0,
+          "impressions": 4,
+          "ctrPercent": 0,
+          "position": 47.5
+        },
+        {
+          "query": "suzuki e vitara common problems",
+          "clicks": 0,
+          "impressions": 4,
+          "ctrPercent": 0,
+          "position": 53.5
+        },
+        {
+          "query": "suzuki vitara problems",
+          "clicks": 0,
+          "impressions": 3,
+          "ctrPercent": 0,
+          "position": 40.33
+        },
+        {
+          "query": "grand vitara on road price",
+          "clicks": 0,
+          "impressions": 1,
+          "ctrPercent": 0,
+          "position": 2
+        }
+      ],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "MOMENTUM"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Suzuki Vitara common problems: what to check before buying",
+      "evidence": [
+        {
+          "title": "Suzuki: full-hybrid Vitara and AGS transmission",
+          "url": "https://www.suzuki.nl/auto/nieuws/suzuki-introduceert-nieuwe-hybride-aandrijflijn/"
+        },
+        {
+          "title": "Suzuki UK: Vitara mild-hybrid and ALLGRIP specification",
+          "url": "https://cars.suzuki.co.uk/new-cars/vitara/"
+        },
+        {
+          "title": "DVSA MOT manual: axles, wheels, tyres and suspension",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/5-axles-wheels-tyres-and-suspension"
+        },
+        {
+          "title": "RAC: test-drive inspection checklist",
+          "url": "https://www.rac.co.uk/pdfs/drive/test-drive-checklist.pdf"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/cars/land-rover/defender/common-problems",
+      "family": "model",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 16,
+        "ctrPercent": 0,
+        "position": 15.38
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 83,
+        "ctrPercent": 0,
+        "position": 19.39
+      },
+      "comparison28": null,
+      "principalQueries": [
+        {
+          "query": "land rover defender problems",
+          "clicks": 0,
+          "impressions": 26,
+          "ctrPercent": 0,
+          "position": 12.54
+        },
+        {
+          "query": "land rover defender issues",
+          "clicks": 0,
+          "impressions": 6,
+          "ctrPercent": 0,
+          "position": 22.67
+        },
+        {
+          "query": "common problems with land rover defender",
+          "clicks": 0,
+          "impressions": 6,
+          "ctrPercent": 0,
+          "position": 41.17
+        },
+        {
+          "query": "land rover defender 90 problems",
+          "clicks": 0,
+          "impressions": 6,
+          "ctrPercent": 0,
+          "position": 41.33
+        },
+        {
+          "query": "used land rover defender common problems",
+          "clicks": 0,
+          "impressions": 5,
+          "ctrPercent": 0,
+          "position": 21.2
+        },
+        {
+          "query": "land rover defender common problems",
+          "clicks": 0,
+          "impressions": 3,
+          "ctrPercent": 0,
+          "position": 29.67
+        }
+      ],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "NEAR PAGE-ONE",
+        "CTR OPPORTUNITY"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Land Rover Defender common problems: what to check before buying",
+      "evidence": [
+        {
+          "title": "Land Rover: new Defender specification brochure",
+          "url": "https://www.landrover.co.uk/content/dam/lrdx/pdfs/uk/brochures/defender/L663_20MY_EBro_GE_V11_optimized_tcm295-799843.pdf"
+        },
+        {
+          "title": "DVSA MOT manual: body, structure and attachments",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/6-body-structure-and-attachments"
+        },
+        {
+          "title": "DVSA MOT manual: axles, wheels, tyres and suspension",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/5-axles-wheels-tyres-and-suspension"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/cars/mazda/cx-5/common-problems",
+      "family": "model",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 9,
+        "ctrPercent": 0,
+        "position": 17.56
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 67,
+        "ctrPercent": 0,
+        "position": 23.22
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 2,
+        "ctrPercent": 0,
+        "position": 11
+      },
+      "principalQueries": [
+        {
+          "query": "mazda cx 5 problems",
+          "clicks": 0,
+          "impressions": 8,
+          "ctrPercent": 0,
+          "position": 35.5
+        },
+        {
+          "query": "mazda cx 5 common problems",
+          "clicks": 0,
+          "impressions": 6,
+          "ctrPercent": 0,
+          "position": 21.33
+        },
+        {
+          "query": "used mazda cx-5 common problems",
+          "clicks": 0,
+          "impressions": 5,
+          "ctrPercent": 0,
+          "position": 22.2
+        },
+        {
+          "query": "mazda cx-5 common problems",
+          "clicks": 0,
+          "impressions": 4,
+          "ctrPercent": 0,
+          "position": 24.5
+        },
+        {
+          "query": "cx5 common problems",
+          "clicks": 0,
+          "impressions": 3,
+          "ctrPercent": 0,
+          "position": 20
+        },
+        {
+          "query": "common problems with mazda cx5",
+          "clicks": 0,
+          "impressions": 2,
+          "ctrPercent": 0,
+          "position": 10
+        }
+      ],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "MOMENTUM"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Mazda CX-5 common problems: what to check before buying",
+      "evidence": [
+        {
+          "title": "Mazda CX-5 handbook: engine-oil checks",
+          "url": "https://owners-manual.mazda.com/gen/en/cx-5/cx-5_8hy2ee19l/contents/07031600.html"
+        },
+        {
+          "title": "Mazda CX-5 handbook: DPF warnings",
+          "url": "https://owners-manual.mazda.com/gen/en/cx-5/cx-5_8dw2eo14k/contents/05020424.html"
+        },
+        {
+          "title": "RAC: test-drive inspection checklist",
+          "url": "https://www.rac.co.uk/pdfs/drive/test-drive-checklist.pdf"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/cars/mazda/2/common-problems",
+      "family": "model",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 17,
+        "ctrPercent": 0,
+        "position": 8.06
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 63,
+        "ctrPercent": 0,
+        "position": 20.73
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 2,
+        "ctrPercent": 0,
+        "position": 6.5
+      },
+      "principalQueries": [
+        {
+          "query": "mazda 2 problems",
+          "clicks": 0,
+          "impressions": 7,
+          "ctrPercent": 0,
+          "position": 38.71
+        },
+        {
+          "query": "mazda 2 hybrid common problems",
+          "clicks": 0,
+          "impressions": 4,
+          "ctrPercent": 0,
+          "position": 47.75
+        },
+        {
+          "query": "used mazda 2 common problems",
+          "clicks": 0,
+          "impressions": 3,
+          "ctrPercent": 0,
+          "position": 24.67
+        },
+        {
+          "query": "mazda 2 common problems",
+          "clicks": 0,
+          "impressions": 3,
+          "ctrPercent": 0,
+          "position": 37.33
+        },
+        {
+          "query": "common problems with mazda 2",
+          "clicks": 0,
+          "impressions": 3,
+          "ctrPercent": 0,
+          "position": 38.67
+        },
+        {
+          "query": "mazda 2 commmon problems",
+          "clicks": 0,
+          "impressions": 1,
+          "ctrPercent": 0,
+          "position": 36
+        }
+      ],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "MOMENTUM"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Mazda 2 common problems: what to check before buying",
+      "evidence": [
+        {
+          "title": "Mazda UK: Mazda2 Hybrid introduction and Toyota collaboration",
+          "url": "https://uk.mazda-press.com/news/2022/mazda2-hybrid-uk-price-and-specification-announced/"
+        },
+        {
+          "title": "RAC: test-drive inspection checklist",
+          "url": "https://www.rac.co.uk/pdfs/drive/test-drive-checklist.pdf"
+        },
+        {
+          "title": "DVSA MOT manual: axles, wheels, tyres and suspension",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/5-axles-wheels-tyres-and-suspension"
+        },
+        {
+          "title": "DVSA MOT manual: brakes",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/1-brakes"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/cars/hyundai/kona/common-problems",
+      "family": "model",
+      "latest7": null,
+      "latest28": {
+        "clicks": 0,
+        "impressions": 58,
+        "ctrPercent": 0,
+        "position": 14.71
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 3,
+        "ctrPercent": 0,
+        "position": 10.33
+      },
+      "principalQueries": [
+        {
+          "query": "hyundai kona common problems",
+          "clicks": 0,
+          "impressions": 14,
+          "ctrPercent": 0,
+          "position": 16.5
+        },
+        {
+          "query": "hyundai kona faults",
+          "clicks": 0,
+          "impressions": 6,
+          "ctrPercent": 0,
+          "position": 8.67
+        },
+        {
+          "query": "hyundai kona problems",
+          "clicks": 0,
+          "impressions": 6,
+          "ctrPercent": 0,
+          "position": 14.5
+        },
+        {
+          "query": "used hyundai kona common problems",
+          "clicks": 0,
+          "impressions": 5,
+          "ctrPercent": 0,
+          "position": 21
+        },
+        {
+          "query": "hyundai kona n common problems",
+          "clicks": 0,
+          "impressions": 4,
+          "ctrPercent": 0,
+          "position": 34.5
+        },
+        {
+          "query": "hyundai kona problems uk",
+          "clicks": 0,
+          "impressions": 3,
+          "ctrPercent": 0,
+          "position": 8.33
+        }
+      ],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "NEAR PAGE-ONE",
+        "CTR OPPORTUNITY",
+        "MOMENTUM"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Hyundai Kona common problems: what to check before buying",
+      "evidence": [
+        {
+          "title": "DVSA: 2018 Kona EV battery safety recall",
+          "url": "https://www.check-vehicle-recalls.service.gov.uk/recall-type/vehicle/make/HYUNDAI/model/KONA%20EV/year/2018/recalls"
+        },
+        {
+          "title": "Hyundai UK: recall and service-campaign checker",
+          "url": "https://recalls.hyundai.co.uk/"
+        },
+        {
+          "title": "RAC: test-drive inspection checklist",
+          "url": "https://www.rac.co.uk/pdfs/drive/test-drive-checklist.pdf"
+        },
+        {
+          "title": "DVSA MOT manual: brakes",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/1-brakes"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/cars/mazda/6/common-problems",
+      "family": "model",
+      "latest7": null,
+      "latest28": {
+        "clicks": 0,
+        "impressions": 56,
+        "ctrPercent": 0,
+        "position": 27.96
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 1,
+        "ctrPercent": 0,
+        "position": 29
+      },
+      "principalQueries": [
+        {
+          "query": "mazda 6 common problems",
+          "clicks": 0,
+          "impressions": 10,
+          "ctrPercent": 0,
+          "position": 20.8
+        },
+        {
+          "query": "mazda 6e common problems",
+          "clicks": 0,
+          "impressions": 8,
+          "ctrPercent": 0,
+          "position": 26.5
+        },
+        {
+          "query": "mazda 6 problems",
+          "clicks": 0,
+          "impressions": 8,
+          "ctrPercent": 0,
+          "position": 44.5
+        },
+        {
+          "query": "mazda 6 tourer common problems",
+          "clicks": 0,
+          "impressions": 5,
+          "ctrPercent": 0,
+          "position": 34.8
+        },
+        {
+          "query": "used mazda 6 common problems",
+          "clicks": 0,
+          "impressions": 2,
+          "ctrPercent": 0,
+          "position": 22
+        },
+        {
+          "query": "used mazda 6 tourer common problems",
+          "clicks": 0,
+          "impressions": 2,
+          "ctrPercent": 0,
+          "position": 33.5
+        }
+      ],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "MOMENTUM"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Mazda 6 common problems: what to check before buying",
+      "evidence": [
+        {
+          "title": "Mazda6 handbook: maintenance and diesel oil-level checks",
+          "url": "https://owners-manual.mazda.com/gen/en/mazda6/mazda6_8hh3ee19c.pdf"
+        },
+        {
+          "title": "Mazda6 handbook: oil grades and drivetrain fluids",
+          "url": "https://owners-manual.mazda.com/gen/en/mazda6/mazda6_8fk7ee16f/contents/10020101.html"
+        },
+        {
+          "title": "DVSA MOT manual: axles, wheels, tyres and suspension",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/5-axles-wheels-tyres-and-suspension"
+        },
+        {
+          "title": "RAC: test-drive inspection checklist",
+          "url": "https://www.rac.co.uk/pdfs/drive/test-drive-checklist.pdf"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/cars/skoda/superb/common-problems",
+      "family": "model",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 16,
+        "ctrPercent": 0,
+        "position": 18.75
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 54,
+        "ctrPercent": 0,
+        "position": 25.22
+      },
+      "comparison28": null,
+      "principalQueries": [
+        {
+          "query": "skoda superb common problems",
+          "clicks": 0,
+          "impressions": 6,
+          "ctrPercent": 0,
+          "position": 30
+        },
+        {
+          "query": "used skoda superb estate common problems",
+          "clicks": 0,
+          "impressions": 6,
+          "ctrPercent": 0,
+          "position": 32.5
+        },
+        {
+          "query": "skoda superb problems",
+          "clicks": 0,
+          "impressions": 6,
+          "ctrPercent": 0,
+          "position": 33.67
+        },
+        {
+          "query": "used skoda superb common problems",
+          "clicks": 0,
+          "impressions": 5,
+          "ctrPercent": 0,
+          "position": 28.6
+        },
+        {
+          "query": "skoda superb estate common problems",
+          "clicks": 0,
+          "impressions": 4,
+          "ctrPercent": 0,
+          "position": 34.25
+        },
+        {
+          "query": "skoda superb estate problems",
+          "clicks": 0,
+          "impressions": 3,
+          "ctrPercent": 0,
+          "position": 41
+        }
+      ],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "Meaningful existing impressions within the top 30; differentiated buyer guidance needed"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Skoda Superb common problems: what to check before buying",
+      "evidence": [
+        {
+          "title": "Škoda: original Superb iV plug-in hybrid",
+          "url": "https://www.skoda-storyboard.com/de/pressemappe/skoda-iv-pressemappe/skoda-superb-iv-start-in-ein-neues-zeitalter/"
+        },
+        {
+          "title": "Škoda UK: model-specific owner's manuals",
+          "url": "https://www.skoda.co.uk/owners/your-skoda"
+        },
+        {
+          "title": "Škoda UK: servicing and maintenance",
+          "url": "https://www.skoda.co.uk/owners/servicing-maintenance-fixed-price"
+        },
+        {
+          "title": "AA: diesel particulate filters",
+          "url": "https://www.theaa.com/driving-advice/fuels-environment/diesel-particulate-filters"
+        },
+        {
+          "title": "RAC: test-drive inspection checklist",
+          "url": "https://www.rac.co.uk/pdfs/drive/test-drive-checklist.pdf"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/cars/nissan/micra/common-problems",
+      "family": "model",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 14,
+        "ctrPercent": 0,
+        "position": 9.57
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 48,
+        "ctrPercent": 0,
+        "position": 17.12
+      },
+      "comparison28": null,
+      "principalQueries": [
+        {
+          "query": "used nissan micra common problems",
+          "clicks": 0,
+          "impressions": 6,
+          "ctrPercent": 0,
+          "position": 21.33
+        },
+        {
+          "query": "nissan micra problems",
+          "clicks": 0,
+          "impressions": 6,
+          "ctrPercent": 0,
+          "position": 34.5
+        },
+        {
+          "query": "nissan micra common problems",
+          "clicks": 0,
+          "impressions": 3,
+          "ctrPercent": 0,
+          "position": 30.67
+        },
+        {
+          "query": "used nissan micra reliability",
+          "clicks": 0,
+          "impressions": 1,
+          "ctrPercent": 0,
+          "position": 4
+        },
+        {
+          "query": "nissan micra 2012 problems",
+          "clicks": 0,
+          "impressions": 1,
+          "ctrPercent": 0,
+          "position": 47
+        },
+        {
+          "query": "2009 nissan micra problems",
+          "clicks": 0,
+          "impressions": 1,
+          "ctrPercent": 0,
+          "position": 62
+        }
+      ],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "NEAR PAGE-ONE",
+        "CTR OPPORTUNITY"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Nissan Micra common problems: what to check before buying",
+      "evidence": [
+        {
+          "title": "Nissan UK: 2019 Micra engines and Xtronic CVT",
+          "url": "https://uk.nissannews.com/en-GB/releases/more-micra-nissan-widens-powertrain-range-to-better-meet-customer-needs"
+        },
+        {
+          "title": "AA: reasons a car will not start",
+          "url": "https://www.theaa.com/breakdown-cover/advice/starting-a-car"
+        },
+        {
+          "title": "RAC: test-drive inspection checklist",
+          "url": "https://www.rac.co.uk/pdfs/drive/test-drive-checklist.pdf"
+        },
+        {
+          "title": "DVSA MOT manual: axles, wheels, tyres and suspension",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/5-axles-wheels-tyres-and-suspension"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/cars/mercedes-benz/glc/common-problems",
+      "family": "model",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 16,
+        "ctrPercent": 0,
+        "position": 11
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 46,
+        "ctrPercent": 0,
+        "position": 10.7
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 18,
+        "ctrPercent": 0,
+        "position": 15.44
+      },
+      "principalQueries": [
+        {
+          "query": "used mercedes glc common problems",
+          "clicks": 0,
+          "impressions": 12,
+          "ctrPercent": 0,
+          "position": 15.58
+        },
+        {
+          "query": "used mercedes glc coupe common problems",
+          "clicks": 0,
+          "impressions": 4,
+          "ctrPercent": 0,
+          "position": 18.75
+        },
+        {
+          "query": "mercedes glc",
+          "clicks": 0,
+          "impressions": 1,
+          "ctrPercent": 0,
+          "position": 2
+        }
+      ],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "NEAR PAGE-ONE",
+        "CTR OPPORTUNITY",
+        "MOMENTUM"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Mercedes-Benz GLC common problems: what to check before buying",
+      "evidence": [
+        {
+          "title": "Mercedes-Benz GLC X253 owner's manual",
+          "url": "https://static.oneweb.mercedes-benz.com/css-oom-assets/en-lb/pdf/mercedes-glc-suv-2021-january-x253-mbux-owners-manual-1.pdf"
+        },
+        {
+          "title": "Mercedes-Benz handbook: AdBlue no-start warnings",
+          "url": "https://static.oneweb.mercedes-benz.com/css-oom-assets/en-lb/pdf/mercedes-glc-coupe-2018-march-c253-comand-owners-manual-1.pdf"
+        },
+        {
+          "title": "DVSA MOT manual: axles, wheels, tyres and suspension",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/5-axles-wheels-tyres-and-suspension"
+        },
+        {
+          "title": "RAC: test-drive inspection checklist",
+          "url": "https://www.rac.co.uk/pdfs/drive/test-drive-checklist.pdf"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/cars/seat/ibiza/common-problems",
+      "family": "model",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 5,
+        "ctrPercent": 0,
+        "position": 8.6
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 45,
+        "ctrPercent": 0,
+        "position": 19.13
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 4,
+        "ctrPercent": 0,
+        "position": 16.25
+      },
+      "principalQueries": [
+        {
+          "query": "used seat ibiza common problems",
+          "clicks": 0,
+          "impressions": 5,
+          "ctrPercent": 0,
+          "position": 22.8
+        },
+        {
+          "query": "seat ibiza common problems",
+          "clicks": 0,
+          "impressions": 5,
+          "ctrPercent": 0,
+          "position": 30.4
+        },
+        {
+          "query": "seat ibiza problems",
+          "clicks": 0,
+          "impressions": 5,
+          "ctrPercent": 0,
+          "position": 39.2
+        },
+        {
+          "query": "problems with seat ibiza",
+          "clicks": 0,
+          "impressions": 2,
+          "ctrPercent": 0,
+          "position": 46.5
+        },
+        {
+          "query": "seat ibiza mot",
+          "clicks": 0,
+          "impressions": 1,
+          "ctrPercent": 0,
+          "position": 7
+        },
+        {
+          "query": "common problems with seat ibiza",
+          "clicks": 0,
+          "impressions": 1,
+          "ctrPercent": 0,
+          "position": 11
+        }
+      ],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "NEAR PAGE-ONE",
+        "CTR OPPORTUNITY",
+        "MOMENTUM"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "SEAT Ibiza common problems: what to check before buying",
+      "evidence": [
+        {
+          "title": "DVSA: 2018 Ibiza rear-belt and handbrake recalls",
+          "url": "https://www.check-vehicle-recalls.service.gov.uk/recall-type/vehicle/make/SEAT/model/IBIZA/year/2018/recalls"
+        },
+        {
+          "title": "SEAT Ibiza UK owner's manual",
+          "url": "https://www.seat.com/datamanual-manual/ibiza_sc/my18_w45/en-uk/IBIZA_11_17_EN.pdf"
+        },
+        {
+          "title": "RAC: test-drive inspection checklist",
+          "url": "https://www.rac.co.uk/pdfs/drive/test-drive-checklist.pdf"
+        },
+        {
+          "title": "DVSA MOT manual: axles, wheels, tyres and suspension",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/5-axles-wheels-tyres-and-suspension"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/cars/honda/cr-v/common-problems",
+      "family": "model",
+      "latest7": null,
+      "latest28": {
+        "clicks": 0,
+        "impressions": 44,
+        "ctrPercent": 0,
+        "position": 24.45
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 1,
+        "ctrPercent": 0,
+        "position": 7
+      },
+      "principalQueries": [
+        {
+          "query": "common problems with honda crv",
+          "clicks": 0,
+          "impressions": 5,
+          "ctrPercent": 0,
+          "position": 30.2
+        },
+        {
+          "query": "used honda cr-v common problems",
+          "clicks": 0,
+          "impressions": 4,
+          "ctrPercent": 0,
+          "position": 12.5
+        },
+        {
+          "query": "honda crv common problems",
+          "clicks": 0,
+          "impressions": 4,
+          "ctrPercent": 0,
+          "position": 20.75
+        },
+        {
+          "query": "honda cr-v common problems",
+          "clicks": 0,
+          "impressions": 4,
+          "ctrPercent": 0,
+          "position": 42.75
+        },
+        {
+          "query": "honda crv problems uk",
+          "clicks": 0,
+          "impressions": 3,
+          "ctrPercent": 0,
+          "position": 17.67
+        },
+        {
+          "query": "honda cr v problems",
+          "clicks": 0,
+          "impressions": 3,
+          "ctrPercent": 0,
+          "position": 38.33
+        }
+      ],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "MOMENTUM"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Honda CR-V common problems: what to check before buying",
+      "evidence": [
+        {
+          "title": "Honda UK: CR-V manuals by model year and powertrain",
+          "url": "https://www.honda.co.uk/cars/owners/manuals-and-guides/honda-owners-manuals.html"
+        },
+        {
+          "title": "AA: diesel particulate filters",
+          "url": "https://www.theaa.com/driving-advice/fuels-environment/diesel-particulate-filters"
+        },
+        {
+          "title": "DVSA MOT manual: brakes",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/1-brakes"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/cars/kia/stonic/common-problems",
+      "family": "model",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 13,
+        "ctrPercent": 0,
+        "position": 9.15
+      },
+      "latest28": {
+        "clicks": 1,
+        "impressions": 40,
+        "ctrPercent": 2.5,
+        "position": 8.93
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 14,
+        "ctrPercent": 0,
+        "position": 13
+      },
+      "principalQueries": [
+        {
+          "query": "used kia stonic common problems",
+          "clicks": 0,
+          "impressions": 8,
+          "ctrPercent": 0,
+          "position": 13.12
+        },
+        {
+          "query": "what are the most common problems with the kia stonic?",
+          "clicks": 0,
+          "impressions": 1,
+          "ctrPercent": 0,
+          "position": 8
+        }
+      ],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "NEAR PAGE-ONE",
+        "CTR OPPORTUNITY",
+        "MOMENTUM"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Kia Stonic common problems: what to check before buying",
+      "evidence": [
+        {
+          "title": "Kia: 2020 Stonic mild-hybrid and iMT introduction",
+          "url": "https://prod2-press.kia.com/eu/en/home/media-resouces/press-releases/2020/Upgraded_Kia_Stonic.html"
+        },
+        {
+          "title": "Kia handbook: dual-clutch temperature warnings",
+          "url": "https://ownersmanual.kia.com/full_webhelp/SP2/2022/en_GB/topics/chapter6_8_2.html"
+        },
+        {
+          "title": "RAC: test-drive inspection checklist",
+          "url": "https://www.rac.co.uk/pdfs/drive/test-drive-checklist.pdf"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/cars/tesla/model-3/common-problems",
+      "family": "model",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 1,
+        "ctrPercent": 0,
+        "position": 8
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 38,
+        "ctrPercent": 0,
+        "position": 10.37
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 16,
+        "ctrPercent": 0,
+        "position": 30.69
+      },
+      "principalQueries": [
+        {
+          "query": "used tesla model 3 common problems",
+          "clicks": 0,
+          "impressions": 10,
+          "ctrPercent": 0,
+          "position": 13.9
+        },
+        {
+          "query": "tesla model 3 problems",
+          "clicks": 0,
+          "impressions": 3,
+          "ctrPercent": 0,
+          "position": 8
+        },
+        {
+          "query": "tesla model 3 common problems",
+          "clicks": 0,
+          "impressions": 2,
+          "ctrPercent": 0,
+          "position": 25
+        },
+        {
+          "query": "tesla model 3 common faults",
+          "clicks": 0,
+          "impressions": 1,
+          "ctrPercent": 0,
+          "position": 7
+        },
+        {
+          "query": "tesla model 3 known issues",
+          "clicks": 0,
+          "impressions": 1,
+          "ctrPercent": 0,
+          "position": 8
+        }
+      ],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "NEAR PAGE-ONE",
+        "CTR OPPORTUNITY",
+        "MOMENTUM"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Tesla Model 3 common problems: what to check before buying",
+      "evidence": [
+        {
+          "title": "Tesla Model 3: service and maintenance items",
+          "url": "https://service.tesla.com/docs/Public/diy/model3/en_us/GUID-A84FDD77-7A8C-42F6-9385-E3F9CEE245A4.html"
+        },
+        {
+          "title": "DVSA MOT manual: axles, wheels, tyres and suspension",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/5-axles-wheels-tyres-and-suspension"
+        },
+        {
+          "title": "Tesla: VIN-specific recall checker",
+          "url": "https://service.tesla.com/en-US/vin-recall-search?redirect=no"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/cars/mercedes-benz/e-class/common-problems",
+      "family": "model",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 9,
+        "ctrPercent": 0,
+        "position": 7.89
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 37,
+        "ctrPercent": 0,
+        "position": 8.81
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 70,
+        "ctrPercent": 0,
+        "position": 38.7
+      },
+      "principalQueries": [
+        {
+          "query": "used mercedes e-class common problems",
+          "clicks": 0,
+          "impressions": 4,
+          "ctrPercent": 0,
+          "position": 16.25
+        },
+        {
+          "query": "e class mercedes",
+          "clicks": 0,
+          "impressions": 1,
+          "ctrPercent": 0,
+          "position": 2
+        },
+        {
+          "query": "mercedes benz e class",
+          "clicks": 0,
+          "impressions": 1,
+          "ctrPercent": 0,
+          "position": 2
+        },
+        {
+          "query": "mercedes e class saloon for sale",
+          "clicks": 0,
+          "impressions": 1,
+          "ctrPercent": 0,
+          "position": 4
+        },
+        {
+          "query": "mercedes e class for sale uk",
+          "clicks": 0,
+          "impressions": 1,
+          "ctrPercent": 0,
+          "position": 6
+        },
+        {
+          "query": "used mercedes e-class cabriolet common problems",
+          "clicks": 0,
+          "impressions": 1,
+          "ctrPercent": 0,
+          "position": 32
+        }
+      ],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "NEAR PAGE-ONE",
+        "CTR OPPORTUNITY"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Mercedes-Benz E-Class common problems: what to check before buying",
+      "evidence": [
+        {
+          "title": "Mercedes-Benz: E-Class manuals by generation",
+          "url": "https://www.mercedes-benz.co.uk/vans/services/manuals.html/e-class-saloon-2014-11-w212"
+        },
+        {
+          "title": "DVSA MOT manual: axles, wheels, tyres and suspension",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/5-axles-wheels-tyres-and-suspension"
+        },
+        {
+          "title": "DVSA MOT manual: body, structure and attachments",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/6-body-structure-and-attachments"
+        },
+        {
+          "title": "Mercedes-Benz handbook: AdBlue no-start warnings",
+          "url": "https://static.oneweb.mercedes-benz.com/css-oom-assets/en-lb/pdf/mercedes-glc-coupe-2018-march-c253-comand-owners-manual-1.pdf"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/cars/mercedes-benz/gla/common-problems",
+      "family": "model",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 10,
+        "ctrPercent": 0,
+        "position": 11.3
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 34,
+        "ctrPercent": 0,
+        "position": 9.35
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 31,
+        "ctrPercent": 0,
+        "position": 10.16
+      },
+      "principalQueries": [
+        {
+          "query": "used mercedes gla common problems",
+          "clicks": 0,
+          "impressions": 8,
+          "ctrPercent": 0,
+          "position": 14.5
+        },
+        {
+          "query": "mercedes gla review uk",
+          "clicks": 0,
+          "impressions": 1,
+          "ctrPercent": 0,
+          "position": 2
+        }
+      ],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "NEAR PAGE-ONE",
+        "CTR OPPORTUNITY"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Mercedes-Benz GLA common problems: what to check before buying",
+      "evidence": [
+        {
+          "title": "Mercedes-Benz GLA X156 owner's manual",
+          "url": "https://static.oneweb.mercedes-benz.com/css-oom-assets/en-lb/pdf/mercedes-gla-suv-2018-march-x156-owners-manual-1.pdf"
+        },
+        {
+          "title": "Kia handbook: dual-clutch temperature warnings",
+          "url": "https://ownersmanual.kia.com/full_webhelp/SP2/2022/en_GB/topics/chapter6_8_2.html"
+        },
+        {
+          "title": "DVSA MOT manual: axles, wheels, tyres and suspension",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/5-axles-wheels-tyres-and-suspension"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/cars/vauxhall/insignia/common-problems",
+      "family": "model",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 10,
+        "ctrPercent": 0,
+        "position": 18.5
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 34,
+        "ctrPercent": 0,
+        "position": 18.94
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 29,
+        "ctrPercent": 0,
+        "position": 25.9
+      },
+      "principalQueries": [
+        {
+          "query": "used vauxhall insignia sports tourer common problems",
+          "clicks": 0,
+          "impressions": 9,
+          "ctrPercent": 0,
+          "position": 24.56
+        },
+        {
+          "query": "used vauxhall insignia common problems",
+          "clicks": 0,
+          "impressions": 6,
+          "ctrPercent": 0,
+          "position": 19.5
+        },
+        {
+          "query": "used vauxhall insignia grand sport common problems",
+          "clicks": 0,
+          "impressions": 5,
+          "ctrPercent": 0,
+          "position": 26.4
+        }
+      ],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "NEAR PAGE-ONE",
+        "CTR OPPORTUNITY"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Vauxhall Insignia common problems: what to check before buying",
+      "evidence": [
+        {
+          "title": "Vauxhall Insignia handbook: diesel exhaust-filter warnings",
+          "url": "https://www.vauxhall.co.uk/content/dam/vauxhall/Home/PDFs/owners/owners-manuals/insignia/om_insignia_kta-2675_13-vx-en_eu_my15_ed0814_38_en_vx_online.pdf"
+        },
+        {
+          "title": "RAC: interpreting unusual vehicle noises",
+          "url": "https://www.rac.co.uk/drive/advice/know-how/guide-to-unusual-vehicle-noises/"
+        },
+        {
+          "title": "DVSA MOT manual: axles, wheels, tyres and suspension",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/5-axles-wheels-tyres-and-suspension"
+        },
+        {
+          "title": "RAC: test-drive inspection checklist",
+          "url": "https://www.rac.co.uk/pdfs/drive/test-drive-checklist.pdf"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/mot-advisories/undertray-loose",
+      "family": "mot",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 60,
+        "ctrPercent": 0,
+        "position": 8.5
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 247,
+        "ctrPercent": 0,
+        "position": 8.7
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 185,
+        "ctrPercent": 0,
+        "position": 8.93
+      },
+      "principalQueries": [],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "NEAR PAGE-ONE",
+        "CTR OPPORTUNITY"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Undertray loose on an MOT: meaning and what to do",
+      "evidence": [
+        {
+          "title": "DVSA MOT manual: body, structure and attachments",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/6-body-structure-and-attachments"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/mot-advisories/ac-not-cold",
+      "family": "mot",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 29,
+        "ctrPercent": 0,
+        "position": 6.66
+      },
+      "latest28": {
+        "clicks": 2,
+        "impressions": 195,
+        "ctrPercent": 1.0256410256410255,
+        "position": 7.23
+      },
+      "comparison28": {
+        "clicks": 2,
+        "impressions": 233,
+        "ctrPercent": 0.8583690987124464,
+        "position": 7.84
+      },
+      "principalQueries": [],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "CTR OPPORTUNITY"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Air conditioning not cold: is it an MOT issue?",
+      "evidence": [
+        {
+          "title": "AA: air-conditioning testing and regassing",
+          "url": "https://www.theaa.com/car-care/advice/servicing/guide-to-air-con-regassing"
+        },
+        {
+          "title": "DVSA MOT manual: body, structure and attachments",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/6-body-structure-and-attachments"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/mot-advisories/gearbox-oil-leak",
+      "family": "mot",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 18,
+        "ctrPercent": 0,
+        "position": 6.78
+      },
+      "latest28": {
+        "clicks": 1,
+        "impressions": 92,
+        "ctrPercent": 1.0869565217391304,
+        "position": 5.47
+      },
+      "comparison28": {
+        "clicks": 2,
+        "impressions": 86,
+        "ctrPercent": 2.3255813953488373,
+        "position": 7.01
+      },
+      "principalQueries": [],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "CTR OPPORTUNITY"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Gearbox oil leak on an MOT: seepage, severity and repairs",
+      "evidence": [
+        {
+          "title": "DVSA MOT manual: noise, emissions and fluid leaks",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/8-nuisance"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/mot-advisories/brake-discs-worn-or-pitted",
+      "family": "mot",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 31,
+        "ctrPercent": 0,
+        "position": 8.77
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 63,
+        "ctrPercent": 0,
+        "position": 9.14
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 64,
+        "ctrPercent": 0,
+        "position": 10.27
+      },
+      "principalQueries": [
+        {
+          "query": "brake disc worn pitted or scored",
+          "clicks": 0,
+          "impressions": 2,
+          "ctrPercent": 0,
+          "position": 16
+        },
+        {
+          "query": "pitted brake discs mot failure",
+          "clicks": 0,
+          "impressions": 1,
+          "ctrPercent": 0,
+          "position": 6
+        },
+        {
+          "query": "brake discs pitted",
+          "clicks": 0,
+          "impressions": 1,
+          "ctrPercent": 0,
+          "position": 50
+        }
+      ],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "NEAR PAGE-ONE",
+        "CTR OPPORTUNITY"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Brake discs worn or pitted: MOT meaning and next checks",
+      "evidence": [
+        {
+          "title": "DVSA MOT manual: brakes",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/1-brakes"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/mot-advisories/exhaust-leak-minor",
+      "family": "mot",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 14,
+        "ctrPercent": 0,
+        "position": 6.5
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 62,
+        "ctrPercent": 0,
+        "position": 7.18
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 62,
+        "ctrPercent": 0,
+        "position": 7.08
+      },
+      "principalQueries": [],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "CTR OPPORTUNITY"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Minor exhaust leak: MOT meaning, fumes and repair options",
+      "evidence": [
+        {
+          "title": "DVSA MOT manual: body, structure and attachments",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/6-body-structure-and-attachments"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/mot-advisories/brake-dust-shield-insecure",
+      "family": "mot",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 13,
+        "ctrPercent": 0,
+        "position": 5.15
+      },
+      "latest28": {
+        "clicks": 2,
+        "impressions": 60,
+        "ctrPercent": 3.3333333333333335,
+        "position": 6.25
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 23,
+        "ctrPercent": 0,
+        "position": 7.43
+      },
+      "principalQueries": [],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "CTR OPPORTUNITY",
+        "MOMENTUM"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Brake dust shield insecure: what the MOT note means",
+      "evidence": [
+        {
+          "title": "DVSA MOT manual: brakes",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/1-brakes"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/mot-advisories/inner-track-rod-play",
+      "family": "mot",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 16,
+        "ctrPercent": 0,
+        "position": 5.44
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 59,
+        "ctrPercent": 0,
+        "position": 7.07
+      },
+      "comparison28": {
+        "clicks": 1,
+        "impressions": 61,
+        "ctrPercent": 1.639344262295082,
+        "position": 7.64
+      },
+      "principalQueries": [],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "CTR OPPORTUNITY"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Inner track rod play: MOT severity and steering checks",
+      "evidence": [
+        {
+          "title": "DVSA MOT manual: steering",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/2-steering"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/mot-advisories/coil-spring-corroded",
+      "family": "mot",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 14,
+        "ctrPercent": 0,
+        "position": 8.57
+      },
+      "latest28": {
+        "clicks": 1,
+        "impressions": 58,
+        "ctrPercent": 1.7241379310344827,
+        "position": 8.81
+      },
+      "comparison28": {
+        "clicks": 2,
+        "impressions": 84,
+        "ctrPercent": 2.380952380952381,
+        "position": 8.88
+      },
+      "principalQueries": [
+        {
+          "query": "fractured coil spring",
+          "clicks": 0,
+          "impressions": 1,
+          "ctrPercent": 0,
+          "position": 13
+        }
+      ],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "NEAR PAGE-ONE",
+        "CTR OPPORTUNITY"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Coil spring corroded: surface rust or a serious MOT concern?",
+      "evidence": [
+        {
+          "title": "DVSA MOT manual: axles, wheels, tyres and suspension",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/5-axles-wheels-tyres-and-suspension"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/mot-advisories/alloy-wheel-damaged",
+      "family": "mot",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 29,
+        "ctrPercent": 0,
+        "position": 8.07
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 50,
+        "ctrPercent": 0,
+        "position": 7.82
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 28,
+        "ctrPercent": 0,
+        "position": 9.89
+      },
+      "principalQueries": [],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "CTR OPPORTUNITY",
+        "MOMENTUM"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Damaged alloy wheel: MOT risk and inspection advice",
+      "evidence": [
+        {
+          "title": "DVSA MOT manual: axles, wheels, tyres and suspension",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/5-axles-wheels-tyres-and-suspension"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/mot-advisories/subframe-affecting-steering",
+      "family": "mot",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 13,
+        "ctrPercent": 0,
+        "position": 8.54
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 48,
+        "ctrPercent": 0,
+        "position": 8.35
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 40,
+        "ctrPercent": 0,
+        "position": 9.18
+      },
+      "principalQueries": [],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "NEAR PAGE-ONE",
+        "CTR OPPORTUNITY"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Subframe affecting steering: why the MOT finding matters",
+      "evidence": [
+        {
+          "title": "DVSA MOT manual: axles, wheels, tyres and suspension",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/5-axles-wheels-tyres-and-suspension"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/mot-advisories/exhaust-corroded",
+      "family": "mot",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 10,
+        "ctrPercent": 0,
+        "position": 7.4
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 35,
+        "ctrPercent": 0,
+        "position": 7.23
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 20,
+        "ctrPercent": 0,
+        "position": 8.15
+      },
+      "principalQueries": [],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "CTR OPPORTUNITY",
+        "MOMENTUM"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Exhaust corroded: MOT meaning and repair priorities",
+      "evidence": [
+        {
+          "title": "DVSA MOT manual: body, structure and attachments",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/6-body-structure-and-attachments"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/mot-advisories/steering-rack-gaiter-damaged",
+      "family": "mot",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 11,
+        "ctrPercent": 0,
+        "position": 3.18
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 32,
+        "ctrPercent": 0,
+        "position": 6
+      },
+      "comparison28": {
+        "clicks": 1,
+        "impressions": 29,
+        "ctrPercent": 3.4482758620689653,
+        "position": 7.21
+      },
+      "principalQueries": [],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "CTR OPPORTUNITY"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Steering rack gaiter damaged: Minor or Major MOT defect?",
+      "evidence": [
+        {
+          "title": "DVSA MOT manual: steering",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/2-steering"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/mot-advisories/drop-link-worn",
+      "family": "mot",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 10,
+        "ctrPercent": 0,
+        "position": 8.3
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 32,
+        "ctrPercent": 0,
+        "position": 8.09
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 36,
+        "ctrPercent": 0,
+        "position": 7.36
+      },
+      "principalQueries": [],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "NEAR PAGE-ONE",
+        "CTR OPPORTUNITY"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Worn drop link: MOT meaning, knocks and repair checks",
+      "evidence": [
+        {
+          "title": "DVSA MOT manual: axles, wheels, tyres and suspension",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/5-axles-wheels-tyres-and-suspension"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/mot-advisories/esc-warning-light",
+      "family": "mot",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 2,
+        "ctrPercent": 0,
+        "position": 6
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 29,
+        "ctrPercent": 0,
+        "position": 6.21
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 34,
+        "ctrPercent": 0,
+        "position": 7.82
+      },
+      "principalQueries": [],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "CTR OPPORTUNITY"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "ESC warning light: MOT failure or normal activation?",
+      "evidence": [
+        {
+          "title": "DVSA MOT manual: other equipment",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/7-other-equipment"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/mot-advisories/parking-brake-efficiency-low",
+      "family": "mot",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 8,
+        "ctrPercent": 0,
+        "position": 7.5
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 28,
+        "ctrPercent": 0,
+        "position": 6.71
+      },
+      "comparison28": {
+        "clicks": 1,
+        "impressions": 33,
+        "ctrPercent": 3.0303030303030303,
+        "position": 8.97
+      },
+      "principalQueries": [],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "CTR OPPORTUNITY"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Low parking-brake efficiency: MOT result and repair checks",
+      "evidence": [
+        {
+          "title": "DVSA MOT manual: brakes",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/1-brakes"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/mot-advisories/cv-boot-damaged",
+      "family": "mot",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 3,
+        "ctrPercent": 0,
+        "position": 5.67
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 25,
+        "ctrPercent": 0,
+        "position": 5.76
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 25,
+        "ctrPercent": 0,
+        "position": 5.96
+      },
+      "principalQueries": [],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "CTR OPPORTUNITY"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "CV boot damaged: MOT meaning and joint inspection",
+      "evidence": [
+        {
+          "title": "DVSA MOT manual: body, structure and attachments",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/6-body-structure-and-attachments"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/mot-advisories/wiring-chafed",
+      "family": "mot",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 21,
+        "ctrPercent": 0,
+        "position": 4.86
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 24,
+        "ctrPercent": 0,
+        "position": 4.96
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 5,
+        "ctrPercent": 0,
+        "position": 5.2
+      },
+      "principalQueries": [],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "CTR OPPORTUNITY"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Chafed wiring on an MOT: damage, risk and repair",
+      "evidence": [
+        {
+          "title": "DVSA MOT manual: electrical wiring and batteries",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/4-lamps-reflectors-and-electrical-equipment"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/mot-advisories/brake-pads-worn",
+      "family": "mot",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 1,
+        "ctrPercent": 0,
+        "position": 3
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 22,
+        "ctrPercent": 0,
+        "position": 6.5
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 5,
+        "ctrPercent": 0,
+        "position": 6.8
+      },
+      "principalQueries": [],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "CTR OPPORTUNITY"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Brake pads worn: MOT limits and buyer questions",
+      "evidence": [
+        {
+          "title": "DVSA MOT manual: brakes",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/1-brakes"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/mot-advisories/battery-insecure",
+      "family": "mot",
+      "latest7": {
+        "clicks": 0,
+        "impressions": 8,
+        "ctrPercent": 0,
+        "position": 6.25
+      },
+      "latest28": {
+        "clicks": 0,
+        "impressions": 22,
+        "ctrPercent": 0,
+        "position": 7.18
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 20,
+        "ctrPercent": 0,
+        "position": 7.5
+      },
+      "principalQueries": [],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "CTR OPPORTUNITY"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Battery insecure: MOT meaning and safe repair",
+      "evidence": [
+        {
+          "title": "DVSA MOT manual: electrical wiring and batteries",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/4-lamps-reflectors-and-electrical-equipment"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/mot-advisories/rear-axle-bush-worn",
+      "family": "mot",
+      "latest7": {
+        "clicks": 1,
+        "impressions": 5,
+        "ctrPercent": 20,
+        "position": 7.8
+      },
+      "latest28": {
+        "clicks": 1,
+        "impressions": 21,
+        "ctrPercent": 4.761904761904762,
+        "position": 7.38
+      },
+      "comparison28": {
+        "clicks": 0,
+        "impressions": 13,
+        "ctrPercent": 0,
+        "position": 7.46
+      },
+      "principalQueries": [],
+      "queryAssociation": "Thematic match in independent query export; not a verified query-to-page join.",
+      "selectionReasons": [
+        "CTR OPPORTUNITY"
+      ],
+      "previousTitleUnavailable": false,
+      "newTitle": "Rear axle bush worn: MOT meaning and repair scope",
+      "evidence": [
+        {
+          "title": "DVSA MOT manual: axles, wheels, tyres and suspension",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/5-axles-wheels-tyres-and-suspension"
+        }
+      ]
+    }
+  ],
+  "newPages": [
+    {
+      "url": "https://autoaudit.uk/diagnostics/engine-starting-electrical",
+      "kind": "hub",
+      "targetIntent": "Engine, starting and electrical symptoms",
+      "hub": "/cars",
+      "reviewed": "2026-10-02",
+      "releaseDate": null,
+      "evidence": [
+        {
+          "title": "AA: reasons a car will not start",
+          "url": "https://www.theaa.com/breakdown-cover/advice/starting-a-car"
+        },
+        {
+          "title": "RAC: causes of loss of power",
+          "url": "https://www.rac.co.uk/drive/advice/know-how/what-causes-a-loss-of-power-in-a-car/"
+        },
+        {
+          "title": "AA: checking coolant safely",
+          "url": "https://www.theaa.com/breakdown-cover/advice/how-to-check-your-engine-coolant"
+        },
+        {
+          "title": "AA: dashboard warning lights",
+          "url": "https://www.theaa.com/breakdown-cover/advice/dashboard-warning-lights"
+        },
+        {
+          "title": "AA: flat-battery checks",
+          "url": "https://www.theaa.com/breakdown-cover/advice/flat-battery"
+        },
+        {
+          "title": "RAC: test-drive inspection checklist",
+          "url": "https://www.rac.co.uk/pdfs/drive/test-drive-checklist.pdf"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/diagnostics/transmission-clutch",
+      "kind": "hub",
+      "targetIntent": "Transmission, clutch and acceleration symptoms",
+      "hub": "/cars",
+      "reviewed": "2026-10-02",
+      "releaseDate": null,
+      "evidence": [
+        {
+          "title": "ZF Aftermarket: causes of clutch slip",
+          "url": "https://aftermarket.zf.com/en/aftermarket-portal/for-workshops/useful-tips/clutches/clutch-slipping/"
+        },
+        {
+          "title": "AA patrol guidance: car juddering",
+          "url": "https://www.theaa.com/breakdown-cover/advice/car-juddering"
+        },
+        {
+          "title": "Kia handbook: dual-clutch temperature warnings",
+          "url": "https://ownersmanual.kia.com/full_webhelp/SP2/2022/en_GB/topics/chapter6_8_2.html"
+        },
+        {
+          "title": "RAC: test-drive inspection checklist",
+          "url": "https://www.rac.co.uk/pdfs/drive/test-drive-checklist.pdf"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/diagnostics/steering-suspension-brakes",
+      "kind": "hub",
+      "targetIntent": "Steering, suspension and braking symptoms",
+      "hub": "/cars",
+      "reviewed": "2026-10-02",
+      "releaseDate": null,
+      "evidence": [
+        {
+          "title": "RAC: suspension symptoms and inspection",
+          "url": "https://www.rac.co.uk/car-care/car-repairs/suspension-repairs"
+        },
+        {
+          "title": "AA patrol guidance: car juddering",
+          "url": "https://www.theaa.com/breakdown-cover/advice/car-juddering"
+        },
+        {
+          "title": "DVSA MOT manual: brakes",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/1-brakes"
+        },
+        {
+          "title": "DVSA MOT manual: axles, wheels, tyres and suspension",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/5-axles-wheels-tyres-and-suspension"
+        },
+        {
+          "title": "DVSA MOT manual: steering",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/2-steering"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/diagnostics/emissions-exhaust",
+      "kind": "hub",
+      "targetIntent": "Exhaust smoke, DPF and AdBlue symptoms",
+      "hub": "/cars",
+      "reviewed": "2026-10-02",
+      "releaseDate": null,
+      "evidence": [
+        {
+          "title": "RAC: engine and exhaust smoke",
+          "url": "https://www.rac.co.uk/drive/advice/know-how/engine-smoking-why-its-happening-and-what-to-do/"
+        },
+        {
+          "title": "AA: white exhaust smoke",
+          "url": "https://www.theaa.com/breakdown-cover/advice/white-smoke-from-exhaust"
+        },
+        {
+          "title": "AA: diesel particulate filters",
+          "url": "https://www.theaa.com/driving-advice/fuels-environment/diesel-particulate-filters"
+        },
+        {
+          "title": "Mercedes-Benz handbook: AdBlue no-start warnings",
+          "url": "https://static.oneweb.mercedes-benz.com/css-oom-assets/en-lb/pdf/mercedes-glc-coupe-2018-march-c253-comand-owners-manual-1.pdf"
+        },
+        {
+          "title": "DVSA MOT manual: noise, emissions and fluid leaks",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/8-nuisance"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/diagnostics/car-juddering-when-accelerating",
+      "kind": "symptom",
+      "targetIntent": "Car juddering when accelerating: what to investigate",
+      "hub": "/diagnostics/transmission-clutch",
+      "reviewed": "2026-10-02",
+      "releaseDate": null,
+      "evidence": [
+        {
+          "title": "AA patrol guidance: car juddering",
+          "url": "https://www.theaa.com/breakdown-cover/advice/car-juddering"
+        },
+        {
+          "title": "RAC: causes of loss of power",
+          "url": "https://www.rac.co.uk/drive/advice/know-how/what-causes-a-loss-of-power-in-a-car/"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/diagnostics/car-juddering-when-braking",
+      "kind": "symptom",
+      "targetIntent": "Car juddering when braking: checks and urgency",
+      "hub": "/diagnostics/steering-suspension-brakes",
+      "reviewed": "2026-10-02",
+      "releaseDate": null,
+      "evidence": [
+        {
+          "title": "AA patrol guidance: car juddering",
+          "url": "https://www.theaa.com/breakdown-cover/advice/car-juddering"
+        },
+        {
+          "title": "DVSA MOT manual: brakes",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/1-brakes"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/diagnostics/rattle-on-cold-start",
+      "kind": "symptom",
+      "targetIntent": "Rattle on cold start: what the sound can and cannot tell you",
+      "hub": "/diagnostics/engine-starting-electrical",
+      "reviewed": "2026-10-02",
+      "releaseDate": null,
+      "evidence": [
+        {
+          "title": "RAC: interpreting unusual vehicle noises",
+          "url": "https://www.rac.co.uk/drive/advice/know-how/guide-to-unusual-vehicle-noises/"
+        },
+        {
+          "title": "AA: dashboard warning lights",
+          "url": "https://www.theaa.com/breakdown-cover/advice/dashboard-warning-lights"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/diagnostics/car-losing-power",
+      "kind": "symptom",
+      "targetIntent": "Car losing power: causes to investigate before replacing parts",
+      "hub": "/diagnostics/engine-starting-electrical",
+      "reviewed": "2026-10-02",
+      "releaseDate": null,
+      "evidence": [
+        {
+          "title": "RAC: causes of loss of power",
+          "url": "https://www.rac.co.uk/drive/advice/know-how/what-causes-a-loss-of-power-in-a-car/"
+        },
+        {
+          "title": "AA: dashboard warning lights",
+          "url": "https://www.theaa.com/breakdown-cover/advice/dashboard-warning-lights"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/diagnostics/car-overheating",
+      "kind": "symptom",
+      "targetIntent": "Car overheating: stop safely and investigate the cause",
+      "hub": "/diagnostics/engine-starting-electrical",
+      "reviewed": "2026-10-02",
+      "releaseDate": null,
+      "evidence": [
+        {
+          "title": "Kia handbook: response to engine overheating",
+          "url": "https://ownersmanual.kia.com/docview/webhelp/doc/a8a8a615-c070-4a20-b08b-db5d0967b3a2/topics/chapter7_5.html"
+        },
+        {
+          "title": "AA: checking coolant safely",
+          "url": "https://www.theaa.com/breakdown-cover/advice/how-to-check-your-engine-coolant"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/diagnostics/car-losing-coolant",
+      "kind": "symptom",
+      "targetIntent": "Car losing coolant: leaks, observations and workshop checks",
+      "hub": "/diagnostics/engine-starting-electrical",
+      "reviewed": "2026-10-02",
+      "releaseDate": null,
+      "evidence": [
+        {
+          "title": "AA: checking coolant safely",
+          "url": "https://www.theaa.com/breakdown-cover/advice/how-to-check-your-engine-coolant"
+        },
+        {
+          "title": "DVSA MOT manual: noise, emissions and fluid leaks",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/8-nuisance"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/diagnostics/car-battery-draining-when-parked",
+      "kind": "symptom",
+      "targetIntent": "Car battery draining when parked: what to check",
+      "hub": "/diagnostics/engine-starting-electrical",
+      "reviewed": "2026-10-02",
+      "releaseDate": null,
+      "evidence": [
+        {
+          "title": "AA: flat-battery checks",
+          "url": "https://www.theaa.com/breakdown-cover/advice/flat-battery"
+        },
+        {
+          "title": "AA: reasons a car will not start",
+          "url": "https://www.theaa.com/breakdown-cover/advice/starting-a-car"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/diagnostics/car-difficult-to-start",
+      "kind": "symptom",
+      "targetIntent": "Car difficult to start: slow cranking or not firing?",
+      "hub": "/diagnostics/engine-starting-electrical",
+      "reviewed": "2026-10-02",
+      "releaseDate": null,
+      "evidence": [
+        {
+          "title": "AA: reasons a car will not start",
+          "url": "https://www.theaa.com/breakdown-cover/advice/starting-a-car"
+        },
+        {
+          "title": "AA: flat-battery checks",
+          "url": "https://www.theaa.com/breakdown-cover/advice/flat-battery"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/diagnostics/clutch-slipping",
+      "kind": "symptom",
+      "targetIntent": "Clutch slipping: signs, causes and repair questions",
+      "hub": "/diagnostics/transmission-clutch",
+      "reviewed": "2026-10-02",
+      "releaseDate": null,
+      "evidence": [
+        {
+          "title": "ZF Aftermarket: causes of clutch slip",
+          "url": "https://aftermarket.zf.com/en/aftermarket-portal/for-workshops/useful-tips/clutches/clutch-slipping/"
+        },
+        {
+          "title": "RAC: test-drive inspection checklist",
+          "url": "https://www.rac.co.uk/pdfs/drive/test-drive-checklist.pdf"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/diagnostics/automatic-gearbox-jerking",
+      "kind": "symptom",
+      "targetIntent": "Automatic gearbox jerking: identify the transmission first",
+      "hub": "/diagnostics/transmission-clutch",
+      "reviewed": "2026-10-02",
+      "releaseDate": null,
+      "evidence": [
+        {
+          "title": "Kia handbook: dual-clutch temperature warnings",
+          "url": "https://ownersmanual.kia.com/full_webhelp/SP2/2022/en_GB/topics/chapter6_8_2.html"
+        },
+        {
+          "title": "ZF Aftermarket: causes of clutch slip",
+          "url": "https://aftermarket.zf.com/en/aftermarket-portal/for-workshops/useful-tips/clutches/clutch-slipping/"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/diagnostics/steering-wheel-vibration",
+      "kind": "symptom",
+      "targetIntent": "Steering wheel vibration: speed, braking and road clues",
+      "hub": "/diagnostics/steering-suspension-brakes",
+      "reviewed": "2026-10-02",
+      "releaseDate": null,
+      "evidence": [
+        {
+          "title": "RAC: suspension symptoms and inspection",
+          "url": "https://www.rac.co.uk/car-care/car-repairs/suspension-repairs"
+        },
+        {
+          "title": "DVSA MOT manual: steering",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/2-steering"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/diagnostics/suspension-knocking",
+      "kind": "symptom",
+      "targetIntent": "Suspension knocking over bumps: how to investigate",
+      "hub": "/diagnostics/steering-suspension-brakes",
+      "reviewed": "2026-10-02",
+      "releaseDate": null,
+      "evidence": [
+        {
+          "title": "RAC: suspension symptoms and inspection",
+          "url": "https://www.rac.co.uk/car-care/car-repairs/suspension-repairs"
+        },
+        {
+          "title": "DVSA MOT manual: axles, wheels, tyres and suspension",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/5-axles-wheels-tyres-and-suspension"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/diagnostics/blue-smoke-from-exhaust",
+      "kind": "symptom",
+      "targetIntent": "Blue smoke from exhaust: oil-burning checks and urgency",
+      "hub": "/diagnostics/emissions-exhaust",
+      "reviewed": "2026-10-02",
+      "releaseDate": null,
+      "evidence": [
+        {
+          "title": "RAC: engine and exhaust smoke",
+          "url": "https://www.rac.co.uk/drive/advice/know-how/engine-smoking-why-its-happening-and-what-to-do/"
+        },
+        {
+          "title": "DVSA MOT manual: noise, emissions and fluid leaks",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/8-nuisance"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/diagnostics/persistent-white-exhaust-smoke",
+      "kind": "symptom",
+      "targetIntent": "Persistent white exhaust smoke: condensation or a fault?",
+      "hub": "/diagnostics/emissions-exhaust",
+      "reviewed": "2026-10-02",
+      "releaseDate": null,
+      "evidence": [
+        {
+          "title": "AA: white exhaust smoke",
+          "url": "https://www.theaa.com/breakdown-cover/advice/white-smoke-from-exhaust"
+        },
+        {
+          "title": "AA: checking coolant safely",
+          "url": "https://www.theaa.com/breakdown-cover/advice/how-to-check-your-engine-coolant"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/diagnostics/dpf-warning",
+      "kind": "symptom",
+      "targetIntent": "DPF warning light: when to follow the handbook or get help",
+      "hub": "/diagnostics/emissions-exhaust",
+      "reviewed": "2026-10-02",
+      "releaseDate": null,
+      "evidence": [
+        {
+          "title": "AA: diesel particulate filters",
+          "url": "https://www.theaa.com/driving-advice/fuels-environment/diesel-particulate-filters"
+        },
+        {
+          "title": "Mazda CX-5 handbook: DPF warnings",
+          "url": "https://owners-manual.mazda.com/gen/en/cx-5/cx-5_8dw2eo14k/contents/05020424.html"
+        },
+        {
+          "title": "DVSA MOT manual: noise, emissions and fluid leaks",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/8-nuisance"
+        }
+      ]
+    },
+    {
+      "url": "https://autoaudit.uk/diagnostics/adblue-warning-no-start",
+      "kind": "symptom",
+      "targetIntent": "AdBlue warning and no-start countdown: what to do",
+      "hub": "/diagnostics/emissions-exhaust",
+      "reviewed": "2026-10-02",
+      "releaseDate": null,
+      "evidence": [
+        {
+          "title": "Mercedes-Benz handbook: AdBlue no-start warnings",
+          "url": "https://static.oneweb.mercedes-benz.com/css-oom-assets/en-lb/pdf/mercedes-glc-coupe-2018-march-c253-comand-owners-manual-1.pdf"
+        },
+        {
+          "title": "DVSA MOT manual: noise, emissions and fluid leaks",
+          "url": "https://www.gov.uk/guidance/mot-inspection-manual-for-private-passenger-and-light-commercial-vehicles/8-nuisance"
+        }
+      ]
+    }
+  ],
+  "quality": {
+    "guides": 60,
+    "pairsCompared": 1770,
+    "rule": "Name-stripped, body-only three-word shingles. Review required above 0.30 Jaccard or 0.55 smaller-body containment. Editorial review remains necessary.",
+    "highestSimilarity": [
+      {
+        "left": "inner-track-rod-play",
+        "right": "rear-axle-bush-worn",
+        "jaccard": 0.0220125786163522,
+        "containment": 0.045454545454545456
+      },
+      {
+        "left": "car-juddering-when-accelerating",
+        "right": "blue-smoke-from-exhaust",
+        "jaccard": 0.019271948608137045,
+        "containment": 0.04054054054054054
+      },
+      {
+        "left": "car-overheating",
+        "right": "blue-smoke-from-exhaust",
+        "jaccard": 0.017777777777777778,
+        "containment": 0.036036036036036036
+      },
+      {
+        "left": "skoda/kodiaq",
+        "right": "skoda/superb",
+        "jaccard": 0.016728624535315983,
+        "containment": 0.039647577092511016
+      },
+      {
+        "left": "mercedes-benz/glc",
+        "right": "mercedes-benz/e-class",
+        "jaccard": 0.015945330296127564,
+        "containment": 0.03153153153153153
+      },
+      {
+        "left": "inner-track-rod-play",
+        "right": "blue-smoke-from-exhaust",
+        "jaccard": 0.015503875968992248,
+        "containment": 0.03508771929824561
+      },
+      {
+        "left": "steering-suspension-brakes",
+        "right": "suspension-knocking",
+        "jaccard": 0.015151515151515152,
+        "containment": 0.03409090909090909
+      },
+      {
+        "left": "citroen/c3-aircross",
+        "right": "seat/ibiza",
+        "jaccard": 0.013824884792626729,
+        "containment": 0.027522935779816515
+      },
+      {
+        "left": "car-losing-coolant",
+        "right": "persistent-white-exhaust-smoke",
+        "jaccard": 0.013392857142857142,
+        "containment": 0.0273972602739726
+      },
+      {
+        "left": "car-overheating",
+        "right": "persistent-white-exhaust-smoke",
+        "jaccard": 0.013363028953229399,
+        "containment": 0.0273972602739726
+      }
+    ],
+    "violations": []
+  },
+  "reviewPlan": {
+    "after7CompletedDays": "Check discovery, status/canonical, emerging impressions and query alignment; avoid causal ranking claims.",
+    "after28CompletedDays": "Compare equivalent completed windows for selected URLs, device/UK splits, CTR conditional on position, coverage and contextual CTA engagement. Separate new diagnostics from revised pages and account for small samples."
+  }
+}

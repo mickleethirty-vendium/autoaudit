@@ -1,4 +1,6 @@
 import { getRelatedAdvisories } from "@/lib/seo/relationships";
+import { getMotResearch } from "@/data/seo/mot-research";
+import ResearchArticle from "@/components/seo/ResearchArticle";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -80,8 +82,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!row) return { title: "Not found | AutoAudit" };
 
   const path = buildAdvisoryHubPath(advisory);
-  const title = `${row.advisory_label} MOT Advisory Meaning – Fail Risk, Costs & Buyer Advice`;
-  const description = `Understand what ${row.advisory_label} means on an MOT, whether it could become a fail, likely repair-cost risk and what to check before buying.`;
+  const research = getMotResearch(advisory);
+  const title = research?.title || `${row.advisory_label} MOT Advisory Meaning – Fail Risk, Costs & Buyer Advice`;
+  const description = research?.description || `Understand what ${row.advisory_label} means on an MOT, whether it could become a fail, likely repair-cost risk and what to check before buying.`;
 
   return {
     title,
@@ -117,6 +120,20 @@ export default async function AdvisoryHubPage({ params }: Props) {
   const row = getAdvisoryBySlug(advisory);
 
   if (!row) notFound();
+
+  const research = getMotResearch(advisory);
+  if (research) {
+    const path = buildAdvisoryHubPath(advisory);
+    const related = getRelatedAdvisories(advisory).map((item) => ({
+      href: buildAdvisoryHubPath(item.advisory_slug), label: item.advisory_label,
+      reason: "Guidance for the same or a related component, not evidence that the defects occur together.",
+    }));
+    return <ResearchArticle guide={{ ...research, links: [...research.links, ...related] }} path={path} intent="mot-advisory" breadcrumbs={[
+      { name: "Home", item: "/" },
+      { name: "MOT advisories", item: "/mot-advisories" },
+      { name: row.advisory_label, item: path },
+    ]} />;
+  }
 
   const path = buildAdvisoryHubPath(advisory);
   const plainEnglishMeaning = getPlainEnglishMeaning(row.advisory_label);

@@ -5,6 +5,19 @@ const path = require('node:path');
 const Module = require('node:module');
 const ts = require('typescript');
 const root = path.resolve(__dirname, '..');
+
+test('Wave 1 content passes body-only similarity and evidence review', () => {
+  const content = require('./seo-content-checks.cjs');
+  const result = content.review();
+  assert.equal(result.guides, 60);
+  assert.equal(result.pairsCompared, 1770);
+  assert.deepEqual(result.violations, []);
+  assert.equal(content.body({ slug: 'skoda/kodiaq', intro: 'Škoda Kodiaq   inspection', sections: [] }), 'inspection');
+  const baseline = require('../docs/seo-wave1-baseline.json');
+  assert.equal(baseline.existingPages.length, 40);
+  assert.ok(baseline.existingPages.every(x => x.latest28?.impressions >= 20));
+  assert.equal(baseline.newPages.length, 20);
+});
 const resolve = Module._resolveFilename;
 Module._resolveFilename = function (request, ...args) {
   return resolve.call(this, request.startsWith('@/') ? path.join(root, request.slice(2)) : request, ...args);
@@ -21,7 +34,7 @@ const makePage = require('../app/cars/[make]/page.tsx');
 
 test('sitemap is unique and contains only supported canonical routes', () => {
   const entries = sitemap();
-  assert.equal(entries.length, 418);
+  assert.equal(entries.length, 438);
   assert.equal(new Set(entries.map(x => x.url)).size, entries.length);
   for (const { url } of entries) {
     const u = new URL(url);
@@ -35,10 +48,70 @@ test('sitemap is unique and contains only supported canonical routes', () => {
     } else if (parts[0] === 'mot-advisories' && parts.length > 1) {
       assert.equal(parts.length, 2);
       assert.ok(allMotAdvisoryTypes.some(x => x.advisory_slug === parts[1]));
+    } else if (parts[0] === 'diagnostics') {
+      assert.equal(parts.length, 2);
+      assert.ok(estate.publishedDiagnostics.some(x => x.slug === parts[1]));
     } else {
       assert.ok(fs.existsSync(path.join(root, 'app', u.pathname, 'page.tsx')));
     }
   }
+});
+
+test('Wave 1 publishes only 16 researched symptoms and four hubs with stable parents', async () => {
+  const { diagnosticSymptoms, diagnosticHubs, diagnosticGuides } = require('../data/seo/diagnostic-guides.ts');
+  const { isPublishableGuide } = require('../lib/seo/research.ts');
+  const page = require('../app/diagnostics/[slug]/page.tsx');
+  assert.equal(diagnosticSymptoms.length, 16);
+  assert.equal(diagnosticHubs.length, 4);
+  assert.equal(page.dynamicParams, false);
+  assert.equal(page.generateStaticParams().length, 20);
+  assert.equal(new Set(diagnosticGuides.map(x => x.slug)).size, 20);
+  for (const guide of diagnosticGuides) {
+    assert.ok(isPublishableGuide(guide), guide.slug);
+    assert.ok(!isPublishableGuide({ ...guide, status: 'draft' }));
+    assert.ok(!isPublishableGuide({ ...guide, sections: [{ heading: 'Unverified', paragraphs: ['text'], sources: ['invented'] }] }));
+    const meta = await page.generateMetadata({ params: Promise.resolve({ slug: guide.slug }) });
+    assert.equal(meta.alternates.canonical, `https://autoaudit.uk/diagnostics/${guide.slug}`);
+    assert.deepEqual(meta.robots, { index: true, follow: true });
+    if (guide.kind === 'symptom') assert.ok(diagnosticHubs.some(x => x.slug === guide.hub));
+    else assert.ok(diagnosticSymptoms.some(x => x.hub === guide.slug));
+  }
+  assert.equal((await page.generateMetadata({ params: Promise.resolve({ slug: 'invented' }) })).robots.index, false);
+});
+
+test('researched content has valid sources, established URLs and contextual internal links', () => {
+  const { modelResearch } = require('../data/seo/model-research.ts');
+  const { motResearch } = require('../data/seo/mot-research.ts');
+  const { diagnosticGuides } = require('../data/seo/diagnostic-guides.ts');
+  const { researchSources, isPublishableGuide } = require('../lib/seo/research.ts');
+  assert.equal(modelResearch.length, 20);
+  assert.equal(motResearch.length, 20);
+  for (const guide of modelResearch) assert.ok(allMakesModels.some(x => x.full_slug === guide.slug));
+  for (const guide of motResearch) assert.ok(allMotAdvisoryTypes.some(x => x.advisory_slug === guide.slug));
+  const paths = new Set(sitemap().map(x => new URL(x.url).pathname));
+  for (const guide of [...modelResearch, ...motResearch, ...diagnosticGuides]) {
+    assert.ok(isPublishableGuide(guide), guide.slug);
+    assert.equal(new Set(guide.sections.map(x => x.heading)).size, guide.sections.length);
+    for (const section of guide.sections) {
+      for (const source of section.sources) assert.equal(new URL(researchSources[source].url).protocol, 'https:');
+    }
+    for (const link of guide.links) assert.ok(paths.has(link.href), `${guide.slug}: ${link.href}`);
+  }
+  const { pageTypeForPath } = require('../lib/vehicleCheck.ts');
+  assert.equal(pageTypeForPath('/diagnostics/car-losing-power'), 'diagnostic');
+});
+
+test('specific MOT and model distinctions replace generic risk claims', () => {
+  const { getMotResearch } = require('../data/seo/mot-research.ts');
+  const { getModelResearch } = require('../data/seo/model-research.ts');
+  const text = x => JSON.stringify(x);
+  assert.match(text(getMotResearch('ac-not-cold')), /not itself a formal/);
+  assert.match(text(getMotResearch('undertray-loose')), /likely to detach is dangerous/);
+  assert.match(text(getMotResearch('brake-dust-shield-insecure')), /drum-brake backplate/);
+  assert.match(text(getModelResearch('skoda', 'kodiaq')), /second-generation/i);
+  assert.match(text(getModelResearch('citroen', 'berlingo')), /1\.5 BlueHDi/);
+  assert.match(text(getModelResearch('hyundai', 'kona')), /VIN applicability/);
+  assert.equal(getModelResearch('ford', 'focus'), undefined);
 });
 
 test('publication allowlist preserves 116 models; catalogue additions cannot implicitly publish', () => {

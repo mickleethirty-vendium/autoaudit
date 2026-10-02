@@ -1,6 +1,6 @@
 import { allMakesModels } from "@/lib/seo/data";
 import { generalAdvisoryGuides } from "@/lib/seo/relationships";
-import { publishedModels, editorialPages, getMakeEstate } from "@/lib/seo/estate";
+import { publishedModels, publishedDiagnostics, editorialPages, getMakeEstate } from "@/lib/seo/estate";
 import type { Metadata } from "next";
 import Link from "next/link";
 import HeroCtaTextPanel from "@/components/seo/HeroCtaTextPanel";
@@ -423,6 +423,19 @@ export default function CarsHubPage() {
           <li>Compare similar cars with a little more confidence</li>
           <li>Move to a registration check once you find a serious option</li>
         </ul>
+      </section>
+
+      <section className="mt-10 space-y-4" aria-labelledby="symptom-guides-title">
+        <h2 id="symptom-guides-title" className="text-2xl font-semibold">Research a symptom before viewing a car</h2>
+        <p className="text-slate-700">Start with what the car is doing, then identify the checks a garage may need. These guides explain possibilities and urgency; they do not diagnose a vehicle remotely.</p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {publishedDiagnostics.filter((guide) => guide.kind === "hub").map((guide) => (
+            <Link key={guide.slug} href={`/diagnostics/${guide.slug}`} className="rounded-xl border p-5 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2">
+              <h3 className="font-semibold">{guide.title}</h3>
+              <p className="mt-2 leading-6 text-slate-600">{guide.intro}</p>
+            </Link>
+          ))}
+        </div>
       </section>
 
       <section className="mt-10 space-y-4" aria-labelledby="buying-guides-title">

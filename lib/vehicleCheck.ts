@@ -17,6 +17,7 @@ export type Intent = typeof intents[number];
 export const positions = ["early", "midpoint", "end", "hero", "inline", "sticky", "unlock_panel", "lookup", "upgrade", "overview_upgrade", "history_upgrade", "exposure", "core_card", "bundle_card", "report_end", "report_sticky", "snapshot_primary", "snapshot_sidebar", "snapshot_mobile_sticky"] as const;
 export type Position = typeof positions[number];
 export function pageTypeForPath(path: string): PageType {
+  if (path.startsWith("/diagnostics/")) return "diagnostic";
   if (path === "/") return "homepage";
   if (path.endsWith("/common-problems")) return "common_problems";
   if (path.startsWith("/cars/")) return path.split("/").length === 4 ? "model_guide" : "make_hub";

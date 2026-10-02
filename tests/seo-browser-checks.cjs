@@ -6,7 +6,7 @@ module.exports = async function checkSeo({ context, page, out }) {
   const base = 'http://127.0.0.1:3100';
   const xml = await (await context.request.get(`${base}/sitemap.xml`)).text();
   const urls = [...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map(x => x[1]);
-  assert.equal(urls.length, 418);
+  assert.equal(urls.length, 438);
   const visited = new Set();
   const incoming = new Set();
   let schemaCount = 0;
@@ -61,7 +61,7 @@ module.exports = async function checkSeo({ context, page, out }) {
     assert.equal(response.status(), 308);
     assert.equal(new URL(response.headers().location, base).pathname, redirect.destination);
   }
-  const routes = ['/cars', '/cars/fiat', '/cars/ford', '/cars/fiat/panda', '/mot-advisories', '/mot-advisories/brake-pads-worn'];
+  const routes = ['/cars', '/cars/fiat', '/cars/ford', '/cars/fiat/panda', '/mot-advisories', '/mot-advisories/brake-pads-worn', '/cars/skoda/kodiaq/common-problems', '/cars/citroen/berlingo/common-problems', '/mot-advisories/undertray-loose', '/mot-advisories/ac-not-cold', '/diagnostics/engine-starting-electrical', '/diagnostics/car-losing-power', '/diagnostics/adblue-warning-no-start'];
   for (const width of [320, 375, 390, 430, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 844 });
     for (const route of routes) {
@@ -77,7 +77,7 @@ module.exports = async function checkSeo({ context, page, out }) {
         await page.keyboard.press('Enter');
         assert.equal(await summary.evaluate(el => el.parentElement.open), true);
       }
-      if ([390, 1440].includes(width) && ['/cars/fiat', '/mot-advisories'].includes(route)) {
+      if ([390, 1440].includes(width) && ['/cars/skoda/kodiaq/common-problems', '/mot-advisories/undertray-loose', '/diagnostics/car-losing-power', '/diagnostics/engine-starting-electrical'].includes(route)) {
         await page.screenshot({ path: path.join(out, `seo-${route.split('/').filter(Boolean).join('-')}-${width}.png`), fullPage: true });
       }
     }

@@ -1,4 +1,6 @@
 import { generalAdvisoryGuides } from "@/lib/seo/relationships";
+import { getModelResearch } from "@/data/seo/model-research";
+import ResearchArticle from "@/components/seo/ResearchArticle";
 import { publishedModels } from "@/lib/seo/estate";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -170,8 +172,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const path = buildModelCommonProblemsPath(make, model);
-  const title = `${row.make} ${row.model} Common Problems | AutoAudit`;
-  const description = `Browse common issues, recurring MOT advisories and repair-cost patterns for the ${row.make} ${row.model}.`;
+  const research = getModelResearch(make, model);
+  const title = research ? `${research.title} | AutoAudit` : `${row.make} ${row.model} Common Problems | AutoAudit`;
+  const description = research?.description || `Browse common issues, recurring MOT advisories and repair-cost patterns for the ${row.make} ${row.model}.`;
 
   return {
     title,
@@ -207,6 +210,18 @@ export default async function ModelCommonProblemsPage({ params }: Props) {
   const row = getModelByParams(make, model);
 
   if (!row) notFound();
+
+  const research = getModelResearch(make, model);
+  if (research) {
+    const path = buildModelCommonProblemsPath(make, model);
+    return <ResearchArticle guide={research} path={path} intent="common-problems" make={row.make} model={row.model} breadcrumbs={[
+      { name: "Home", item: "/" },
+      { name: "Cars", item: "/cars" },
+      { name: row.make, item: buildMakeHubPath(make) },
+      { name: row.model, item: buildModelHubPath(make, model) },
+      { name: "Common problems", item: path },
+    ]} />;
+  }
 
   const modelName = `${row.make} ${row.model}`;
   const makeHubPath = buildMakeHubPath(row.make_slug);
