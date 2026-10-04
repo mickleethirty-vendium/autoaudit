@@ -11,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
     "Enter a UK registration to see MOT history, recurring advisories and hidden repair-cost risks before buying a used car.";
 
   return {
-    title,
+    title: { absolute: title },
     description,
     alternates: {
       canonical: absoluteUrl("/check-car-by-registration"),

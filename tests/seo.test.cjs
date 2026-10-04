@@ -32,6 +32,60 @@ const relationships = require('../lib/seo/relationships.ts');
 const sitemap = require('../app/sitemap.ts').default;
 const makePage = require('../app/cars/[make]/page.tsx');
 
+test('page metadata resolves to one brand suffix under the root title template', async () => {
+  const { resolveTitle } = require('next/dist/lib/metadata/resolvers/resolve-title');
+  const template = '%s | AutoAudit';
+  function check(title) {
+    const resolved = resolveTitle(title, template).absolute;
+    assert.equal((resolved.match(/\| AutoAudit/g) || []).length, 1, resolved);
+    assert.ok(resolved.endsWith('| AutoAudit'), resolved);
+  }
+  // Audit static page metadata without importing unrelated client/payment modules.
+  let staticTitles = 0;
+  function walk(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const file = path.join(dir, entry.name);
+      if (entry.isDirectory()) { walk(file); continue; }
+      if (entry.name !== 'page.tsx') continue;
+      const source = ts.createSourceFile(file, fs.readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true);
+      function visit(node) {
+        if (ts.isVariableDeclaration(node) && node.name.getText(source) === 'metadata' && ts.isObjectLiteralExpression(node.initializer)) {
+          const prop = node.initializer.properties.find(p => p.name?.getText(source) === 'title');
+          if (prop) {
+            const value = prop.initializer;
+            if (ts.isStringLiteral(value)) check(value.text);
+            else {
+              assert.ok(ts.isObjectLiteralExpression(value), file);
+              const absolute = value.properties.find(p => p.name?.getText(source) === 'absolute');
+              assert.ok(absolute && ts.isStringLiteral(absolute.initializer), file);
+              check({ absolute: absolute.initializer.text });
+            }
+            staticTitles++;
+          }
+        }
+        ts.forEachChild(node, visit);
+      }
+      visit(source);
+    }
+  }
+  walk(path.join(root, 'app'));
+  assert.ok(staticTitles >= 35);
+  for (const [modulePath, params] of [
+    ['../app/check-car-by-registration/page.tsx', {}],
+    ['../app/cars/[make]/page.tsx', { make: 'skoda' }],
+    ['../app/cars/[make]/[model]/page.tsx', { make: 'skoda', model: 'kodiaq' }],
+    ['../app/cars/[make]/[model]/common-problems/page.tsx', { make: 'skoda', model: 'kodiaq' }],
+    ['../app/cars/[make]/[model]/common-problems/page.tsx', { make: 'bmw', model: 'x5' }],
+    ['../app/diagnostics/[slug]/page.tsx', { slug: 'car-losing-power' }],
+    ['../app/diagnostics/[slug]/page.tsx', { slug: 'engine-starting-electrical' }],
+    ['../app/mot-advisories/[advisory]/page.tsx', { advisory: 'undertray-loose' }],
+    ['../app/mot-advisories/[advisory]/[make]/[model]/page.tsx', { advisory: 'brake-pads-worn', make: 'skoda', model: 'kodiaq' }],
+  ]) {
+    const metadata = await require(modulePath).generateMetadata({ params });
+    check(metadata.title);
+  }
+});
+
 test('sitemap is unique and contains only supported canonical routes', () => {
   const entries = sitemap();
   assert.equal(entries.length, 438);

@@ -5,7 +5,7 @@ import RegLookupCta from "@/components/seo/RegLookupCta";
 import { absoluteUrl } from "@/lib/seo/routes";
 
 export const metadata: Metadata = {
-  title: "Best Used Cars Under £5,000 UK | AutoAudit",
+  title: { absolute: "Best Used Cars Under £5,000 UK | AutoAudit" },
   description:
     "Browse sensible used cars under £5,000 in the UK, compare common risks, and check the exact car by registration before you buy.",
   alternates: {

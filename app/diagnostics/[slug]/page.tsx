@@ -16,10 +16,10 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const guide = getDiagnosticGuide(slug);
-  if (!guide || !isPublishableGuide(guide)) return { title: "Not found | AutoAudit", robots: { index: false } };
+  if (!guide || !isPublishableGuide(guide)) return { title: { absolute: "Not found | AutoAudit" }, robots: { index: false } };
   const url = absoluteUrl(`/diagnostics/${slug}`);
   return {
-    title: `${guide.title} | AutoAudit`, description: guide.description,
+    title: { absolute: `${guide.title} | AutoAudit` }, description: guide.description,
     alternates: { canonical: url }, robots: { index: true, follow: true },
     openGraph: { title: guide.title, description: guide.description, url, type: "article" },
   };

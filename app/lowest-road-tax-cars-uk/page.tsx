@@ -5,7 +5,7 @@ import RegLookupCta from "@/components/seo/RegLookupCta";
 import { absoluteUrl } from "@/lib/seo/routes";
 
 export const metadata: Metadata = {
-  title: "Lowest Road Tax Cars UK | AutoAudit",
+  title: { absolute: "Lowest Road Tax Cars UK | AutoAudit" },
   description:
     "Browse the lowest road tax cars in the UK, compare ownership risks, and check the exact car by registration before you buy.",
   alternates: {

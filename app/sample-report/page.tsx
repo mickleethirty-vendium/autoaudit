@@ -6,7 +6,7 @@ import { absoluteUrl } from "@/lib/seo/routes";
 import SampleReportAnalytics from "./SampleReportAnalytics";
 
 export const metadata: Metadata = {
-  title: "Sample Used Car Report | AutoAudit",
+  title: { absolute: "Sample Used Car Report | AutoAudit" },
   description:
     "View a sample AutoAudit used car report showing repair-risk signals, MOT analysis, valuation context and buyer guidance.",
   alternates: {

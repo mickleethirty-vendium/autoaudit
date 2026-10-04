@@ -56,7 +56,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!row) {
     return {
-      title: "Not found | AutoAudit",
+      title: { absolute: "Not found | AutoAudit" },
     };
   }
 
@@ -66,7 +66,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const canonicalUrl = absoluteUrl(path);
 
   return {
-    title,
+    title: { absolute: title },
     description,
     alternates: {
       canonical: canonicalUrl,

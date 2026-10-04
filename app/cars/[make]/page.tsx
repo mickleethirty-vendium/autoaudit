@@ -98,14 +98,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!rows.length) {
     return {
-      title: "Not found | AutoAudit",
+      title: { absolute: "Not found | AutoAudit" },
     };
   }
 
   const makeName = rows[0].make;
   if (getMakeEstate(make).status === "directory") {
     return {
-      title: `${makeName} Model Directory | AutoAudit`,
+      title: { absolute: `${makeName} Model Directory | AutoAudit` },
       description: `Find existing ${makeName} model guides and return to the used-car research hub.`,
       alternates: { canonical: absoluteUrl(`/cars/${make}`) },
       robots: { index: false, follow: true },
@@ -117,7 +117,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const canonicalUrl = absoluteUrl(path);
 
   return {
-    title,
+    title: { absolute: title },
     description,
     alternates: {
       canonical: canonicalUrl,

@@ -2,7 +2,7 @@ import Link from "next/link";
 import SiteDisclaimer from "@/app/components/SiteDisclaimer";
 
 export const metadata = {
-  title: "Privacy Notice | AutoAudit",
+  title: { absolute: "Privacy Notice | AutoAudit" },
   description: "Privacy Notice for AutoAudit.",
 };
 

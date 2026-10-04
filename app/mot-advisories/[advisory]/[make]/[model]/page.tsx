@@ -88,7 +88,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!advisoryRow || !modelRow) {
     return {
-      title: "Not found | AutoAudit",
+      title: { absolute: "Not found | AutoAudit" },
     };
   }
 
@@ -97,7 +97,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const path = `/mot-advisories/${advisory}/${make}/${model}`;
 
   return {
-    title,
+    title: { absolute: title },
     description,
     alternates: { canonical: absoluteUrl(path) },
     openGraph: {

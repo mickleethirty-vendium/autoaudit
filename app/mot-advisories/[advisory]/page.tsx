@@ -79,7 +79,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { advisory } = await params;
   const row = getAdvisoryBySlug(advisory);
 
-  if (!row) return { title: "Not found | AutoAudit" };
+  if (!row) return { title: { absolute: "Not found | AutoAudit" } };
 
   const path = buildAdvisoryHubPath(advisory);
   const research = getMotResearch(advisory);

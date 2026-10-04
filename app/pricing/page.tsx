@@ -6,7 +6,7 @@ import { absoluteUrl } from "@/lib/seo/routes";
 import { faqSchema } from "@/lib/seo/schema";
 
 export const metadata: Metadata = {
-  title: "Pricing | AutoAudit",
+  title: { absolute: "Pricing | AutoAudit" },
   description:
     "AutoAudit pricing for used car checks, buyer-risk reports and MOT advisory analysis before you buy.",
   alternates: {

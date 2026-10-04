@@ -2,7 +2,7 @@ import Link from "next/link";
 import SiteDisclaimer from "@/app/components/SiteDisclaimer";
 
 export const metadata = {
-  title: "Terms and Conditions | AutoAudit",
+  title: { absolute: "Terms and Conditions | AutoAudit" },
   description: "Terms and Conditions for AutoAudit.",
 };
 

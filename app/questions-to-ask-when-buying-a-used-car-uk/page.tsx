@@ -5,7 +5,7 @@ import RegLookupCta from "@/components/seo/RegLookupCta";
 import { absoluteUrl } from "@/lib/seo/routes";
 
 export const metadata: Metadata = {
-  title: "Questions to Ask When Buying a Used Car UK | AutoAudit",
+  title: { absolute: "Questions to Ask When Buying a Used Car UK | AutoAudit" },
   description:
     "Use this guide to know what questions to ask when buying a used car in the UK, avoid hidden risks, and check the exact car by registration before you buy.",
   alternates: {

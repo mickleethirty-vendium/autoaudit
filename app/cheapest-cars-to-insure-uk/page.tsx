@@ -5,7 +5,7 @@ import RegLookupCta from "@/components/seo/RegLookupCta";
 import { absoluteUrl } from "@/lib/seo/routes";
 
 export const metadata: Metadata = {
-  title: "Cheapest Cars to Insure UK | AutoAudit",
+  title: { absolute: "Cheapest Cars to Insure UK | AutoAudit" },
   description:
     "Compare the cheapest cars to insure in the UK, see likely repair costs and hidden risks, and check the exact car by registration before you buy.",
   alternates: {

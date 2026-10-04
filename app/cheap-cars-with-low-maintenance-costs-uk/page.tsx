@@ -5,7 +5,7 @@ import RegLookupCta from "@/components/seo/RegLookupCta";
 import { absoluteUrl } from "@/lib/seo/routes";
 
 export const metadata: Metadata = {
-  title: "Cheap Cars with Low Maintenance Costs UK | AutoAudit",
+  title: { absolute: "Cheap Cars with Low Maintenance Costs UK | AutoAudit" },
   description:
     "Browse cheap used cars with low maintenance costs in the UK, compare ownership risks, and check the exact car by registration before you buy.",
   alternates: {

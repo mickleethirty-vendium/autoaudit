@@ -167,7 +167,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!row) {
     return {
-      title: "Not found | AutoAudit",
+      title: { absolute: "Not found | AutoAudit" },
     };
   }
 
@@ -177,7 +177,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = research?.description || `Browse common issues, recurring MOT advisories and repair-cost patterns for the ${row.make} ${row.model}.`;
 
   return {
-    title,
+    title: { absolute: title },
     description,
     alternates: {
       canonical: absoluteUrl(path),

@@ -13,7 +13,7 @@ import {
 import { breadcrumbSchema, faqSchema } from "@/lib/seo/schema";
 
 export const metadata: Metadata = {
-  title: "Common Car Problems UK by Make and Model | AutoAudit",
+  title: { absolute: "Common Car Problems UK by Make and Model | AutoAudit" },
   description:
     "Browse common car problems by make and model in the UK, compare used car reliability patterns, and check a specific vehicle by registration before you buy.",
   alternates: {

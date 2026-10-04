@@ -12,7 +12,7 @@ import {
 import { breadcrumbSchema, faqSchema } from "@/lib/seo/schema";
 
 export const metadata: Metadata = {
-  title: "MOT Advisory Guides | AutoAudit",
+  title: { absolute: "MOT Advisory Guides | AutoAudit" },
   description:
     "Browse MOT advisory guides to understand what common advisory notes mean, why they matter, and how to check the exact car by registration before you buy.",
   alternates: {
