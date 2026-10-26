@@ -256,3 +256,37 @@ test('only the three historically exposed editorial aliases are redirected', asy
     assert.ok(!sitemap().some(x => x.url.endsWith(row.source)));
   }
 });
+
+
+test('public SEO origin is independent of return URL configuration', () => {
+  const { absoluteUrl } = require('../lib/seo/routes.ts');
+  const previous = process.env.NEXT_PUBLIC_APP_URL;
+  try {
+    for (const origin of [undefined, 'http://localhost:3000', 'https://www.autoaudit.uk', 'https://preview.example']) {
+      if (origin === undefined) delete process.env.NEXT_PUBLIC_APP_URL;
+      else process.env.NEXT_PUBLIC_APP_URL = origin;
+      assert.equal(absoluteUrl('/cars'), 'https://autoaudit.uk/cars');
+      assert.ok(sitemap().every(row => new URL(row.url).origin === 'https://autoaudit.uk'));
+      const robots = require('../app/robots.ts').default();
+      assert.equal(robots.host, 'https://autoaudit.uk');
+      assert.equal(robots.sitemap, 'https://autoaudit.uk/sitemap.xml');
+    }
+  } finally {
+    if (previous === undefined) delete process.env.NEXT_PUBLIC_APP_URL;
+    else process.env.NEXT_PUBLIC_APP_URL = previous;
+  }
+});
+
+test('directories and legal pages declare their own canonical', () => {
+  for (const slug of ['cars', 'mot-advisories', 'terms', 'privacy']) {
+    assert.equal(require(`../app/${slug}/page.tsx`).metadata.alternates.canonical,
+      `https://autoaudit.uk/${slug}`);
+  }
+  assert.equal(require('../app/page.tsx').metadata.alternates.canonical, '/');
+});
+
+test('tracking parameters do not enter advisory canonical metadata', async () => {
+  const metadata = await require('../app/mot-advisories/[advisory]/page.tsx').generateMetadata({
+    params: {advisory: 'undertray-loose'}, searchParams: {utm_source: 'test', gclid: 'test'}});
+  assert.equal(metadata.alternates.canonical, 'https://autoaudit.uk/mot-advisories/undertray-loose');
+});

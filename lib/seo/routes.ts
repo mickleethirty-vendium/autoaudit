@@ -6,12 +6,11 @@ export function titleCase(input: string) {
     .join(" ");
 }
 
-export function absoluteUrl(path: string) {
-  const siteUrl =
-    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
-    "https://www.autoaudit.uk";
+// Public SEO identity is independent of checkout/auth return URL configuration.
+export const SEO_SITE_URL = "https://autoaudit.uk";
 
-  return `${siteUrl}${path.startsWith("/") ? path : `/${path}`}`;
+export function absoluteUrl(path: string) {
+  return `${SEO_SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
 export function buildMakeHubPath(make: string) {

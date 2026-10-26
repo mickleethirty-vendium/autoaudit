@@ -1,7 +1,9 @@
+import { absoluteUrl } from "@/lib/seo/routes";
 import Link from "next/link";
 import SiteDisclaimer from "@/app/components/SiteDisclaimer";
 
 export const metadata = {
+  alternates: { canonical: absoluteUrl("/terms") },
   title: { absolute: "Terms and Conditions | AutoAudit" },
   description: "Terms and Conditions for AutoAudit.",
 };

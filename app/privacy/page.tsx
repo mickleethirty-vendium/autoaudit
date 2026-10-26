@@ -1,7 +1,9 @@
+import { absoluteUrl } from "@/lib/seo/routes";
 import Link from "next/link";
 import SiteDisclaimer from "@/app/components/SiteDisclaimer";
 
 export const metadata = {
+  alternates: { canonical: absoluteUrl("/privacy") },
   title: { absolute: "Privacy Notice | AutoAudit" },
   description: "Privacy Notice for AutoAudit.",
 };

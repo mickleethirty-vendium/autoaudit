@@ -1,9 +1,8 @@
 import type { MetadataRoute } from "next";
+import { SEO_SITE_URL } from "@/lib/seo/routes";
 
 export default function robots(): MetadataRoute.Robots {
-  const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-    "https://www.autoaudit.co.uk";
+  const siteUrl = SEO_SITE_URL;
 
   return {
     rules: [
