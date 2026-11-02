@@ -32,6 +32,24 @@ const relationships = require('../lib/seo/relationships.ts');
 const sitemap = require('../app/sitemap.ts').default;
 const makePage = require('../app/cars/[make]/page.tsx');
 
+test('TEMPTATION 01 changes only the Undertray document title', async () => {
+  const page = require('../app/mot-advisories/[advisory]/page.tsx');
+  const { getMotResearch } = require('../data/seo/mot-research.ts');
+  const { resolveTitle } = require('next/dist/lib/metadata/resolvers/resolve-title');
+  for (const advisory of ['undertray-loose', 'brake-discs-worn-or-pitted', 'inner-track-rod-play']) {
+    const metadata = await page.generateMetadata({ params: { advisory } });
+    const research = getMotResearch(advisory);
+    assert.equal(resolveTitle(metadata.title, '%s | AutoAudit').absolute,
+      advisory === 'undertray-loose'
+        ? 'Loose Undertray on an MOT: Will It Fail? | AutoAudit'
+        : `${research.title} | AutoAudit`);
+    assert.equal(metadata.description, research.description);
+    assert.equal(metadata.alternates.canonical, `https://autoaudit.uk/mot-advisories/${advisory}`);
+    assert.equal(metadata.openGraph.title, research.title);
+  }
+  assert.equal(getMotResearch('undertray-loose').title, 'Undertray loose on an MOT: meaning and what to do');
+});
+
 test('page metadata resolves to one brand suffix under the root title template', async () => {
   const { resolveTitle } = require('next/dist/lib/metadata/resolvers/resolve-title');
   const template = '%s | AutoAudit';

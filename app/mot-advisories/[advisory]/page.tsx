@@ -87,7 +87,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = research?.description || `Understand what ${row.advisory_label} means on an MOT, whether it could become a fail, likely repair-cost risk and what to check before buying.`;
 
   return {
-    title,
+    // TEMPTATION 01: document title only; retain article and social metadata.
+    title: advisory === "undertray-loose" ? "Loose Undertray on an MOT: Will It Fail?" : title,
     description,
     alternates: {
       canonical: absoluteUrl(path),
