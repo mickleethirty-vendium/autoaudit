@@ -219,6 +219,20 @@ export default function CheckForm() {
   const [gearbox, setGearbox] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
   const [continueError, setContinueError] = useState<string | null>(null);
+  const [fieldError, setFieldError] = useState<{
+    field: "vehicleModel" | "mileage" | "gearbox";
+    message: string;
+  } | null>(null);
+
+  function showFieldError(field: "vehicleModel" | "mileage" | "gearbox", message: string) {
+    setContinueError(null);
+    setFieldError({ field, message });
+    document.getElementById(field)?.focus();
+  }
+
+  function clearFieldError(field: "vehicleModel" | "mileage" | "gearbox") {
+    setFieldError((current) => current?.field === field ? null : current);
+  }
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const hasAutoLookupRef = useRef("");
@@ -379,7 +393,7 @@ export default function CheckForm() {
 
   async function handleContinue(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (createTask.pending) return;
+    if (isSubmitting || createTask.pending) return;
 
     if (!vehicle) {
       setContinueError("Vehicle details are missing.");
@@ -406,8 +420,19 @@ export default function CheckForm() {
       return;
     }
 
+    if (canonicalVehicleMake && availableModelsForVehicle.length && !resolvedModel) {
+      showFieldError("vehicleModel", "Please confirm the vehicle model before continuing.");
+
+      trackEvent("lookup_details_failed", {
+        page: "check",
+        reason: "missing_model_confirmation",
+      });
+
+      return;
+    }
+
     if (!mileage.trim()) {
-      setContinueError("Please enter the vehicle mileage.");
+      showFieldError("mileage", "Please enter the vehicle mileage.");
 
       trackEvent("lookup_details_failed", {
         page: "check",
@@ -419,7 +444,7 @@ export default function CheckForm() {
 
     const parsedMileage = Number(mileage.replace(/,/g, ""));
     if (!Number.isFinite(parsedMileage) || parsedMileage < 0) {
-      setContinueError("Please enter a valid mileage.");
+      showFieldError("mileage", "Please enter a valid mileage.");
 
       trackEvent("lookup_details_failed", {
         page: "check",
@@ -458,7 +483,7 @@ export default function CheckForm() {
 
     const transmission = normaliseTransmission(gearbox);
     if (!transmission) {
-      setContinueError("Please select a supported gearbox type.");
+      showFieldError("gearbox", "Please select a supported gearbox type.");
 
       trackEvent("lookup_details_failed", {
         page: "check",
@@ -472,17 +497,6 @@ export default function CheckForm() {
     const canonicalMake = canonicalVehicleMake ?? vehicle.make ?? undefined;
     const modelForPayload = resolvedModel || undefined;
 
-    if (canonicalVehicleMake && availableModelsForVehicle.length && !modelForPayload) {
-      setContinueError("Please confirm the vehicle model before continuing.");
-
-      trackEvent("lookup_details_failed", {
-        page: "check",
-        reason: "missing_model_confirmation",
-      });
-
-      return;
-    }
-
     trackEvent("lookup_details_submitted", {
       page: "check",
       has_asking_price: parsedAskingPrice !== null,
@@ -493,6 +507,7 @@ export default function CheckForm() {
     });
 
     setIsSubmitting(true);
+    setFieldError(null);
     setContinueError(null);
 
     try {
@@ -554,6 +569,7 @@ export default function CheckForm() {
   function resetVehicleStep() {
     lookupTask.cancel();
     createTask.cancel();
+    setFieldError(null);
     setIsSubmitting(false);
     setVehicle(null);
     setLookupError(null);
@@ -728,9 +744,13 @@ export default function CheckForm() {
               </label>
               <select
                 id="vehicleModel"
+                aria-required="true"
+                aria-invalid={fieldError?.field === "vehicleModel" || undefined}
+                aria-describedby={fieldError?.field === "vehicleModel" ? "vehicleModel-error" : undefined}
                 value={selectedModel}
                 onChange={(e) => {
                   setSelectedModel(e.target.value);
+                  if (e.target.value) clearFieldError("vehicleModel");
                   if (continueError) setContinueError(null);
                 }}
                 disabled={isSubmitting}
@@ -743,6 +763,11 @@ export default function CheckForm() {
                   </option>
                 ))}
               </select>
+              {fieldError?.field === "vehicleModel" ? (
+                <p id="vehicleModel-error" role="alert" className="mt-2 text-sm font-medium text-red-700">
+                  {fieldError.message}
+                </p>
+              ) : null}
               <FieldHint>
                 This helps us match model-specific common failures more accurately.
               </FieldHint>
@@ -770,18 +795,28 @@ export default function CheckForm() {
                   </label>
                   <input
                     id="mileage"
+                    aria-required="true"
+                    aria-invalid={fieldError?.field === "mileage" || undefined}
+                    aria-describedby={fieldError?.field === "mileage" ? "mileage-error" : undefined}
                     name="mileage"
                     type="text"
                     inputMode="numeric"
                     value={mileage}
                     onChange={(e) => {
-                      setMileage(e.target.value.replace(/[^\d,]/g, ""));
+                      const value = e.target.value.replace(/[^\d,]/g, "");
+                      setMileage(value);
+                      if (value.trim() && Number.isFinite(Number(value.replace(/,/g, "")))) clearFieldError("mileage");
                       if (continueError) setContinueError(null);
                     }}
                     placeholder="e.g. 62,000"
                     disabled={isSubmitting}
                     className="h-14 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 transition placeholder:text-slate-400 focus:border-[var(--aa-red)]"
                   />
+                  {fieldError?.field === "mileage" ? (
+                    <p id="mileage-error" role="alert" className="mt-2 text-sm font-medium text-red-700">
+                      {fieldError.message}
+                    </p>
+                  ) : null}
                   <FieldHint tone="required">
                     Required — used in risk and valuation estimates.
                   </FieldHint>
@@ -796,10 +831,14 @@ export default function CheckForm() {
                   </label>
                   <select
                     id="gearbox"
+                    aria-required="true"
+                    aria-invalid={fieldError?.field === "gearbox" || undefined}
+                    aria-describedby={fieldError?.field === "gearbox" ? "gearbox-error" : undefined}
                     name="gearbox"
                     value={gearbox}
                     onChange={(e) => {
                       setGearbox(e.target.value);
+                      if (normaliseTransmission(e.target.value)) clearFieldError("gearbox");
                       if (continueError) setContinueError(null);
                     }}
                     disabled={isSubmitting}
@@ -811,6 +850,11 @@ export default function CheckForm() {
                     <option value="cvt">CVT</option>
                     <option value="semi-automatic">Semi-automatic</option>
                   </select>
+                  {fieldError?.field === "gearbox" ? (
+                    <p id="gearbox-error" role="alert" className="mt-2 text-sm font-medium text-red-700">
+                      {fieldError.message}
+                    </p>
+                  ) : null}
                   <FieldHint tone="required">
                     Required — helps match likely component risks.
                   </FieldHint>
