@@ -303,3 +303,22 @@ test('free-first aliases retain bounded context and never emit purchase from che
     assert.doesNotMatch(JSON.stringify(emitted), /AB12CDE|session_id|private/);
   } finally { Module._load = previousLoad; global.window = savedWindow; delete require.cache[file]; }
 });
+
+
+test('Pass 001A keeps the approved general headline and prominent FREE without changing contextual intent', () => {
+  const approved = 'Find out what could be wrong with a used car — FREE';
+  const home = fs.readFileSync(path.join(root, 'app/components/HomePageClient.tsx'), 'utf8');
+  const h1 = home.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)[1];
+  assert.equal(h1.replace(/\{" "\}/g, ' ').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim(), approved);
+  assert.match(h1, /bg-\[var\(--aa-red\)\][^"]*text-white">FREE<\/span>/);
+  assert.match(home, /No payment details required/);
+  const React = require('react'); const { renderToStaticMarkup } = require('react-dom/server');
+  const CTA = require('../components/seo/RegLookupCta.tsx').default;
+  const general = renderToStaticMarkup(React.createElement(CTA, { intent: 'general' }));
+  assert.ok(general.includes(approved));
+  assert.match(general, /Get my FREE snapshot/);
+  for (const intent of ['mot-advisory', 'common-problems', 'buying-guide']) {
+    const contextual = renderToStaticMarkup(React.createElement(CTA, { intent }));
+    assert.ok(!contextual.includes(approved));
+  }
+});

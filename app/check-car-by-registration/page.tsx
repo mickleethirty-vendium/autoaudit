@@ -53,7 +53,7 @@ export default function CheckCarByRegistrationPage({ searchParams = {} }: { sear
       <HeroCtaTextPanel
         heroImageSrc="/hero-car-road.png"
         heroAlt="Check a used car by registration"
-        title="Check a used car for FREE"
+        title="Find out what could be wrong with a used car — FREE"
         subtitle="Used car risk check"
         ctaComponent={
           <RegLookupCta intent="general" position="early"

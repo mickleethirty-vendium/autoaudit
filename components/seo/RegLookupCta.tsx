@@ -25,7 +25,7 @@ export default function RegLookupCta({ title, subtitle, className = "", variant 
   const id = useId();
   const vehicle = [make, model].filter(Boolean).join(" ");
   const copy = {
-    general: ["Check a used car for FREE", "Enter a UK registration to see available MOT-based warnings and estimated repair-cost indicators. No payment details required."],
+    general: ["Find out what could be wrong with a used car — FREE", "Enter a UK registration to see available MOT-based warnings and estimated repair-cost indicators. No payment details required."],
     "common-problems": [`Thinking of buying ${vehicle ? `this ${vehicle}` : "this car"}? Check its registration for FREE.`, "Generic fault lists tell you what might go wrong. Check the history and available warning signs for the actual car."],
     "mot-advisory": ["Found this advisory on a car you’re considering? Get a FREE vehicle snapshot.", "Check its wider MOT history, repeat advisories and other available warning signs."],
     "buying-guide": ["Found a car you like? Check it for FREE before you buy.", "Move from your shortlist to the history and available buyer-risk signals for the actual car."],

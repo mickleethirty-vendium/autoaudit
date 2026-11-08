@@ -47,7 +47,7 @@ const out = process.env.BROWSER_OUTPUT_DIR;
         assert.doesNotMatch(await page.locator('body').innerText(), /£4\.99|£9\.99/, route);
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${route} overflow ${width}`);
         if (route === '/') {
-          assert.equal(await page.locator('h1').innerText(), 'Check a used car for FREE');
+          assert.equal((await page.locator('h1').innerText()).replace(/\s+/g, ' ').trim(), 'Find out what could be wrong with a used car — FREE');
           if (width < 640) {
             await page.getByRole('button', { name: 'Menu', exact: true }).click();
             await page.locator('#mobile-menu-panel').getByRole('link', { name: 'FREE vehicle snapshot', exact: true }).waitFor();

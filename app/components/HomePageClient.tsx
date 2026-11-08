@@ -86,7 +86,8 @@ export default function HomePageClient() {
               </div>
 
               <h1 className="mt-3 max-w-5xl text-3xl font-extrabold tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)] sm:text-4xl lg:text-5xl">
-                Check a used car for FREE
+                Find out what could be wrong with a used car —{" "}
+                <span className="inline-block rounded-md bg-[var(--aa-red)] px-2 text-white">FREE</span>
               </h1>
 
               <p className="mt-3 max-w-3xl text-base leading-6 text-white/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.25)] sm:text-lg">
