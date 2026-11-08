@@ -509,13 +509,14 @@ export default function ManualCheckPage() {
                     </div>
                   </div>
 
+                  <p className="text-sm text-slate-600">100% free snapshot. No card required. No obligation. This manual check uses the details you supply; registration-based MOT and history checks are unavailable.</p>
                   <div className="flex flex-col gap-2.5 sm:flex-row">
                     <button
                       type="submit"
                       disabled={isSubmitting}
                       className="inline-flex h-14 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-6 text-sm font-semibold text-white transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:opacity-50"
                     >
-                      {isSubmitting ? "Building preview…" : "Continue to free preview"}
+                      {isSubmitting ? "Building preview…" : "Get my FREE snapshot →"}
                     </button>
 
                     <Link
@@ -551,41 +552,13 @@ export default function ManualCheckPage() {
               subtitle="Spot repeat advisories and history patterns"
             />
             <FeatureCard
-              title="History checks"
-              subtitle="Add finance, write-off and keeper signals"
+              title="No card required"
+              subtitle="Your manual snapshot is free. No obligation."
             />
           </div>
         </section>
 
-        <section className="mx-auto mt-4 max-w-7xl px-3 pb-6 sm:px-4 sm:pb-8">
-          <div className="grid gap-3 md:grid-cols-2">
-            <div className="rounded-[1.25rem] border border-[var(--aa-silver)] bg-white p-4 shadow-sm">
-              <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                Core report
-              </div>
-              <div className="mt-1 text-3xl font-extrabold tracking-tight text-black">
-                £4.99
-              </div>
-              <div className="mt-1 text-sm leading-5 text-slate-700">
-                Detailed findings, repair exposure, seller questions and MoT
-                analysis.
-              </div>
-            </div>
 
-            <div className="rounded-[1.25rem] border border-[var(--aa-red)]/20 bg-[var(--aa-red)]/5 p-4 shadow-sm">
-              <div className="text-[11px] font-semibold uppercase tracking-wide text-[var(--aa-red)]">
-                Full bundle
-              </div>
-              <div className="mt-1 text-3xl font-extrabold tracking-tight text-black">
-                £9.99
-              </div>
-              <div className="mt-1 text-sm leading-5 text-slate-700">
-                Core report plus HPI-style finance, write-off, stolen, mileage
-                and keeper checks.
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
     </div>
   );

@@ -23,7 +23,7 @@
 @media (min-width: 1024px) {
   .layout {
     grid-template-columns: minmax(0, 1fr) 320px;
-    grid-template-areas: "summary purchase" "details purchase";
+    grid-template-areas: "summary summary" "details purchase";
     align-items: start;
     gap: 16px;
     padding-bottom: 0;

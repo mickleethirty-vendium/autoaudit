@@ -67,6 +67,7 @@ export default function CheckoutLink({ href, children, className, title, positio
           release.current = unlock;
           setError(false);
           trackEvent(AnalyticsEvents.CTA_CLICK, data);
+          trackEvent(AnalyticsEvents.UPGRADE_SELECTED, data);
           try {
             const { response, data: result } = await task.run(target, {
               headers: { Accept: "application/json" },

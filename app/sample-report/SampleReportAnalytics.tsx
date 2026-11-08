@@ -23,7 +23,7 @@ export default function SampleReportAnalytics() {
       <a href="#sample-check" className="btn-primary flex min-h-[48px] flex-1 items-center justify-center text-center" onClick={() => {
         trackEvent("cta_click", data);
         document.querySelector<HTMLInputElement>('#sample-check input[name="registration"]')?.focus();
-      }}>Check a real car →</a>
+      }}>Get a FREE snapshot →</a>
       <button type="button" aria-label="Dismiss check a car bar" onClick={() => setDismissed(true)} className="min-h-[48px] min-w-[48px] rounded-lg text-xl text-slate-700 focus-visible:outline">×</button>
     </ViewEvent>}
   </>;

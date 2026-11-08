@@ -1,7 +1,6 @@
 import { historyEligible } from "@/lib/paymentPolicy";
 import { funnelParams } from "@/lib/vehicleCheck";
 import ViewEvent from "@/components/conversion/ViewEvent";
-import ProductComparison from "@/components/conversion/ProductComparison";
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
@@ -474,6 +473,31 @@ export default async function Page({ params, searchParams }: { params: { id: str
             </div>
           </div>
         </div>
+        <div className="relative px-3 pb-3 sm:px-4">
+          <p className="text-sm leading-5 text-slate-700">{tone.description}</p>
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <CompactStat
+              label="Estimated repairs"
+              value={
+                exposureLow !== null && exposureHigh !== null
+                  ? `${money(exposureLow)} – ${money(exposureHigh)}`
+                  : "Unavailable"
+              }
+            />
+            <CompactStat
+              label="Price view"
+              value={valuePillLabel(marketPosition)}
+            />
+            <CompactStat
+              label="Latest MoT"
+              value={mot.latestResult ? titleCase(mot.latestResult) : "—"}
+            />
+            <CompactStat
+              label="Latest advisories"
+              value={String(mot.latestAdvisoryCount)}
+            />
+          </div>
+        </div>
       </section>
 
       <SnapshotPurchasePanel
@@ -481,36 +505,13 @@ export default async function Page({ params, searchParams }: { params: { id: str
         bundleCheckoutUrl={canCheckHistory ? reportPlusHpiCheckoutUrl : undefined}
       />
       <div className={styles.details}>
-        <p className="text-sm leading-5 text-slate-700">{tone.description}</p>
-              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                <CompactStat
-                  label="Estimated repairs"
-                  value={
-                    exposureLow !== null && exposureHigh !== null
-                      ? `${money(exposureLow)} – ${money(exposureHigh)}`
-                      : "Unavailable"
-                  }
-                />
-                <CompactStat
-                  label="Price view"
-                  value={valuePillLabel(marketPosition)}
-                />
-                <CompactStat
-                  label="Latest MoT"
-                  value={mot.latestResult ? titleCase(mot.latestResult) : "—"}
-                />
-                <CompactStat
-                  label="Latest advisories"
-                  value={String(mot.latestAdvisoryCount)}
-                />
-              </div>
 
               <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5">
                 <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-amber-800">
                   What to look at first
                 </div>
                 <div className="mt-1 text-sm leading-5 text-amber-950">
-                  Start with the estimated repair range and price position, then
+                  Start with the estimated repair range and available MOT signals, then
                   check the risk breakdown and MoT history before deciding whether
                   to unlock the full report.
                 </div>
@@ -553,11 +554,7 @@ export default async function Page({ params, searchParams }: { params: { id: str
         </div>
       </div>
 
-      <section className="my-5" aria-labelledby="report-options">
-        <h2 id="report-options" className="mb-3 text-xl font-bold">Your snapshot is free. Choose more detail if it helps.</h2>
-        <ProductComparison historyAvailable={canCheckHistory} />
-        <p className="mt-3 text-xs text-slate-600">Estimates and available records are guidance, not a mechanical inspection or a guarantee of condition.</p>
-      </section>
+
       <div className="mt-3 grid grid-cols-1 gap-3 xl:grid-cols-[1.15fr_0.85fr]">
         <div className="space-y-3">
           {(askingPrice !== null ||

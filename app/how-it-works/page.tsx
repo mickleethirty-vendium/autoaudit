@@ -142,13 +142,12 @@ export default function HowItWorks() {
             ))}
           </div>
 
-          <div className="mt-10 grid gap-4 md:grid-cols-2">
+          <h2 className="mt-10 text-xl font-bold">After your free snapshot: optional additional analysis</h2>
+          <p className="mt-2 text-sm text-slate-700">Start without payment details. You can choose more detail later; <Link href="/pricing" className="underline">see product pricing</Link>.</p>
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
             <div className="rounded-2xl border border-black bg-white p-6">
               <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                 Core Report
-              </div>
-              <div className="mt-2 text-4xl font-extrabold tracking-tight text-black">
-                £4.99
               </div>
               <div className="mt-2 text-sm font-semibold text-slate-900">
                 Detailed findings and MOT analysis
@@ -165,9 +164,6 @@ export default function HowItWorks() {
             <div className="rounded-2xl border border-[var(--aa-red)]/20 bg-[var(--aa-red)]/5 p-6">
               <div className="text-sm font-semibold uppercase tracking-wide text-[var(--aa-red)]">
                 Full Bundle
-              </div>
-              <div className="mt-2 text-4xl font-extrabold tracking-tight text-black">
-                £9.99
               </div>
               <div className="mt-2 text-sm font-semibold text-slate-900">
                 Core Report plus HPI-style history checks

@@ -1,5 +1,7 @@
 "use client";
 
+import ViewEvent from "@/components/conversion/ViewEvent";
+
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import useRequestTask from "@/components/conversion/useRequestTask";
@@ -601,6 +603,9 @@ export default function CheckForm() {
     <div className="w-full">
       {!vehicle ? (
         <form onSubmit={handleLookupSubmit} className="space-y-3 text-left">
+          <ViewEvent visible event={AnalyticsEvents.FREE_CHECK_VIEWED} data={{ page_type: "check", cta_variant: "general", cta_position: "early" }}>
+            <p className="text-sm text-slate-700">Enter a UK registration for your FREE snapshot. No payment details required.</p>
+          </ViewEvent>
           <div className="rounded-xl border border-slate-200 bg-white p-3">
             <div className="mb-3">
               <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
@@ -615,7 +620,7 @@ export default function CheckForm() {
               htmlFor="registration"
               className="mb-1.5 block text-sm font-semibold text-slate-800"
             >
-              Vehicle registration
+              UK registration
             </label>
 
             <div className="flex flex-col gap-2.5 sm:flex-row">
@@ -645,12 +650,12 @@ export default function CheckForm() {
                 disabled={lookupLoading}
                 className="inline-flex h-14 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-5 text-sm font-semibold text-white transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:cursor-not-allowed disabled:opacity-70 sm:min-w-[160px]"
               >
-                {lookupLoading ? "Looking up…" : "Find vehicle"}
+                {lookupLoading ? "Looking up…" : "Get my FREE snapshot →"}
               </button>
             </div>
 
             <FieldHint tone="required">
-              Enter the registration to pull the vehicle details automatically.
+              100% free snapshot. No card required. No obligation.
             </FieldHint>
 
             <div className="mt-2.5">
@@ -911,7 +916,7 @@ export default function CheckForm() {
                 disabled={isSubmitting}
                 className="inline-flex h-14 items-center justify-center rounded-xl border border-[var(--aa-red)] bg-[var(--aa-red)] px-6 text-sm font-semibold text-white transition hover:border-[var(--aa-red-strong)] hover:bg-[var(--aa-red-strong)] disabled:cursor-not-allowed disabled:opacity-70"
               >
-                {isSubmitting ? "Building preview…" : "Continue to free preview"}
+                {isSubmitting ? "Building preview…" : "Get my FREE snapshot →"}
               </button>
 
               <button

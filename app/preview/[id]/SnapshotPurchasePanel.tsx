@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import ViewEvent from "@/components/conversion/ViewEvent";
 import { trackEvent } from "@/lib/analytics";
 import PreviewAnalytics from "./PreviewAnalytics";
+import { products } from "@/components/conversion/ProductComparison";
 import styles from "./snapshot.module.css";
 
 const wideQuery = "(min-width: 1024px)";
@@ -57,9 +58,15 @@ export default function SnapshotPurchasePanel({ coreCheckoutUrl, bundleCheckoutU
     <aside className={styles.purchase} aria-label="Paid report options">
       <section ref={panel} id="snapshot-purchase" tabIndex={-1} aria-labelledby="snapshot-purchase-heading"
         className={`${styles.panel} rounded-2xl border border-slate-300 bg-white p-3 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 sm:p-4`}>
-        <h2 id="snapshot-purchase-heading" className="text-lg font-bold text-slate-950">Unlock the full analysis</h2>
-        <PreviewAnalytics coreCheckoutUrl={coreCheckoutUrl} bundleCheckoutUrl={bundleCheckoutUrl}
-          location={wide ? "snapshot_sidebar" : "snapshot_primary"} variant="light" />
+        <h2 id="snapshot-purchase-heading" className="text-lg font-bold text-slate-950">Optional: explore the full analysis</h2>
+        <ViewEvent visible event="upgrade_options_viewed" data={{ page_type: "preview", cta_position: wide ? "snapshot_sidebar" : "snapshot_primary", cta_variant: "purchase_options" }}>
+          <PreviewAnalytics
+            coreCheckoutUrl={coreCheckoutUrl}
+            bundleCheckoutUrl={bundleCheckoutUrl}
+            location={wide ? "snapshot_sidebar" : "snapshot_primary"}
+            variant="light"
+          />
+        </ViewEvent>
       </section>
       {!wide && passed && !footerVisible && !editing && !dismissed && (
         <ViewEvent visible event="cta_view" data={stickyData} className={styles.mobileBar}>
@@ -71,7 +78,7 @@ export default function SnapshotPurchasePanel({ coreCheckoutUrl, bundleCheckoutU
                 panel.current?.focus({ preventScroll: true });
                 panel.current?.scrollIntoView({ block: "start" });
               }}>
-              Unlock full analysis — from £4.99
+              Optional analysis — from {products[1].price}
             </a>
             <button type="button" aria-label="Dismiss purchase options bar" onClick={() => setDismissed(true)}
               className="min-h-[48px] min-w-[44px] rounded-lg text-xl text-slate-700 focus-visible:outline focus-visible:outline-2">×</button>

@@ -103,7 +103,7 @@ test('shared CTA renders a labelled, native GET form with intent copy and no pay
   const CTA = require('../components/seo/RegLookupCta.tsx').default;
   const html = renderToStaticMarkup(React.createElement(CTA, { intent: 'mot-advisory', position: 'end' }));
   assert.match(html, /action="\/check"/); assert.match(html, /method="get"/); assert.match(html, /<label for="/);
-  assert.match(html, /name="registration"/); assert.match(html, /Check its history/); assert.match(html, /No payment details needed/);
+  assert.match(html, /name="registration"/); assert.match(html, /Get my FREE snapshot/); assert.match(html, /No card required/);
   assert.doesNotMatch(html, /action="\/check-car-by-registration"/);
 });
 
@@ -269,4 +269,37 @@ test('history display preserves legacy values, canonical false and unavailable d
   assert.deepEqual(getHpiChecks({ mileage_anomaly: 'Review records' }), [{ label: 'Mileage', value: 'Review records' }]);
   assert.deepEqual(getHpiChecks({ mileageFlag: false, mileageAnomaly: true }), [{ label: 'Mileage', value: false }]);
   assert.deepEqual(getHpiChecks({ finance: null }), [{ label: 'Finance', value: null }]);
+});
+
+
+test('all shared search-intent CTAs offer a free snapshot without premature pricing', () => {
+  const React = require('react'); const { renderToStaticMarkup } = require('react-dom/server');
+  const CTA = require('../components/seo/RegLookupCta.tsx').default;
+  for (const intent of ['general', 'common-problems', 'mot-advisory', 'buying-guide', 'diagnostic']) {
+    const html = renderToStaticMarkup(React.createElement(CTA, { intent, make: 'Ford', model: 'Fiesta' }));
+    assert.match(html, /Get my FREE snapshot/);
+    assert.match(html, /No card required. No obligation/);
+    assert.doesNotMatch(html, /£4.99|£9.99/);
+    if (intent === 'diagnostic') assert.match(html, /does not diagnose/);
+  }
+  const { products } = require('../components/conversion/ProductComparison.tsx');
+  assert.deepEqual(products.map(p => p.price), ['£0', '£4.99', '£9.99']);
+});
+
+test('free-first aliases retain bounded context and never emit purchase from checkout start', () => {
+  const previousLoad = Module._load; const savedWindow = global.window; const emitted = [];
+  const file = require.resolve('../lib/analytics.ts'); delete require.cache[file];
+  global.window = { location: { pathname: '/check', search: '?f_source=mot_advisory&registration=AB12CDE' } };
+  Module._load = function(request, parent, ...args) {
+    if (request === '@vercel/analytics') return { inject() {}, track: (event, data) => emitted.push({event, data}) };
+    return previousLoad.call(this, request, parent, ...args);
+  };
+  try {
+    const { trackEvent } = require(file);
+    trackEvent('vrm_submitted', { registration: 'AB12CDE', page_type: 'check' });
+    trackEvent('core_report_checkout_started', { tier: 'report', session_id: 'private' });
+    assert.deepEqual(emitted.map(e => e.event), ['vrm_submitted', 'registration_submitted', 'core_report_checkout_started', 'checkout_started']);
+    assert.ok(emitted.every(e => e.data.funnel_source === 'mot_advisory'));
+    assert.doesNotMatch(JSON.stringify(emitted), /AB12CDE|session_id|private/);
+  } finally { Module._load = previousLoad; global.window = savedWindow; delete require.cache[file]; }
 });

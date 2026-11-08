@@ -1,5 +1,10 @@
 import { pageTypeForPath } from "./vehicleCheck";
 export const AnalyticsEvents = {
+  FREE_CHECK_VIEWED: "free_check_viewed",
+  REGISTRATION_SUBMITTED: "registration_submitted",
+  UPGRADE_OPTIONS_VIEWED: "upgrade_options_viewed",
+  UPGRADE_SELECTED: "upgrade_selected",
+  CHECKOUT_STARTED: "checkout_started",
   CTA_VIEW: "cta_view", CTA_CLICK: "cta_click", VRM_SUBMITTED: "vrm_submitted",
   VEHICLE_FOUND: "vehicle_found", SNAPSHOT_VIEWED: "snapshot_viewed",
   CORE_CHECKOUT_STARTED: "core_report_checkout_started", BUNDLE_CHECKOUT_STARTED: "bundle_checkout_started",

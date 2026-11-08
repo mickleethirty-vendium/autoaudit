@@ -71,7 +71,13 @@ export function trackEvent(event: AnalyticsEvent, data: EventData = {}) {
     if (journey.cta_variant) context.entry_variant = journey.cta_variant;
     if (journey.cta_position) context.entry_position = journey.cta_position;
     const landing = journey.landing_type || landingType(pageTypeForPath(window.location.pathname));
-    track(event, safeEventData({ landing_type: landing, ...context, ...data }));
+    const properties = safeEventData({ landing_type: landing, ...context, ...data });
+    track(event, properties);
+    // Compatibility aliases preserve historical series at the same successful step.
+    if (event === AnalyticsEvents.VRM_SUBMITTED) track(AnalyticsEvents.REGISTRATION_SUBMITTED, properties);
+    if ([AnalyticsEvents.CORE_CHECKOUT_STARTED, AnalyticsEvents.BUNDLE_CHECKOUT_STARTED, AnalyticsEvents.HPI_CHECKOUT_STARTED].some((name) => name === event)) {
+      track(AnalyticsEvents.CHECKOUT_STARTED, properties);
+    }
   } catch {
     // Telemetry is best-effort, never a dependency of conversion.
   }

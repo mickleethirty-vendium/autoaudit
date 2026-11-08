@@ -35,7 +35,7 @@ const base = process.env.TEST_BASE_URL || 'http://127.0.0.1:3199';
       const page = await context.newPage();
       await page.goto(`${base}/check?registration=AB12CDE`);
       await page.locator('#vehicleModel').waitFor();
-      const submit = page.getByRole('button', { name: 'Continue to free preview', exact: true });
+      const submit = page.getByRole('button', { name: 'Get my FREE snapshot →', exact: true });
       async function expectError(id) {
         await submit.click();
         await page.locator(`#${id}-error`).waitFor();

@@ -19,7 +19,7 @@ export default function CheckPage() {
               </div>
 
               <h1 className="mt-3 max-w-5xl text-3xl font-extrabold tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)] sm:text-4xl lg:text-5xl">
-                Start your free vehicle snapshot
+                Check a used car for FREE
               </h1>
 
               <p className="mt-3 max-w-3xl text-base leading-6 text-white/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.25)] sm:text-lg">
@@ -27,7 +27,7 @@ export default function CheckPage() {
                 An optional asking price prepares market comparison in the paid report. No payment details needed for the snapshot.
               </p>
 
-              <div className="mt-5 grid w-full max-w-3xl grid-cols-1 gap-2 sm:grid-cols-3">
+              <div className="mt-5 hidden w-full max-w-3xl grid-cols-3 gap-2 sm:grid">
                 <QuickInfo
                   title="Mileage"
                   text="Helps price wear and expected maintenance"

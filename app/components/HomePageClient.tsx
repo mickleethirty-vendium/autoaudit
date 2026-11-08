@@ -86,12 +86,12 @@ export default function HomePageClient() {
               </div>
 
               <h1 className="mt-3 max-w-5xl text-3xl font-extrabold tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)] sm:text-4xl lg:text-5xl">
-                Don’t overpay for your next used car
+                Check a used car for FREE
               </h1>
 
               <p className="mt-3 max-w-3xl text-base leading-6 text-white/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.25)] sm:text-lg">
-                Get instant repair-cost signals, MoT-based warnings and optional
-                vehicle history checks from a registration.
+                Enter a UK registration to see available MOT-based warnings and estimated
+                repair-cost indicators. No payment details required.
               </p>
 
               <div className="mt-4 grid w-full max-w-3xl grid-cols-3 gap-2 sm:mt-5">
@@ -117,7 +117,7 @@ export default function HomePageClient() {
 
                 <div className="mt-2.5 flex flex-col gap-1.5 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
                   <div className="text-xs text-slate-500">
-                    Instant snapshot first. Full report available after.
+                    Your free snapshot comes first.
                   </div>
 
                   <div className="flex flex-wrap justify-center gap-3 sm:justify-end">
@@ -140,17 +140,7 @@ export default function HomePageClient() {
                 </div>
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-white/85">
-                <span className="rounded-full border border-white/15 bg-white/10 px-2.5 py-1">
-                  Core report £4.99
-                </span>
-                <span className="rounded-full border border-white/15 bg-white/10 px-2.5 py-1">
-                  Full bundle £9.99
-                </span>
-                <span className="rounded-full border border-white/15 bg-white/10 px-2.5 py-1">
-                  UK MoT + history signals
-                </span>
-              </div>
+
             </div>
           </div>
         </section>
@@ -209,8 +199,8 @@ export default function HomePageClient() {
               subtitle="Spot repeat advisories and history patterns"
             />
             <FeatureCard
-              title="History checks"
-              subtitle="Add finance, write-off and keeper signals"
+              title="No card required"
+              subtitle="Explore your free results before deciding"
             />
           </div>
         </section>
@@ -231,16 +221,16 @@ export default function HomePageClient() {
                 repeat MoT advisories or poor value are easy to miss. AutoAudit
                 helps you know the risks before you buy a used car by turning a
                 registration into a fast, structured view of repair exposure,
-                red flags and price context.
+                available MOT warnings.
               </p>
 
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 <ChecklistItem text="Near-term repair exposure estimate" />
-                <ChecklistItem text="Detailed flagged findings" />
-                <ChecklistItem text="Seller questions and red flags" />
+                <ChecklistItem text="Available MOT summary" />
+                <ChecklistItem text="Initial risk / exposure verdict" />
                 <ChecklistItem text="MoT advisory and failure patterns" />
-                <ChecklistItem text="Price vs market context" />
-                <ChecklistItem text="Optional HPI-style history checks" />
+                <ChecklistItem text="No payment details required" />
+                <ChecklistItem text="Optional analysis after your snapshot" />
               </div>
 
               <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
@@ -261,41 +251,11 @@ export default function HomePageClient() {
               </div>
             </div>
 
-            <section
-              id="pricing"
-              className="rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5"
-            >
-              <div className="inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-700">
-                Pricing
-              </div>
-
-              <div className="mt-3 grid gap-3">
-                <div className="rounded-xl border border-[var(--aa-silver)] bg-slate-50 p-3">
-                  <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                    Core report
-                  </div>
-                  <div className="mt-1 text-3xl font-extrabold tracking-tight text-black">
-                    £4.99
-                  </div>
-                  <div className="mt-1 text-sm leading-5 text-slate-700">
-                    Detailed findings, repair exposure, seller questions and MoT
-                    analysis.
-                  </div>
-                </div>
-
-                <div className="rounded-xl border border-[var(--aa-red)]/20 bg-[var(--aa-red)]/5 p-3">
-                  <div className="text-[11px] font-semibold uppercase tracking-wide text-[var(--aa-red)]">
-                    Full bundle
-                  </div>
-                  <div className="mt-1 text-3xl font-extrabold tracking-tight text-black">
-                    £9.99
-                  </div>
-                  <div className="mt-1 text-sm leading-5 text-slate-700">
-                    Core report plus HPI-style finance, write-off, stolen,
-                    mileage and keeper checks.
-                  </div>
-                </div>
-              </div>
+            <section className="rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+              <h2 className="text-xl font-bold">Start with your FREE snapshot</h2>
+              <p className="mt-3 text-sm leading-6 text-slate-700">See the initial risk verdict, estimated repair exposure and available MOT signals before deciding what to do next.</p>
+              <p className="mt-3 text-sm leading-6 text-slate-700">No card required. No obligation. Optional paid analysis is available after your snapshot.</p>
+              <Link href="/pricing" className="mt-4 inline-block text-sm underline">View pricing and product details</Link>
             </section>
           </div>
         </section>

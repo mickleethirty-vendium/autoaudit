@@ -25,11 +25,11 @@ export default function RegLookupCta({ title, subtitle, className = "", variant 
   const id = useId();
   const vehicle = [make, model].filter(Boolean).join(" ");
   const copy = {
-    general: ["Check the car you’re considering", "Enter the registration to see what AutoAudit finds.", "Check this car"],
-    "common-problems": [`Thinking of buying ${vehicle ? `this ${vehicle}` : "one"}?`, "Generic fault lists tell you what might go wrong. Check the history and available warning signs for the actual car.", "Check this car"],
-    "mot-advisory": ["Seen this advisory on a car you’re considering?", "Check its wider MOT history, repeat advisories and other available warning signs.", "Check its history"],
-    "buying-guide": ["Found one you like? Check it before you buy it.", "Move from your shortlist to the history and available buyer-risk signals for the actual car.", "Check the car"],
-    diagnostic: ["Put the symptom in context", "A registration check can show available MOT history and recorded advisories. It does not diagnose the cause of a current fault.", "Check its history"],
+    general: ["Check a used car for FREE", "Enter a UK registration to see available MOT-based warnings and estimated repair-cost indicators. No payment details required."],
+    "common-problems": [`Thinking of buying ${vehicle ? `this ${vehicle}` : "this car"}? Check its registration for FREE.`, "Generic fault lists tell you what might go wrong. Check the history and available warning signs for the actual car."],
+    "mot-advisory": ["Found this advisory on a car you’re considering? Get a FREE vehicle snapshot.", "Check its wider MOT history, repeat advisories and other available warning signs."],
+    "buying-guide": ["Found a car you like? Check it for FREE before you buy.", "Move from your shortlist to the history and available buyer-risk signals for the actual car."],
+    diagnostic: ["Considering a car showing this symptom? Get a FREE snapshot.", "A registration check can show available MOT history and recorded advisories. It does not diagnose the cause of a current fault."],
   }[intent];
   const data = { page_type: pageTypeForPath(pathname), cta_variant: intent, cta_position: position, ...(make ? { make } : {}), ...(model ? { model } : {}) };
   function submit(event: FormEvent) {
@@ -52,13 +52,14 @@ export default function RegLookupCta({ title, subtitle, className = "", variant 
   return (
     <ViewEvent
       event={AnalyticsEvents.CTA_VIEW}
+      companionEvent={AnalyticsEvents.FREE_CHECK_VIEWED}
       data={data}
       visible
       className={`w-full min-w-0 rounded-2xl border p-4 text-left sm:p-5 ${light ? "border-slate-200 bg-white text-slate-950" : "border-white/20 bg-slate-950 text-white"} ${className}`}
     >
       {!compact && (
         <>
-          <h2 className={`text-xl font-bold tracking-tight ${light ? "text-slate-950" : "text-white"}`}>{title || copy[0]}</h2>
+          <h2 className={`text-xl font-bold tracking-tight ${light ? "text-slate-950" : "text-white"}`}>{title ? `${title}${/free/i.test(title) ? "" : " — FREE snapshot"}` : copy[0]}</h2>
           <p className={`mt-2 text-sm leading-6 ${light ? "text-slate-600" : "text-slate-200"}`}>{subtitle || copy[1]}</p>
         </>
       )}
@@ -93,14 +94,14 @@ export default function RegLookupCta({ title, subtitle, className = "", variant 
             type="submit"
             className="min-h-14 shrink-0 rounded-xl bg-[var(--aa-red)] px-5 py-3 font-bold text-white hover:bg-[var(--aa-red-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60"
           >
-            {busy ? "Starting check…" : `${copy[2]} →`}
+            {busy ? "Starting check…" : "Get my FREE snapshot →"}
           </button>
         </div>
         {error && (
           <p id={`${id}-error`} role="alert" className={`mt-2 text-sm ${light ? "text-red-700" : "text-red-200"}`}>{error}</p>
         )}
         <p id={`${id}-hint`} className={`mt-3 text-xs leading-5 ${light ? "text-slate-600" : "text-slate-200"}`}>
-          Free snapshot first. No payment details needed. Add mileage and gearbox after lookup.
+          100% free snapshot. No card required. No obligation. Add mileage and gearbox after lookup.
         </p>
       </form>
     </ViewEvent>

@@ -1,3 +1,4 @@
+import { products } from "@/components/conversion/ProductComparison";
 import CheckoutLink from "@/components/conversion/CheckoutLink";
 
 // CTA instances do not emit page views. The page owns one snapshot-view event.
@@ -11,7 +12,7 @@ export default function PreviewAnalytics({ coreCheckoutUrl, bundleCheckoutUrl, l
   return (
     <div className="mt-3 grid gap-2">
       <CheckoutLink href={coreCheckoutUrl} position={location} className="btn-primary flex w-full items-center justify-center text-center">
-        Unlock Core Report · £4.99
+        {products[1].name} · {products[1].price}
       </CheckoutLink>
       <p className={explanation}>See the detailed findings, repair-risk guidance and questions to ask the seller.</p>
       {bundleCheckoutUrl ? (
@@ -21,7 +22,7 @@ export default function PreviewAnalytics({ coreCheckoutUrl, bundleCheckoutUrl, l
             position={location}
             className={`flex w-full items-center justify-center rounded-lg border px-4 py-3 text-center text-sm font-semibold ${variant === "dark" ? "border-white/30 text-white" : "border-slate-300 bg-white text-slate-900"}`}
           >
-            Full Bundle including HPI · £9.99
+            {products[2].name} · {products[2].price}
           </CheckoutLink>
           <p className={explanation}>Core plus available finance, write-off, stolen and other vehicle-history checks. One-off payment.</p>
         </>

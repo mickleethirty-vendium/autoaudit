@@ -5,8 +5,9 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { trackEvent, claimImpression } from "@/lib/analytics";
 import { AnalyticsEvent, EventData } from "@/lib/analyticsPolicy";
 
-export default function ViewEvent({ event, data, children, className, visible = false }: {
+export default function ViewEvent({ event, companionEvent, data, children, className, visible = false }: {
   event: AnalyticsEvent;
+  companionEvent?: AnalyticsEvent;
   data: EventData;
   children?: React.ReactNode;
   className?: string;
@@ -23,8 +24,9 @@ export default function ViewEvent({ event, data, children, className, visible = 
     const send = () => {
       if (sent.current === key) return;
       sent.current = key;
-      if (event !== "cta_view" || claimImpression(`${event}:${serialized}`)) {
+      if (claimImpression(`${event}:${serialized}`)) {
         trackEvent(event, JSON.parse(serialized));
+        if (companionEvent) trackEvent(companionEvent, JSON.parse(serialized));
       }
     };
     if (!visible) {
@@ -40,7 +42,7 @@ export default function ViewEvent({ event, data, children, className, visible = 
     }, { threshold: 0.35 });
     observer.observe(ref.current);
     return () => observer.disconnect();
-  }, [event, pathname, searchParams, serialized, visible]);
+  }, [event, companionEvent, pathname, searchParams, serialized, visible]);
 
   return <div ref={ref} className={className}>{children}</div>;
 }

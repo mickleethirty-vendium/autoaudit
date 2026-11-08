@@ -99,7 +99,7 @@ async function main() {
       const label = verdict.getByText('Moderate risk', { exact: true });
       const identityBox = await page.locator('h1').boundingBox();
       const labelBox = await label.boundingBox();
-      const checkoutBox = await page.getByRole('link', { name: 'Unlock Core Report · £4.99' }).first().boundingBox();
+      const checkoutBox = await page.getByRole('link', { name: 'Core Report · £4.99' }).first().boundingBox();
       assert.ok(labelBox.y > identityBox.y && labelBox.y + labelBox.height < height, `verdict above fold at ${width}`);
       assert.ok(labelBox.y < checkoutBox.y, 'verdict before purchase options');
       await verdict.getByText('£300 – £800', { exact: true }).waitFor();
@@ -127,17 +127,18 @@ async function main() {
     assert.equal(await page.getByRole('region', { name: 'Vehicle history findings' }).count(), 0);
     await go('/preview/fixture-report?f_source=common_problems');
   });
-  await run('snapshot purchase panel is immediate, sticky and deduplicated without new checkout paths', async () => {
-    const sticky = page.getByRole('link', { name: 'Unlock full analysis — from £4.99', exact: true });
+  await run('snapshot purchase panel follows free results, stays sticky and deduplicated', async () => {
+    const sticky = page.getByRole('link', { name: 'Optional analysis — from £4.99', exact: true });
     for (const [width, height] of [[320, 640], [375, 667], [390, 844], [430, 932], [768, 720]]) {
       await page.setViewportSize({ width, height });
       await go('/preview/fixture-report?f_source=common_problems&f_position=end');
       const purchase = page.locator('#snapshot-purchase');
-      const core = purchase.getByRole('link', { name: 'Unlock Core Report · £4.99' });
+      const core = purchase.getByRole('link', { name: 'Core Report · £4.99' });
       const verdict = await page.getByRole('region', { name: 'Overall risk / exposure' }).boundingBox();
       const box = await core.boundingBox();
       assert.ok(box.y > verdict.y + verdict.height, `purchase follows verdict at ${width}`);
-      assert.ok(box.y + box.height <= height, `primary purchase visible initially at ${width}`);
+      const freeMot = await page.getByText('Latest MoT', { exact: true }).boundingBox();
+      assert.ok(box.y > freeMot.y + freeMot.height, `free MOT signals precede purchase at ${width}`);
       assert.equal(await sticky.count(), 0);
       assert.equal(await page.locator('a[href*="tier=report&"]').count(), 1);
       const originalTop = await purchase.evaluate(el => el.getBoundingClientRect().top + scrollY);
@@ -189,9 +190,9 @@ async function main() {
       const purchase = page.locator('#snapshot-purchase');
       const initial = await purchase.boundingBox();
       const summary = await page.locator('#summary').boundingBox();
-      assert.ok(initial.x >= summary.x + summary.width && Math.abs(initial.y - summary.y) < 2, 'sidebar aligned near top');
+      assert.ok(initial.y >= summary.y + summary.height, 'free summary precedes sidebar');
       await page.screenshot({ path: path.join(out, `snapshot-sidebar-initial-${width}-${height}.png`) });
-      await page.evaluate(() => window.scrollTo(0, 500));
+      await purchase.evaluate(el => window.scrollTo(0, el.getBoundingClientRect().top + scrollY + 20));
       const scrolled = await purchase.boundingBox();
       assert.ok(scrolled.y >= 15 && scrolled.y <= 17, 'CSS sticky offset');
       assert.ok(scrolled.y + scrolled.height <= height, 'short-screen panel stays within viewport');
@@ -214,7 +215,7 @@ async function main() {
   });
   await run('checkout failure is retryable and does not emit checkout_started', async () => {
     await clear(); await page.route('**/api/checkout?**', route=>route.fulfill({ status: 500, json: { error: 'fixture failure' } }));
-    await page.getByRole('link', { name: 'Unlock Core Report · £4.99' }).first().click();
+    await page.getByRole('link', { name: 'Core Report · £4.99' }).first().click();
     await page.getByRole('alert').filter({ hasText: 'Checkout could not be opened' }).waitFor();
     assert.equal((await events()).filter(e=>e.name.includes('checkout_started')).length, 0);
     assert.equal((await events()).filter(e=>e.name==='checkout_failed').length, 1);
@@ -223,7 +224,7 @@ async function main() {
   await run('checkout starts only after valid session response and carries source', async () => {
     let requestUrl;
     await page.route('**/api/checkout?**', route => { requestUrl = route.request().url(); return route.fulfill({ json: { created: true, url: 'https://checkout.stripe.com/c/pay/fixture' } }); });
-    await page.getByRole('link', { name: 'Unlock Core Report · £4.99' }).first().click();
+    await page.getByRole('link', { name: 'Core Report · £4.99' }).first().click();
     await delay(300);
     assert.equal((await events()).filter(e=>e.name==='core_report_checkout_started').length, 1);
     assert.equal(new URL(requestUrl).searchParams.get('source'), 'preview');
@@ -276,7 +277,7 @@ async function main() {
       await page.evaluate(()=>{sessionStorage.clear();sessionStorage.setItem('aa_funnel_context',JSON.stringify({funnel_source:'homepage',cta_position:'hero'}));});
       let requested;
       await page.route('**/api/checkout?**',route=>{requested=new URL(route.request().url());return route.fulfill({status:500,json:{error:'fixture'}});});
-      await clear();await page.getByRole('link',{name:'Unlock Core Report · £4.99'}).first().click();
+      await clear();await page.getByRole('link',{name:'Core Report · £4.99'}).first().click();
       await page.getByText('Checkout could not be opened.',{exact:false}).waitFor();
       assert.equal(requested.searchParams.get('f_source'),source);
       assert.equal(requested.searchParams.get('f_position'),'end');
@@ -286,7 +287,7 @@ async function main() {
     const fresh=await context.newPage();
     await fresh.goto('http://127.0.0.1:3100/preview/fixture-report?f_source=buying_guide&f_variant=buying-guide&f_position=end');
     await fresh.waitForLoadState('networkidle');
-    const href=await fresh.getByRole('link',{name:'Unlock Core Report · £4.99'}).first().getAttribute('href');
+    const href=await fresh.getByRole('link',{name:'Core Report · £4.99'}).first().getAttribute('href');
     assert.equal(new URL(href,'http://localhost').searchParams.get('f_source'),'buying_guide');
     await fresh.close();
   });
@@ -314,7 +315,7 @@ async function main() {
   await run('repeated checkout controls cannot create concurrent sessions', async () => {
     await go('/preview/fixture-report');let calls=0;let finish;
     await page.route('**/api/checkout?**',async route=>{calls++;await new Promise(resolve=>finish=resolve);await route.fulfill({status:500,json:{error:'fixture'}});});
-    await page.getByRole('link',{name:'Unlock Core Report · £4.99'}).first().click();await delay(100);
+    await page.getByRole('link',{name:'Core Report · £4.99'}).first().click();await delay(100);
     await page.locator('a[href*="tier=report_plus_hpi"]').first().click({force:true});
     assert.equal(calls,1);finish();await page.getByText('Checkout could not be opened.',{exact:false}).waitFor();
     assert.equal(await page.locator('a[href*="tier=report_plus_hpi"]').first().getAttribute('aria-disabled'),'false');
@@ -394,11 +395,11 @@ async function main() {
     await tab.getByText('Step 1 complete',{exact:true}).waitFor();
     await tab.locator('#mileage').fill('71842');await tab.locator('#gearbox').selectOption('manual');
     assert.equal(await tab.getByLabel('Asking price',{exact:true}).count(),1);
-    await tab.getByRole('button',{name:'Continue to free preview'}).click();
+    await tab.getByRole('button',{name:'Get my FREE snapshot →'}).click();
     await tab.getByText('This is taking longer than expected. Please try again.',{exact:true}).waitFor();
     await delay(650);assert.match(tab.url(),/\/check\?/);
-    await tab.getByRole('button',{name:'Continue to free preview'}).click();await tab.waitForURL('**/preview/fixture-report?**');
-    await tab.getByRole('link',{name:'Unlock Core Report · £4.99'}).first().click();
+    await tab.getByRole('button',{name:'Get my FREE snapshot →'}).click();await tab.waitForURL('**/preview/fixture-report?**');
+    await tab.getByRole('link',{name:'Core Report · £4.99'}).first().click();
     await tab.getByText('Checkout could not be opened.',{exact:false}).waitFor();
     await delay(650);assert.match(tab.url(),/\/preview\//);assert.equal(checkoutCalls,1);
     assert.equal(await tab.locator('a[href*="tier=report_plus_hpi"]').first().getAttribute('aria-disabled'),'false');

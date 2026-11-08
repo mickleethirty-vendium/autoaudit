@@ -48,7 +48,7 @@ export default function MobileMenu({
               onClick={closeMenu}
               className="flex min-h-[44px] items-center hover:text-slate-900"
             >
-              Check by registration
+              FREE vehicle snapshot
             </Link>
 
             <Link

@@ -1,5 +1,4 @@
 import RegLookupCta from "@/components/seo/RegLookupCta";
-import ProductComparison from "@/components/conversion/ProductComparison";
 import type { Metadata } from "next";
 import ReportClient from "@/app/report/[id]/ReportClient";
 import { absoluteUrl } from "@/lib/seo/routes";
@@ -317,7 +316,6 @@ export default function SampleReportPage() {
 
       <section className="mx-auto max-w-7xl px-3 pb-5 sm:px-4">
         <h2 className="mb-3 text-xl font-bold">Which parts are included?</h2>
-        <ProductComparison />
         <p className="my-4 text-sm text-slate-600">The findings, MOT analysis, seller questions and negotiation guidance demonstrate Core. Vehicle history panels demonstrate the additional Full Bundle checks. All results below are illustrative, not a live vehicle check.</p>
         <div id="sample-check" data-sample-check className="scroll-mt-24"><RegLookupCta position="early" title="Now check the car you’re considering" /></div>
       </section>

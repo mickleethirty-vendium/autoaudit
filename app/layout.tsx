@@ -173,7 +173,7 @@ export default async function RootLayout({
                   href="/check-car-by-registration"
                   className="hover:text-slate-900"
                 >
-                  Check by registration
+                  FREE vehicle snapshot
                 </Link>
                 <Link href="/cars" className="hover:text-slate-900">
                   Cars

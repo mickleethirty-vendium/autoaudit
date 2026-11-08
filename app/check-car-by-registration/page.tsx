@@ -53,12 +53,12 @@ export default function CheckCarByRegistrationPage({ searchParams = {} }: { sear
       <HeroCtaTextPanel
         heroImageSrc="/hero-car-road.png"
         heroAlt="Check a used car by registration"
-        title="Check a car by registration"
+        title="Check a used car for FREE"
         subtitle="Used car risk check"
         ctaComponent={
           <RegLookupCta intent="general" position="early"
-            title="Enter the registration"
-            subtitle="See MOT history, recurring advisories and hidden repair-cost risks instantly."
+            title="Get your FREE vehicle snapshot"
+            subtitle="Enter a UK registration to see available MOT-based warnings and estimated repair-cost indicators. No payment details required."
             variant="light"
           />
         }
